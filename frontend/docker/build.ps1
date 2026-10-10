@@ -13,8 +13,8 @@
 param(
   [Parameter(Mandatory)]
   [ValidateSet(
-    'web', 'linux-x64', 'linux-appimage', 'linux-x86', 'linux-x86-appimage',
-    'android', 'windows-x64', 'windows-x86', 'windows-installer',
+    'web', 'linux-x64', 'linux-appimage',
+    'android', 'windows-x64', 'windows-installer',
     'test', 'analyze', 'dev', 'all'
   )]
   [string]$Target,
@@ -69,9 +69,9 @@ function Copy-BuildOutput {
 function Invoke-Build {
   param([string]$TargetName)
 
-  $buildTargets   = @('web', 'linux-x64', 'linux-appimage', 'linux-x86', 'linux-x86-appimage', 'android')
+  $buildTargets   = @('web', 'linux-x64', 'linux-appimage', 'android')
   $ciTargets      = @('test', 'analyze')
-  $windowsTargets = @('windows-x64', 'windows-x86')
+  $windowsTargets = @('windows-x64', 'windows-installer')
 
   $profileFlag = if ($TargetName -in $buildTargets) { '--profile build' }
                  elseif ($TargetName -in $ciTargets) { '--profile ci' }
@@ -110,11 +110,8 @@ function Invoke-BuildAndCopy {
     'web'             = @{ ContainerPath = '/app/build/web';                          LocalDir = 'frontend-web' }
     'linux-x64'       = @{ ContainerPath = '/app/build/linux/x64/release/bundle';     LocalDir = 'frontend-linux-x86_64' }
     'linux-appimage'  = @{ ContainerPath = '/app/build';                              LocalDir = 'frontend-linux-x86_64' }
-    'linux-x86'       = @{ ContainerPath = '/app/build/linux/x64/release/bundle';     LocalDir = 'frontend-linux-i686' }
-    'linux-x86-appimage' = @{ ContainerPath = '/app/build';                           LocalDir = 'frontend-linux-i686' }
     'android'         = @{ ContainerPath = '/app/build/app/outputs';                   LocalDir = 'frontend-android' }
     'windows-x64'         = @{ ContainerPath = 'C:\app\build\windows\runner\Release';     LocalDir = 'frontend-windows-x86_64' }
-    'windows-x86'         = @{ ContainerPath = 'C:\app\build\windows\runner\Release';     LocalDir = 'frontend-windows-x86' }
     'windows-installer'   = @{ ContainerPath = 'C:\app\build\installer';                     LocalDir = 'frontend-windows-x86_64' }
   }
 
@@ -138,9 +135,9 @@ if (-not (Test-DockerAvailable)) {
   throw 'Docker is not available or not running. Please start Docker and try again.'
 }
 
-$BuildTargets = @('web', 'linux-x64', 'linux-appimage', 'linux-x86', 'linux-x86-appimage', 'android')
-$CiTargets    = @('test', 'analyze')
-$WindowsTargets = @('windows-x64', 'windows-x86', 'windows-installer')
+  $BuildTargets = @('web', 'linux-x64', 'linux-appimage', 'android')
+  $CiTargets    = @('test', 'analyze')
+  $WindowsTargets = @('windows-x64', 'windows-installer')
 
 try {
   switch ($Target) {
@@ -154,12 +151,9 @@ try {
     }
     'web'             { Invoke-BuildAndCopy -TargetName 'web' }
     'linux-x64'       { Invoke-BuildAndCopy -TargetName 'linux-x64' }
-    'linux-appimage'  { Invoke-BuildAndCopy -TargetName 'linux-appimage' }
-    'linux-x86'       { Invoke-BuildAndCopy -TargetName 'linux-x86' }
-    'linux-x86-appimage' { Invoke-BuildAndCopy -TargetName 'linux-x86-appimage' }
+    'linux-appimage' { Invoke-BuildAndCopy -TargetName 'linux-appimage' }
     'android'         { Invoke-BuildAndCopy -TargetName 'android' }
     'windows-x64'         { Invoke-BuildAndCopy -TargetName 'windows-x64' }
-    'windows-x86'         { Invoke-BuildAndCopy -TargetName 'windows-x86' }
     'windows-installer'   { Invoke-BuildAndCopy -TargetName 'windows-installer' }
     'test'            { Invoke-Build -TargetName 'test' }
     'analyze'         { Invoke-Build -TargetName 'analyze' }

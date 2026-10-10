@@ -27,28 +27,6 @@ services:
     image: clakettes-linux-appimage
     profiles: [build]
 
-  # --- Linux i686 native bundle (experimental) ---
-  linux-x86:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-      target: linux-x86
-      args:
-        BACKEND_URL: ${BACKEND_URL:-}
-    image: clakettes-linux-x86
-    profiles: [build]
-
-  # --- Linux i686 AppImage (experimental) ---
-  linux-x86-appimage:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-      target: linux-x86-appimage
-      args:
-        BACKEND_URL: ${BACKEND_URL:-}
-    image: clakettes-linux-x86-appimage
-    profiles: [build]
-
   # --- Web ---
   web:
     build:
@@ -82,15 +60,15 @@ services:
     image: clakettes-windows-x64
     profiles: [windows]
 
-  # --- Windows x86 (experimental, requires Windows containers) ---
-  windows-x86:
+  # --- Windows installer (InnoSetup, requires Windows containers) ---
+  windows-installer:
     build:
       context: ..
       dockerfile: docker/windows.Dockerfile
-      target: windows-x86
+      target: windows-installer
       args:
         BACKEND_URL: ${BACKEND_URL:-}
-    image: clakettes-windows-x86
+    image: clakettes-windows-installer
     profiles: [windows]
 
   # --- CI / Testing ---

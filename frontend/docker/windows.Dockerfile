@@ -49,21 +49,6 @@ RUN if defined BACKEND_URL (flutter build windows --release --dart-define=BACKEN
 
 # Output: C:\app\build\windows\runner\Release\
 
-# Windows x86 build (32-bit, experimental)
-FROM windows-sdk AS windows-x86
-
-ARG BACKEND_URL
-
-LABEL stage="windows-x86"
-
-COPY . C:\app
-
-RUN flutter pub get
-# 32-bit Windows requires MSVC 32-bit toolchain
-RUN if defined BACKEND_URL (flutter build windows --release --target-platform windows-x86 --dart-define=BACKEND_URL=%BACKEND_URL%) else (flutter build windows --release --target-platform windows-x86)
-
-# Output: C:\app\build\windows\runner\Release\
-
 # =============================================================================
 # Stage: windows-installer — Create InnoSetup installer for Windows x64
 # =============================================================================
