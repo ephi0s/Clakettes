@@ -6,12 +6,12 @@ Este índice es la entrada principal de la documentación del proyecto. Está pe
 
 - **Quiero usar la app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Administro un despliegue** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [../backend/DATABASE.md](../backend/DATABASE.md)
+- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md)
 - **IA / agente** → [ARQUITECTURA.md](ARQUITECTURA.md) y el documento de la tarea; los comandos y convenciones obligatorias están en [../AGENTS.md](../AGENTS.md)
 
 ## Principios de la documentación
 
-- **Un solo documento canónico por tema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [../backend/DATABASE.md](../backend/DATABASE.md) y [API.md](API.md) son la referencia oficial de su ámbito.
+- **Un solo documento canónico por tema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) y [API.md](API.md) son la referencia oficial de su ámbito.
 - **Documentación por audiencia**: cada guía está escrita para un tipo de lector, no para un solo conjunto de comandos.
 - **Enlaces directos**: desde aquí se puede llegar al contenido relevante en menos de un clic.
 - **Sin duplicación innecesaria**: los documentos secundarios enlazan al canónico en lugar de repetirlo.
@@ -30,9 +30,9 @@ Este índice es la entrada principal de la documentación del proyecto. Está pe
 | [DESARROLLO.md](DESARROLLO.md) | Convención para añadir endpoint/pantalla + puertas CI | dev, IA |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuibles, Docker, fixes CI | dev |
 | [PUSH.md](PUSH.md) | Decisión de notificaciones sin Firebase | dev |
-| [../backend/DATABASE.md](../backend/DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev, IA |
-| [../backend/BACKEND.md](../backend/BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
-| [AUDITORIA.md](AUDITORIA.md) | Informe histórico 09/10/2026 (no mantener) | referencia |
+| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev, IA |
+| [BACKEND.md](BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
+| [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
 
 ## Ruta recomendada por perfil
 
@@ -55,19 +55,19 @@ Este índice es la entrada principal de la documentación del proyecto. Está pe
 2. [ARQUITECTURA.md](ARQUITECTURA.md)
 3. [DESARROLLO.md](DESARROLLO.md)
 4. [API.md](API.md)
-5. [../backend/DATABASE.md](../backend/DATABASE.md)
+5. [DATABASE.md](DATABASE.md)
 
 ## Convenciones para mantener la documentación
 
 - Actualiza el documento canónico antes que cualquier resumen o índice.
 - Si cambias un flujo de arranque, sincroniza [README.md](../README.md), [USO.md](USO.md) y [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Si cambias una API pública, actualiza [API.md](API.md) y, si procede, [DESARROLLO.md](DESARROLLO.md).
-- Si cambias el esquema o la persistencia, revisa [../backend/DATABASE.md](../backend/DATABASE.md) y las migraciones.
+- Si cambias el esquema o la persistencia, revisa [DATABASE.md](DATABASE.md) y las migraciones.
 
 ## FAQ rápida
 
 - **¿Por dónde empiezo?** Lee [USO.md](USO.md) si vas a operar la app; lee [ARQUITECTURA.md](ARQUITECTURA.md) si vas a desarrollar.
-- **¿Qué es canónico y qué no?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) y [../backend/DATABASE.md](../backend/DATABASE.md) son la referencia oficial para esos temas.
+- **¿Qué es canónico y qué no?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) y [DATABASE.md](DATABASE.md) son la referencia oficial para esos temas.
 - **¿Dónde encuentro un comando o script?** Revisa [HERRAMIENTAS.md](HERRAMIENTAS.md) y [../README.md](../README.md).
 - **¿Cómo sé si un cambio requiere documentación?** Si afecta arranque, permisos, infraestructura, API, o modelo de datos, debe reflejarse en la documentación pertinente.
 

@@ -10,7 +10,7 @@ Flutter (web/escritorio/Android/iOS) ──HTTPS──► FastAPI ──► SQLi
 
 Puertos (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3306`.
 
-## Backend (`backend/`, detalle en [../backend/BACKEND.md](../backend/BACKEND.md) y [../backend/DATABASE.md](../backend/DATABASE.md))
+## Backend (`backend/`, detalle en [BACKEND.md](BACKEND.md) y [DATABASE.md](DATABASE.md))
 
 Capas: Routers (35) → Services (34) → Models (35), tipos vía `app.enums`.
 

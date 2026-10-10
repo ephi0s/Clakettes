@@ -118,7 +118,8 @@ El mapa de documentación está en [docs/README.md](docs/README.md). Es la mejor
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): arquitectura backend/frontend y flujos clave
 - [docs/API.md](docs/API.md): referencia de endpoints
 - [docs/DESARROLLO.md](docs/DESARROLLO.md): cómo añadir endpoints o pantallas
-- [backend/DATABASE.md](backend/DATABASE.md): esquema y migraciones
+- [docs/BACKEND.md](docs/BACKEND.md): guía del backend (capas, config, auth, tests)
+- [docs/DATABASE.md](docs/DATABASE.md): esquema y migraciones
 
 Además, el punto de partida para desarrollo y convención de proyecto es [AGENTS.md](AGENTS.md).
 
@@ -191,7 +192,7 @@ Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Lin
 ### Problemas con bases de datos o migraciones
 
 - Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/USO.md](docs/USO.md) y [backend/DATABASE.md](backend/DATABASE.md).
+- Si cambias de SQLite a MariaDB, revisa [docs/USO.md](docs/USO.md) y [docs/DATABASE.md](docs/DATABASE.md).
 
 ### Frontend con errores de Flutter
 

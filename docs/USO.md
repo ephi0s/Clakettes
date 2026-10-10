@@ -29,7 +29,7 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 ## Operación
 
 - **Migrar**: `alembic upgrade head` desde `backend/` (Docker: `-Migrate`).
-- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en [../backend/DATABASE.md](../backend/DATABASE.md)).
+- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volumen `db-data` en Docker).
 - **Logs**: uvicorn stdout (tokens DAV ya redactados); errores de API en SnackBar + `debugPrint`.
 - **Límites**: cuerpos ≤10 MB (413 si mayor); rate limit con 429 + reintento.

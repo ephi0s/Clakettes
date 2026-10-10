@@ -7,10 +7,10 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
 - Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
 - Migraciones: `alembic upgrade head` desde `backend/` (15 versiones)
-- Capas: Routers (35) → Services (34) → Models (35). Models/Schemas via `app.enums`
+- Capas: Routers (35 archivos, 33 con APIRouter) → Services (33) → Models (33). Models/Schemas via `app.enums`
 - Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s (SQLite)
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (38 archivos, ~1320 tests)
+- Tests: `pytest tests/ -x -q --tb=short` (33 archivos, 1321 tests)
 - Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
 
 ## Frontend (`frontend/`)
@@ -22,7 +22,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - Navegación: NavigationRail (>800px) / NavigationBar (<800px) + Drawer en `main_scaffold.dart`
 - Widgets: `reusable_widgets.dart` (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField) + 23 más (24 en `lib/widgets/`)
 - Code gen Hive: `flutter pub run build_runner build --delete-conflicting-outputs`
-- Tests: `flutter test` (70 archivos) | Lint: `flutter analyze`
+- Tests: `flutter test` (69 archivos) | Lint: `flutter analyze`
 
 ## Inicio (`start.bat` / `.ps1` / `.sh`)
 - `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
@@ -41,7 +41,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - `graphify .` para regenerar (o skill graphify)
 
 ## Docs ([docs/README.md](docs/README.md))
-- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/SEGURIDAD.md](docs/SEGURIDAD.md), [docs/USO.md](docs/USO.md), [backend/DATABASE.md](backend/DATABASE.md), [docs/API.md](docs/API.md)
+- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/SEGURIDAD.md](docs/SEGURIDAD.md), [docs/USO.md](docs/USO.md), [docs/DATABASE.md](docs/DATABASE.md), [docs/API.md](docs/API.md)
 
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.

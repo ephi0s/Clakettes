@@ -1,4 +1,19 @@
-# Auditoría de código — Clakettes (09/10/2026, ampl. multiplataforma 09/10/2026)
+# Auditoría de código — Clakettes (09/10/2026, ampl. multiplataforma 09/10/2026, rev. 10/10/2026)
+
+## 0. Resumen ejecutivo (10/10/2026, cifras verificadas)
+
+| Área | Estado | Detalle |
+| --- | --- | --- |
+| Backend tests | 1321 `def test_` en 33 archivos | `Get-ChildItem backend/tests -Recurse -Filter "test_*.py" \| Select-String "def test_"` |
+| Frontend tests | 347 bloques en 69 archivos | `Get-ChildItem frontend/test -Recurse -Filter "*_test.dart" \| Select-String "testWidgets\(|test\("` |
+| Routers/Services/Models/Schemas | 35/33/33/32 archivos (33 routers con `APIRouter`) | `permissions.py`/`dependencies.py` son helpers sin router; `base.py`/`__init__.py` no son entidades |
+| Migraciones | 15 + `__init__.py` | `alembic/versions/` |
+| Endpoints | 294 en 33 routers (`docs/API.md` por AST) | `python tools/gen_api.py` idempotente; grep simple da 272 (no cuenta `propfind/report/options/websocket`) |
+| Lint | `ruff check` + `ruff format --check` limpios (216 archivos) | `AGENTS.md` y CI (GH + GitLab) con gate de formato |
+| Docs | Backend consolidado en `docs/` | `docs/BACKEND.md` + `docs/DATABASE.md`; índice en `docs/README.md` |
+| Deuda principal | `get_or_404` parcial, `paginate_filtered` sin usos, `python-jose` sin migrar, 24 `AlertDialog` / 115 `ScaffoldMessenger` restantes | Ver §5 con conteos y verificación |
+
+Cómo re-verificar: `cd backend; python -m ruff check .; python -m pytest tests/ -x -q --tb=short` y `cd frontend; flutter analyze; flutter test`.
 
 ## 1. Dependencias externas: qué se puede eliminar y qué no
 
@@ -27,12 +42,12 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
 ## 2. Optimizaciones aplicadas
 
 1. `export_service.py`: import reportlab perezoso en `_build_pdf` + docstring.
-2. `main.py` RateLimitMiddleware: una sola instancia `RateLimiter` (dos buckets por prefijo `dav:`/`middleware:` en vez de dos conexiones SQLite).
-3. `base_service.py`: `paginate` fija `page>=1`, `size` en `[1,100]`; nuevo `paginate_filtered()` para migrar los `get_all_paginated` clonados y los 17 endpoints con paginación en memoria.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 instancias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300s y `login`); no unificar sin perder límites distintos.
+3. `base_service.py`: `paginate` fija `page>=1`, `size` en `[1,100]`; nuevo `paginate_filtered()` definido con 0 usos (pendiente migrar los `get_all_paginated` clonados).
 4. `routers/dependencies.py`: `get_current_user_optional` reutiliza `validate_access_token` (elimina ~30 líneas duplicadas JWT+sesión); fix `__import__("datetime")` → import normal; nuevo `get_or_404()` para reemplazar ~100 `HTTPException(404)` inline.
 5. `dav/auth.py`: documentada la relación con `app.auth._hash_token`.
 6. `pyproject.toml`/`requirements.txt` sincronizados (reportlab).
-7. `reusable_widgets.dart`: nuevo `showAppSnack()` para unificar ~113 `ScaffoldMessenger`.
+7. `reusable_widgets.dart`: nuevo `showAppSnack()` (1 def + 8 usos; quedan 115 `ScaffoldMessenger` directos).
 
 ## 3. Mejoras multiplataforma aplicadas (escritorio + web + Android + iOS/iPad)
 
@@ -58,11 +73,11 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
    — 9 bloques `if not → 404` eliminados; extendido a `shortfilms.py` (3) y
    `users.py` (4). Patrón a extender al resto de routers.
 8. Frontend `awards_screen.dart`: error SnackBar migrado a `showAppSnack()`
-   (piloto). Nota: los 21 `AlertDialog` restantes son diálogos de *formulario*
+   (piloto). Nota: los 24 `AlertDialog` restantes son diálogos de *formulario*
    (crear/editar), no de confirmación — no migran a `showConfirmDialog`
-   (ya usado en `_deleteAward`); requerirían un `CreateEntityDialog` común.
+   (19 usos en 18 pantallas); requerirían un `CreateEntityDialog` común.
 9. CI: gate `ruff format --check` añadido (GH + GitLab) tras verificar
-   `215 files already formatted` — desbloquea la propuesta de HERRAMIENTAS.md.
+   `216 files already formatted`.
 10. Seguridad (piloto `channels.py`, bloque seguridad): nuevo
     `require_channel_member`/`is_channel_member` en `permissions.py` y uso en
     `channels.py` + `chat.py` (elimina 3 bloques inline con imports diferidos);
@@ -89,23 +104,23 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
     `decryptSenderKeyAsync` usados en difusión y recepción de sender keys.
     `RestChatBackend` se conserva: lo usa `chat_service_test` como fake
     (no era código muerto).
-16. Chat: `chat_screen.dart` 1038 → 701 líneas; burbujas a
+16. Chat: `chat_screen.dart` 1038 → 767 líneas; burbujas a
     `widgets/chat_bubble.dart` (`ChatBubble` + `ChatBubbleWidget` con imagen,
     ubicación, vCard, iCal) y barra a `widgets/chat_input_bar.dart`
     (`ChatInputBar`). 2 tests async nuevos en `crypto_utils_test`.
-17. `locations_screen` 1144 → 665 líneas: tarjetas y formulario a
+17. `locations_screen` 1144 → 680 líneas: tarjetas y formulario a
     `widgets/location_cards.dart` (`LocationCard`, `LegacyCard`,
     `LegacyLocation`, `LocationFormScreen`, `LocationFormResult`); borrado
     con `showConfirmDialog` + `showAppSnack` (un AlertDialog menos).
-18. `festival_profile_screen` 1276 → 937 líneas: `RulebooksSection` y
+18. `festival_profile_screen` 1276 → 956 líneas: `RulebooksSection` y
     `FestivalLocationsSection` (+ mapa y fichas) a
     `widgets/festival_sections.dart`. La pantalla conserva estado,
     lectura, edición y callbacks.
-19. `api_service.dart` 1134 → 512 líneas: 95 métodos movidos a `lib/services/api/`
+19. `api_service.dart` 1134 → 511 líneas: 95 métodos movidos a `lib/services/api/`
     (`event_api` 31, `location_api` 25, `org_api` 17, `catalog_api` 13,
-    resto a `user_api`). El núcleo conserva config, auth, transporte y
+    resto a `user_api` + `calendar/channel/festival/form`). El núcleo conserva config, auth, transporte y
     admin/búsqueda. API pública intacta.
-20. `user_profile_screen` 996 → 819 líneas: `SessionsCard` y `AliasesCard`
+20. `user_profile_screen` 996 → 803 líneas: `SessionsCard` y `AliasesCard`
     a `widgets/user_profile_cards.dart`. Corregidos 4 `if` sin llaves
     heredados en `catalog_api`.
 21. Tests de flujo (`tests/integration/test_flows.py`): reserva completa
@@ -125,15 +140,26 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
     AST con `tools/gen_api.py` — regenerable), `docs/ARQUITECTURA.md`
     (capas, flujos, decisiones multiplataforma), `docs/USO.md` (arranque,
     env, operación, roles), `docs/DESARROLLO.md` (convenciones + puertas
-    CI), `docs/SEGURIDAD.md` (tokens, matriz de permisos, checklist prod).
-    READMEs y `AGENTS.md` con cifras reales; `ADMIN_PASSWORD` real en
-    `.env.example` (`setup`, no `Admin123!`).
-Estado: 1366 tests backend + 313 frontend en verde, ruff + analyze limpios.
+    CI), `docs/SEGURIDAD.md` (tokens, matriz de permisos, checklist prod),
+    `docs/BACKEND.md` + `docs/DATABASE.md` (movidas desde `backend/` el 10/10/2026).
+    READMEs y `AGENTS.md` con cifras reales; admin dev `admin`/`setup`
+    (sin `ADMIN_PASSWORD` en `.env.example`; seed solo no-prod en `app/main.py:257`).
+Estado: 1321 tests backend (33 archivos) + 347 frontend (69 archivos) en verde, ruff + analyze limpios.
 
-## 4. Mantenibilidad pendiente (no aplicado, orden sugerido)
+## 4. Revisión 10/10/2026 (correcciones a §2–§3)
 
-1. Migrar routers a `get_or_404` y servicios a `paginate_filtered` (mecánico, por dominio).
-2. Migrar `python-jose` → `PyJWT` (PR aislado con tests de expiración/tipo/rotación).
-3. Trocear `festival_profile(1312L)`, `locations(1200L)`, `api_service(1132L)`, `chat(1038L)`.
-4. Migrar 21 `AlertDialog` directos a `ConfirmDialog`; usar `showAppSnack` en los 113 sitios.
-5. `ruff format .` + `ruff check --fix` (E501/W292); añadir `*.db`, `*.hive*`, `uploads/` a `.gitignore`.
+1. Docs backend consolidadas: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/BACKEND.md` + `docs/DATABASE.md`; enlaces actualizados en `README.md`, `AGENTS.md`, `docs/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
+2. Conteo real: routers 35 archivos (33 con `APIRouter`; `permissions.py`/`dependencies.py` son helpers), services 33 módulos (+`__init__`), models 33 entidades (+`base.py`+`__init__`), schemas 32, Alembic 15, `API.md` 294 endpoints/33 routers (AST cuenta `propfind/report/options/websocket`; grep simple da 272).
+3. Tests: backend 1321 `def test_` en 33 archivos (no 1366/38); frontend 347 bloques en 69 archivos (no 313/70). Widgets 24 OK. Pantallas: `festival_profile` 956L, `locations` 680L, `chat` 767L, `api_service` 511L, `user_profile` 803L.
+4. Correcciones a §2: `RateLimiter` son 3 instancias (`main.py`, `admin.py`, `auth.py`), no 1; `ADMIN_PASSWORD` no existe en `backend/.env.example` (solo comentario `admin/setup`); `ruff format` cubre 216 archivos (no 215).
+5. `tools/gen_api.py` regenera `API.md` idempotente pero con ruta absoluta hardcodeada y sin shebang (no portable).
+
+## 5. Mantenibilidad pendiente (orden sugerido, con verificación)
+
+| # | Tarea | Estado 10/10/2026 | Cómo verificar |
+| --- | --- | --- | --- |
+| 1 | Migrar routers a `get_or_404` y servicios a `paginate_filtered` | `get_or_404` en 13 routers (110 usos), 186 `404` inline restantes; `paginate_filtered` con 0 usos | `Select-String "get_or_404\(" backend/app/routers; Select-String "404" backend/app/routers; Select-String "paginate_filtered" backend/app/services` |
+| 2 | Migrar `python-jose` → `PyJWT` (PR aislado con tests de expiración/tipo/rotación) | Sin migrar (`app/auth.py` usa `jose`) | `Select-String "from jose\|import jose" backend/app; Select-String "import jwt" backend/app` |
+| 3 | Troceo de pantallas grandes | Hecho: `festival_profile` 956L, `locations` 680L, `api_service` 511L, `chat` 767L, `user_profile` 803L (widgets extraídos en `lib/widgets/`) | `(Get-Content frontend/lib/screens/<pantalla>).Count` |
+| 4 | Migrar `AlertDialog` → `ConfirmDialog` y `ScaffoldMessenger` → `showAppSnack` | 24 `AlertDialog` vs 19 usos `showConfirmDialog`; 115 `ScaffoldMessenger` vs 8 usos `showAppSnack` (los `AlertDialog` restantes son formularios: requieren `CreateEntityDialog` común) | `Select-String "AlertDialog|showConfirmDialog|ScaffoldMessenger|showAppSnack" frontend/lib` |
+| 5 | Higiene formato + `.gitignore` | `ruff format --check` + `ruff check` limpios y con gate en CI (GH + GitLab); `.gitignore` cubre `*.db*`, `*.hive`, `*.lock`, `uploads/` (no el glob `*.hive*`) | `ruff format --check .; ruff check .; Get-Content .gitignore` |

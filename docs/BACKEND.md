@@ -466,10 +466,10 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 backend/
 ├── app/
-│   ├── models/              # 31 SQLAlchemy models
-│   ├── schemas/             # 30 Pydantic schemas
-│   ├── services/            # 29 business logic services
-│   ├── routers/             # 32 API routers
+│   ├── models/              # 33 SQLAlchemy models
+│   ├── schemas/             # 32 Pydantic schemas
+│   ├── services/            # 33 business logic services
+│   ├── routers/             # 35 API routers (33 con APIRouter)
 │   ├── chat_backend/        # WebSocket chat implementation
 │   ├── auth.py              # JWT + session auth
 │   ├── config.py            # Pydantic Settings
@@ -478,18 +478,18 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate limiter
 │   ├── enums.py             # Shared enums
 │   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (9 versions)
+├── alembic/                 # Migrations (15 versions)
 ├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (17 files)
+├── tests/                   # pytest tests (33 files)
 ├── uploads/                 # Static file uploads
 ├── .env.example             # Config template
 ├── requirements.txt         # Production deps
 ├── requirements-dev.txt     # Dev deps (pytest, ruff)
-├── DATABASE.md              # Full schema docs
-├── BACKEND.md               # This file
 ├── pyproject.toml           # Ruff, pytest config
 └── pytest.ini               # Pytest config
 ```
+
+Docs en `docs/BACKEND.md` (este archivo) y `docs/DATABASE.md`.
 
 ---
 
