@@ -65,11 +65,6 @@ if ($Backend) {
     Step "Building Backend for macOS"
     Write-Color "  -> Run tools/build-backend-macos.sh on a macOS machine" Yellow
   }
-
-  # Windows backend (if Docker is in Windows containers mode)
-  Step "Building Backend for Windows (PyInstaller)"
-  & "$ROOT\backend\docker\build.ps1" -Target all -NoCache:$NoCache
-  if (-not $?) { Write-Color "  -> Windows backend build skipped or failed (not on Windows containers mode?)" Yellow }
 }
 
 Write-Color "`n========================================" Green
