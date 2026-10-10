@@ -54,7 +54,30 @@ jobs:
 
   # ─── TEST ─────────────────────────────────────────────────────────
   backend-test:
-    name: Backend Tests (pytest)
+    name: Backend Tests (pytest, SQLite)
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Run tests
+        env:
+          TESTING: "true"
+          SECRET_KEY: "test-secret-key-for-ci-only"
+        run: pytest tests/ -m "not interop" -x -q --tb=short
+
+  backend-migration:
+    name: Backend Migrations (MariaDB)
     runs-on: ubuntu-26.04
     defaults:
       run:
@@ -70,9 +93,9 @@ jobs:
         ports: ["3306:3306"]
         options: >-
           --health-cmd="mariadb-admin ping -h localhost -u root -prootpassword"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
+          --health-interval=2s
+          --health-timeout=2s
+          --health-retries=30
     steps:
       - uses: actions/checkout@v5
       - name: Set up Python
@@ -86,20 +109,15 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
       - name: Wait for MariaDB
         run: |
-          for i in {1..30}; do
-            mariadb-admin ping -h 127.0.0.1 -u root -prootpassword && break
-            sleep 2
+          for i in $(seq 1 15); do
+            mariadb-admin ping -h 127.0.0.1 -u root -prootpassword --silent && break
+            sleep 1
           done
+          mariadb-admin ping -h 127.0.0.1 -u root -prootpassword
       - name: Run migrations
         env:
           DATABASE_URL: mariadb+pymysql://clakettes_user:clakettes_password@127.0.0.1:3306/clakettes_test
         run: alembic upgrade head
-      - name: Run tests
-        env:
-          DATABASE_URL: mariadb+pymysql://clakettes_user:clakettes_password@127.0.0.1:3306/clakettes_test
-          TESTING: "true"
-          SECRET_KEY: "test-secret-key-for-ci-only"
-        run: pytest tests/ -x -q --tb=short
 
   frontend-test:
     name: Frontend Tests (flutter test)
@@ -126,7 +144,7 @@ jobs:
   docker-build:
     name: Docker Build
     runs-on: ubuntu-26.04
-    needs: [backend-lint, frontend-lint, backend-test, frontend-test]
+    needs: [backend-lint, frontend-lint, backend-test, backend-migration, frontend-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v5

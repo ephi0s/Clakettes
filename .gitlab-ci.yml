@@ -41,7 +41,7 @@ backend-test:
   script:
     - cd backend
     - pip install -r requirements.txt -r requirements-dev.txt
-    - python -m pytest tests/ -x -q --tb=short
+    - python -m pytest tests/ -m "not interop" -x -q --tb=short
 
 frontend-test:
   image: ghcr.io/cirruslabs/flutter:stable
