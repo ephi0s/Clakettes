@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Data (montada por volumen en dev)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+uploads/
+data/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+docker/
+Dockerfile
+
+# OS
+.DS_Store
+Thumbs.db

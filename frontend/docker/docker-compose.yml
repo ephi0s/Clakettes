@@ -1,0 +1,128 @@
+version: "3.8"
+
+x-project:
+  name: clakettes
+  description: Clakettes Flutter multiplatform build system
+
+services:
+  # --- Linux x86_64 native bundle ---
+  linux-x64:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: linux-x64
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-linux-x64
+    profiles: [build]
+
+  # --- Linux x86_64 AppImage (single-file) ---
+  linux-appimage:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: linux-appimage
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-linux-appimage
+    profiles: [build]
+
+  # --- Linux i686 native bundle (experimental) ---
+  linux-x86:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: linux-x86
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-linux-x86
+    profiles: [build]
+
+  # --- Linux i686 AppImage (experimental) ---
+  linux-x86-appimage:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: linux-x86-appimage
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-linux-x86-appimage
+    profiles: [build]
+
+  # --- Web ---
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: web
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-web
+    profiles: [build]
+
+  # --- Android APK + AAB ---
+  android:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: android
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-android
+    profiles: [build]
+
+  # --- Windows x86_64 (requires Windows containers) ---
+  windows-x64:
+    build:
+      context: ..
+      dockerfile: docker/windows.Dockerfile
+      target: windows-x64
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-windows-x64
+    profiles: [windows]
+
+  # --- Windows x86 (experimental, requires Windows containers) ---
+  windows-x86:
+    build:
+      context: ..
+      dockerfile: docker/windows.Dockerfile
+      target: windows-x86
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    image: clakettes-windows-x86
+    profiles: [windows]
+
+  # --- CI / Testing ---
+  test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: test
+    image: clakettes-test
+    profiles: [ci]
+
+  analyze:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: analyze
+    image: clakettes-analyze
+    profiles: [ci]
+
+  # --- Dev mode (hot reload with mounted volumes) ---
+  dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: flutter-sdk
+    image: clakettes-dev
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    volumes:
+      - ..:/app
+    ports:
+      - "3000:3000"
+    command: flutter run -d web-server --web-port 3000
+    profiles: [dev]

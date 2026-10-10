@@ -1,0 +1,1 @@
+{"nodes": [{"id": "bug_template_gitlab", "label": "GitLab Bug Issue Template", "file_type": "document", "source_file": ".gitlab/issue_templates/bug.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

@@ -1,0 +1,48 @@
+# Dart/Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+*.iml
+.flutter-plugins-dependencies
+
+# Hive local (datos de dev, no del build)
+*.hive
+*.lock
+!pubspec.lock
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Android (generated)
+android/.gradle/
+android/build/
+android/local.properties
+
+# iOS (needs Xcode - cannot build in Docker)
+ios/Pods/
+ios/.symlinks/
+
+# macOS (needs Xcode)
+macos/Pods/
+macos/.symlinks/
+
+# Windows (needs Visual Studio)
+windows/CMakeCache.txt
+windows/out/
+
+# Linux ephemeral
+linux/flutter/ephemeral/
+
+# Test coverage
+coverage/
+
+# Docker
+docker/
+Dockerfile
+docker-compose.yml

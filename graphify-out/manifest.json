@@ -1,0 +1,2332 @@
+{
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.opencode\\opencode.json": {
+    "mtime": 1781892776.3588703,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
+    "semantic_hash": "1efe24ecf938911d4f23e4b1c6ec91f7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.opencode\\plugins\\graphify.js": {
+    "mtime": 1781859316.9025383,
+    "ast_hash": "32b67963417a30cb80544e0b2a56a98d",
+    "semantic_hash": "32b67963417a30cb80544e0b2a56a98d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\__init__.py": {
+    "mtime": 1777897814.8720891,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\env.py": {
+    "mtime": 1783155936.988088,
+    "ast_hash": "658ca5cf5816b6494de52a0e1d38cb57",
+    "semantic_hash": "658ca5cf5816b6494de52a0e1d38cb57"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\0fbb06a9b5e4_initial_schema.py": {
+    "mtime": 1783155915.827865,
+    "ast_hash": "2daeca95888ee8f45481b7395a122c89",
+    "semantic_hash": "2daeca95888ee8f45481b7395a122c89"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\3500a063859f_add_festival_images_column.py": {
+    "mtime": 1782117467.0622387,
+    "ast_hash": "e45131ccf982f67ce1490a2988099816",
+    "semantic_hash": "e45131ccf982f67ce1490a2988099816"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\__init__.py": {
+    "mtime": 1777897814.8610506,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\d12e3f4a5b6c_add_locations_table.py": {
+    "mtime": 1782173981.8770216,
+    "ast_hash": "8d089dd762545b3e6c08aa38032ba577",
+    "semantic_hash": "8d089dd762545b3e6c08aa38032ba577"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\dfd15330508b_add_form_definition_tables.py": {
+    "mtime": 1783155917.910923,
+    "ast_hash": "f825e7a95e57992352bc64b4d18f6d87",
+    "semantic_hash": "f825e7a95e57992352bc64b4d18f6d87"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\alembic\\versions\\ed2988ea64e1_add_group_and_group_member_tables.py": {
+    "mtime": 1783155702.3982568,
+    "ast_hash": "f2d0c746ea02fa2762fc849a622e9529",
+    "semantic_hash": "f2d0c746ea02fa2762fc849a622e9529"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\__init__.py": {
+    "mtime": 1781297844.0759127,
+    "ast_hash": "a7873b4eb8a8ab779f4d63f9ac4a12ab",
+    "semantic_hash": "a7873b4eb8a8ab779f4d63f9ac4a12ab"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\auth.py": {
+    "mtime": 1782162446.378191,
+    "ast_hash": "ba649e2872264cb86eec6ccf46855362",
+    "semantic_hash": "ba649e2872264cb86eec6ccf46855362"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\chat_backend\\__init__.py": {
+    "mtime": 1781313888.9161394,
+    "ast_hash": "366d9b0bb53627a8e4ae8984198550e3",
+    "semantic_hash": "366d9b0bb53627a8e4ae8984198550e3"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\chat_backend\\base.py": {
+    "mtime": 1782162446.411033,
+    "ast_hash": "ffc3f9fadc897b0f5c35b3452069e236",
+    "semantic_hash": "ffc3f9fadc897b0f5c35b3452069e236"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\chat_backend\\registry.py": {
+    "mtime": 1782162446.4120328,
+    "ast_hash": "c89c674b95f7bc163e47dd9bd774bf59",
+    "semantic_hash": "c89c674b95f7bc163e47dd9bd774bf59"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\chat_backend\\websocket_backend.py": {
+    "mtime": 1783155687.8314283,
+    "ast_hash": "831b911cd61da2438fb8d62b007b8dc2",
+    "semantic_hash": "831b911cd61da2438fb8d62b007b8dc2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\config.py": {
+    "mtime": 1782162446.4044862,
+    "ast_hash": "e9d418a025d8b3a6cbabaaf4f7e88cdd",
+    "semantic_hash": "e9d418a025d8b3a6cbabaaf4f7e88cdd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\database.py": {
+    "mtime": 1782162733.5912597,
+    "ast_hash": "14132c89939aaad458651faacdfec187",
+    "semantic_hash": "14132c89939aaad458651faacdfec187"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\enums.py": {
+    "mtime": 1782368680.3842275,
+    "ast_hash": "139e1946b9989cc987e8ed529f43c691",
+    "semantic_hash": "139e1946b9989cc987e8ed529f43c691"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\main.py": {
+    "mtime": 1783155464.6779451,
+    "ast_hash": "8b9fe8305a7eb4e0961b2253d332f546",
+    "semantic_hash": "8b9fe8305a7eb4e0961b2253d332f546"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\__init__.py": {
+    "mtime": 1783155656.2131925,
+    "ast_hash": "8b1d6d4958505c15e6f6b0210e047a6c",
+    "semantic_hash": "8b1d6d4958505c15e6f6b0210e047a6c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\award.py": {
+    "mtime": 1782162446.4216485,
+    "ast_hash": "6b39a9d71413fec69664087e22f35602",
+    "semantic_hash": "6b39a9d71413fec69664087e22f35602"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\base.py": {
+    "mtime": 1782162446.405486,
+    "ast_hash": "84993364d28da31e2744103d1e9a9219",
+    "semantic_hash": "84993364d28da31e2744103d1e9a9219"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\channel.py": {
+    "mtime": 1782162446.4074917,
+    "ast_hash": "840f3ef70130d19a75c4ff1e31db46a1",
+    "semantic_hash": "840f3ef70130d19a75c4ff1e31db46a1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\committee.py": {
+    "mtime": 1782162456.7283626,
+    "ast_hash": "f8c726b38bf24b3e7a49f07eb0be3120",
+    "semantic_hash": "f8c726b38bf24b3e7a49f07eb0be3120"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\event.py": {
+    "mtime": 1782162446.4120328,
+    "ast_hash": "7e87babb7379d4063a92901459b75a41",
+    "semantic_hash": "7e87babb7379d4063a92901459b75a41"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\festival.py": {
+    "mtime": 1782162446.4175925,
+    "ast_hash": "575f52382a4e6ad001dc8407c42c9010",
+    "semantic_hash": "575f52382a4e6ad001dc8407c42c9010"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\form_definition.py": {
+    "mtime": 1782370323.6253822,
+    "ast_hash": "bfbd3eea04d38c0c8f400c26a6a3eb30",
+    "semantic_hash": "bfbd3eea04d38c0c8f400c26a6a3eb30"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\group.py": {
+    "mtime": 1783155640.8297076,
+    "ast_hash": "af853c5d4204593689a47c4335d5603d",
+    "semantic_hash": "af853c5d4204593689a47c4335d5603d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\location.py": {
+    "mtime": 1782173932.649467,
+    "ast_hash": "5854f48ae1648e0590ea2f48bf3d14a7",
+    "semantic_hash": "5854f48ae1648e0590ea2f48bf3d14a7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\message.py": {
+    "mtime": 1782162446.4584107,
+    "ast_hash": "2c662692f150d953558921077251b709",
+    "semantic_hash": "2c662692f150d953558921077251b709"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\notification.py": {
+    "mtime": 1782162446.4165897,
+    "ast_hash": "7b06fed799ad299887b35c8979c41fc5",
+    "semantic_hash": "7b06fed799ad299887b35c8979c41fc5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\participant_tag.py": {
+    "mtime": 1782162446.452365,
+    "ast_hash": "e1e93d0c9f833828e8f256783f51fc76",
+    "semantic_hash": "e1e93d0c9f833828e8f256783f51fc76"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\registration.py": {
+    "mtime": 1782162457.4932492,
+    "ast_hash": "c9e0075b297a373a9b64334936300e48",
+    "semantic_hash": "c9e0075b297a373a9b64334936300e48"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\role.py": {
+    "mtime": 1782162458.39808,
+    "ast_hash": "91db24379bd658cbcefe8fb0ea3e0283",
+    "semantic_hash": "91db24379bd658cbcefe8fb0ea3e0283"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\role_delegation.py": {
+    "mtime": 1782162446.4543693,
+    "ast_hash": "8d5122488d824db9351c257d5df411a6",
+    "semantic_hash": "8d5122488d824db9351c257d5df411a6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\role_group.py": {
+    "mtime": 1782162446.451845,
+    "ast_hash": "d0bccd5fb1279ed89e6c69e72d0ff8ea",
+    "semantic_hash": "d0bccd5fb1279ed89e6c69e72d0ff8ea"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\role_transition.py": {
+    "mtime": 1782162446.4604337,
+    "ast_hash": "acec2b0f665cd5f2e224463089a05007",
+    "semantic_hash": "acec2b0f665cd5f2e224463089a05007"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\shortfilm.py": {
+    "mtime": 1782162446.3771906,
+    "ast_hash": "38a34b4aed9725930ef7c6d514cc20a0",
+    "semantic_hash": "38a34b4aed9725930ef7c6d514cc20a0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user.py": {
+    "mtime": 1782162446.3827364,
+    "ast_hash": "15877a9615bf7cc21ce48c0275e4edbd",
+    "semantic_hash": "15877a9615bf7cc21ce48c0275e4edbd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user_alias.py": {
+    "mtime": 1782162446.3847575,
+    "ast_hash": "db523112be65a60c0e10f9ad3cd17bb8",
+    "semantic_hash": "db523112be65a60c0e10f9ad3cd17bb8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user_festival.py": {
+    "mtime": 1781297202.883787,
+    "ast_hash": "17d8243d7d50c8a5c6d1f982b217bfc4",
+    "semantic_hash": "17d8243d7d50c8a5c6d1f982b217bfc4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user_key.py": {
+    "mtime": 1782162446.395857,
+    "ast_hash": "f62e49ca7be994a08f64af40580a648e",
+    "semantic_hash": "f62e49ca7be994a08f64af40580a648e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user_role.py": {
+    "mtime": 1782162446.3978753,
+    "ast_hash": "230bcc62e33b02a71bffac65cf2d0433",
+    "semantic_hash": "230bcc62e33b02a71bffac65cf2d0433"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\user_session.py": {
+    "mtime": 1781647612.7428408,
+    "ast_hash": "a3b6fed05902c4c5d0acda0ee9dc7f9d",
+    "semantic_hash": "a3b6fed05902c4c5d0acda0ee9dc7f9d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\models\\validation_rule.py": {
+    "mtime": 1782162446.5164063,
+    "ast_hash": "82b4dec74395ca821f2dd234f04c7beb",
+    "semantic_hash": "82b4dec74395ca821f2dd234f04c7beb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\rate_limiter.py": {
+    "mtime": 1782176347.8002534,
+    "ast_hash": "8e148a192553e130ba2e8248a1db629d",
+    "semantic_hash": "8e148a192553e130ba2e8248a1db629d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\__init__.py": {
+    "mtime": 1782368967.4156144,
+    "ast_hash": "8ee4b330a7ece0d79f80a85c56558303",
+    "semantic_hash": "8ee4b330a7ece0d79f80a85c56558303"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\admin.py": {
+    "mtime": 1781648590.0265603,
+    "ast_hash": "53039bce128c42053f1ca881d61c8f63",
+    "semantic_hash": "53039bce128c42053f1ca881d61c8f63"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\auth.py": {
+    "mtime": 1781647921.8199575,
+    "ast_hash": "304ed7c93accc652e829ea55101cb9c0",
+    "semantic_hash": "304ed7c93accc652e829ea55101cb9c0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\auth_sessions.py": {
+    "mtime": 1782162446.475564,
+    "ast_hash": "dc1001dd4feb78dd471feab82e32370f",
+    "semantic_hash": "dc1001dd4feb78dd471feab82e32370f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\channels.py": {
+    "mtime": 1782162446.4467914,
+    "ast_hash": "844d5c120f53590dfbdf871b0de2a9d7",
+    "semantic_hash": "844d5c120f53590dfbdf871b0de2a9d7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\chat.py": {
+    "mtime": 1783155809.738079,
+    "ast_hash": "ee28b32431e9388f14dd26024056ddaa",
+    "semantic_hash": "ee28b32431e9388f14dd26024056ddaa"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\committees.py": {
+    "mtime": 1782162446.477569,
+    "ast_hash": "28b8e20585d3800a1d2efc70a6439d96",
+    "semantic_hash": "28b8e20585d3800a1d2efc70a6439d96"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\delegations.py": {
+    "mtime": 1782162446.475564,
+    "ast_hash": "234420ba16fd2d7a83aa42baa792cc36",
+    "semantic_hash": "234420ba16fd2d7a83aa42baa792cc36"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\dependencies.py": {
+    "mtime": 1782113236.4479184,
+    "ast_hash": "4b065bc6cb28e941fcd967764d44c452",
+    "semantic_hash": "4b065bc6cb28e941fcd967764d44c452"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\events.py": {
+    "mtime": 1782162446.48414,
+    "ast_hash": "8419c316c2d985f9ef808b0278c2dbec",
+    "semantic_hash": "8419c316c2d985f9ef808b0278c2dbec"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\festivals.py": {
+    "mtime": 1782162446.466483,
+    "ast_hash": "a2c22eda8c65cf33bdd0d10d5db21b8d",
+    "semantic_hash": "a2c22eda8c65cf33bdd0d10d5db21b8d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\form_definitions.py": {
+    "mtime": 1782371790.448881,
+    "ast_hash": "a398bf3094335d0bc4b716600ef7b68a",
+    "semantic_hash": "a398bf3094335d0bc4b716600ef7b68a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\keys.py": {
+    "mtime": 1781648593.6858852,
+    "ast_hash": "5f7f0d2111417f477d3c5b5cab0dd7f9",
+    "semantic_hash": "5f7f0d2111417f477d3c5b5cab0dd7f9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\locations.py": {
+    "mtime": 1782174088.2859726,
+    "ast_hash": "66ac11e327a5dce132a740a47daed539",
+    "semantic_hash": "66ac11e327a5dce132a740a47daed539"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\notifications.py": {
+    "mtime": 1782162446.4790862,
+    "ast_hash": "f7e27ce1074da5e78509ca567801900d",
+    "semantic_hash": "f7e27ce1074da5e78509ca567801900d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\participant_tags.py": {
+    "mtime": 1782162446.478072,
+    "ast_hash": "51a0350d266d80783fa6c9fbc258b4d0",
+    "semantic_hash": "51a0350d266d80783fa6c9fbc258b4d0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\permissions.py": {
+    "mtime": 1782162446.4851682,
+    "ast_hash": "af7178fc6ecee1d926dd09a9020c84fc",
+    "semantic_hash": "af7178fc6ecee1d926dd09a9020c84fc"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\registration_forms.py": {
+    "mtime": 1782162446.479586,
+    "ast_hash": "660bd061cc04a2224aabb38f16a90c15",
+    "semantic_hash": "660bd061cc04a2224aabb38f16a90c15"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\role_groups.py": {
+    "mtime": 1782162446.4851682,
+    "ast_hash": "8191f63e3250bba1ec79ae998a829346",
+    "semantic_hash": "8191f63e3250bba1ec79ae998a829346"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\roles.py": {
+    "mtime": 1782162446.3776908,
+    "ast_hash": "44968ffa4ae05b4a9039f606fb841be0",
+    "semantic_hash": "44968ffa4ae05b4a9039f606fb841be0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\search.py": {
+    "mtime": 1781648585.4819589,
+    "ast_hash": "1837ca931b67c1707dda74cce5dd25b7",
+    "semantic_hash": "1837ca931b67c1707dda74cce5dd25b7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\shortfilms.py": {
+    "mtime": 1782162446.3797162,
+    "ast_hash": "673f18a11b7aee6c6dd5886ee60a2d72",
+    "semantic_hash": "673f18a11b7aee6c6dd5886ee60a2d72"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\uploads.py": {
+    "mtime": 1782176009.7576654,
+    "ast_hash": "3f6fe9666d9950cb00aa427da4d8887c",
+    "semantic_hash": "3f6fe9666d9950cb00aa427da4d8887c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\user_aliases.py": {
+    "mtime": 1782162446.378191,
+    "ast_hash": "75813d5a99025aed5d37f991d5ec0f10",
+    "semantic_hash": "75813d5a99025aed5d37f991d5ec0f10"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\user_festival.py": {
+    "mtime": 1782162446.3892958,
+    "ast_hash": "94272597d813664af6a1bc151def9c9d",
+    "semantic_hash": "94272597d813664af6a1bc151def9c9d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\user_roles.py": {
+    "mtime": 1782162446.4221482,
+    "ast_hash": "97b96604ac02d4fdf2e36e45194f3e61",
+    "semantic_hash": "97b96604ac02d4fdf2e36e45194f3e61"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\users.py": {
+    "mtime": 1782162446.4629414,
+    "ast_hash": "5d2938fd30fadc3a79f39dee89efe4fc",
+    "semantic_hash": "5d2938fd30fadc3a79f39dee89efe4fc"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\routers\\validation_rules.py": {
+    "mtime": 1782162446.4846666,
+    "ast_hash": "7e202255d658b880c67b478b1547c6af",
+    "semantic_hash": "7e202255d658b880c67b478b1547c6af"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\__init__.py": {
+    "mtime": 1782173955.848742,
+    "ast_hash": "f6eb8f2e62768c0a07627375d0ea8b51",
+    "semantic_hash": "f6eb8f2e62768c0a07627375d0ea8b51"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\award.py": {
+    "mtime": 1782113236.4388938,
+    "ast_hash": "b3d6b5e2cfd3be38c67da8ebe187ee9c",
+    "semantic_hash": "b3d6b5e2cfd3be38c67da8ebe187ee9c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\channel.py": {
+    "mtime": 1781314314.853663,
+    "ast_hash": "97119242c8ffbfa5f9cc58cee3bf749c",
+    "semantic_hash": "97119242c8ffbfa5f9cc58cee3bf749c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\committee.py": {
+    "mtime": 1782162473.515361,
+    "ast_hash": "a35c07daf09a2b1794e1b03bf2b65b80",
+    "semantic_hash": "a35c07daf09a2b1794e1b03bf2b65b80"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\common.py": {
+    "mtime": 1781297557.0234897,
+    "ast_hash": "299e404a3f1f6598c111635b044a1e50",
+    "semantic_hash": "299e404a3f1f6598c111635b044a1e50"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\event.py": {
+    "mtime": 1782162461.7641504,
+    "ast_hash": "635c474e0898af8fb1fbcd2f19b02674",
+    "semantic_hash": "635c474e0898af8fb1fbcd2f19b02674"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\festival.py": {
+    "mtime": 1782162446.378191,
+    "ast_hash": "060109647567669e4eeb390a8fc8c64c",
+    "semantic_hash": "060109647567669e4eeb390a8fc8c64c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\form_definition.py": {
+    "mtime": 1782370500.6206038,
+    "ast_hash": "94209b8d36324ba3471f4e3396e950ab",
+    "semantic_hash": "94209b8d36324ba3471f4e3396e950ab"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\group.py": {
+    "mtime": 1783155644.4456677,
+    "ast_hash": "fbcbdfbbdf33ca30e2d4fbde88ebab6f",
+    "semantic_hash": "fbcbdfbbdf33ca30e2d4fbde88ebab6f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\location.py": {
+    "mtime": 1782173935.884007,
+    "ast_hash": "cb547757814314744ac2e2b6a53f9134",
+    "semantic_hash": "cb547757814314744ac2e2b6a53f9134"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\message.py": {
+    "mtime": 1781314362.89519,
+    "ast_hash": "838946cc7dc4ccd93c4448021a1f8fce",
+    "semantic_hash": "838946cc7dc4ccd93c4448021a1f8fce"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\notification.py": {
+    "mtime": 1781309008.3784983,
+    "ast_hash": "1f26bb2655e894cb8ae1e49477bc53e4",
+    "semantic_hash": "1f26bb2655e894cb8ae1e49477bc53e4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\participant_tag.py": {
+    "mtime": 1782113236.431108,
+    "ast_hash": "aa2b056736f7f310feba81c64f5a43cb",
+    "semantic_hash": "aa2b056736f7f310feba81c64f5a43cb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\registration.py": {
+    "mtime": 1782162462.75463,
+    "ast_hash": "e65dce78cd5d44d4ad5bdcf7e24a0958",
+    "semantic_hash": "e65dce78cd5d44d4ad5bdcf7e24a0958"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\role.py": {
+    "mtime": 1782162538.126594,
+    "ast_hash": "200b287cc009c6950c621f6ae8806dc9",
+    "semantic_hash": "200b287cc009c6950c621f6ae8806dc9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\role_delegation.py": {
+    "mtime": 1782162538.126594,
+    "ast_hash": "7f673ee3f1e9f8da2066309c47f449d9",
+    "semantic_hash": "7f673ee3f1e9f8da2066309c47f449d9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\role_group.py": {
+    "mtime": 1782162474.113132,
+    "ast_hash": "6843c2a6f5aae413289da3984975ab32",
+    "semantic_hash": "6843c2a6f5aae413289da3984975ab32"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\role_transition.py": {
+    "mtime": 1782162538.1260924,
+    "ast_hash": "dc6a95588a7ac282b95245f89299076b",
+    "semantic_hash": "dc6a95588a7ac282b95245f89299076b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\shortfilm.py": {
+    "mtime": 1781297564.5186474,
+    "ast_hash": "5373010ce2121d0b6f973fe8e533b113",
+    "semantic_hash": "5373010ce2121d0b6f973fe8e533b113"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\user.py": {
+    "mtime": 1782176003.371244,
+    "ast_hash": "347d46b1adbcdaf461522e9188e5e570",
+    "semantic_hash": "347d46b1adbcdaf461522e9188e5e570"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\user_alias.py": {
+    "mtime": 1782113236.431108,
+    "ast_hash": "5ed78cb903a6d4b74bae8f753e2812ad",
+    "semantic_hash": "5ed78cb903a6d4b74bae8f753e2812ad"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\user_key.py": {
+    "mtime": 1781648530.5924115,
+    "ast_hash": "081dee556f59bbec9c3ff4d2e06bce0c",
+    "semantic_hash": "081dee556f59bbec9c3ff4d2e06bce0c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\user_role.py": {
+    "mtime": 1782162467.0213635,
+    "ast_hash": "f8a3b1657cbe0be72683a75592c83c29",
+    "semantic_hash": "f8a3b1657cbe0be72683a75592c83c29"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\user_session.py": {
+    "mtime": 1782162538.1260924,
+    "ast_hash": "e513fe50d0416a073e5c8a8ece776b33",
+    "semantic_hash": "e513fe50d0416a073e5c8a8ece776b33"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\schemas\\validation_rule.py": {
+    "mtime": 1782113236.434872,
+    "ast_hash": "c043f8ed2719ad1fcc6d52ab245a9307",
+    "semantic_hash": "c043f8ed2719ad1fcc6d52ab245a9307"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\scripts\\__init__.py": {
+    "mtime": 1782370060.3005147,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\scripts\\migrate_registration_forms.py": {
+    "mtime": 1783155817.590436,
+    "ast_hash": "f0933c4a02d4f0d82be2914602d35064",
+    "semantic_hash": "f0933c4a02d4f0d82be2914602d35064"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\__init__.py": {
+    "mtime": 1782173960.4921937,
+    "ast_hash": "0bce6fdb2738a7a7d78a8df2a1094e30",
+    "semantic_hash": "0bce6fdb2738a7a7d78a8df2a1094e30"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\admin_service.py": {
+    "mtime": 1782162442.2186763,
+    "ast_hash": "ce1a44e8af0b94c7aae0f1ba91bc1473",
+    "semantic_hash": "ce1a44e8af0b94c7aae0f1ba91bc1473"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\auth_session_service.py": {
+    "mtime": 1782162446.395857,
+    "ast_hash": "1a4093ca08c531cb36c868090cc47d16",
+    "semantic_hash": "1a4093ca08c531cb36c868090cc47d16"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\award_service.py": {
+    "mtime": 1782162446.4029202,
+    "ast_hash": "0b34f1e15323eea0b97c38f69578945d",
+    "semantic_hash": "0b34f1e15323eea0b97c38f69578945d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\base_service.py": {
+    "mtime": 1782370465.4801912,
+    "ast_hash": "bf25f065bbbc4618e09ef5ae8da193ae",
+    "semantic_hash": "bf25f065bbbc4618e09ef5ae8da193ae"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\channel_service.py": {
+    "mtime": 1782162446.398375,
+    "ast_hash": "e9eb23fe826b0d9f8d97bcc07f671477",
+    "semantic_hash": "e9eb23fe826b0d9f8d97bcc07f671477"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\event_service.py": {
+    "mtime": 1783810262.5340729,
+    "ast_hash": "6b4d556e782001d738612481e057a5e5",
+    "semantic_hash": "6b4d556e782001d738612481e057a5e5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\export_service.py": {
+    "mtime": 1782370353.4928656,
+    "ast_hash": "9520a12d2d1582db2057e4ca115ecd37",
+    "semantic_hash": "9520a12d2d1582db2057e4ca115ecd37"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\festival_service.py": {
+    "mtime": 1781297540.4923358,
+    "ast_hash": "ec2c01a67138e869986a9adc19fd0fba",
+    "semantic_hash": "ec2c01a67138e869986a9adc19fd0fba"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\form_service.py": {
+    "mtime": 1782371294.431144,
+    "ast_hash": "256fbff40bacb418303c0dbd3649864d",
+    "semantic_hash": "256fbff40bacb418303c0dbd3649864d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\group_service.py": {
+    "mtime": 1783155651.7326834,
+    "ast_hash": "2c4cd6e9b51e1ed0c4e255b93c8c1ba0",
+    "semantic_hash": "2c4cd6e9b51e1ed0c4e255b93c8c1ba0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\location_service.py": {
+    "mtime": 1782174092.2905583,
+    "ast_hash": "22a2e16447f1ddb397bda374febcbaac",
+    "semantic_hash": "22a2e16447f1ddb397bda374febcbaac"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\message_service.py": {
+    "mtime": 1782162669.6963973,
+    "ast_hash": "67504343e69cd8ae73f3e7ae14e1b3f7",
+    "semantic_hash": "67504343e69cd8ae73f3e7ae14e1b3f7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\notification_service.py": {
+    "mtime": 1782162671.3148456,
+    "ast_hash": "4491b3f6b947856cc615f12497c979c4",
+    "semantic_hash": "4491b3f6b947856cc615f12497c979c4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\participant_tag_service.py": {
+    "mtime": 1782162446.3771906,
+    "ast_hash": "e47ab08c00aa4cd2f13c5a0c737d239a",
+    "semantic_hash": "e47ab08c00aa4cd2f13c5a0c737d239a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\registration_service.py": {
+    "mtime": 1782162673.5102465,
+    "ast_hash": "bedd95ae60d88df561b4fb7a5a6c13fb",
+    "semantic_hash": "bedd95ae60d88df561b4fb7a5a6c13fb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\role_service.py": {
+    "mtime": 1782162670.3788989,
+    "ast_hash": "cd07d8756eea4247bf3526fede5e9aa6",
+    "semantic_hash": "cd07d8756eea4247bf3526fede5e9aa6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\search_service.py": {
+    "mtime": 1782162446.399378,
+    "ast_hash": "c6ea0a47be8e37a817aa9ed71a18ab29",
+    "semantic_hash": "c6ea0a47be8e37a817aa9ed71a18ab29"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\shortfilm_service.py": {
+    "mtime": 1782162446.409011,
+    "ast_hash": "ef882fd6d9d70cb9c0a9053bb1f96a7e",
+    "semantic_hash": "ef882fd6d9d70cb9c0a9053bb1f96a7e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\user_alias_service.py": {
+    "mtime": 1782162446.4155853,
+    "ast_hash": "88d3ade17e53049e610399d089f79d67",
+    "semantic_hash": "88d3ade17e53049e610399d089f79d67"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\user_festival_service.py": {
+    "mtime": 1782162446.3771906,
+    "ast_hash": "a2d10e65c2d0df986b2893aa5269d85f",
+    "semantic_hash": "a2d10e65c2d0df986b2893aa5269d85f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\user_key_service.py": {
+    "mtime": 1782162446.398375,
+    "ast_hash": "c181de69da90c143f9f7d221ab261065",
+    "semantic_hash": "c181de69da90c143f9f7d221ab261065"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\user_service.py": {
+    "mtime": 1782162446.4155853,
+    "ast_hash": "42d8bba3fa7f67b5710b6736185ab0a2",
+    "semantic_hash": "42d8bba3fa7f67b5710b6736185ab0a2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\app\\services\\validation_rule_service.py": {
+    "mtime": 1782162446.4483373,
+    "ast_hash": "cad2e179397981ce30f3fa4543f0bcd4",
+    "semantic_hash": "cad2e179397981ce30f3fa4543f0bcd4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\docker\\build.ps1": {
+    "mtime": 1782111572.085699,
+    "ast_hash": "eb6ffda3fde452fb5fa93f319c4a10f1",
+    "semantic_hash": "eb6ffda3fde452fb5fa93f319c4a10f1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\export_sqlite_to_mariadb.py": {
+    "mtime": 1783155937.570253,
+    "ast_hash": "63f902f1be1518080fa09cb072867ff3",
+    "semantic_hash": "63f902f1be1518080fa09cb072867ff3"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\import_mariadb_to_sqlite.py": {
+    "mtime": 1782113236.4704697,
+    "ast_hash": "511fd52e8dd29bdb235b3fef81b4176a",
+    "semantic_hash": "511fd52e8dd29bdb235b3fef81b4176a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\pyproject.toml": {
+    "mtime": 1782162380.191437,
+    "ast_hash": "a8ce13569ff4f8c86fc884aeb4f33d61",
+    "semantic_hash": "a8ce13569ff4f8c86fc884aeb4f33d61"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\run.ps1": {
+    "mtime": 1777894038.034052,
+    "ast_hash": "cf4994864567633495aca54a55d90f58",
+    "semantic_hash": "cf4994864567633495aca54a55d90f58"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\run.sh": {
+    "mtime": 1777894038.034052,
+    "ast_hash": "ed65dde18982b0952fb5ac4dc0370b87",
+    "semantic_hash": "ed65dde18982b0952fb5ac4dc0370b87"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\scripts\\__init__.py": {
+    "mtime": 1781307436.2407112,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\scripts\\migrate_to_production.py": {
+    "mtime": 1782113236.4629462,
+    "ast_hash": "75fee39d642c3d590fc0e17b43f4e050",
+    "semantic_hash": "75fee39d642c3d590fc0e17b43f4e050"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\scripts\\seed_admin.py": {
+    "mtime": 1783155896.2134814,
+    "ast_hash": "4364e67762ccbc106e4f818878ed1f3d",
+    "semantic_hash": "4364e67762ccbc106e4f818878ed1f3d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\__init__.py": {
+    "mtime": 1781306858.2049298,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\conftest.py": {
+    "mtime": 1782370210.299084,
+    "ast_hash": "24ff6db1ee0880e8deb2e2dccf168e0a",
+    "semantic_hash": "24ff6db1ee0880e8deb2e2dccf168e0a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\__init__.py": {
+    "mtime": 1781884002.0536377,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\conftest.py": {
+    "mtime": 1782113236.467968,
+    "ast_hash": "71957060d6230443687d59906cc16de4",
+    "semantic_hash": "71957060d6230443687d59906cc16de4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_channel_service.py": {
+    "mtime": 1782113236.46997,
+    "ast_hash": "a6a70e11bc17e7f98acc739cbac9550b",
+    "semantic_hash": "a6a70e11bc17e7f98acc739cbac9550b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_event_service.py": {
+    "mtime": 1783155817.5954363,
+    "ast_hash": "7fb61189df9df9845ba7d8c353d86016",
+    "semantic_hash": "7fb61189df9df9845ba7d8c353d86016"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_group_service.py": {
+    "mtime": 1783155865.1720302,
+    "ast_hash": "0effa00d9adcd6b8ae4db6f4070d5a8d",
+    "semantic_hash": "0effa00d9adcd6b8ae4db6f4070d5a8d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_notification_service.py": {
+    "mtime": 1782113236.4418948,
+    "ast_hash": "18fd53342081f28beb6ce16f6a2a4407",
+    "semantic_hash": "18fd53342081f28beb6ce16f6a2a4407"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_registration_service.py": {
+    "mtime": 1783155817.5944374,
+    "ast_hash": "ef688aec6ac72a60b3ae70f7a4d0da0a",
+    "semantic_hash": "ef688aec6ac72a60b3ae70f7a4d0da0a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_role_service.py": {
+    "mtime": 1783155868.8269868,
+    "ast_hash": "5b04ab94c7dfb544b74d77fa50419902",
+    "semantic_hash": "5b04ab94c7dfb544b74d77fa50419902"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_simple_services.py": {
+    "mtime": 1783155875.8435807,
+    "ast_hash": "d72a35741c6810f5d8f6f6970761c0c6",
+    "semantic_hash": "d72a35741c6810f5d8f6f6970761c0c6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\services\\test_user_service.py": {
+    "mtime": 1782113236.4453957,
+    "ast_hash": "41b0c1c34b28fdff8fcbed585ef2c8b6",
+    "semantic_hash": "41b0c1c34b28fdff8fcbed585ef2c8b6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_admin.py": {
+    "mtime": 1782113236.4469182,
+    "ast_hash": "718e19f449867afa1f8b854b1c29e5d3",
+    "semantic_hash": "718e19f449867afa1f8b854b1c29e5d3"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_auth.py": {
+    "mtime": 1782113236.4479184,
+    "ast_hash": "5348a12ce29d6733d463c60fd34c56c2",
+    "semantic_hash": "5348a12ce29d6733d463c60fd34c56c2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_channels.py": {
+    "mtime": 1782113236.4639466,
+    "ast_hash": "611808d7cc511b8ae6a24e960b6a17f8",
+    "semantic_hash": "611808d7cc511b8ae6a24e960b6a17f8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_chat.py": {
+    "mtime": 1783155877.9885845,
+    "ast_hash": "c05533371ac9d836b22fc7104f3b782c",
+    "semantic_hash": "c05533371ac9d836b22fc7104f3b782c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_events.py": {
+    "mtime": 1783155878.7920816,
+    "ast_hash": "97cac49cd7e1896caa7ae3f29924ce37",
+    "semantic_hash": "97cac49cd7e1896caa7ae3f29924ce37"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_festivals.py": {
+    "mtime": 1782113236.4819918,
+    "ast_hash": "6d804e635296411402aedf319777bead",
+    "semantic_hash": "6d804e635296411402aedf319777bead"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_form_definitions.py": {
+    "mtime": 1783155809.7405832,
+    "ast_hash": "8970a8733165365e46917f1290234b4b",
+    "semantic_hash": "8970a8733165365e46917f1290234b4b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_keys.py": {
+    "mtime": 1782113236.4834924,
+    "ast_hash": "8aca0c3ea730efb5fb0056ca198b1a0d",
+    "semantic_hash": "8aca0c3ea730efb5fb0056ca198b1a0d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_notifications.py": {
+    "mtime": 1782113236.4834924,
+    "ast_hash": "5e032bde93bb007da87e4cd20ce6ef45",
+    "semantic_hash": "5e032bde93bb007da87e4cd20ce6ef45"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_phase5.py": {
+    "mtime": 1782113236.4629462,
+    "ast_hash": "ae71fc9dd0122ce23d8847c56b3d5107",
+    "semantic_hash": "ae71fc9dd0122ce23d8847c56b3d5107"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_registration.py": {
+    "mtime": 1782113236.4834924,
+    "ast_hash": "fca689442be3bcd5663436d6ee13014f",
+    "semantic_hash": "fca689442be3bcd5663436d6ee13014f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_roles.py": {
+    "mtime": 1783155897.8947895,
+    "ast_hash": "de6cba8b57393d17456ad3a54654f0f1",
+    "semantic_hash": "de6cba8b57393d17456ad3a54654f0f1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_shortfilms.py": {
+    "mtime": 1783155881.5078406,
+    "ast_hash": "f64dfe47a7557a584daca4a426955771",
+    "semantic_hash": "f64dfe47a7557a584daca4a426955771"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\tests\\test_users.py": {
+    "mtime": 1782113236.4829926,
+    "ast_hash": "4346ef6a92fb5123f98904fd075e664e",
+    "semantic_hash": "4346ef6a92fb5123f98904fd075e664e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\build.gradle.kts": {
+    "mtime": 1781887380.9774294,
+    "ast_hash": "9a34b82eeba8a3169c628c36fb953541",
+    "semantic_hash": "9a34b82eeba8a3169c628c36fb953541"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java": {
+    "mtime": 1782113638.884934,
+    "ast_hash": "2a1d897736100802da1465086bcbc4c0",
+    "semantic_hash": "2a1d897736100802da1465086bcbc4c0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\kotlin\\com\\example\\clakettes\\MainActivity.kt": {
+    "mtime": 1781887380.9878647,
+    "ast_hash": "cf166f95097ab8b7c20087eb6cd220a6",
+    "semantic_hash": "cf166f95097ab8b7c20087eb6cd220a6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\build.gradle.kts": {
+    "mtime": 1781887380.9979074,
+    "ast_hash": "803fe22651fbe96ed401eb0b66a492d1",
+    "semantic_hash": "803fe22651fbe96ed401eb0b66a492d1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\gradlew": {
+    "mtime": 1781887381.9084294,
+    "ast_hash": "7f1cd7eb3f75a1dc85cd37753972a6e2",
+    "semantic_hash": "7f1cd7eb3f75a1dc85cd37753972a6e2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\settings.gradle.kts": {
+    "mtime": 1781887381.1575837,
+    "ast_hash": "f276a44edd917afd836899357fdae60e",
+    "semantic_hash": "f276a44edd917afd836899357fdae60e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\docker\\build.ps1": {
+    "mtime": 1782111785.2128775,
+    "ast_hash": "7bf274c67fdcb55a84a4734811868728",
+    "semantic_hash": "7bf274c67fdcb55a84a4734811868728"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\integration_test\\app_test.dart": {
+    "mtime": 1782113521.7591953,
+    "ast_hash": "3000732f9517432899b837a76f5bf0fe",
+    "semantic_hash": "3000732f9517432899b837a76f5bf0fe"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py": {
+    "mtime": 1781887382.6760502,
+    "ast_hash": "98fc75412162af387e2e3461e4e58094",
+    "semantic_hash": "98fc75412162af387e2e3461e4e58094"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Flutter\\flutter_export_environment.sh": {
+    "mtime": 1781887382.6850498,
+    "ast_hash": "b7a2bfc93aa713939936769603479d15",
+    "semantic_hash": "b7a2bfc93aa713939936769603479d15"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\RunnerTests\\RunnerTests.swift": {
+    "mtime": 1781887381.5486176,
+    "ast_hash": "24e5d095048eb86c30423f4e04b6e57b",
+    "semantic_hash": "24e5d095048eb86c30423f4e04b6e57b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\AppDelegate.swift": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "9e1de9c329a3fe4931876063de95132b",
+    "semantic_hash": "9e1de9c329a3fe4931876063de95132b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "31a08e429403e265cabfb31b3d65f049",
+    "semantic_hash": "31a08e429403e265cabfb31b3d65f049"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\Contents.json": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "b9e927ac17345f2d5f052fe68a3487f9",
+    "semantic_hash": "b9e927ac17345f2d5f052fe68a3487f9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\GeneratedPluginRegistrant.h": {
+    "mtime": 1781887382.9206853,
+    "ast_hash": "decb9041b5e91a07e66f4664e5dac408",
+    "semantic_hash": "decb9041b5e91a07e66f4664e5dac408"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\GeneratedPluginRegistrant.m": {
+    "mtime": 1782113638.8966515,
+    "ast_hash": "e0cbbb938abe1243670696250bb7001b",
+    "semantic_hash": "e0cbbb938abe1243670696250bb7001b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Runner-Bridging-Header.h": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "7ad7b5cea096132de13ba526b2b9efbe",
+    "semantic_hash": "7ad7b5cea096132de13ba526b2b9efbe"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\SceneDelegate.swift": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "0c3e86af131f6a9e547c80b5ed058914",
+    "semantic_hash": "0c3e86af131f6a9e547c80b5ed058914"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\auth_wrapper.dart": {
+    "mtime": 1782016467.0009549,
+    "ast_hash": "fbea55f6941f9a87e6773fe52941ac8e",
+    "semantic_hash": "fbea55f6941f9a87e6773fe52941ac8e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\l10n\\app_localizations.dart": {
+    "mtime": 1783155230.7882366,
+    "ast_hash": "b595a393f3b5cdf13369458acdf6f91c",
+    "semantic_hash": "b595a393f3b5cdf13369458acdf6f91c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\main.dart": {
+    "mtime": 1782180868.5867076,
+    "ast_hash": "ae45a7d41ad9e57d1672cadfbebcc83a",
+    "semantic_hash": "ae45a7d41ad9e57d1672cadfbebcc83a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\main_scaffold.dart": {
+    "mtime": 1782369306.1068757,
+    "ast_hash": "5f6c21099d288f79ba40469a1c5f3922",
+    "semantic_hash": "5f6c21099d288f79ba40469a1c5f3922"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\main_test.dart": {
+    "mtime": 1782113551.1284122,
+    "ast_hash": "7e0242e6facf678205623a2d9f17538a",
+    "semantic_hash": "7e0242e6facf678205623a2d9f17538a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\award_model.dart": {
+    "mtime": 1781860979.5419083,
+    "ast_hash": "88e6ff276c1687b69fafeff6d05b310e",
+    "semantic_hash": "88e6ff276c1687b69fafeff6d05b310e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\award_model.g.dart": {
+    "mtime": 1782117646.3316102,
+    "ast_hash": "cb634ffbd14719f364d7ba0cb1f63312",
+    "semantic_hash": "cb634ffbd14719f364d7ba0cb1f63312"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\channel_model.dart": {
+    "mtime": 1781860980.179214,
+    "ast_hash": "8b284cc0a7f4f28f2b97e589b7bae37f",
+    "semantic_hash": "8b284cc0a7f4f28f2b97e589b7bae37f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\channel_model.g.dart": {
+    "mtime": 1782117646.308845,
+    "ast_hash": "953d2b3449b7b933c41b0dd9b945e586",
+    "semantic_hash": "953d2b3449b7b933c41b0dd9b945e586"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\committee_model.dart": {
+    "mtime": 1781860980.7965627,
+    "ast_hash": "c57a0ca80f7e06289e37d39288db367b",
+    "semantic_hash": "c57a0ca80f7e06289e37d39288db367b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\committee_model.g.dart": {
+    "mtime": 1782117646.4111269,
+    "ast_hash": "ba21a49856030da23de513dc89a32c67",
+    "semantic_hash": "ba21a49856030da23de513dc89a32c67"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\event_model.dart": {
+    "mtime": 1783810210.8988953,
+    "ast_hash": "7c12e741910c960fe4357966c467f3b8",
+    "semantic_hash": "7c12e741910c960fe4357966c467f3b8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\event_model.g.dart": {
+    "mtime": 1783155131.104469,
+    "ast_hash": "0ba6f44ef5a215de7bf5d4fe3b56e3f9",
+    "semantic_hash": "0ba6f44ef5a215de7bf5d4fe3b56e3f9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\festival_model.dart": {
+    "mtime": 1782162500.6543398,
+    "ast_hash": "c2743b022b411183838f5740020e6e8b",
+    "semantic_hash": "c2743b022b411183838f5740020e6e8b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\festival_model.g.dart": {
+    "mtime": 1782162504.9102068,
+    "ast_hash": "9bd8dd84283ec9c747fe0110a8578618",
+    "semantic_hash": "9bd8dd84283ec9c747fe0110a8578618"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\form_definition_model.dart": {
+    "mtime": 1782368795.273618,
+    "ast_hash": "3f525f085aa220ed08ebd3afbb490113",
+    "semantic_hash": "3f525f085aa220ed08ebd3afbb490113"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\form_definition_model.g.dart": {
+    "mtime": 1782368823.4342484,
+    "ast_hash": "d719976cf74ff68b757b745042ab294d",
+    "semantic_hash": "d719976cf74ff68b757b745042ab294d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\location_model.dart": {
+    "mtime": 1782173987.074494,
+    "ast_hash": "9fd10453db85baa676075549a29f38f3",
+    "semantic_hash": "9fd10453db85baa676075549a29f38f3"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\location_model.g.dart": {
+    "mtime": 1782174006.2256334,
+    "ast_hash": "61b4ac74903f28a6b57889411df6b294",
+    "semantic_hash": "61b4ac74903f28a6b57889411df6b294"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\message_model.dart": {
+    "mtime": 1781860982.7032294,
+    "ast_hash": "11fe88f8a87c00bc3496d689d0ba879c",
+    "semantic_hash": "11fe88f8a87c00bc3496d689d0ba879c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\message_model.g.dart": {
+    "mtime": 1782117646.4111269,
+    "ast_hash": "1125035e6a1e6c322251310c533214c0",
+    "semantic_hash": "1125035e6a1e6c322251310c533214c0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\notification_model.dart": {
+    "mtime": 1781860983.311977,
+    "ast_hash": "d16307c17c3b353e9fbdb42d95cc2ac6",
+    "semantic_hash": "d16307c17c3b353e9fbdb42d95cc2ac6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\notification_model.g.dart": {
+    "mtime": 1782117646.4140334,
+    "ast_hash": "9fc21a9cf49e321a13118dc5fde66fa1",
+    "semantic_hash": "9fc21a9cf49e321a13118dc5fde66fa1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\registration_form_model.dart": {
+    "mtime": 1782176922.7891967,
+    "ast_hash": "b2b0753ae651f1523c8ce6c4a311c944",
+    "semantic_hash": "b2b0753ae651f1523c8ce6c4a311c944"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\registration_form_model.g.dart": {
+    "mtime": 1782174361.0001621,
+    "ast_hash": "b8f6c25e09e1dcf9bc7ee66dd9c08acd",
+    "semantic_hash": "b8f6c25e09e1dcf9bc7ee66dd9c08acd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_delegation_model.dart": {
+    "mtime": 1781860984.6010587,
+    "ast_hash": "bb6ccbf761253e736ce276b5700e8d03",
+    "semantic_hash": "bb6ccbf761253e736ce276b5700e8d03"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_delegation_model.g.dart": {
+    "mtime": 1782117646.4111269,
+    "ast_hash": "9edee52468a8ed4d67c6b06b1ac0feb6",
+    "semantic_hash": "9edee52468a8ed4d67c6b06b1ac0feb6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_group_model.dart": {
+    "mtime": 1781860985.2252977,
+    "ast_hash": "d3841f2d1d11d80fb9414f6bb885b48a",
+    "semantic_hash": "d3841f2d1d11d80fb9414f6bb885b48a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_group_model.g.dart": {
+    "mtime": 1782117646.4140334,
+    "ast_hash": "36e585c4ba138ad47eef541883eef3fa",
+    "semantic_hash": "36e585c4ba138ad47eef541883eef3fa"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_transition_model.dart": {
+    "mtime": 1781860985.855244,
+    "ast_hash": "533eee3b002eb413409981ce9768c048",
+    "semantic_hash": "533eee3b002eb413409981ce9768c048"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\role_transition_model.g.dart": {
+    "mtime": 1782117646.4140334,
+    "ast_hash": "60badd0e6392fc6fd35dd965f1ded772",
+    "semantic_hash": "60badd0e6392fc6fd35dd965f1ded772"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\session_model.dart": {
+    "mtime": 1782161726.309328,
+    "ast_hash": "fdf0e395f8169369db46245d8604b082",
+    "semantic_hash": "fdf0e395f8169369db46245d8604b082"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\session_model.g.dart": {
+    "mtime": 1782117646.4111269,
+    "ast_hash": "e871622c4427252b29bd1bca22a4b6c0",
+    "semantic_hash": "e871622c4427252b29bd1bca22a4b6c0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\shortfilm_model.dart": {
+    "mtime": 1781860987.2011456,
+    "ast_hash": "e3bb360e93bfd7bd1e2b9545862cc47d",
+    "semantic_hash": "e3bb360e93bfd7bd1e2b9545862cc47d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\shortfilm_model.g.dart": {
+    "mtime": 1782117646.4140334,
+    "ast_hash": "3f114351eb9da32bd0cc64cbf0cef684",
+    "semantic_hash": "3f114351eb9da32bd0cc64cbf0cef684"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\user_alias_model.dart": {
+    "mtime": 1781860987.8358748,
+    "ast_hash": "36d0579d547ea2904abeb08b01db8988",
+    "semantic_hash": "36d0579d547ea2904abeb08b01db8988"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\user_alias_model.g.dart": {
+    "mtime": 1782117646.4111269,
+    "ast_hash": "abbb45db5cd12ea0448a77e006ceb2f1",
+    "semantic_hash": "abbb45db5cd12ea0448a77e006ceb2f1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\user_model.dart": {
+    "mtime": 1781860988.4502048,
+    "ast_hash": "7d09afafe796364e6a133b8e391ad9b1",
+    "semantic_hash": "7d09afafe796364e6a133b8e391ad9b1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\models\\user_model.g.dart": {
+    "mtime": 1782117646.4135332,
+    "ast_hash": "3f0c37a7386782e9d8258e333e8d45e9",
+    "semantic_hash": "3f0c37a7386782e9d8258e333e8d45e9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\admin_screen.dart": {
+    "mtime": 1782176041.8832319,
+    "ast_hash": "d37e716b1bfd91ead5e47587bc96d3cc",
+    "semantic_hash": "d37e716b1bfd91ead5e47587bc96d3cc"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\awards_screen.dart": {
+    "mtime": 1782015620.748165,
+    "ast_hash": "7b57a12041b979a2f07ef4163e863023",
+    "semantic_hash": "7b57a12041b979a2f07ef4163e863023"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\backend_setup_screen.dart": {
+    "mtime": 1781858507.304276,
+    "ast_hash": "3a8f2221fbab027c0575f1bdc35c94da",
+    "semantic_hash": "3a8f2221fbab027c0575f1bdc35c94da"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\channels_screen.dart": {
+    "mtime": 1782162443.0984433,
+    "ast_hash": "b5fc92720186c1bbcfa161b8e963c31d",
+    "semantic_hash": "b5fc92720186c1bbcfa161b8e963c31d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\chat_screen.dart": {
+    "mtime": 1783810355.393203,
+    "ast_hash": "82755bf4807a97171675232e5160a183",
+    "semantic_hash": "82755bf4807a97171675232e5160a183"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\committees_screen.dart": {
+    "mtime": 1782015619.3407323,
+    "ast_hash": "f4849a17fc57312a169a7b5848744f98",
+    "semantic_hash": "f4849a17fc57312a169a7b5848744f98"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\create_channel_screen.dart": {
+    "mtime": 1781647663.2684622,
+    "ast_hash": "ac0b8f3ce85202d199f5aca1bf2ed30c",
+    "semantic_hash": "ac0b8f3ce85202d199f5aca1bf2ed30c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\create_festival_screen.dart": {
+    "mtime": 1782116084.7715468,
+    "ast_hash": "13795fee24241a3c62a873f362510b4c",
+    "semantic_hash": "13795fee24241a3c62a873f362510b4c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\create_shortfilm_screen.dart": {
+    "mtime": 1782017101.8703759,
+    "ast_hash": "670fd1cd017259c62309216db58d618e",
+    "semantic_hash": "670fd1cd017259c62309216db58d618e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\create_user_screen.dart": {
+    "mtime": 1782017163.0107672,
+    "ast_hash": "f3d76fe7cfc223578a37b668717c98dd",
+    "semantic_hash": "f3d76fe7cfc223578a37b668717c98dd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\dashboard_screen.dart": {
+    "mtime": 1782176086.8419342,
+    "ast_hash": "aeadab6d11287f94ab94a3414beaaf76",
+    "semantic_hash": "aeadab6d11287f94ab94a3414beaaf76"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\event_detail_screen.dart": {
+    "mtime": 1783810242.3320868,
+    "ast_hash": "358495869583c8bb0026a5debef96afe",
+    "semantic_hash": "358495869583c8bb0026a5debef96afe"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\events_management_screen.dart": {
+    "mtime": 1783155183.179641,
+    "ast_hash": "452720bb9861f32bed17058af25e2056",
+    "semantic_hash": "452720bb9861f32bed17058af25e2056"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\festival_profile_screen.dart": {
+    "mtime": 1782117593.175302,
+    "ast_hash": "7aea612bcfecca3fa26e189d8bff483a",
+    "semantic_hash": "7aea612bcfecca3fa26e189d8bff483a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\festivals_screen.dart": {
+    "mtime": 1782162661.4511802,
+    "ast_hash": "446be93e4826f7d9656034ebd08257ce",
+    "semantic_hash": "446be93e4826f7d9656034ebd08257ce"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\form_definitions_screen.dart": {
+    "mtime": 1782370234.5650644,
+    "ast_hash": "6c95558f25db9b148dbf6cb6044e8fa5",
+    "semantic_hash": "6c95558f25db9b148dbf6cb6044e8fa5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\form_detail_screen.dart": {
+    "mtime": 1782370330.0838885,
+    "ast_hash": "6c29edbb4cc72b9398912767aafbee2b",
+    "semantic_hash": "6c29edbb4cc72b9398912767aafbee2b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\form_page_editor_screen.dart": {
+    "mtime": 1782369423.4617467,
+    "ast_hash": "fb5da4a1e33ad3b99ec8172b36ab2d1a",
+    "semantic_hash": "fb5da4a1e33ad3b99ec8172b36ab2d1a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\form_response_detail_screen.dart": {
+    "mtime": 1782369282.2401657,
+    "ast_hash": "34523bc0b83772b8d26742ff034fe334",
+    "semantic_hash": "34523bc0b83772b8d26742ff034fe334"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\locations_screen.dart": {
+    "mtime": 1782174155.1754096,
+    "ast_hash": "0053aaf3e4229b5f73c82314eccf63f8",
+    "semantic_hash": "0053aaf3e4229b5f73c82314eccf63f8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\login_screen.dart": {
+    "mtime": 1783154968.2556002,
+    "ast_hash": "d6c09e44977ec98140aec9224665dc93",
+    "semantic_hash": "d6c09e44977ec98140aec9224665dc93"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\member_directory_screen.dart": {
+    "mtime": 1782015445.0923612,
+    "ast_hash": "0c84239b96da174191287b1dd9bf83bc",
+    "semantic_hash": "0c84239b96da174191287b1dd9bf83bc"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\notifications_screen.dart": {
+    "mtime": 1782176039.1086035,
+    "ast_hash": "b72238d6f8d757894541a5c0be3fc830",
+    "semantic_hash": "b72238d6f8d757894541a5c0be3fc830"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\public_form_screen.dart": {
+    "mtime": 1782369333.3935778,
+    "ast_hash": "41c95e0b6e6f7f4298030217fd5504f5",
+    "semantic_hash": "41c95e0b6e6f7f4298030217fd5504f5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\registration_forms_screen.dart": {
+    "mtime": 1782174468.170682,
+    "ast_hash": "4d68852080766b0a0cebec7f5f9a1a72",
+    "semantic_hash": "4d68852080766b0a0cebec7f5f9a1a72"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\roles_management_screen.dart": {
+    "mtime": 1782162445.971726,
+    "ast_hash": "1d11c8be4e5855c0c7894db432755696",
+    "semantic_hash": "1d11c8be4e5855c0c7894db432755696"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\shortfilm_profile_screen.dart": {
+    "mtime": 1782017900.4452717,
+    "ast_hash": "4684e93b60cf66b3ce339850889ac748",
+    "semantic_hash": "4684e93b60cf66b3ce339850889ac748"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\shortfilms_screen.dart": {
+    "mtime": 1782162662.3143086,
+    "ast_hash": "640b9c5311384daf0893beb7a60bde04",
+    "semantic_hash": "640b9c5311384daf0893beb7a60bde04"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\user_profile_screen.dart": {
+    "mtime": 1782162438.1879501,
+    "ast_hash": "cebe3865ae28b47acf50bf12e462d6ca",
+    "semantic_hash": "cebe3865ae28b47acf50bf12e462d6ca"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\screens\\users_screen.dart": {
+    "mtime": 1782162663.1333141,
+    "ast_hash": "2153baefbd00296c0b9d2d37916e140e",
+    "semantic_hash": "2153baefbd00296c0b9d2d37916e140e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\api_service.dart": {
+    "mtime": 1783810216.1364706,
+    "ast_hash": "dca3894e07ca35d03accf6af2182d2b9",
+    "semantic_hash": "dca3894e07ca35d03accf6af2182d2b9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\auth_service.dart": {
+    "mtime": 1783154960.6675348,
+    "ast_hash": "dc5435d7a5e505b4b9ce5d9a14b152d7",
+    "semantic_hash": "dc5435d7a5e505b4b9ce5d9a14b152d7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\backend_config.dart": {
+    "mtime": 1782111690.6084218,
+    "ast_hash": "007aa0fec599a96c55b27ebdfdbd3612",
+    "semantic_hash": "007aa0fec599a96c55b27ebdfdbd3612"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\channel_service.dart": {
+    "mtime": 1781650642.0448704,
+    "ast_hash": "978b0ca494f1c36e15f9ead02ab6977e",
+    "semantic_hash": "978b0ca494f1c36e15f9ead02ab6977e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\chat_backend\\abstract_chat_backend.dart": {
+    "mtime": 1781886528.9784634,
+    "ast_hash": "6ec882fefec8dfe24638aa1330d760be",
+    "semantic_hash": "6ec882fefec8dfe24638aa1330d760be"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\chat_backend\\chat_service.dart": {
+    "mtime": 1782162418.151914,
+    "ast_hash": "ded2de480563251fee473317ea44ef61",
+    "semantic_hash": "ded2de480563251fee473317ea44ef61"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\chat_backend\\rest_chat_backend.dart": {
+    "mtime": 1781314523.0997946,
+    "ast_hash": "2f70c078d86c5c27f4bebf920e1ad3e1",
+    "semantic_hash": "2f70c078d86c5c27f4bebf920e1ad3e1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\chat_backend\\websocket_chat_backend.dart": {
+    "mtime": 1782162685.4187152,
+    "ast_hash": "6afaccbbea0a1162ea1d9b48787e1906",
+    "semantic_hash": "6afaccbbea0a1162ea1d9b48787e1906"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\connectivity_monitor.dart": {
+    "mtime": 1781647230.030827,
+    "ast_hash": "607298ba2d7ad224f750a87b07e0e680",
+    "semantic_hash": "607298ba2d7ad224f750a87b07e0e680"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\crypto_utils.dart": {
+    "mtime": 1783810307.363845,
+    "ast_hash": "c50aaa53095c15f22c7af944241da666",
+    "semantic_hash": "c50aaa53095c15f22c7af944241da666"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\database_service.dart": {
+    "mtime": 1783155512.3006508,
+    "ast_hash": "1c54796e3da6d9768d65ac0fd957fc22",
+    "semantic_hash": "1c54796e3da6d9768d65ac0fd957fc22"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\locale_service.dart": {
+    "mtime": 1781886976.6972947,
+    "ast_hash": "70d5c6a40581c635151d3310e4f172e8",
+    "semantic_hash": "70d5c6a40581c635151d3310e4f172e8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\offline_cache_service.dart": {
+    "mtime": 1781647206.8954158,
+    "ast_hash": "900e9ef6d5040ecc705b833e9d8aabda",
+    "semantic_hash": "900e9ef6d5040ecc705b833e9d8aabda"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\services\\sync_queue_service.dart": {
+    "mtime": 1781647226.357925,
+    "ast_hash": "5ed0d3d4e737c0514a14f749ff2c517c",
+    "semantic_hash": "5ed0d3d4e737c0514a14f749ff2c517c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\confirm_dialog.dart": {
+    "mtime": 1782012392.6677003,
+    "ast_hash": "a4c311084499e892305b9da4b47bab24",
+    "semantic_hash": "a4c311084499e892305b9da4b47bab24"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\emoji_picker.dart": {
+    "mtime": 1782181020.6202247,
+    "ast_hash": "c0e4b21240f830e38e8ade5afcad1d3c",
+    "semantic_hash": "c0e4b21240f830e38e8ade5afcad1d3c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\empty_state_widget.dart": {
+    "mtime": 1782012382.1981444,
+    "ast_hash": "26cb891fdc30799b8892c9b6f312086a",
+    "semantic_hash": "26cb891fdc30799b8892c9b6f312086a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\error_state_widget.dart": {
+    "mtime": 1782012377.6466968,
+    "ast_hash": "e4ea0d819dca3b5624a25b1f6e7c0237",
+    "semantic_hash": "e4ea0d819dca3b5624a25b1f6e7c0237"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\list_item_animation.dart": {
+    "mtime": 1782012388.812077,
+    "ast_hash": "c47166b7b7bd59960cf619d0304db3c7",
+    "semantic_hash": "c47166b7b7bd59960cf619d0304db3c7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\loading_skeleton.dart": {
+    "mtime": 1782012373.4630606,
+    "ast_hash": "b57dfb1fca813bf48b0d504f06dc2c2e",
+    "semantic_hash": "b57dfb1fca813bf48b0d504f06dc2c2e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\map_picker.dart": {
+    "mtime": 1782116046.658715,
+    "ast_hash": "6e0afd780c3ee4a1e190e1b11d3c69de",
+    "semantic_hash": "6e0afd780c3ee4a1e190e1b11d3c69de"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\reusable_widgets.dart": {
+    "mtime": 1782176805.1024957,
+    "ast_hash": "3202d19431bdaae6e74aedd0968f6313",
+    "semantic_hash": "3202d19431bdaae6e74aedd0968f6313"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\lib\\widgets\\seat_map_widget.dart": {
+    "mtime": 1783156009.7941542,
+    "ast_hash": "6fb2066f5781a56ce462f87e8374fd0c",
+    "semantic_hash": "6fb2066f5781a56ce462f87e8374fd0c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\flutter\\generated_plugin_registrant.cc": {
+    "mtime": 1781887382.9172823,
+    "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
+    "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\flutter\\generated_plugin_registrant.h": {
+    "mtime": 1781887382.9157822,
+    "ast_hash": "d295462c9da9f7fef22dc86c34492318",
+    "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\runner\\main.cc": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "539395bcd63dba20afed0838d136189f",
+    "semantic_hash": "539395bcd63dba20afed0838d136189f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\runner\\my_application.cc": {
+    "mtime": 1781887381.609423,
+    "ast_hash": "c36d70e2a262906cae0cc8d4387804e0",
+    "semantic_hash": "c36d70e2a262906cae0cc8d4387804e0"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\runner\\my_application.h": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "ffa1a7c0a2ad45a2c14a921596516ff8",
+    "semantic_hash": "ffa1a7c0a2ad45a2c14a921596516ff8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Flutter\\GeneratedPluginRegistrant.swift": {
+    "mtime": 1782113638.8994122,
+    "ast_hash": "f7f09e6503c8ffadba931f468ec7c77b",
+    "semantic_hash": "f7f09e6503c8ffadba931f468ec7c77b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Flutter\\ephemeral\\flutter_export_environment.sh": {
+    "mtime": 1781887382.6875577,
+    "ast_hash": "30809c055471d55a972efc97954687ef",
+    "semantic_hash": "30809c055471d55a972efc97954687ef"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\RunnerTests\\RunnerTests.swift": {
+    "mtime": 1781887381.8777514,
+    "ast_hash": "8059f5d27a19c556eeafb49b3f9b7bdd",
+    "semantic_hash": "8059f5d27a19c556eeafb49b3f9b7bdd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\AppDelegate.swift": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "4b52e0b89ebfef9baf45b04548c463d6",
+    "semantic_hash": "4b52e0b89ebfef9baf45b04548c463d6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "1d48e925145d4b573a3b5d7960a1c585",
+    "semantic_hash": "1d48e925145d4b573a3b5d7960a1c585"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\MainFlutterWindow.swift": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "93c22dae2d93f3dc1402e121901f582b",
+    "semantic_hash": "93c22dae2d93f3dc1402e121901f582b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\award_model_test.dart": {
+    "mtime": 1781885075.2205613,
+    "ast_hash": "a84ae3e72e1f86cb5d7f29924b5c4b1a",
+    "semantic_hash": "a84ae3e72e1f86cb5d7f29924b5c4b1a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\channel_model_test.dart": {
+    "mtime": 1781885069.989694,
+    "ast_hash": "93e53df1160ca431d528ce6e40b38ce2",
+    "semantic_hash": "93e53df1160ca431d528ce6e40b38ce2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\committee_model_test.dart": {
+    "mtime": 1781885082.0058568,
+    "ast_hash": "255e80351caa527c5d4f8d7086aceb43",
+    "semantic_hash": "255e80351caa527c5d4f8d7086aceb43"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\event_model_test.dart": {
+    "mtime": 1781885058.6377904,
+    "ast_hash": "21d560f14f07ad950328a416a00ecf0a",
+    "semantic_hash": "21d560f14f07ad950328a416a00ecf0a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\festival_model_test.dart": {
+    "mtime": 1781885030.1701567,
+    "ast_hash": "8f94c912814c774d29856809c8632d02",
+    "semantic_hash": "8f94c912814c774d29856809c8632d02"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\location_model_test.dart": {
+    "mtime": 1783151726.8227906,
+    "ast_hash": "10576018fdde31fbbe897a2f079f53ce",
+    "semantic_hash": "10576018fdde31fbbe897a2f079f53ce"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\message_model_test.dart": {
+    "mtime": 1781885039.9461305,
+    "ast_hash": "2b19b949391e335b7b3565dd25d8ff7f",
+    "semantic_hash": "2b19b949391e335b7b3565dd25d8ff7f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\notification_model_test.dart": {
+    "mtime": 1781885043.921943,
+    "ast_hash": "4def82fbfbbc605ce49c6be992998b30",
+    "semantic_hash": "4def82fbfbbc605ce49c6be992998b30"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\registration_form_model_test.dart": {
+    "mtime": 1782174478.7246656,
+    "ast_hash": "95ab819403bb6bc15ed891f5e2826fc8",
+    "semantic_hash": "95ab819403bb6bc15ed891f5e2826fc8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\role_delegation_model_test.dart": {
+    "mtime": 1781885086.4649563,
+    "ast_hash": "313b3f9d0246f19d1924b996ca41b650",
+    "semantic_hash": "313b3f9d0246f19d1924b996ca41b650"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\role_group_model_test.dart": {
+    "mtime": 1781885063.9045026,
+    "ast_hash": "e460d7f1961cb442af9c9ca7bbe0ac2e",
+    "semantic_hash": "e460d7f1961cb442af9c9ca7bbe0ac2e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\role_transition_model_test.dart": {
+    "mtime": 1781885090.537752,
+    "ast_hash": "c3c11abfff489b30d72b98a6b67905ec",
+    "semantic_hash": "c3c11abfff489b30d72b98a6b67905ec"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\session_model_test.dart": {
+    "mtime": 1781885103.9437451,
+    "ast_hash": "b87756142cf13dffa9e0316f5e8101a4",
+    "semantic_hash": "b87756142cf13dffa9e0316f5e8101a4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\shortfilm_model_test.dart": {
+    "mtime": 1781885034.9852915,
+    "ast_hash": "22d09a7114c9e082f0f4ca31217158b1",
+    "semantic_hash": "22d09a7114c9e082f0f4ca31217158b1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\user_alias_model_test.dart": {
+    "mtime": 1781885107.70888,
+    "ast_hash": "a54f0222ccf932f076368dc3a4a34004",
+    "semantic_hash": "a54f0222ccf932f076368dc3a4a34004"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\models\\user_model_test.dart": {
+    "mtime": 1781885024.076676,
+    "ast_hash": "1f79f7db8c8a416a1fa20bb2ab35cf34",
+    "semantic_hash": "1f79f7db8c8a416a1fa20bb2ab35cf34"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\admin_screen_test.dart": {
+    "mtime": 1783155971.599838,
+    "ast_hash": "4c62d7259aef762d1988695edb661b8c",
+    "semantic_hash": "4c62d7259aef762d1988695edb661b8c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\awards_screen_test.dart": {
+    "mtime": 1783155972.0627275,
+    "ast_hash": "5301f7e2421cb73e8ed0aea7ed7616a6",
+    "semantic_hash": "5301f7e2421cb73e8ed0aea7ed7616a6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\backend_setup_screen_test.dart": {
+    "mtime": 1783155972.5563345,
+    "ast_hash": "9e8e86a9e9940588f17a39b47e10eab7",
+    "semantic_hash": "9e8e86a9e9940588f17a39b47e10eab7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\channels_screen_test.dart": {
+    "mtime": 1783155973.0562496,
+    "ast_hash": "3375791844fc495494f7e76c864c3321",
+    "semantic_hash": "3375791844fc495494f7e76c864c3321"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\chat_screen_test.dart": {
+    "mtime": 1783155973.543063,
+    "ast_hash": "e4771908edb06a348bb51417cde6e395",
+    "semantic_hash": "e4771908edb06a348bb51417cde6e395"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\committees_screen_test.dart": {
+    "mtime": 1783155974.0392466,
+    "ast_hash": "4f6d4b4521f6b080c25b425096418b25",
+    "semantic_hash": "4f6d4b4521f6b080c25b425096418b25"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\create_channel_screen_test.dart": {
+    "mtime": 1783155974.837101,
+    "ast_hash": "ba88c3a545a40aa00e383c9e2847bc98",
+    "semantic_hash": "ba88c3a545a40aa00e383c9e2847bc98"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\create_festival_screen_test.dart": {
+    "mtime": 1783155975.0674098,
+    "ast_hash": "4aac9b397a7276a1e48a95bf4d9015b3",
+    "semantic_hash": "4aac9b397a7276a1e48a95bf4d9015b3"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\create_shortfilm_screen_test.dart": {
+    "mtime": 1783155975.5484142,
+    "ast_hash": "dbaed1d022b3730940970bb2b63f4d17",
+    "semantic_hash": "dbaed1d022b3730940970bb2b63f4d17"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\create_user_screen_test.dart": {
+    "mtime": 1783155976.142044,
+    "ast_hash": "fd5218c1cbd8343cc7cb6604d0f9c0cd",
+    "semantic_hash": "fd5218c1cbd8343cc7cb6604d0f9c0cd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\dashboard_screen_test.dart": {
+    "mtime": 1783155976.5481243,
+    "ast_hash": "cb3ae7054b125f2a5129e77c97c3e2ec",
+    "semantic_hash": "cb3ae7054b125f2a5129e77c97c3e2ec"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\events_management_screen_test.dart": {
+    "mtime": 1783155977.039474,
+    "ast_hash": "a36ec44f8f5892c255835a03c8817fd4",
+    "semantic_hash": "a36ec44f8f5892c255835a03c8817fd4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\festival_profile_screen_test.dart": {
+    "mtime": 1783155977.5341437,
+    "ast_hash": "bcccac18f2a63a95c69200840cccc604",
+    "semantic_hash": "bcccac18f2a63a95c69200840cccc604"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\festivals_screen_test.dart": {
+    "mtime": 1783155978.0809145,
+    "ast_hash": "c8ce7bbc0c7d2300c9fc608b3ea05097",
+    "semantic_hash": "c8ce7bbc0c7d2300c9fc608b3ea05097"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\form_definitions_screen_test.dart": {
+    "mtime": 1782371152.3486497,
+    "ast_hash": "e3ab2e88895efd48f898b6687c95abf4",
+    "semantic_hash": "e3ab2e88895efd48f898b6687c95abf4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\form_detail_screen_test.dart": {
+    "mtime": 1783155978.61701,
+    "ast_hash": "2f1937e1bf7d6b6869b745a59d3fd48e",
+    "semantic_hash": "2f1937e1bf7d6b6869b745a59d3fd48e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\form_page_editor_screen_test.dart": {
+    "mtime": 1782371068.0554996,
+    "ast_hash": "6135a5e7ea4c92632f24f5dc40c8ba99",
+    "semantic_hash": "6135a5e7ea4c92632f24f5dc40c8ba99"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\form_response_detail_screen_test.dart": {
+    "mtime": 1783155979.0189116,
+    "ast_hash": "d15b4206a55187dc50c8095e35b00670",
+    "semantic_hash": "d15b4206a55187dc50c8095e35b00670"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\locations_screen_test.dart": {
+    "mtime": 1783155979.5198488,
+    "ast_hash": "669278f4543bcfd77d4f2bd49398205a",
+    "semantic_hash": "669278f4543bcfd77d4f2bd49398205a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\login_screen_test.dart": {
+    "mtime": 1783155980.048711,
+    "ast_hash": "574f9100ac033c5b60f36a6786b9aaa2",
+    "semantic_hash": "574f9100ac033c5b60f36a6786b9aaa2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\member_directory_screen_test.dart": {
+    "mtime": 1783155980.5449781,
+    "ast_hash": "bb11418b93f5a2c441f300ec7f0081fd",
+    "semantic_hash": "bb11418b93f5a2c441f300ec7f0081fd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\notifications_screen_test.dart": {
+    "mtime": 1783155981.0466008,
+    "ast_hash": "65e375870375b594110111a3dc7bb80d",
+    "semantic_hash": "65e375870375b594110111a3dc7bb80d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\public_form_screen_test.dart": {
+    "mtime": 1782370968.2012308,
+    "ast_hash": "f0f08304ed59def7e569268437a797e8",
+    "semantic_hash": "f0f08304ed59def7e569268437a797e8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\registration_forms_screen_test.dart": {
+    "mtime": 1783155981.693795,
+    "ast_hash": "f449114b5505c8407744d291d3434459",
+    "semantic_hash": "f449114b5505c8407744d291d3434459"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\roles_management_screen_test.dart": {
+    "mtime": 1783155982.1883805,
+    "ast_hash": "358db908ec6d0b9980d9a9aa141017c9",
+    "semantic_hash": "358db908ec6d0b9980d9a9aa141017c9"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\shortfilm_profile_screen_test.dart": {
+    "mtime": 1783155982.685164,
+    "ast_hash": "2760f8d1d67c99b539714fa0aa12b6a8",
+    "semantic_hash": "2760f8d1d67c99b539714fa0aa12b6a8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\shortfilms_screen_test.dart": {
+    "mtime": 1783155983.1809647,
+    "ast_hash": "d7eefbefabd06a626cf2980f8c4d0510",
+    "semantic_hash": "d7eefbefabd06a626cf2980f8c4d0510"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\test_helper.dart": {
+    "mtime": 1782371158.2144327,
+    "ast_hash": "93af15e75575426d62fae79e64299a4d",
+    "semantic_hash": "93af15e75575426d62fae79e64299a4d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\user_profile_screen_test.dart": {
+    "mtime": 1783155983.767095,
+    "ast_hash": "6035e8e851e95f5c74e48144a671f156",
+    "semantic_hash": "6035e8e851e95f5c74e48144a671f156"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\screens\\users_screen_test.dart": {
+    "mtime": 1783155984.1644847,
+    "ast_hash": "61a18ecb26518a87926c0f84180c6a32",
+    "semantic_hash": "61a18ecb26518a87926c0f84180c6a32"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\api_service_test.dart": {
+    "mtime": 1783156304.4624512,
+    "ast_hash": "42ede3fb456dad032ad7dd657cb08834",
+    "semantic_hash": "42ede3fb456dad032ad7dd657cb08834"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\auth_service_test.dart": {
+    "mtime": 1782176918.914143,
+    "ast_hash": "9ce26120f43b59c253dc7218f1b5b849",
+    "semantic_hash": "9ce26120f43b59c253dc7218f1b5b849"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\backend_config_test.dart": {
+    "mtime": 1783151716.9868042,
+    "ast_hash": "35caf82af27ffcc829b13a2f2d1b2b5c",
+    "semantic_hash": "35caf82af27ffcc829b13a2f2d1b2b5c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\channel_service_test.dart": {
+    "mtime": 1783151714.1757069,
+    "ast_hash": "4cc7955a5654a87251589c907a3a0a78",
+    "semantic_hash": "4cc7955a5654a87251589c907a3a0a78"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\chat_service_test.dart": {
+    "mtime": 1783156010.4318776,
+    "ast_hash": "d2f3d5a39a7af174648e92b2f12cbc20",
+    "semantic_hash": "d2f3d5a39a7af174648e92b2f12cbc20"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\connectivity_monitor_test.dart": {
+    "mtime": 1783151921.9989102,
+    "ast_hash": "c851fce6d44f0dfd36c988bd7dc7fb05",
+    "semantic_hash": "c851fce6d44f0dfd36c988bd7dc7fb05"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\crypto_utils_test.dart": {
+    "mtime": 1783151703.0165749,
+    "ast_hash": "78e51cd365d830f5699bf2a9cde9ccde",
+    "semantic_hash": "78e51cd365d830f5699bf2a9cde9ccde"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\database_service_test.dart": {
+    "mtime": 1783152016.1581008,
+    "ast_hash": "3790876a6a075c6de762e1b49377e749",
+    "semantic_hash": "3790876a6a075c6de762e1b49377e749"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\locale_service_test.dart": {
+    "mtime": 1783151984.339849,
+    "ast_hash": "7e4674503c09d813c75f069c37376ae6",
+    "semantic_hash": "7e4674503c09d813c75f069c37376ae6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\offline_cache_service_test.dart": {
+    "mtime": 1782112963.0815737,
+    "ast_hash": "2d7caeee4ca6ef1d6b24dc5f0f9f82c5",
+    "semantic_hash": "2d7caeee4ca6ef1d6b24dc5f0f9f82c5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\services\\sync_queue_service_test.dart": {
+    "mtime": 1782112968.0302796,
+    "ast_hash": "8b31f3b73d0381bfa6b1c74f6adcacab",
+    "semantic_hash": "8b31f3b73d0381bfa6b1c74f6adcacab"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widget_test.dart": {
+    "mtime": 1782112256.565269,
+    "ast_hash": "7c1e269a2bf16c34c41c93576e85abad",
+    "semantic_hash": "7c1e269a2bf16c34c41c93576e85abad"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\info_row_test.dart": {
+    "mtime": 1781885252.8605535,
+    "ast_hash": "cc2f8a48cf3c10924c4ced377ec47f2e",
+    "semantic_hash": "cc2f8a48cf3c10924c4ced377ec47f2e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\list_item_card_test.dart": {
+    "mtime": 1781885260.3400996,
+    "ast_hash": "96fa498c3a62e0bae1d28b24a05727c4",
+    "semantic_hash": "96fa498c3a62e0bae1d28b24a05727c4"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\profile_avatar_test.dart": {
+    "mtime": 1781885455.4411654,
+    "ast_hash": "41aa459fce6064d6961ad86e87114b95",
+    "semantic_hash": "41aa459fce6064d6961ad86e87114b95"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\semantic_header_test.dart": {
+    "mtime": 1781885458.2643602,
+    "ast_hash": "60f798b911369fd23deba945b1b04cee",
+    "semantic_hash": "60f798b911369fd23deba945b1b04cee"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\semantic_text_field_test.dart": {
+    "mtime": 1781885268.6416087,
+    "ast_hash": "93479cf179fbc66f065f1933dad04330",
+    "semantic_hash": "93479cf179fbc66f065f1933dad04330"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test\\widgets\\status_indicator_test.dart": {
+    "mtime": 1782013621.0615015,
+    "ast_hash": "4f62a43036efba70dc87615f6ee0c42a",
+    "semantic_hash": "4f62a43036efba70dc87615f6ee0c42a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\test_driver\\integration_test.dart": {
+    "mtime": 1782113526.8784928,
+    "ast_hash": "606d1d466e070d1ad90c6dbb4525a8f6",
+    "semantic_hash": "606d1d466e070d1ad90c6dbb4525a8f6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\manifest.json": {
+    "mtime": 1781298809.9740903,
+    "ast_hash": "1d190376923bf43353f890804ad3ee3d",
+    "semantic_hash": "1d190376923bf43353f890804ad3ee3d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\flutter\\generated_plugin_registrant.cc": {
+    "mtime": 1781314167.4319963,
+    "ast_hash": "8bbb472ee63268923480444138270daa",
+    "semantic_hash": "8bbb472ee63268923480444138270daa"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\flutter\\generated_plugin_registrant.h": {
+    "mtime": 1781298810.8150759,
+    "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
+    "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\flutter_window.cpp": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "2f463f9b7da67a2d692a012f9ea85e0c",
+    "semantic_hash": "2f463f9b7da67a2d692a012f9ea85e0c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\flutter_window.h": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "7defcc89d4a26d56e801241d624d48fb",
+    "semantic_hash": "7defcc89d4a26d56e801241d624d48fb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\main.cpp": {
+    "mtime": 1781298809.9954934,
+    "ast_hash": "a0bcb72ec3db2594d4ff0ffb1ef8e164",
+    "semantic_hash": "a0bcb72ec3db2594d4ff0ffb1ef8e164"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\resource.h": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "1ade5dd15e613479a15e8832ed276f2b",
+    "semantic_hash": "1ade5dd15e613479a15e8832ed276f2b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\utils.cpp": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "432461b09d862a2f8dadf380ff0e34e5",
+    "semantic_hash": "432461b09d862a2f8dadf380ff0e34e5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\utils.h": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "fd81e143f5614eb6fd75efe539002853",
+    "semantic_hash": "fd81e143f5614eb6fd75efe539002853"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\win32_window.cpp": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "571eb8234dbc2661be03aa5f2a4d2fca",
+    "semantic_hash": "571eb8234dbc2661be03aa5f2a4d2fca"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\win32_window.h": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "7569387d58711ab975940f4df3b4bcda",
+    "semantic_hash": "7569387d58711ab975940f4df3b4bcda"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\skills-lock.json": {
+    "mtime": 1782175571.9799564,
+    "ast_hash": "6ad93fa39f416b31390bb8469bbc8233",
+    "semantic_hash": "6ad93fa39f416b31390bb8469bbc8233"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\start.ps1": {
+    "mtime": 1782178730.8571918,
+    "ast_hash": "7672fef795083cb8cf9946503f5c3727",
+    "semantic_hash": "7672fef795083cb8cf9946503f5c3727"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\start.sh": {
+    "mtime": 1782111804.9258907,
+    "ast_hash": "391dc9dfb15d4f1080687f2a3bfc9c24",
+    "semantic_hash": "391dc9dfb15d4f1080687f2a3bfc9c24"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\tools\\build-all.ps1": {
+    "mtime": 1782111776.9299219,
+    "ast_hash": "d921afd95804b89485818c7631c6457e",
+    "semantic_hash": "d921afd95804b89485818c7631c6457e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\tools\\build-backend-macos.sh": {
+    "mtime": 1782111588.741248,
+    "ast_hash": "b9a90f7a400f31c0f16cc41e76fd6b31",
+    "semantic_hash": "b9a90f7a400f31c0f16cc41e76fd6b31"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\tools\\build-ios.sh": {
+    "mtime": 1782111773.203613,
+    "ast_hash": "d58bd7438c5a6603504b1ec37f5d0312",
+    "semantic_hash": "d58bd7438c5a6603504b1ec37f5d0312"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\tools\\build-macos.sh": {
+    "mtime": 1782111769.7624776,
+    "ast_hash": "410e7e52cfcc87129e972bce166c5219",
+    "semantic_hash": "410e7e52cfcc87129e972bce166c5219"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\backend-python-fastapi-expert\\SKILL.md": {
+    "mtime": 1782175718.1681292,
+    "ast_hash": "f22b21e0426cb9427732a4b1fa55fceb",
+    "semantic_hash": "f22b21e0426cb9427732a4b1fa55fceb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\command-it-expert\\SKILL.md": {
+    "mtime": 1782011853.849254,
+    "ast_hash": "c3b44640b5dfa08f6ab91958c7f4dfb7",
+    "semantic_hash": "c3b44640b5dfa08f6ab91958c7f4dfb7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\database-expert\\SKILL.md": {
+    "mtime": 1782175748.1889634,
+    "ast_hash": "adbbe800e7439d45f084e142a836c5c8",
+    "semantic_hash": "adbbe800e7439d45f084e142a836c5c8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\docker-devops-expert\\SKILL.md": {
+    "mtime": 1782175729.166894,
+    "ast_hash": "6a1aa97721b9106c26804d938ebcd053",
+    "semantic_hash": "6a1aa97721b9106c26804d938ebcd053"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\feed-datasource-expert\\SKILL.md": {
+    "mtime": 1782011853.8619323,
+    "ast_hash": "dacf1d70988ef705ea951b54eda67d08",
+    "semantic_hash": "dacf1d70988ef705ea951b54eda67d08"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-accessibility-wcag\\SKILL.md": {
+    "mtime": 1782175763.2256851,
+    "ast_hash": "ef37eec1e72794aa38308d815538d98b",
+    "semantic_hash": "ef37eec1e72794aa38308d815538d98b"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-add-integration-test\\SKILL.md": {
+    "mtime": 1781855264.0394354,
+    "ast_hash": "5eb8e43c9003b77922fcfee4ef769e5e",
+    "semantic_hash": "5eb8e43c9003b77922fcfee4ef769e5e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-add-widget-preview\\SKILL.md": {
+    "mtime": 1781855264.0404425,
+    "ast_hash": "ed986e89480f34737bf75c684153ea92",
+    "semantic_hash": "ed986e89480f34737bf75c684153ea92"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-add-widget-test\\SKILL.md": {
+    "mtime": 1781855264.0409455,
+    "ast_hash": "2f164d9f31c6b986fc05a431f933c642",
+    "semantic_hash": "2f164d9f31c6b986fc05a431f933c642"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-apply-architecture-best-practices\\SKILL.md": {
+    "mtime": 1781855264.041952,
+    "ast_hash": "c475304b95d37c3f58d411ba603e5034",
+    "semantic_hash": "c475304b95d37c3f58d411ba603e5034"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-architecture-expert\\SKILL.md": {
+    "mtime": 1782011853.783609,
+    "ast_hash": "4673bc73adb1db973dd29eafdf6ce435",
+    "semantic_hash": "4673bc73adb1db973dd29eafdf6ce435"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-build-responsive-layout\\SKILL.md": {
+    "mtime": 1781855264.0424552,
+    "ast_hash": "e8b3e480ed870a8cd53ffbe507af3c49",
+    "semantic_hash": "e8b3e480ed870a8cd53ffbe507af3c49"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-fix-layout-issues\\SKILL.md": {
+    "mtime": 1781855264.042959,
+    "ast_hash": "c7e786747a5dc7cd564798147a5b4a32",
+    "semantic_hash": "c7e786747a5dc7cd564798147a5b4a32"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-implement-json-serialization\\SKILL.md": {
+    "mtime": 1781855264.0439644,
+    "ast_hash": "ad23384ac06d048d63ed1833e72dcb9a",
+    "semantic_hash": "ad23384ac06d048d63ed1833e72dcb9a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-it\\SKILL.md": {
+    "mtime": 1782011853.8001578,
+    "ast_hash": "bb7a3c199fd67bbb0abb2ddc41459bda",
+    "semantic_hash": "bb7a3c199fd67bbb0abb2ddc41459bda"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-localization-arb\\SKILL.md": {
+    "mtime": 1782175789.9782307,
+    "ast_hash": "e5aa39612b2d6c7a7adfbb6317a4a285",
+    "semantic_hash": "e5aa39612b2d6c7a7adfbb6317a4a285"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-material-3-theming\\SKILL.md": {
+    "mtime": 1782175755.5848556,
+    "ast_hash": "cfb9bb62c9772572ef9299635cceddf6",
+    "semantic_hash": "cfb9bb62c9772572ef9299635cceddf6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-setup-declarative-routing\\SKILL.md": {
+    "mtime": 1781855264.044638,
+    "ast_hash": "89dbf25c6b248881072d1e5fde1c8ecf",
+    "semantic_hash": "89dbf25c6b248881072d1e5fde1c8ecf"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-setup-localization\\SKILL.md": {
+    "mtime": 1781855264.0456433,
+    "ast_hash": "8592da5f0e92210344e1a6cec892c34d",
+    "semantic_hash": "8592da5f0e92210344e1a6cec892c34d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-state-management-pattern\\SKILL.md": {
+    "mtime": 1782175780.349943,
+    "ast_hash": "d417fd034bfdda8f2a97617912b722ee",
+    "semantic_hash": "d417fd034bfdda8f2a97617912b722ee"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\flutter-use-http-package\\SKILL.md": {
+    "mtime": 1781855264.0461462,
+    "ast_hash": "06ccfed6b8e5ad6cc798e1cb65268f57",
+    "semantic_hash": "06ccfed6b8e5ad6cc798e1cb65268f57"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\get-it-expert\\SKILL.md": {
+    "mtime": 1782011853.810034,
+    "ast_hash": "991b39b2ef871dd62b7764620a988763",
+    "semantic_hash": "991b39b2ef871dd62b7764620a988763"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\listen-it-expert\\SKILL.md": {
+    "mtime": 1782011853.824626,
+    "ast_hash": "9f243cb73123851628b5dbabe68a891e",
+    "semantic_hash": "9f243cb73123851628b5dbabe68a891e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.agents\\skills\\watch-it-expert\\SKILL.md": {
+    "mtime": 1782011853.8357735,
+    "ast_hash": "d6fec07049c345f84b1dd4dae981b0b7",
+    "semantic_hash": "d6fec07049c345f84b1dd4dae981b0b7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.github\\workflows\\ci.yml": {
+    "mtime": 1782112837.273363,
+    "ast_hash": "45cf0b8b636c0ac6dba6acc004359133",
+    "semantic_hash": "45cf0b8b636c0ac6dba6acc004359133"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.gitlab-ci.yml": {
+    "mtime": 1782112175.7754028,
+    "ast_hash": "f78b0e31157823ecc5a1d7f838995d0a",
+    "semantic_hash": "f78b0e31157823ecc5a1d7f838995d0a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.gitlab\\issue_templates\\bug.md": {
+    "mtime": 1782020307.5465753,
+    "ast_hash": "56c6bbd44c54819dda24717dd6d151fb",
+    "semantic_hash": "56c6bbd44c54819dda24717dd6d151fb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.gitlab\\issue_templates\\feature.md": {
+    "mtime": 1782020652.8998878,
+    "ast_hash": "7db01280084a7602a4f37faf628f43e5",
+    "semantic_hash": "7db01280084a7602a4f37faf628f43e5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\.gitlab\\merge_request_templates\\default.md": {
+    "mtime": 1782020652.3550262,
+    "ast_hash": "61f12c8b7391ade704a1f83acb9e5c8a",
+    "semantic_hash": "61f12c8b7391ade704a1f83acb9e5c8a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\AGENTS.md": {
+    "mtime": 1782176523.320106,
+    "ast_hash": "0abb6fda57183ccf39e3b3961a6262c8",
+    "semantic_hash": "0abb6fda57183ccf39e3b3961a6262c8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\README.md": {
+    "mtime": 1782113127.0081275,
+    "ast_hash": "dc7adf481536a2d2ac5c56eba881d377",
+    "semantic_hash": "dc7adf481536a2d2ac5c56eba881d377"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\DATABASE.md": {
+    "mtime": 1781647656.241384,
+    "ast_hash": "9fc5e6687b44a712964ce1d91d9e4658",
+    "semantic_hash": "9fc5e6687b44a712964ce1d91d9e4658"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\requirements-dev.txt": {
+    "mtime": 1782112370.6384103,
+    "ast_hash": "caf927a6af522ed5c0e72bf2ef304662",
+    "semantic_hash": "caf927a6af522ed5c0e72bf2ef304662"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\requirements.txt": {
+    "mtime": 1782114324.6085527,
+    "ast_hash": "0f9d1e90fb7b13b1148dabc85a01ada5",
+    "semantic_hash": "0f9d1e90fb7b13b1148dabc85a01ada5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\docker-compose.yml": {
+    "mtime": 1782177994.706175,
+    "ast_hash": "37bf6bcea3c2be2b4bb8fa18ea2bd422",
+    "semantic_hash": "37bf6bcea3c2be2b4bb8fa18ea2bd422"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\README.md": {
+    "mtime": 1781647347.2111323,
+    "ast_hash": "81098ccb40d45f969b3162bbf2755f25",
+    "semantic_hash": "81098ccb40d45f969b3162bbf2755f25"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\analysis_options.yaml": {
+    "mtime": 1781298809.9482934,
+    "ast_hash": "9e65f4b9beebb674c0dc252f70a5c177",
+    "semantic_hash": "9e65f4b9beebb674c0dc252f70a5c177"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\build.yaml": {
+    "mtime": 1781647916.9773831,
+    "ast_hash": "dcd3e183d0a60ec637d5d58fd30a0229",
+    "semantic_hash": "dcd3e183d0a60ec637d5d58fd30a0229"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\devtools_options.yaml": {
+    "mtime": 1781856913.4452112,
+    "ast_hash": "d1ff5187b1b67653e7357395895e8449",
+    "semantic_hash": "d1ff5187b1b67653e7357395895e8449"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\docker\\docker-compose.yml": {
+    "mtime": 1782111763.3958836,
+    "ast_hash": "ab7b8ebf3866d487e6eff779a33255f8",
+    "semantic_hash": "ab7b8ebf3866d487e6eff779a33255f8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\README.md": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "f7ee1b402881509d197f34963e569927",
+    "semantic_hash": "f7ee1b402881509d197f34963e569927"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\CMakeLists.txt": {
+    "mtime": 1781887381.5696805,
+    "ast_hash": "d21ee5933a155246db4c1ea0eb38e145",
+    "semantic_hash": "d21ee5933a155246db4c1ea0eb38e145"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\flutter\\CMakeLists.txt": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "2195470ce31675d31db5a37590d011f6",
+    "semantic_hash": "2195470ce31675d31db5a37590d011f6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\linux\\runner\\CMakeLists.txt": {
+    "mtime": 1777568251.4659455,
+    "ast_hash": "30cc1614b16214b66c014af09ba699eb",
+    "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\pubspec.yaml": {
+    "mtime": 1782180981.8116343,
+    "ast_hash": "17507927fa8ab042c738cc735b54751a",
+    "semantic_hash": "17507927fa8ab042c738cc735b54751a"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\index.html": {
+    "mtime": 1782180981.2626684,
+    "ast_hash": "188d2abe91bc267f08ff6ab8c1292861",
+    "semantic_hash": "188d2abe91bc267f08ff6ab8c1292861"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\CMakeLists.txt": {
+    "mtime": 1781298809.981969,
+    "ast_hash": "18bd5ebbf5a8a8814f5f6df6173a43dd",
+    "semantic_hash": "18bd5ebbf5a8a8814f5f6df6173a43dd"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\flutter\\CMakeLists.txt": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "bbf66fed5180bd9ae8198b8d7c4a0001",
+    "semantic_hash": "bbf66fed5180bd9ae8198b8d7c4a0001"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\windows\\runner\\CMakeLists.txt": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "028602ab9754bffe716659ada7590d29",
+    "semantic_hash": "028602ab9754bffe716659ada7590d29"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\005ebe1c9c194f65b262166a81a38cff.png": {
+    "mtime": 1781861851.48057,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\0575e00851cc42a0b3640e39121c76b3.png": {
+    "mtime": 1781884461.6042361,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\0cc11e0b0c944bd99cd8a2c5e4f63d88.png": {
+    "mtime": 1781307806.2158978,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\1102a429e7d745279ffe119c104a5fa0.png": {
+    "mtime": 1781307115.5287845,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\32066cde82dc404ba102c012816a99d5.png": {
+    "mtime": 1781886117.4044216,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\3cb3f1afe2234effb5114e660e43f38a.png": {
+    "mtime": 1781307691.583753,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\5c3bedb815694226b52150249b222d4f.png": {
+    "mtime": 1781863323.9653502,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\75656ff470ad43238b582b041817d838.png": {
+    "mtime": 1781862787.9805052,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\7a2b465a9d974cd0aa2db5d7826585df.png": {
+    "mtime": 1781863883.842844,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\863d881361bc48ec92770372ef1bc46f.png": {
+    "mtime": 1781863507.7766695,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\88ccfd78ffb34d6b8974f2a85d6be652.png": {
+    "mtime": 1781307598.7708364,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\99e49a76abe3463e821af73145e67b3e.png": {
+    "mtime": 1781864576.6674354,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\9c64870bb0f949f5a77c11213f99c09a.png": {
+    "mtime": 1781886653.7451954,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\a27c083897024125aba4e006104791dd.png": {
+    "mtime": 1781307944.105741,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\b88c1cfb6739459aa5ba52d4de63bdf2.png": {
+    "mtime": 1781861964.6251657,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\c2eaecbc1a02452fabaa4b364c4ed1ee.png": {
+    "mtime": 1781884734.437928,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\backend\\uploads\\avatars\\ff06e4bd4d114ea596e4b7d783e58681.png": {
+    "mtime": 1781864231.0720832,
+    "ast_hash": "722effc364bba67ae8954ce8a790c85e",
+    "semantic_hash": "722effc364bba67ae8954ce8a790c85e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png": {
+    "mtime": 1777568251.4497693,
+    "ast_hash": "13e9c72ec37fac220397aa819fa1ef2d",
+    "semantic_hash": "13e9c72ec37fac220397aa819fa1ef2d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png": {
+    "mtime": 1777568251.4497693,
+    "ast_hash": "6270344430679711b81476e29878caa7",
+    "semantic_hash": "6270344430679711b81476e29878caa7"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png": {
+    "mtime": 1777568251.4497693,
+    "ast_hash": "a0a8db5985280b3679d99a820ae2db79",
+    "semantic_hash": "a0a8db5985280b3679d99a820ae2db79"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png": {
+    "mtime": 1777568251.4497693,
+    "ast_hash": "afe1b655b9f32da22f9a4301bb8e6ba8",
+    "semantic_hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png": {
+    "mtime": 1777568251.4497693,
+    "ast_hash": "57838d52c318faff743130c3fcfae0c6",
+    "semantic_hash": "57838d52c318faff743130c3fcfae0c6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-1024x1024@1x.png": {
+    "mtime": 1781298630.7723715,
+    "ast_hash": "c785f8932297af4acd5f5ccb7630f01c",
+    "semantic_hash": "c785f8932297af4acd5f5ccb7630f01c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@1x.png": {
+    "mtime": 1781298630.7723715,
+    "ast_hash": "a2f8558fb1d42514111fbbb19fb67314",
+    "semantic_hash": "a2f8558fb1d42514111fbbb19fb67314"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@2x.png": {
+    "mtime": 1781298630.77036,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@3x.png": {
+    "mtime": 1781298630.7733731,
+    "ast_hash": "1b3b1538136316263c7092951e923e9d",
+    "semantic_hash": "1b3b1538136316263c7092951e923e9d"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@1x.png": {
+    "mtime": 1781298630.7773502,
+    "ast_hash": "be8887071dd7ec39cb754d236aa9584f",
+    "semantic_hash": "be8887071dd7ec39cb754d236aa9584f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@2x.png": {
+    "mtime": 1781298630.768352,
+    "ast_hash": "043119ef4faa026ff82bd03f241e5338",
+    "semantic_hash": "043119ef4faa026ff82bd03f241e5338"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@3x.png": {
+    "mtime": 1781298630.7733731,
+    "ast_hash": "2b1452c4c1bda6177b4fbbb832df217f",
+    "semantic_hash": "2b1452c4c1bda6177b4fbbb832df217f"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@1x.png": {
+    "mtime": 1781298630.768352,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@2x.png": {
+    "mtime": 1781298630.7759566,
+    "ast_hash": "8245359312aea1b0d2412f79a07b0ca5",
+    "semantic_hash": "8245359312aea1b0d2412f79a07b0ca5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@3x.png": {
+    "mtime": 1781298630.7693565,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-60x60@2x.png": {
+    "mtime": 1781298630.7713645,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-60x60@3x.png": {
+    "mtime": 1781298630.7673476,
+    "ast_hash": "e419d22a37bc40ba185aca1acb6d4ac6",
+    "semantic_hash": "e419d22a37bc40ba185aca1acb6d4ac6"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-76x76@1x.png": {
+    "mtime": 1781298630.77036,
+    "ast_hash": "36c0d7a7132bdde18898ffdfcfcdc4d2",
+    "semantic_hash": "36c0d7a7132bdde18898ffdfcfcdc4d2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-76x76@2x.png": {
+    "mtime": 1781298630.7773502,
+    "ast_hash": "643842917530acf4c5159ae851b0baf2",
+    "semantic_hash": "643842917530acf4c5159ae851b0baf2"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-83.5x83.5@2x.png": {
+    "mtime": 1781298630.7747183,
+    "ast_hash": "665cb5e3c5729da6d639d26eff47a503",
+    "semantic_hash": "665cb5e3c5729da6d639d26eff47a503"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage.png": {
+    "mtime": 1781298630.766344,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage@2x.png": {
+    "mtime": 1781298630.7653332,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage@3x.png": {
+    "mtime": 1781298630.7643137,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_1024.png": {
+    "mtime": 1781298630.7604578,
+    "ast_hash": "c9becc9105f8cabce934d20c7bfb6aac",
+    "semantic_hash": "c9becc9105f8cabce934d20c7bfb6aac"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_128.png": {
+    "mtime": 1781298630.7564445,
+    "ast_hash": "3ded30823804caaa5ccc944067c54a36",
+    "semantic_hash": "3ded30823804caaa5ccc944067c54a36"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_16.png": {
+    "mtime": 1781298630.7574492,
+    "ast_hash": "8bf511604bc6ed0a6aeb380c5113fdcf",
+    "semantic_hash": "8bf511604bc6ed0a6aeb380c5113fdcf"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_256.png": {
+    "mtime": 1781298630.7604578,
+    "ast_hash": "dfe2c93d1536ae02f085cc63faa3430e",
+    "semantic_hash": "dfe2c93d1536ae02f085cc63faa3430e"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_32.png": {
+    "mtime": 1781298630.758454,
+    "ast_hash": "8e0ae58e362a6636bdfccbc04da2c58c",
+    "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_512.png": {
+    "mtime": 1781298630.7574492,
+    "ast_hash": "0ad44039155424738917502c69667699",
+    "semantic_hash": "0ad44039155424738917502c69667699"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_64.png": {
+    "mtime": 1781298630.7554407,
+    "ast_hash": "04e7b6ef05346c70b663ca1d97de3ad5",
+    "semantic_hash": "04e7b6ef05346c70b663ca1d97de3ad5"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\favicon.png": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "5dcef449791fa27946b3d35ad8803796",
+    "semantic_hash": "5dcef449791fa27946b3d35ad8803796"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\icons\\Icon-192.png": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "ac9a721a12bbc803b44f645561ecb1e1",
+    "semantic_hash": "ac9a721a12bbc803b44f645561ecb1e1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\icons\\Icon-512.png": {
+    "mtime": 1777568251.481538,
+    "ast_hash": "96e752610906ba2a93c65f8abe1645f1",
+    "semantic_hash": "96e752610906ba2a93c65f8abe1645f1"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\icons\\Icon-maskable-192.png": {
+    "mtime": 1781298630.8326128,
+    "ast_hash": "c457ef57daa1d16f64b27b786ec2ea3c",
+    "semantic_hash": "c457ef57daa1d16f64b27b786ec2ea3c"
+  },
+  "C:\\Users\\abdon\\Desktop\\proyectos\\cine\\frontend\\web\\icons\\Icon-maskable-512.png": {
+    "mtime": 1781298630.831612,
+    "ast_hash": "301a7604d45b3e739efc881eb04896ea",
+    "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
+  }
+}

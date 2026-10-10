@@ -1,0 +1,1021 @@
+"""Router for event/gala management — tickets, seats, reservations, attendees."""
+
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.auth import get_current_user
+from app.schemas.event import (
+    EventCreate,
+    EventUpdate,
+    EventResponse,
+    EventPage,
+    EventTicketTypeCreate,
+    EventTicketTypeUpdate,
+    EventTicketTypeResponse,
+    EventTicketTypePage,
+    EventSeatBulkCreate,
+    EventSeatUpdate,
+    EventSeatResponse,
+    EventSeatPage,
+    EventReservationCreate,
+    EventReservationUpdate,
+    EventReservationResponse,
+    EventReservationPage,
+    EventAttendeeCreate,
+    EventAttendeeUpdate,
+    EventAttendeeResponse,
+    EventAttendeePage,
+)
+from app.services.event_service import (
+    EventService,
+    EventTicketTypeService,
+    EventSeatService,
+    EventReservationService,
+    EventAttendeeService,
+)
+from app.services.award_service import AwardService
+from app.services.festival_service import FestivalService
+from app.services.user_service import UserService
+from app.services.user_alias_service import UserAliasService
+from app.services.role_service import UserRoleService
+from app.services.participant_tag_service import UserParticipantTagService
+from app.services.export_service import export_attendees_csv, export_events_ics
+from app.routers.permissions import is_admin, require_festival_admin
+from app.models.event import (
+    EventVisibilityScope,
+    SeatStatus,
+)
+from app.models.user import User
+from app.models.user_role import UserRoleStatus
+from app.schemas.award import AwardCreate, AwardUpdate, AwardResponse, AwardPage
+
+router = APIRouter()
+event_service = EventService()
+ticket_type_service = EventTicketTypeService()
+seat_service = EventSeatService()
+reservation_service = EventReservationService()
+attendee_service = EventAttendeeService()
+festival_service = FestivalService()
+user_service = UserService()
+alias_service = UserAliasService()
+user_role_service = UserRoleService()
+user_participant_tag_service = UserParticipantTagService()
+award_service = AwardService()
+
+# ===========================
+# Events
+# ===========================
+
+
+def _to_naive_utc(value: datetime | None) -> datetime | None:
+    """Convert an aware datetime to naive UTC to match the stored format."""
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
+_VALID_VISIBILITY_SCOPES = {scope.value for scope in EventVisibilityScope}
+
+
+def _validate_visibility_scope(value: str | None) -> str | None:
+    """Reject unknown visibility scopes early with a clear 422."""
+    if value is None:
+        return None
+    if value not in _VALID_VISIBILITY_SCOPES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid visibility_scope '{value}'. Expected one of: {sorted(_VALID_VISIBILITY_SCOPES)}",
+        )
+    return value
+
+
+@router.get("/festivals/{festival_id}/events/", response_model=EventPage)
+async def list_events(
+    festival_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    is_active: bool | None = None,
+    is_public: bool | None = None,
+    event_type: str | None = None,
+    start_date_from: datetime | None = None,
+    start_date_to: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    return event_service.get_by_festival_paginated(
+        db,
+        festival_id,
+        page,
+        size,
+        is_active,
+        is_public,
+        event_type,
+        _to_naive_utc(start_date_from),
+        _to_naive_utc(start_date_to),
+    )
+
+
+@router.get("/festivals/{festival_id}/events/export/ics")
+async def export_festival_events_ics(
+    festival_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    require_festival_admin(db, current_user, festival_id)
+    ics_content = export_events_ics(festival)
+    return StreamingResponse(
+        iter([ics_content.encode("utf-8")]),
+        media_type="text/calendar",
+        headers={"Content-Disposition": "attachment; filename=calendar.ics"},
+    )
+
+
+@router.post("/festivals/{festival_id}/events/", response_model=EventResponse, status_code=201)
+async def create_event(
+    festival_id: int,
+    event: EventCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    require_festival_admin(db, current_user, festival_id)
+    _validate_visibility_scope(event.visibility_scope)
+    conflict = event_service.find_conflict(
+        db, festival_id, event.venue, _to_naive_utc(event.start_date), _to_naive_utc(event.end_date)
+    )
+    if conflict:
+        raise HTTPException(status_code=409, detail=f"Schedule conflict with event {conflict.id} in '{event.venue}'")
+    created = event_service.create(db, event, festival_id=festival_id, created_by=current_user.id)
+    return event_service.set_visible_roles(db, created, event.visible_role_ids)
+
+
+@router.get("/events/{event_id}", response_model=EventResponse)
+async def get_event(event_id: int, db: Session = Depends(get_db)):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
+
+
+@router.put("/events/{event_id}", response_model=EventResponse)
+async def update_event(
+    event_id: int,
+    event: EventUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = event_service.get(db, event_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    _validate_visibility_scope(event.visibility_scope)
+    new_start = _to_naive_utc(event.start_date) if event.start_date is not None else existing.start_date
+    new_end = _to_naive_utc(event.end_date) if event.end_date is not None else existing.end_date
+    new_venue = event.venue if event.venue is not None else existing.venue
+    conflict = event_service.find_conflict(
+        db, existing.festival_id, new_venue, new_start, new_end, exclude_event_id=event_id
+    )
+    if conflict:
+        raise HTTPException(status_code=409, detail=f"Schedule conflict with event {conflict.id} in '{new_venue}'")
+    updated = event_service.update(db, event_id, event)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return updated
+
+
+@router.delete("/events/{event_id}")
+async def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = event_service.get(db, event_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    result = event_service.delete(db, event_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return {"message": "Event deleted"}
+
+
+@router.get("/festivals/{festival_id}/events/programacion", response_model=EventPage)
+async def get_programacion(
+    festival_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(50, ge=1, le=100),
+    venue: str | None = None,
+    start_date_from: datetime | None = None,
+    start_date_to: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    return event_service.get_by_festival_paginated(
+        db,
+        festival_id,
+        page,
+        size,
+        True,
+        None,
+        "screening",
+        _to_naive_utc(start_date_from),
+        _to_naive_utc(start_date_to),
+        venue,
+    )
+
+
+@router.get("/festivals/{festival_id}/events/check-conflict")
+async def check_conflict(
+    festival_id: int,
+    venue: str,
+    start_date: datetime,
+    end_date: datetime | None = None,
+    exclude_event_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_festival_admin(db, current_user, festival_id)
+    conflict = event_service.find_conflict(
+        db, festival_id, venue, _to_naive_utc(start_date), _to_naive_utc(end_date), exclude_event_id
+    )
+    return {"conflict": conflict.id if conflict else None, "venue": venue}
+
+
+@router.get("/events/{event_id}/screenings")
+async def list_screenings(event_id: int, db: Session = Depends(get_db)):
+    from app.models.event_screening import EventScreening
+
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    rows = (
+        db.query(EventScreening).filter(EventScreening.event_id == event_id).order_by(EventScreening.sort_order).all()
+    )
+    items = [
+        {
+            "shortfilm_id": r.shortfilm_id,
+            "sort_order": r.sort_order or 0,
+            "title": r.shortfilm.title if r.shortfilm else None,
+            "duration": r.shortfilm.duration if r.shortfilm else None,
+        }
+        for r in rows
+    ]
+    total = sum(i["duration"] for i in items if i["duration"])
+    return {
+        "event_id": event_id,
+        "shortfilm_ids": [i["shortfilm_id"] for i in items],
+        "items": items,
+        "total_duration": total,
+    }
+
+
+@router.put("/events/{event_id}/screenings")
+async def set_screenings(
+    event_id: int,
+    body: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    ids = body.get("shortfilm_ids", [])
+    updated = event_service.set_screenings(db, event, [int(i) for i in ids])
+    return {"event_id": event_id, "shortfilm_ids": updated.screening_shortfilm_ids}
+
+
+@router.get("/events/{event_id}/occupancy")
+async def get_occupancy(event_id: int, db: Session = Depends(get_db)):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return {"event_id": event_id, **event_service.occupancy(db, event)}
+
+
+# ===========================
+# Ticket Types
+# ===========================
+
+
+@router.get("/events/{event_id}/ticket-types/", response_model=EventTicketTypePage)
+async def list_ticket_types(
+    event_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return ticket_type_service.get_by_event_paginated(db, event_id, page, size)
+
+
+@router.post("/events/{event_id}/ticket-types/", response_model=EventTicketTypeResponse, status_code=201)
+async def create_ticket_type(
+    event_id: int,
+    tt: EventTicketTypeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    return ticket_type_service.create(db, tt, event_id=event_id)
+
+
+@router.put("/ticket-types/{tt_id}", response_model=EventTicketTypeResponse)
+async def update_ticket_type(
+    tt_id: int,
+    tt: EventTicketTypeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = ticket_type_service.get(db, tt_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    updated = ticket_type_service.update(db, tt_id, tt)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+    return updated
+
+
+@router.delete("/ticket-types/{tt_id}")
+async def delete_ticket_type(
+    tt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = ticket_type_service.get(db, tt_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    result = ticket_type_service.delete(db, tt_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Ticket type not found")
+    return {"message": "Ticket type deleted"}
+
+
+# ===========================
+# Seats
+# ===========================
+
+
+@router.get("/events/{event_id}/seats/", response_model=EventSeatPage)
+async def list_seats(
+    event_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    section: str | None = None,
+    db: Session = Depends(get_db),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return seat_service.get_by_event_paginated(db, event_id, page, size, section)
+
+
+@router.post("/events/{event_id}/seats/bulk", response_model=list[EventSeatResponse], status_code=201)
+async def bulk_create_seats(
+    event_id: int,
+    bulk: EventSeatBulkCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    return seat_service.bulk_create(db, event_id, bulk)
+
+
+@router.get("/events/{event_id}/seats/sections", response_model=list[str])
+async def list_seat_sections(event_id: int, db: Session = Depends(get_db)):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return seat_service.get_sections(db, event_id)
+
+
+@router.get("/events/{event_id}/seats/counts", response_model=dict)
+async def get_seat_counts(event_id: int, db: Session = Depends(get_db)):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return seat_service.get_seat_counts(db, event_id)
+
+
+@router.put("/seats/{seat_id}", response_model=EventSeatResponse)
+async def update_seat(
+    seat_id: int,
+    seat: EventSeatUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = seat_service.get(db, seat_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    updated = seat_service.update(db, seat_id, seat)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    return updated
+
+
+@router.post("/seats/{seat_id}/release")
+async def release_seat(
+    seat_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = seat_service.get(db, seat_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    result = seat_service.release_seat(db, seat_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    return {"message": "Seat released", "seat": result}
+
+
+@router.delete("/seats/{seat_id}")
+async def delete_seat(
+    seat_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = seat_service.get(db, seat_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    result = seat_service.delete(db, seat_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Seat not found")
+    return {"message": "Seat deleted"}
+
+
+# ===========================
+# Reservations
+# ===========================
+
+
+@router.get("/events/{event_id}/reservations/", response_model=EventReservationPage)
+async def list_reservations(
+    event_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    status: str | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return reservation_service.get_by_event_paginated(db, event_id, page, size, status)
+
+
+@router.post("/events/{event_id}/reservations/", response_model=EventReservationResponse, status_code=201)
+async def create_reservation(
+    event_id: int,
+    reservation: EventReservationCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    result = reservation_service.create_with_attendees(db, current_user.id, reservation)
+    if not result:
+        raise HTTPException(status_code=400, detail="Could not create reservation")
+    return result
+
+
+@router.put("/reservations/{reservation_id}", response_model=EventReservationResponse)
+async def update_reservation(
+    reservation_id: int,
+    reservation: EventReservationUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = reservation_service.get(db, reservation_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    updated = reservation_service.update(db, reservation_id, reservation)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    return updated
+
+
+@router.post("/reservations/{reservation_id}/confirm")
+async def confirm_reservation(
+    reservation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = reservation_service.get(db, reservation_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    result = reservation_service.confirm(db, reservation_id)
+    if not result:
+        raise HTTPException(status_code=400, detail="Could not confirm reservation")
+    return {"message": "Reservation confirmed", "reservation": result}
+
+
+@router.post("/reservations/{reservation_id}/cancel")
+async def cancel_reservation(
+    reservation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = reservation_service.get(db, reservation_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    result = reservation_service.cancel(db, reservation_id)
+    if not result:
+        raise HTTPException(status_code=400, detail="Could not cancel reservation")
+    return {"message": "Reservation cancelled", "reservation": result}
+
+
+@router.delete("/reservations/{reservation_id}")
+async def delete_reservation(
+    reservation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = reservation_service.get(db, reservation_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    result = reservation_service.delete(db, reservation_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    return {"message": "Reservation deleted"}
+
+
+# ===========================
+# Attendees
+# ===========================
+
+
+@router.get("/events/{event_id}/attendees/", response_model=EventAttendeePage)
+async def list_attendees(
+    event_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    status: str | None = None,
+    include_hidden: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return attendee_service.get_by_event_paginated(db, event_id, page, size, status, include_hidden)
+
+
+@router.post("/events/{event_id}/attendees/", response_model=EventAttendeeResponse, status_code=201)
+async def create_attendee(
+    event_id: int,
+    attendee: EventAttendeeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if attendee.seat_id:
+        seat = seat_service.get(db, attendee.seat_id)
+        if not seat:
+            raise HTTPException(status_code=404, detail="Seat not found")
+        if seat.status != SeatStatus.AVAILABLE.value:
+            raise HTTPException(status_code=400, detail="Seat is not available")
+    return attendee_service.create_with_seat(db, attendee, event_id, current_user.id)
+
+
+@router.get("/attendees/{attendee_id}", response_model=EventAttendeeResponse)
+async def get_attendee(attendee_id: int, db: Session = Depends(get_db)):
+    attendee = attendee_service.get(db, attendee_id)
+    if not attendee:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    return attendee
+
+
+@router.put("/attendees/{attendee_id}", response_model=EventAttendeeResponse)
+async def update_attendee(
+    attendee_id: int,
+    attendee: EventAttendeeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = attendee_service.get(db, attendee_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    updated = attendee_service.update(db, attendee_id, attendee)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    return updated
+
+
+@router.post("/attendees/{attendee_id}/check-in")
+async def check_in_attendee(
+    attendee_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = attendee_service.get(db, attendee_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    result = attendee_service.check_in(db, attendee_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    return {"message": "Check-in successful", "attendee": result}
+
+
+@router.get("/events/{event_id}/attendees/counts", response_model=dict)
+async def get_attendee_counts(event_id: int, db: Session = Depends(get_db)):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return attendee_service.get_attendee_counts(db, event_id)
+
+
+@router.get("/events/{event_id}/attendees/export/csv")
+async def export_event_attendees_csv(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    csv_buffer = export_attendees_csv(event)
+    return StreamingResponse(
+        iter([csv_buffer.getvalue().encode("utf-8-sig")]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=attendees.csv"},
+    )
+
+
+@router.delete("/attendees/{attendee_id}")
+async def delete_attendee(
+    attendee_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = attendee_service.get(db, attendee_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    event = event_service.get(db, existing.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if existing.user_id != current_user.id and not is_admin(current_user):
+        require_festival_admin(db, current_user, event.festival_id)
+    result = attendee_service.delete_with_seat_release(db, attendee_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    return {"message": "Attendee removed"}
+
+
+# ===========================
+# VIP/Guest Assignment
+# ===========================
+
+
+@router.post("/events/{event_id}/assign-vip", response_model=EventAttendeeResponse, status_code=201)
+async def assign_vip(
+    event_id: int,
+    user_id: int = Query(...),
+    seat_id: int | None = None,
+    ticket_type_id: int | None = None,
+    is_hidden: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = event_service.get(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    require_festival_admin(db, current_user, event.festival_id)
+    user = user_service.get(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if seat_id:
+        seat = seat_service.get(db, seat_id)
+        if not seat:
+            raise HTTPException(status_code=404, detail="Seat not found")
+        if seat.status != SeatStatus.AVAILABLE.value:
+            raise HTTPException(status_code=400, detail="Seat is not available")
+    return attendee_service.assign_vip(db, event_id, user_id, current_user.id, seat_id, ticket_type_id, is_hidden)
+
+
+# ===========================
+# User's own registrations
+# ===========================
+
+
+@router.get("/users/me/events/", response_model=list[EventResponse])
+async def get_my_events(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return attendee_service.get_events_for_user(db, current_user.id)
+
+
+@router.get("/users/me/events/{event_id}/reservation", response_model=EventReservationResponse)
+async def get_my_reservation(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    reservation = reservation_service.get_by_user_and_event(db, current_user.id, event_id)
+    if not reservation:
+        raise HTTPException(status_code=404, detail="No reservation found")
+    return reservation
+
+
+# ===========================
+# Awards
+# ===========================
+
+
+@router.get("/festivals/{festival_id}/awards/", response_model=AwardPage)
+async def list_festival_awards(
+    festival_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    user_id: int | None = None,
+    shortfilm_id: int | None = None,
+    is_public: bool | None = None,
+    db: Session = Depends(get_db),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    return award_service.get_by_festival_paginated(db, festival_id, page, size, user_id, shortfilm_id, is_public)
+
+
+@router.post("/festivals/{festival_id}/awards/", response_model=AwardResponse, status_code=201)
+async def create_award(
+    festival_id: int,
+    award: AwardCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    require_festival_admin(db, current_user, festival_id)
+    return award_service.create(db, award, festival_id=festival_id, created_by=current_user.id)
+
+
+@router.put("/awards/{award_id}", response_model=AwardResponse)
+async def update_award(
+    award_id: int,
+    award: AwardUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = award_service.get(db, award_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Award not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    result = award_service.update_with_verification(db, award_id, award, current_user.id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Award not found")
+    return result
+
+
+@router.delete("/awards/{award_id}")
+async def delete_award(
+    award_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = award_service.get(db, award_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Award not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    result = award_service.delete(db, award_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Award not found")
+    return {"message": "Award deleted"}
+
+
+@router.get("/users/{user_id}/awards/", response_model=AwardPage)
+async def list_user_awards(
+    user_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    user = user_service.get(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return award_service.get_by_user_paginated(db, user_id, page, size, is_public=True)
+
+
+# ===========================
+# Public Profile (by alias token — no auth, no user ID)
+# ===========================
+
+
+@router.get("/public/profile/{token}", response_model=dict)
+async def get_public_profile_by_token(
+    token: str,
+    db: Session = Depends(get_db),
+):
+
+    alias = alias_service.get_by_token(db, token)
+    if not alias:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    user = alias.user
+    festivals_to_show = []
+
+    if alias.visibility_scope == "all_associated":
+        all_aliases = alias_service.get_by_user(db, user.id, context="festival")
+        festivals_to_show = [a.context_id for a in all_aliases if a.context_id and a.is_public]
+    else:
+        if alias.context_id:
+            festivals_to_show = [alias.context_id]
+
+    awards_data = []
+    roles_data = []
+    tags_data = []
+    festival_names = []
+
+    festivals = {f.id: f for f in festival_service.get_multi_by_ids(db, festivals_to_show)}
+    awards_by_festival = {fid: [] for fid in festivals_to_show}
+    roles_by_festival = {fid: [] for fid in festivals_to_show}
+    tags_by_festival = {fid: [] for fid in festivals_to_show}
+
+    if alias.show_awards:
+        for a in award_service.get_by_festivals(db, festivals_to_show, user_id=user.id, is_public=True):
+            awards_by_festival[a.festival_id].append(a)
+    for r in user_role_service.get_by_user_in_festivals(db, user.id, festivals_to_show, include_hidden=True):
+        if r.status == UserRoleStatus.APPROVED.value and not r.is_hidden:
+            roles_by_festival[r.festival_id].append(r)
+    for t in user_participant_tag_service.get_by_user_in_festivals(db, user.id, festivals_to_show):
+        if not t.is_hidden:
+            tags_by_festival[t.festival_id].append(t)
+
+    for fid in festivals_to_show:
+        f = festivals.get(fid)
+        if f:
+            festival_names.append({"id": f.id, "name": f.name, "logo_url": f.logo_url})
+
+        for a in awards_by_festival[fid]:
+            awards_data.append(
+                {
+                    "id": a.id,
+                    "festival_id": fid,
+                    "award_name": a.award_name,
+                    "award_category": a.award_category,
+                    "position": a.position,
+                    "is_winner": a.is_winner,
+                    "year": a.year,
+                }
+            )
+
+        for r in roles_by_festival[fid]:
+            role_name = r.role.display_name if r.role else None
+            roles_data.append({"id": r.id, "role_id": r.role_id, "role_name": role_name})
+
+        for t in tags_by_festival[fid]:
+            tag_name = t.tag.display_name if t.tag else None
+            tags_data.append({"id": t.id, "tag_id": t.tag_id, "tag_name": tag_name})
+
+    return {
+        "alias": alias.alias,
+        "alias_id": alias.id,
+        "context": alias.context,
+        "context_id": alias.context_id,
+        "visibility_scope": alias.visibility_scope,
+        "avatar_url": user.avatar_url,
+        "bio": user.bio if user.is_public_bio else None,
+        "festivals": festival_names,
+        "awards": awards_data,
+        "roles": roles_data,
+        "tags": tags_data,
+    }
+
+
+@router.get("/festivals/{festival_id}/users/{user_id}/profile", response_model=dict)
+async def get_festival_user_profile(
+    festival_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    user = user_service.get(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    alias = None
+    show_awards_alias = False
+    festival_alias = alias_service.get_by_user_and_context(db, user_id, "festival", festival_id)
+    if festival_alias:
+        alias = festival_alias.alias
+        show_awards_alias = festival_alias.show_awards
+
+    awards = award_service.get_by_festival(db, festival_id, user_id=user_id, is_public=True)
+
+    roles = user_role_service.get_by_user(db, user_id, festival_id=festival_id, include_hidden=True)
+    roles = [r for r in roles if r.status == UserRoleStatus.APPROVED.value and not r.is_hidden]
+
+    tags = user_participant_tag_service.get_by_user(db, user_id, festival_id=festival_id)
+    tags = [t for t in tags if not t.is_hidden]
+
+    display_name = alias if alias and festival.allow_alias_display else (user.full_name or user.username)
+    awards_data = []
+    for a in awards:
+        if not alias or show_awards_alias:
+            awards_data.append(
+                {
+                    "id": a.id,
+                    "award_name": a.award_name,
+                    "award_category": a.award_category,
+                    "position": a.position,
+                    "is_winner": a.is_winner,
+                    "year": a.year,
+                }
+            )
+
+    return {
+        "display_name": display_name,
+        "username": user.username,
+        "alias": alias,
+        "avatar_url": user.avatar_url,
+        "bio": user.bio if user.is_public_bio else None,
+        "awards": awards_data,
+        "roles": [
+            {
+                "id": r.id,
+                "role_id": r.role_id,
+                "role_name": r.role.display_name if r.role else None,
+            }
+            for r in roles
+        ],
+        "tags": [{"id": t.id, "tag_id": t.tag_id, "tag_name": t.tag.display_name if t.tag else None} for t in tags],
+    }

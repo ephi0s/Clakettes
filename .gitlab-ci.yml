@@ -1,0 +1,69 @@
+image: python:3.12-slim
+
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  DOCKER_DRIVER: overlay2
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .pip-cache/
+    - frontend/.dart_tool/
+    - frontend/.packages
+    - frontend/.pub/
+
+# ── Lint ────────────────────────────────────────────────────────────
+
+backend-lint:
+  stage: lint
+  script:
+    - pip install "ruff>=0.5.0"
+    - cd backend && ruff check . && ruff format --check .
+
+frontend-lint:
+  image: ghcr.io/cirruslabs/flutter:stable
+  stage: lint
+  script:
+    - cd frontend && flutter pub get && flutter analyze
+
+# ── Test ────────────────────────────────────────────────────────────
+
+backend-test:
+  stage: test
+  variables:
+    TESTING: "true"
+    SECRET_KEY: "test-secret-key-for-ci-only"
+  script:
+    - cd backend
+    - pip install -r requirements.txt -r requirements-dev.txt
+    - python -m pytest tests/ -x -q --tb=short
+
+frontend-test:
+  image: ghcr.io/cirruslabs/flutter:stable
+  stage: test
+  script:
+    - cd frontend && flutter pub get && dart run build_runner build --delete-conflicting-outputs && flutter test
+
+# ── Build (Docker) ──────────────────────────────────────────────────
+
+docker-build:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker compose build
+    - docker tag cine-backend:latest $IMAGE_TAG-backend
+    - docker tag cine-frontend:latest $IMAGE_TAG-frontend
+    - docker push $IMAGE_TAG-backend
+    - docker push $IMAGE_TAG-frontend
+  only:
+    - main

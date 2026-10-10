@@ -1,0 +1,1134 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import '../models/festival_model.dart';
+import '../models/user_model.dart';
+import '../models/shortfilm_model.dart';
+import '../models/message_model.dart';
+import '../models/notification_model.dart';
+import '../models/role_group_model.dart';
+import '../models/committee_model.dart';
+import '../models/role_delegation_model.dart';
+import '../models/role_transition_model.dart';
+import '../models/registration_form_model.dart';
+import '../models/event_model.dart';
+import '../models/award_model.dart';
+import '../models/user_alias_model.dart';
+import '../models/session_model.dart';
+import '../models/location_model.dart';
+import '../models/location_tag_model.dart';
+import '../models/location_image_model.dart';
+import '../models/film_location_model.dart';
+import '../models/form_definition_model.dart';
+import '../models/calendar_model.dart';
+import '../models/payment_model.dart';
+import '../models/role_model.dart';
+import '../models/festival_rulebook_model.dart';
+import 'backend_config.dart';
+import 'auth_service.dart';
+
+part 'api/festival_api.dart';
+part 'api/user_api.dart';
+part 'api/channel_api.dart';
+part 'api/form_api.dart';
+part 'api/calendar_api.dart';
+
+/// Envoltorio de respuesta paginada que coincide con el envelope del backend.
+class PaginatedResult<T> {
+  final List<T> items;
+  final int total;
+  final int pages;
+
+  PaginatedResult({required this.items, required this.total, required this.pages});
+}
+
+/// Cliente HTTP que envuelve todas las llamadas a la API del backend (patrón singleton).
+///
+/// Responsabilidades:
+/// - Inyección del header de autenticación JWT mediante AuthService
+/// - Gestión de parámetros de paginación (page, size)
+/// - Serialización/deserialización JSON
+/// - Gestión de errores y timeouts
+/// - Configuración de la URL base (compile-time + override en runtime mediante setBaseUrl)
+///
+/// Uso: ApiService().getFestivals(page: 1, size: 20)
+///
+/// Nota: 1285 líneas — considera dividirlo en clientes específicos por dominio
+/// (UserApi, FestivalApi, ChannelApi, etc.) para mantenerlo.
+/// TODO(E26): deuda modularizacion — plan en lib/services/api/README.md; ref. lib/services/api/festival_api.dart
+class ApiService {
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+
+  /// Cliente HTTP subyacente.
+  http.Client client;
+  String? _rootUrl;
+  String? _baseUrl;
+  final AuthService _auth;
+
+  ApiService._internal()
+      : client = http.Client(),
+        _auth = AuthService() {
+    _rootUrl = BackendConfig.compileTimeUrl != BackendConfig.defaultUrl
+        ? BackendConfig.compileTimeUrl
+        : BackendConfig.platformDefaultUrl;
+    _baseUrl = '$_rootUrl/api';
+  }
+
+  /// URL raíz del backend (sin el prefijo `/api`).
+  String get rootUrl => _rootUrl ?? BackendConfig.platformDefaultUrl;
+
+  /// URL base del backend con el prefijo `/api`.
+  String get baseUrl => _baseUrl ?? '${BackendConfig.platformDefaultUrl}/api';
+
+  /// Sustituye el cliente HTTP (útil para tests).
+  void setClient(http.Client newClient) {
+    client = newClient;
+  }
+
+  /// Cierra el cliente actual y crea uno nuevo.
+  void reset() {
+    client.close();
+    client = http.Client();
+  }
+
+  /// Actualiza la URL base en runtime (p. ej., desde la pantalla de configuración del backend).
+  /// Aviso: _rootUrl es late-final; la reasignación funciona pero no es idiomática.
+  void setBaseUrl(String url) {
+    _rootUrl = url;
+    _baseUrl = '$url/api';
+  }
+
+  Map<String, String> get _jsonHeaders => {
+        'Content-Type': 'application/json',
+      };
+
+  Future<Map<String, String>> get _authHeaders async {
+    final token = await _auth.getToken();
+    if (token == null) return _jsonHeaders;
+    return {
+      ..._jsonHeaders,
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  /// Devuelve `true` si el backend es accesible.
+  Future<bool> healthCheck() async {
+    try {
+      final uri = Uri.parse('$rootUrl/health');
+      final response = await client.get(uri).timeout(const Duration(seconds: 5));
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error: $e');
+      return false;
+    }
+  }
+
+  /// Libera el cliente HTTP para liberar recursos.
+  void dispose() {
+    client.close();
+  }
+
+  /// Decodifica el cuerpo de la respuesta y extrae la lista de items paginados.
+  List<dynamic> _extractItems(dynamic decoded) {
+    if (decoded is List) return decoded;
+    if (decoded is Map && decoded.containsKey('items')) {
+      return List<dynamic>.from(decoded['items']);
+    }
+    return [];
+  }
+
+  int _extractTotal(dynamic decoded) {
+    if (decoded is Map && decoded.containsKey('total')) {
+      final v = decoded['total'];
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v?.toString() ?? '') ?? 0;
+    }
+    return 0;
+  }
+
+  int _extractPages(dynamic decoded) {
+    if (decoded is Map && decoded.containsKey('pages')) {
+      final v = decoded['pages'];
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v?.toString() ?? '') ?? 0;
+    }
+    return 0;
+  }
+
+  /// Construye una cadena de consulta a partir de [params], o '' cuando está vacía.
+  String _buildQuery([Map<String, String>? params]) {
+    if (params == null || params.isEmpty) return '';
+    return Uri(queryParameters: params).query;
+  }
+
+  /// GET [path] (relativo a [baseUrl]) con [params] de consulta opcionales.
+  Future<dynamic> _get(String path, [Map<String, String>? params]) {
+    final query = _buildQuery(params);
+    return request('GET', query.isEmpty ? path : '$path?$query');
+  }
+
+  /// PUT de [fields] (codificados en JSON) a [path].
+  Future<dynamic> _put(String path, Map<String, dynamic> fields) {
+    return request('PUT', path, body: json.encode(fields));
+  }
+
+  /// Construye un [PaginatedResult] a partir de una respuesta paginada decodificada.
+  PaginatedResult<T> _paginated<T>(dynamic data, T Function(Map<String, dynamic>) fromJson) {
+    return PaginatedResult<T>(
+      items: _extractItems(data).map((j) => fromJson(j)).toList(),
+      total: _extractTotal(data),
+      pages: _extractPages(data),
+    );
+  }
+
+  /// Sube [filePath] mediante multipart POST a [path]; devuelve el cuerpo JSON
+  /// decodificado y lanza [ApiException] en respuestas no 2xx.
+  Future<dynamic> _uploadFile(String path, String filePath, {String? errorLabel}) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final token = await _auth.getToken();
+    final request = http.MultipartRequest('POST', uri);
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    request.files.add(await http.MultipartFile.fromPath('file', filePath));
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    }
+    throw ApiException('${errorLabel ?? 'Upload'} failed (${response.statusCode})');
+  }
+
+  /// Ejecuta una petición HTTP contra el backend.
+  ///
+  /// [method] es GET, POST, PUT o DELETE. [path] es relativo a [baseUrl]
+  /// (p. ej. `/festivals/`). Devuelve el cuerpo JSON decodificado, o `null` para 204.
+  /// Ante un 401, intenta automáticamente un refresh de token una vez antes de fallar.
+  Future<dynamic> request(
+    String method,
+    String path, {
+    Object? body,
+    bool withAuth = true,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+      final headers = withAuth ? await _authHeaders : _jsonHeaders;
+      late http.Response response;
+
+      try {
+        switch (method) {
+          case 'GET':
+            response = await client.get(uri, headers: withAuth ? headers : null).timeout(const Duration(seconds: 10));
+            break;
+          case 'POST':
+            response = await client.post(uri, headers: headers, body: body).timeout(const Duration(seconds: 10));
+            break;
+          case 'PUT':
+            response = await client.put(uri, headers: headers, body: body).timeout(const Duration(seconds: 10));
+            break;
+          case 'DELETE':
+            response = await client.delete(uri, headers: withAuth ? headers : null).timeout(const Duration(seconds: 10));
+            break;
+        }
+      } on TimeoutException {
+        throw ApiException('$method $path timed out');
+      }
+
+      if (response.statusCode == 401 && attempt == 0 && withAuth) {
+        final refreshed = await refreshToken();
+        if (refreshed) continue;
+        await _auth.clear();
+        throw UnauthorizedException();
+      }
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (response.body.isEmpty) return null;
+        return json.decode(response.body);
+      }
+
+      throw ApiException('$method $path failed (${response.statusCode})');
+    }
+
+    throw ApiException('$method $path failed (unexpected)');
+  }
+
+  /// Descarga los bytes de una respuesta autenticada sin decodificar JSON.
+  ///
+  /// [path] es relativo a [baseUrl] (p. ej. `/festivals/1/events/export/ics`),
+  /// opcionalmente con [params] de consulta. Devuelve los bytes crudos de la
+  /// respuesta. Ante un 401 intenta refrescar el token una vez antes de fallar.
+  Future<Uint8List> getBytes(String path, [Map<String, String>? params]) async {
+    final query = _buildQuery(params);
+    final uri = Uri.parse('$baseUrl${query.isEmpty ? path : '$path?$query'}');
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+      final token = await _auth.getToken();
+      final headers = token != null ? {'Authorization': 'Bearer $token'} : null;
+      late http.Response response;
+
+      try {
+        response = await client.get(uri, headers: headers).timeout(const Duration(seconds: 30));
+      } on TimeoutException {
+        throw ApiException('GET $path timed out');
+      }
+
+      if (response.statusCode == 401 && attempt == 0) {
+        final refreshed = await refreshToken();
+        if (refreshed) continue;
+        await _auth.clear();
+        throw UnauthorizedException();
+      }
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.bodyBytes;
+      }
+
+      throw ApiException('GET $path failed (${response.statusCode})');
+    }
+
+    throw ApiException('GET $path failed (unexpected)');
+  }
+
+  /// Envía una petición POST a [path] con [body], devolviendo el JSON decodificado.
+  Future<dynamic> create(String path, Object body) async {
+    return request('POST', path, body: json.encode(body));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Auth
+  // ---------------------------------------------------------------------------
+
+  /// Inicia sesión con [username] y [password], guardando los tokens y el [User] autenticado.
+  Future<User> login(String username, String password, {String? deviceName}) async {
+    final data = await request(
+      'POST',
+      '/users/login',
+      body: json.encode({
+        'username': username,
+        'password': password,
+        'device_name': deviceName ?? 'Clakettes App',
+      }),
+      withAuth: false,
+    );
+    await _auth.saveToken(data['access_token']);
+    if (data['refresh_token'] != null) {
+      await _auth.saveRefreshToken(data['refresh_token']);
+    }
+    final user = User.fromJson(data['user']);
+    await _auth.saveUser(user);
+    return user;
+  }
+
+  Future<bool>? _refreshInFlight;
+
+  /// Renueva el token de acceso usando el refresh token almacenado.
+  ///
+  /// Single-flight: los 401 concurrentes comparten un único refresh para que la
+  /// rotación de tokens del backend nunca termine en un falso "sesión expirada".
+  Future<bool> refreshToken() {
+    return _refreshInFlight ??= _performRefresh().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  Future<bool> _performRefresh() async {
+    final refreshToken = await _auth.getRefreshToken();
+    if (refreshToken == null) return false;
+    try {
+      final data = await request(
+        'POST',
+        '/auth/refresh',
+        body: json.encode({'refresh_token': refreshToken}),
+        withAuth: false,
+      );
+      await _auth.saveToken(data['access_token']);
+      if (data['refresh_token'] != null) {
+        await _auth.saveRefreshToken(data['refresh_token']);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error: $e');
+      return false;
+    }
+  }
+
+  /// Lista todas las sesiones del usuario actual.
+  Future<PaginatedResult<UserSession>> getSessions({int page = 1, int size = 20}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    final data = await _get('/auth/sessions', params);
+    return _paginated(data, UserSession.fromJson);
+  }
+
+  /// Revoca una sesión específica.
+  Future<void> revokeSession(int sessionId) async {
+    await request('DELETE', '/auth/sessions/$sessionId');
+  }
+
+  /// Revoca todas las sesiones (cierra sesión en todos los dispositivos).
+  Future<void> revokeAllSessions() async {
+    await request('POST', '/auth/sessions/revoke-all');
+  }
+
+
+
+  // ---------------------------------------------------------------------------
+  // Short Films
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene la lista paginada de cortometrajes, con filtros opcionales.
+  Future<PaginatedResult<ShortFilm>> getShortFilms({
+    int page = 1,
+    int size = 20,
+    int? festivalId,
+    bool? isPublic,
+  }) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (festivalId != null) params['festival_id'] = '$festivalId';
+    if (isPublic != null) params['is_public'] = '$isPublic';
+    final data = await _get('/shortfilms/', params);
+    return _paginated(data, ShortFilm.fromJson);
+  }
+
+  /// Crea un cortometraje y devuelve el [ShortFilm] creado.
+  Future<ShortFilm> createShortFilm(ShortFilm shortFilm) async {
+    final data = await create('/shortfilms/', shortFilm.toJson());
+    return ShortFilm.fromJson(data);
+  }
+
+  /// Obtiene un cortometraje por su id.
+  Future<ShortFilm> getShortFilm(int id) async {
+    final data = await request('GET', '/shortfilms/$id');
+    return ShortFilm.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de un cortometraje.
+  Future<ShortFilm> updateShortFilm(int id, Map<String, dynamic> fields) async {
+    final data = await _put('/shortfilms/$id', fields);
+    return ShortFilm.fromJson(data);
+  }
+
+  /// Elimina un cortometraje por su id.
+  Future<void> deleteShortFilm(int id) async {
+    await request('DELETE', '/shortfilms/$id');
+  }
+
+
+
+  // ---------------------------------------------------------------------------
+  // Search
+  // ---------------------------------------------------------------------------
+
+  /// Realiza una búsqueda global en el backend.
+  Future<Map<String, dynamic>> search(String query, {String type = 'all'}) async {
+    final params = <String, String>{'q': query, 'type': type};
+    return await request('GET', '/search/?${_buildQuery(params)}', withAuth: false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene estadísticas globales para el panel de administración.
+  Future<Map<String, dynamic>> getAdminStats() async {
+    return await request('GET', '/admin/stats');
+  }
+
+  /// Obtiene el recuento de filas de las tablas para el panel de administración.
+  Future<Map<String, dynamic>> getAdminTables() async {
+    return await request('GET', '/admin/tables');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Notifications
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene la lista paginada de notificaciones, con filtro opcional de leídas.
+  Future<PaginatedResult<AppNotification>> getNotifications({
+    int page = 1,
+    int size = 20,
+    bool? isRead,
+  }) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (isRead != null) params['is_read'] = '$isRead';
+    final data = await _get('/notifications/', params);
+    return _paginated(data, AppNotification.fromJson);
+  }
+
+  /// Obtiene el número de notificaciones no leídas.
+  Future<int> getUnreadNotificationCount() async {
+    final data = await request('GET', '/notifications/unread-count');
+    final c = data['count'];
+    if (c is int) return c;
+    if (c is num) return c.toInt();
+    return int.tryParse(c?.toString() ?? '') ?? 0;
+  }
+
+  /// Marca una notificación como leída.
+  Future<void> markNotificationRead(int notificationId) async {
+    await request('PUT', '/notifications/$notificationId/read');
+  }
+
+  /// Marca todas las notificaciones como leídas.
+  Future<void> markAllNotificationsRead() async {
+    await request('PUT', '/notifications/read-all');
+  }
+
+  /// Elimina una notificación.
+  Future<void> deleteNotification(int notificationId) async {
+    await request('DELETE', '/notifications/$notificationId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Role Groups
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene la lista paginada de grupos de roles, con filtro opcional de activos.
+  Future<PaginatedResult<RoleGroup>> getRoleGroups({int page = 1, int size = 20, bool? isActive}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (isActive != null) params['is_active'] = '$isActive';
+    final data = await _get('/role-groups/', params);
+    return _paginated(data, RoleGroup.fromJson);
+  }
+
+  /// Crea un grupo de roles y devuelve el [RoleGroup] creado.
+  Future<RoleGroup> createRoleGroup(RoleGroup g) async {
+    final data = await create('/role-groups/', g.toJson());
+    return RoleGroup.fromJson(data);
+  }
+
+  /// Obtiene un grupo de roles por su id.
+  Future<RoleGroup> getRoleGroup(int id) async {
+    final data = await request('GET', '/role-groups/$id');
+    return RoleGroup.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de un grupo de roles.
+  Future<RoleGroup> updateRoleGroup(int id, Map<String, dynamic> fields) async {
+    final data = await _put('/role-groups/$id', fields);
+    return RoleGroup.fromJson(data);
+  }
+
+  /// Elimina un grupo de roles por su id.
+  Future<void> deleteRoleGroup(int id) async {
+    await request('DELETE', '/role-groups/$id');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Committees
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los comités paginados de un festival.
+  Future<PaginatedResult<Committee>> getCommittees(int festivalId, {int page = 1, int size = 20}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    final data = await _get('/festivals/$festivalId/committees/', params);
+    return _paginated(data, Committee.fromJson);
+  }
+
+  /// Crea un comité en un festival y devuelve el [Committee] creado.
+  Future<Committee> createCommittee(int festivalId, Committee c) async {
+    final data = await create('/festivals/$festivalId/committees/', c.toJson());
+    return Committee.fromJson(data);
+  }
+
+  /// Obtiene un comité por su id.
+  Future<Committee> getCommittee(int id) async {
+    final data = await request('GET', '/committees/$id');
+    return Committee.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de un comité.
+  Future<Committee> updateCommittee(int id, Map<String, dynamic> fields) async {
+    final data = await _put('/committees/$id', fields);
+    return Committee.fromJson(data);
+  }
+
+  /// Elimina un comité por su id.
+  Future<void> deleteCommittee(int id) async {
+    await request('DELETE', '/committees/$id');
+  }
+
+  /// Obtiene los miembros paginados de un comité.
+  Future<PaginatedResult<CommitteeMember>> getCommitteeMembers(int committeeId, {int page = 1, int size = 20}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    final data = await _get('/committees/$committeeId/members/', params);
+    return _paginated(data, CommitteeMember.fromJson);
+  }
+
+  /// Añade un miembro a un comité y devuelve el [CommitteeMember] creado.
+  Future<CommitteeMember> addCommitteeMember(int committeeId, CommitteeMember m) async {
+    final data = await create('/committees/$committeeId/members/', m.toJson());
+    return CommitteeMember.fromJson(data);
+  }
+
+  /// Elimina a un miembro de un comité.
+  Future<void> removeCommitteeMember(int memberId) async {
+    await request('DELETE', '/committee-members/$memberId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Delegations
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las delegaciones paginadas, con filtros opcionales.
+  Future<PaginatedResult<RoleDelegation>> getDelegations({
+    int page = 1, int size = 20,
+    int? delegatorId, int? delegateId, String? status,
+  }) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (delegatorId != null) params['delegator_id'] = '$delegatorId';
+    if (delegateId != null) params['delegate_id'] = '$delegateId';
+    if (status != null) params['status'] = status;
+    final data = await _get('/delegations/', params);
+    return _paginated(data, RoleDelegation.fromJson);
+  }
+
+  /// Crea una delegación de rol y devuelve la [RoleDelegation] creada.
+  Future<RoleDelegation> createDelegation(RoleDelegation d) async {
+    final data = await create('/delegations/', d.toJson());
+    return RoleDelegation.fromJson(data);
+  }
+
+  /// Revoca una delegación, con motivo opcional.
+  Future<void> revokeDelegation(int delegationId, {String? reason}) async {
+    final body = reason != null ? json.encode({'reason': reason}) : null;
+    await request('POST', '/delegations/$delegationId/revoke', body: body);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Role Transitions
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las transiciones de rol paginadas, con filtros opcionales.
+  Future<PaginatedResult<RoleTransition>> getRoleTransitions({
+    int page = 1, int size = 20,
+    int? userId, String? transitionType,
+  }) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (userId != null) params['user_id'] = '$userId';
+    if (transitionType != null) params['transition_type'] = transitionType;
+    final data = await _get('/role-transitions/', params);
+    return _paginated(data, RoleTransition.fromJson);
+  }
+
+
+
+  // ---------------------------------------------------------------------------
+  // Events
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los eventos paginados de un festival, con filtro opcional de tipo.
+  Future<PaginatedResult<FestivalEvent>> getEvents(int festivalId, {int page = 1, int size = 20, String? eventType}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (eventType != null) params['event_type'] = eventType;
+    final data = await _get('/festivals/$festivalId/events/', params);
+    return _paginated(data, FestivalEvent.fromJson);
+  }
+
+  /// Crea un evento en un festival y devuelve el [FestivalEvent] creado.
+  Future<FestivalEvent> createEvent(int festivalId, FestivalEvent e) async {
+    final data = await create('/festivals/$festivalId/events/', e.toJson());
+    return FestivalEvent.fromJson(data);
+  }
+
+  /// Obtiene los eventos en los que el usuario actual está registrado (lista plana).
+  Future<List<FestivalEvent>> getMyEvents() async {
+    final data = await request('GET', '/users/me/events/');
+    return (data as List).map((j) => FestivalEvent.fromJson(j)).toList();
+  }
+
+  /// Obtiene un evento por su id.
+  Future<FestivalEvent> getEvent(int eventId) async {
+    final data = await request('GET', '/events/$eventId');
+    return FestivalEvent.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de un evento.
+  Future<FestivalEvent> updateEvent(int eventId, Map<String, dynamic> fields) async {
+    final data = await _put('/events/$eventId', fields);
+    return FestivalEvent.fromJson(data);
+  }
+
+  /// Elimina un evento por su id.
+  Future<void> deleteEvent(int eventId) async {
+    await request('DELETE', '/events/$eventId');
+  }
+
+  Future<PaginatedResult<FestivalEvent>> getProgramacion(int festivalId, {int page = 1, int size = 50, String? venue}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (venue != null && venue.isNotEmpty) params['venue'] = venue;
+    final data = await _get('/festivals/$festivalId/events/programacion', params);
+    return _paginated(data, FestivalEvent.fromJson);
+  }
+
+  Future<Map<String, dynamic>> checkEventConflict(int festivalId, {required String venue, required DateTime start, DateTime? end, int? excludeEventId}) async {
+    final params = <String, String>{'venue': venue, 'start_date': start.toIso8601String()};
+    if (end != null) params['end_date'] = end.toIso8601String();
+    if (excludeEventId != null) params['exclude_event_id'] = '$excludeEventId';
+    return Map<String, dynamic>.from(await _get('/festivals/$festivalId/events/check-conflict', params) as Map);
+  }
+
+  Future<List<int>> getEventScreenings(int eventId) async {
+    final data = await request('GET', '/events/$eventId/screenings');
+    return List<int>.from((data as Map)['shortfilm_ids'] as List? ?? []);
+  }
+
+  Future<Map<String, dynamic>> getEventScreeningBlock(int eventId) async {
+    return Map<String, dynamic>.from(await request('GET', '/events/$eventId/screenings') as Map);
+  }
+
+  Future<List<int>> setEventScreenings(int eventId, List<int> shortfilmIds) async {
+    final data = await request('PUT', '/events/$eventId/screenings', body: {'shortfilm_ids': shortfilmIds});
+    return List<int>.from((data as Map)['shortfilm_ids'] as List? ?? []);
+  }
+
+  Future<Map<String, dynamic>> getEventOccupancy(int eventId) async {
+    return Map<String, dynamic>.from(await request('GET', '/events/$eventId/occupancy') as Map);
+  }
+
+  Future<Payment> createPaymentCheckout({int? registrationId, int? eventId, double? amount, String currency = 'EUR'}) async {
+    final body = <String, dynamic>{'currency': currency};
+    if (registrationId != null) body['registration_id'] = registrationId;
+    if (eventId != null) body['event_id'] = eventId;
+    if (amount != null) body['amount'] = amount;
+    final data = await create('/payments/checkout', body);
+    return Payment.fromJson(data);
+  }
+
+  Future<PaginatedResult<Payment>> getPayments({int page = 1, int size = 20, String? status}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (status != null) params['status'] = status;
+    final data = await _get('/payments/', params);
+    return _paginated(data, Payment.fromJson);
+  }
+
+  Future<Payment> confirmPayment(int paymentId) async {
+    final data = await request('POST', '/payments/$paymentId/confirm');
+    return Payment.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<Payment> refundPayment(int paymentId) async {
+    final data = await request('POST', '/payments/$paymentId/refund');
+    return Payment.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Event Tickets
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los tipos de entrada de un evento.
+  Future<List<EventTicketType>> getEventTicketTypes(int eventId) async {
+    final data = await request('GET', '/events/$eventId/ticket-types/');
+    return (data['items'] as List).map((j) => EventTicketType.fromJson(j)).toList();
+  }
+
+  /// Crea un tipo de entrada para un evento.
+  Future<EventTicketType> createEventTicketType(int eventId, EventTicketType t) async {
+    final data = await create('/events/$eventId/ticket-types/', t.toJson());
+    return EventTicketType.fromJson(data);
+  }
+
+  /// Elimina un tipo de entrada.
+  Future<void> deleteEventTicketType(int ticketTypeId) async {
+    await request('DELETE', '/ticket-types/$ticketTypeId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Event Seats
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los asientos paginados de un evento, con filtro opcional de sección.
+  Future<PaginatedResult<EventSeat>> getSeats(int eventId, {int page = 1, int size = 100, String? section}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (section != null) params['section'] = section;
+    final data = await _get('/events/$eventId/seats/', params);
+    return _paginated(data, EventSeat.fromJson);
+  }
+
+  /// Crea asientos en bloque para un evento y devuelve los [EventSeat] creados.
+  Future<List<EventSeat>> bulkCreateSeats(int eventId, Map<String, dynamic> config) async {
+    final data = await create('/events/$eventId/seats/bulk', config);
+    return (data as List).map((j) => EventSeat.fromJson(j)).toList();
+  }
+
+  /// Obtiene las secciones de asientos de un evento.
+  Future<List<String>> getSeatSections(int eventId) async {
+    final data = await request('GET', '/events/$eventId/seats/sections');
+    return (data as List).cast<String>();
+  }
+
+  /// Obtiene el recuento de asientos por estado de un evento.
+  Future<Map<String, dynamic>> getSeatCounts(int eventId) async {
+    return await request('GET', '/events/$eventId/seats/counts');
+  }
+
+  /// Actualiza los campos indicados de un asiento.
+  Future<EventSeat> updateSeat(int seatId, Map<String, dynamic> fields) async {
+    final data = await _put('/seats/$seatId', fields);
+    return EventSeat.fromJson(data);
+  }
+
+  /// Libera un asiento reservado.
+  Future<void> releaseSeat(int seatId) async {
+    await request('POST', '/seats/$seatId/release');
+  }
+
+  /// Elimina un asiento.
+  Future<void> deleteSeat(int seatId) async {
+    await request('DELETE', '/seats/$seatId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Event Reservations
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene la reserva del usuario actual para un evento, o `null` si no existe.
+  Future<EventReservation?> getMyReservation(int eventId) async {
+    try {
+      final data = await request('GET', '/users/me/events/$eventId/reservation');
+      return EventReservation.fromJson(data);
+    } catch (e) {
+      debugPrint('Error: $e');
+      return null;
+    }
+  }
+
+  /// Obtiene las reservas paginadas de un evento, con filtro opcional de estado.
+  Future<PaginatedResult<EventReservation>> getEventReservations(int eventId, {int page = 1, int size = 20, String? status}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (status != null) params['status'] = status;
+    final data = await _get('/events/$eventId/reservations/', params);
+    return _paginated(data, EventReservation.fromJson);
+  }
+
+  /// Crea una reserva para un evento.
+  Future<EventReservation> createReservation(int eventId, Map<String, dynamic> body) async {
+    final data = await create('/events/$eventId/reservations/', body);
+    return EventReservation.fromJson(data);
+  }
+
+  /// Confirma una reserva.
+  Future<EventReservation> confirmReservation(int reservationId) async {
+    final data = await request('POST', '/reservations/$reservationId/confirm');
+    return EventReservation.fromJson(data);
+  }
+
+  /// Cancela una reserva.
+  Future<EventReservation> cancelReservation(int reservationId) async {
+    final data = await request('POST', '/reservations/$reservationId/cancel');
+    return EventReservation.fromJson(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Awards
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los premios paginados de un festival, con filtros opcionales.
+  Future<PaginatedResult<Award>> getAwards(int festivalId, {int page = 1, int size = 20, int? userId, int? shortfilmId}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (userId != null) params['user_id'] = '$userId';
+    if (shortfilmId != null) params['shortfilm_id'] = '$shortfilmId';
+    final data = await _get('/festivals/$festivalId/awards/', params);
+    return _paginated(data, Award.fromJson);
+  }
+
+  /// Crea un premio en un festival y devuelve el [Award] creado.
+  Future<Award> createAward(int festivalId, Award a) async {
+    final data = await create('/festivals/$festivalId/awards/', a.toJson());
+    return Award.fromJson(data);
+  }
+
+  /// Elimina un premio por su id.
+  Future<void> deleteAward(int awardId) async {
+    await request('DELETE', '/awards/$awardId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Festival rulebooks (bases)
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las bases paginadas de un festival, con filtro opcional de categoría.
+  Future<PaginatedResult<FestivalRulebook>> getRulebooks(int festivalId,
+      {int page = 1, int size = 20, String? category}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (category != null) params['category'] = category;
+    final data = await _get('/festivals/$festivalId/rulebooks/', params);
+    return _paginated(data, FestivalRulebook.fromJson);
+  }
+
+  /// Crea unas bases con documento externo (URL) y devuelve el objeto creado.
+  Future<FestivalRulebook> createRulebook(int festivalId, FestivalRulebook r) async {
+    final data = await create('/festivals/$festivalId/rulebooks/', r.toJson());
+    return FestivalRulebook.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de unas bases.
+  Future<FestivalRulebook> updateRulebook(int festivalId, int rulebookId, Map<String, dynamic> fields) async {
+    final data = await _put('/festivals/$festivalId/rulebooks/$rulebookId', fields);
+    return FestivalRulebook.fromJson(data);
+  }
+
+  /// Elimina unas bases por su id.
+  Future<void> deleteRulebook(int festivalId, int rulebookId) async {
+    await request('DELETE', '/festivals/$festivalId/rulebooks/$rulebookId');
+  }
+
+  /// Sube un PDF de bases con sus metadatos mediante multipart.
+  Future<FestivalRulebook> uploadRulebook(int festivalId, String filePath,
+      {required String title, String? description, String category = 'official_section', int? eventId, String? externalUrl}) async {
+    final uri = Uri.parse('$baseUrl/festivals/$festivalId/rulebooks/upload');
+    final token = await _auth.getToken();
+    final req = http.MultipartRequest('POST', uri);
+    if (token != null) req.headers['Authorization'] = 'Bearer $token';
+    req.fields['title'] = title;
+    if (description != null && description.isNotEmpty) req.fields['description'] = description;
+    req.fields['category'] = category;
+    if (eventId != null) req.fields['event_id'] = '$eventId';
+    if (externalUrl != null && externalUrl.isNotEmpty) req.fields['external_url'] = externalUrl;
+    req.files.add(await http.MultipartFile.fromPath('file', filePath));
+    final streamed = await req.send();
+    final response = await http.Response.fromStream(streamed);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return FestivalRulebook.fromJson(json.decode(response.body));
+    }
+    throw ApiException('Rulebook upload failed (${response.statusCode})');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Aliases
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene los alias paginados de un usuario, con filtro opcional de contexto.
+  Future<PaginatedResult<UserAlias>> getUserAliases(int userId, {int page = 1, int size = 20, String? context}) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (context != null) params['context'] = context;
+    final data = await _get('/users/$userId/aliases/', params);
+    return _paginated(data, UserAlias.fromJson);
+  }
+
+  /// Crea un alias para un usuario y devuelve el [UserAlias] creado.
+  Future<UserAlias> createUserAlias(int userId, UserAlias a) async {
+    final data = await create('/users/$userId/aliases/', a.toJson());
+    return UserAlias.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de un alias de usuario.
+  Future<UserAlias> updateUserAlias(int userId, int aliasId, Map<String, dynamic> fields) async {
+    final data = await _put('/users/$userId/aliases/$aliasId', fields);
+    return UserAlias.fromJson(data);
+  }
+
+  /// Elimina un alias de usuario.
+  Future<void> deleteUserAlias(int userId, int aliasId) async {
+    await request('DELETE', '/users/$userId/aliases/$aliasId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Festival User Profile (public alias-aware)
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene el perfil público (consciente de alias) de un usuario en un festival.
+  Future<Map<String, dynamic>> getFestivalUserProfile(int festivalId, int userId) async {
+    return await request('GET', '/festivals/$festivalId/users/$userId/profile', withAuth: false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Locations
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las localizaciones paginadas, con filtros opcionales de búsqueda y etiqueta.
+  Future<PaginatedResult<Location>> getLocations({
+    int page = 1,
+    int size = 20,
+    String? search,
+    String? tag,
+    bool? isActive,
+  }) async {
+    final params = <String, String>{'page': '$page', 'size': '$size'};
+    if (search != null && search.isNotEmpty) params['search'] = search;
+    if (tag != null) params['tag'] = tag;
+    if (isActive != null) params['is_active'] = '$isActive';
+    final data = await _get('/locations/', params);
+    return _paginated(data, Location.fromJson);
+  }
+
+  /// Crea una localización y devuelve la [Location] creada.
+  Future<Location> createLocation(Location location) async {
+    final data = await create('/locations/', location.toJson());
+    return Location.fromJson(data);
+  }
+
+  /// Obtiene una localización por su id.
+  Future<Location> getLocation(int id) async {
+    final data = await request('GET', '/locations/$id');
+    return Location.fromJson(data);
+  }
+
+  /// Actualiza los campos indicados de una localización.
+  Future<Location> updateLocation(int id, Map<String, dynamic> fields) async {
+    final data = await _put('/locations/$id', fields);
+    return Location.fromJson(data);
+  }
+
+  /// Elimina una localización por su id.
+  Future<void> deleteLocation(int id) async {
+    await request('DELETE', '/locations/$id');
+  }
+
+  /// Obtiene las localizaciones asociadas a un festival.
+  Future<List<Location>> getFestivalLocations(int festivalId) async {
+    final data = await request('GET', '/festivals/$festivalId/locations');
+    return (data as List).map((j) => Location.fromJson(j)).toList();
+  }
+
+  /// Asocia una localización a un festival.
+  Future<Location> addFestivalLocation(int festivalId, int locationId) async {
+    final data = await create('/festivals/$festivalId/locations', {'location_id': locationId});
+    return Location.fromJson(data);
+  }
+
+  /// Desasocia una localización de un festival.
+  Future<void> removeFestivalLocation(int festivalId, int locationId) async {
+    await request('DELETE', '/festivals/$festivalId/locations/$locationId');
+  }
+
+  /// Sube una imagen para una localización.
+  Future<Location> uploadLocationImage(int locationId, String filePath) async {
+    final data = await _uploadFile('/locations/$locationId/images', filePath, errorLabel: 'Location image');
+    return Location.fromJson(data);
+  }
+
+  /// Elimina una imagen de una localización por su URL.
+  Future<Location> deleteLocationImage(int locationId, String imageUrl) async {
+    final data = await request('DELETE', '/locations/$locationId/images?url=${Uri.encodeComponent(imageUrl)}');
+    return Location.fromJson(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location Tags
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las etiquetas de una localización.
+  Future<List<LocationTag>> getLocationTags(int locationId) async {
+    final data = await request('GET', '/locations/$locationId/tags/');
+    return (data as List).map((j) => LocationTag.fromJson(j)).toList();
+  }
+
+  /// Propone una etiqueta para una localización.
+  Future<LocationTag> proposeLocationTag(int locationId, String tag) async {
+    final data = await create('/locations/$locationId/tags/', {'tag': tag});
+    return LocationTag.fromJson(data);
+  }
+
+  /// Revoca una etiqueta de una localización.
+  Future<void> revokeLocationTag(int locationId, int tagId) async {
+    await request('DELETE', '/locations/$locationId/tags/$tagId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Film Locations
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las localizaciones de rodaje de un cortometraje.
+  Future<List<FilmLocation>> getFilmLocations(int shortfilmId) async {
+    final data = await request('GET', '/shortfilms/$shortfilmId/locations/');
+    return (data as List).map((j) => FilmLocation.fromJson(j)).toList();
+  }
+
+  /// Añade una localización de rodaje a un cortometraje.
+  Future<FilmLocation> addFilmLocation(int shortfilmId, Map<String, dynamic> fields) async {
+    final data = await create('/shortfilms/$shortfilmId/locations/', fields);
+    return FilmLocation.fromJson(data);
+  }
+
+  /// Actualiza una localización de rodaje de un cortometraje.
+  Future<FilmLocation> updateFilmLocation(int shortfilmId, int sflocId, Map<String, dynamic> fields) async {
+    final data = await _put('/shortfilms/$shortfilmId/locations/$sflocId', fields);
+    return FilmLocation.fromJson(data);
+  }
+
+  /// Elimina una localización de rodaje de un cortometraje.
+  Future<void> removeFilmLocation(int shortfilmId, int sflocId) async {
+    await request('DELETE', '/shortfilms/$shortfilmId/locations/$sflocId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location Images (structured)
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las imágenes estructuradas de una localización.
+  Future<List<LocationImage>> getLocationImages(int locationId) async {
+    final data = await request('GET', '/locations/$locationId/images/');
+    return (data as List).map((j) => LocationImage.fromJson(j)).toList();
+  }
+
+  /// Añade una imagen de una localización mediante su URL.
+  Future<LocationImage> addLocationImageUrl(int locationId, String url) async {
+    final data = await create('/locations/$locationId/images/url', {'url': url});
+    return LocationImage.fromJson(data);
+  }
+
+  /// Elimina una imagen de una localización.
+  Future<void> removeLocationImage(int locationId, int imageId) async {
+    await request('DELETE', '/locations/$locationId/images/$imageId');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location Relations
+  // ---------------------------------------------------------------------------
+
+  /// Obtiene las relaciones de una localización con otras.
+  Future<List<Map<String, dynamic>>> getLocationRelations(int locationId) async {
+    final data = await request('GET', '/locations/$locationId/relations/');
+    return (data as List).map((j) => Map<String, dynamic>.from(j)).toList();
+  }
+
+  /// Añade una relación entre dos localizaciones con un tipo dado.
+  Future<Map<String, dynamic>> addLocationRelation(int locationId, int relatedLocationId, String relationType) async {
+    final data = await create('/locations/$locationId/relations/', {
+      'related_location_id': relatedLocationId,
+      'relation_type': relationType,
+    });
+    return Map<String, dynamic>.from(data);
+  }
+
+  /// Elimina una relación de una localización.
+  Future<void> removeLocationRelation(int locationId, int relationId) async {
+    await request('DELETE', '/locations/$locationId/relations/$relationId');
+  }
+
+  /// Sugiere relaciones de una localización en un radio dado (en km).
+  Future<Map<String, dynamic>> suggestLocationRelations(int locationId, {double radiusKm = 1.0}) async {
+    final data = await request('POST', '/locations/$locationId/relations/suggest?radius_km=$radiusKm');
+    return Map<String, dynamic>.from(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location Badge
+  // ---------------------------------------------------------------------------
+
+  /// Actualiza el badge de una localización, o lo elimina si [badge] es `null`.
+  Future<Location> updateLocationBadge(int locationId, String? badge) async {
+    final params = badge != null ? '?badge=${Uri.encodeComponent(badge)}' : '';
+    final data = await request('PUT', '/locations/$locationId/badge$params');
+    return Location.fromJson(data);
+  }
+}
+
+/// Se lanza cuando el backend devuelve 401 Unauthorized.
+class UnauthorizedException implements Exception {
+  @override
+  String toString() => 'Session expired. Please log in again.';
+}
+
+/// Error genérico de la API.
+class ApiException implements Exception {
+  final String message;
+  ApiException(this.message);
+  @override
+  String toString() => message;
+}

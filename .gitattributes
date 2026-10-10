@@ -1,0 +1,81 @@
+# Auto detect
+* text=auto
+
+# Shell scripts — always LF
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+
+# Windows — always CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.psd1 text eol=crlf
+*.psm1 text eol=crlf
+
+# Python
+*.py text diff=python
+*.pyi text diff=python
+*.pyw text
+*.cfg text
+*.ini text
+*.toml text
+
+# Dart / Flutter
+*.dart text diff=dart
+*.yaml text
+*.yml text
+*.arb text
+
+# Markdown / docs
+*.md text diff=markdown
+*.rst text
+*.txt text
+
+# Web
+*.html text diff=html
+*.css text
+*.js text
+*.json text
+*.xml text
+*.svg text
+
+# Docker
+Dockerfile text
+Dockerfile.* text
+docker-compose*.yml text
+
+# Git
+.gitattributes text
+.gitignore text
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.zip binary
+*.tar.gz binary
+*.gz binary
+*.jar binary
+*.aar binary
+*.aab binary
+*.apk binary
+*.dmg binary
+*.AppImage binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.keystore binary
+*.jks binary
+*.db binary

@@ -1,0 +1,90 @@
+services:
+  # ── Dev (default: docker compose up) ──────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - "${PORT_BACKEND:-8000}:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/clakettes.db}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-change-in-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-}
+      - FORWARDED_ALLOW_IPS=${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      - PORT_BACKEND=${PORT_BACKEND:-8000}
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    ports:
+      - "${PORT_FRONTEND:-3000}:3000"
+    environment:
+      - PORT_BACKEND=${PORT_BACKEND:-8000}
+      - PORT_FRONTEND=${PORT_FRONTEND:-3000}
+      - BACKEND_URL=${BACKEND_URL:-}
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+  # ── DB (docker compose --profile db up) ──────────────────────────
+  db:
+    profiles: [db, prod]
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-rootpassword}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-clakettes_db}
+      MARIADB_USER: ${MARIADB_USER:-clakettes_user}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-clakettes_password}
+    ports:
+      - "${PORT_DB:-3306}:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 5
+
+  # ── Prod (docker compose --profile prod up -d) ──────────────────
+  backend-prod:
+    profiles: [prod]
+    build:
+      context: ./backend
+      target: prod
+    ports:
+      - "${PORT_BACKEND:-8000}:8000"
+    environment:
+      - DATABASE_URL=mariadb+pymysql://${MARIADB_USER:-clakettes_user}:${MARIADB_PASSWORD:-clakettes_password}@db:3306/${MARIADB_DATABASE:-clakettes_db}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-change-in-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-}
+      - FORWARDED_ALLOW_IPS=${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      - PORT_BACKEND=${PORT_BACKEND:-8000}
+    volumes:
+      - backend-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend-prod:
+    profiles: [prod]
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        BACKEND_URL: ${BACKEND_URL:-}
+    ports:
+      - "${PORT_FRONTEND_PROD:-80}:80"
+    depends_on:
+      - backend-prod
+
+volumes:
+  db-data:
+  backend-data:
