@@ -14,7 +14,7 @@ jobs:
   # ─── LINT ─────────────────────────────────────────────────────────
   backend-lint:
     name: Backend Lint (ruff)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: backend
@@ -35,7 +35,7 @@ jobs:
 
   frontend-lint:
     name: Frontend Lint (flutter analyze)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: frontend
@@ -55,7 +55,7 @@ jobs:
   # ─── TEST ─────────────────────────────────────────────────────────
   backend-test:
     name: Backend Tests (pytest)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: backend
@@ -103,7 +103,7 @@ jobs:
 
   frontend-test:
     name: Frontend Tests (flutter test)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: frontend
@@ -125,7 +125,7 @@ jobs:
   # ─── BUILD (Docker) ───────────────────────────────────────────────
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [backend-lint, frontend-lint, backend-test, frontend-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
@@ -144,7 +144,7 @@ jobs:
   # ─── DEPLOY (optional, manual trigger) ────────────────────────────
   # deploy:
   #   name: Deploy to Production
-  #   runs-on: ubuntu-24.04
+  #   runs-on: ubuntu-26.04
   #   needs: docker-build
   #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
   #   environment: production
