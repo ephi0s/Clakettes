@@ -29,7 +29,7 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 ## Operación
 
 - **Migrar**: `alembic upgrade head` desde `backend/` (Docker: `-Migrate`).
-- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en `DATABASE.md`).
+- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en [../backend/DATABASE.md](../backend/DATABASE.md)).
 - **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volumen `db-data` en Docker).
 - **Logs**: uvicorn stdout (tokens DAV ya redactados); errores de API en SnackBar + `debugPrint`.
 - **Límites**: cuerpos ≤10 MB (413 si mayor); rate limit con 429 + reintento.
@@ -37,3 +37,10 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 ## Roles de usuario
 
 `admin` (todo) → `organizer` (su festival: eventos, formularios, comités) → `attendee`/`juror`/etc. (asignados por organizers; el auto-join solo da `attendee`). Canales: `admin`/`moderator`/`member`; comités con conteo de miembros en lista.
+
+## Ver también
+
+- [README.md](../README.md): descripcion general del proyecto y acceso rápido
+- [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts y comandos de ejecucion
+- [ADMINISTRACION.md](ADMINISTRACION.md): administración del despliegue y rotacion de secretos
+- [SEGURIDAD.md](SEGURIDAD.md): checklist y buenas practicas de produccion

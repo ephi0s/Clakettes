@@ -53,4 +53,4 @@
    documentar un único entrypoint por OS, no reescribir los tres a la vez.
 3. **Cobertura en CI** (`pytest --cov`, `flutter test --coverage` + lcov):
     útil cuando se amplíen tests de `syncAll` y routers sin cubrir (ver
-    roadmap en `README.md`).
+    roadmap en [../README.md](../README.md)).

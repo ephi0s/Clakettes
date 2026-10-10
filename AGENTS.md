@@ -40,8 +40,8 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - `graphify query "<pregunta>"` responde sobre arquitectura sin leer archivos
 - `graphify .` para regenerar (o skill graphify)
 
-## Docs (`docs/README.md`)
-- Índice por audiencia (usuario/admin/dev/IA); canónicos: `SEGURIDAD.md`, `USO.md`, `backend/DATABASE.md`, `API.md`
+## Docs ([docs/README.md](docs/README.md))
+- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/SEGURIDAD.md](docs/SEGURIDAD.md), [docs/USO.md](docs/USO.md), [backend/DATABASE.md](backend/DATABASE.md), [docs/API.md](docs/API.md)
 
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.

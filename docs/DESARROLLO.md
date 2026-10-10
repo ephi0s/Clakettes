@@ -9,7 +9,7 @@
    `require_*` de `permissions.py`. Auth opcional solo para lectura pública.
 4. Migración si cambia el esquema: `alembic revision --autogenerate -m "..."`.
 5. Test en `tests/test_<dominio>.py` (200 + 401 sin token + 403 sin permiso +
-   404 inexistente). Regenerar `docs/API.md` con `tools/gen_api.py`.
+   404 inexistente). Regenerar [API.md](API.md) con `tools/gen_api.py`.
 
 ## Frontend: añadir una pantalla
 

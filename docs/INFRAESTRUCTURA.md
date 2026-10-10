@@ -1,6 +1,6 @@
 # Infraestructura — Clakettes
 
-Perfiles, puertos, entorno y CI. Operativa diaria en `USO.md`, checklist de endurecido en `SEGURIDAD.md`.
+Perfiles, puertos, entorno y CI. Operativa diaria en [USO.md](USO.md), checklist de endurecido en [SEGURIDAD.md](SEGURIDAD.md).
 
 ## Perfiles Docker (`docker-compose.yml`)
 
@@ -51,3 +51,10 @@ Volúmenes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-
 - **GitLab**: stages `lint → test → build`; `docker-build` solo en `main` con push al registry.
 
 Puerta local (misma que CI): `ruff check .` + `ruff format --check .` + `pytest tests/ -x -q --tb=short` (desde `backend/`), `flutter analyze` + `flutter test` (desde `frontend/`).
+
+## Ver también
+
+- [USO.md](USO.md): uso diario del despliegue
+- [ADMINISTRACION.md](ADMINISTRACION.md): operaciones y recuperación
+- [SEGURIDAD.md](SEGURIDAD.md): controles y parámetros de producción
+- [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts y comandos de build/test

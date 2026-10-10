@@ -29,25 +29,111 @@ Funciona en web, Android, iOS y escritorio (Windows, macOS, Linux), en 9 idiomas
 - **Sin conexión**: la app sigue funcionando offline y sincroniza tus cambios al recuperar la conexión.
 - **En tu idioma**: español, inglés, francés, alemán, italiano, catalán, euskera, gallego y occitano, con detección automática.
 
-## Empieza en 1 minuto
+## Requisitos y arranque
+
+### Requisitos mínimos
+
+- Python 3.12+
+- Flutter SDK >= 3.0.0 y < 4.0.0
+- Git
+- Docker y Docker Compose para despliegue/entorno productivo
+- Navegador con soporte para web (recomendado Chrome/Brave)
+
+### Inicio rápido
+
+En Windows:
 
 ```bat
 start.bat --dev
 ```
 
-Eso arranca el backend (`http://localhost:8000`, con documentación en `/docs`) y la app. Sin backend: `start.bat --no-frontend` o `--no-backend`. Ver todas las opciones con `start.bat --help` (en PowerShell: `start.ps1`, en Linux/macOS: `start.sh`).
+En PowerShell:
 
-Necesitas tener instalados **Python 3.12+** y el **SDK de Flutter**; los scripts crean el entorno y descargan dependencias solos. Para producción hay `docker compose --profile prod up -d` (ver [Despliegue](#despliegue)).
+```powershell
+./start.ps1 --dev
+```
+
+En Linux/macOS:
+
+```bash
+./start.sh --dev
+```
+
+Esto levanta el backend en `http://localhost:8000` y la app en modo local; la API expone Swagger/OpenAPI en `/docs`. Puedes desactivar cualquiera de las dos partes con `--no-backend` o `--no-frontend`.
+
+### Otras opciones útiles
+
+```bash
+start.bat --help
+start.bat --migrate
+start.bat --build
+start.bat --build-all
+```
+
+Consulta la referencia completa del arranque y despliegue en [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md) y [docs/USO.md](docs/USO.md).
+
+## Variables de entorno y configuración
+
+### Backend
+
+Crea o ajusta `backend/.env` con al menos:
+
+```env
+DATABASE_URL=sqlite:///./app.db
+SECRET_KEY=tu-secret-key
+CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+```
+
+Para entorno productivo se usa MariaDB; los scripts y la documentación de despliegue lo gestionan con Docker.
+
+### Frontend
+
+La app reutiliza el backend por URL, normalmente con `--dart-define`:
+
+```bash
+flutter run --dart-define=BACKEND_URL=http://localhost:8000
+```
+
+El arranque automático del proyecto ya configura esto cuando se usa `start.*`.
 
 ## Estado del proyecto
 
 🚧 **En desarrollo activo** — Festivales, cortos, chat con E2EE, mapas, modo offline y 9 idiomas funcionando; con tests en backend (~1320) y frontend (70 archivos).
 
 **Roadmap próximo:**
+
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
 - [ ] Documentación API OpenAPI exportable
+
+## Documentación del proyecto
+
+El mapa de documentación está en [docs/README.md](docs/README.md). Es la mejor entrada para cada tipo de usuario:
+
+- [docs/USO.md](docs/USO.md): arranque, operación, entorno y uso diario
+- [docs/ADMINISTRACION.md](docs/ADMINISTRACION.md): administración, cuentas y despliegue
+- [docs/INFRAESTRUCTURA.md](docs/INFRAESTRUCTURA.md): Docker, puertos, CI y infra
+- [docs/SEGURIDAD.md](docs/SEGURIDAD.md): tokens, políticas y checklist de producción
+- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): arquitectura backend/frontend y flujos clave
+- [docs/API.md](docs/API.md): referencia de endpoints
+- [docs/DESARROLLO.md](docs/DESARROLLO.md): cómo añadir endpoints o pantallas
+- [backend/DATABASE.md](backend/DATABASE.md): esquema y migraciones
+
+Además, el punto de partida para desarrollo y convención de proyecto es [AGENTS.md](AGENTS.md).
+
+### Ver también
+
+- [docs/README.md](docs/README.md): índice general por audiencia
+- [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md): comandos de build, test y arranque
+- [docs/FUNCIONAL.md](docs/FUNCIONAL.md): uso real del producto por rol
+
+### FAQ rápida
+
+- **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
+- **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
+- **¿Qué documento debo leer primero?** Si eres usuario, [docs/USO.md](docs/USO.md); si eres desarrollador, [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+- **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
 
 ## Para desarrolladores
 
@@ -59,32 +145,68 @@ Necesitas tener instalados **Python 3.12+** y el **SDK de Flutter**; los scripts
 # Tests
 cd backend && python -m pytest tests/ -x -q --tb=short
 cd frontend && flutter test
+
 # Lint
 cd backend && ruff check . && ruff format --check .
 cd frontend && flutter analyze
+
 # Migraciones
 cd backend && alembic upgrade head
 ```
 
-Configuración en `backend/.env` (`DATABASE_URL`, `SECRET_KEY`, `CORS_ORIGINS`, puertos); la app toma el backend de `--dart-define=BACKEND_URL=...`.
+## Desarrollo local
 
-### Despliegue
+```bash
+# Backend
+cd backend
+python -m uvicorn app.main:app --reload
+
+# Frontend
+cd frontend
+flutter run
+```
+
+## Despliegue
 
 ```bash
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Builds distribubles (web, Windows, Linux, Android) con `start.bat --build-all`.
+Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Linux, Android) se gestionan con `start.bat --build-all` y el conjunto de scripts de [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md).
+
+## Solución de problemas
+
+### El backend no arranca
+
+- Verifica que Python 3.12+ esté instalado.
+- Comprueba que `backend/.env` existe y es válido.
+- Ejecuta `cd backend && python -m uvicorn app.main:app --reload` para ver el error real.
+
+### La app no conecta con la API
+
+- Asegúrate de que el backend está en `http://localhost:8000`.
+- Revisa si `BACKEND_URL` se está pasando con `--dart-define`.
+- Comprueba que la API responde en `/docs`.
+
+### Problemas con bases de datos o migraciones
+
+- Usa `cd backend && alembic upgrade head`.
+- Si cambias de SQLite a MariaDB, revisa [docs/USO.md](docs/USO.md) y [backend/DATABASE.md](backend/DATABASE.md).
+
+### Frontend con errores de Flutter
+
+- Ejecuta `cd frontend && flutter pub get`.
+- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ## Contribuir
 
-1. Fork el repositorio
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'feat: añade nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+1. Haz un fork del repositorio.
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`).
+3. Haz commit con mensajes claros y descriptivos (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+4. Empuja la rama (`git push origin feature/nueva-funcionalidad`).
+5. Abre un Pull Request con contexto, cambios y validación.
 
-**Convenciones:** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`); `ruff check .` / `flutter analyze` y `pytest` / `flutter test` deben pasar.
+**Convenciones de calidad:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` y `flutter test` deben pasar antes de fusionar.
 
 ## Licencia
 

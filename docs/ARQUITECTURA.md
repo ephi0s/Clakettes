@@ -10,7 +10,7 @@ Flutter (web/escritorio/Android/iOS) ──HTTPS──► FastAPI ──► SQLi
 
 Puertos (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3306`.
 
-## Backend (`backend/`, detalle en `BACKEND.md` y `DATABASE.md`)
+## Backend (`backend/`, detalle en [../backend/BACKEND.md](../backend/BACKEND.md) y [../backend/DATABASE.md](../backend/DATABASE.md))
 
 Capas: Routers (35) → Services (34) → Models (35), tipos vía `app.enums`.
 
@@ -37,7 +37,7 @@ Servicios singleton + `setState()` + Streams (sin Provider). Arranque en `main()
 | API | `services/api_service.dart` (núcleo) + `services/api/` (9 dominios) | Base `BACKEND_URL` (guardada > dart-define > default por plataforma; Android emulador `10.0.2.2`) |
 | Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-reenvío) | Al reconectar, sync con confirmación |
 | Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en vivo, REST para historial; E2EE ECDH P-256 + AES-GCM en isolates |
-| Avisos | `notification_service.dart` | Escritorio: plugin SO; web: Notification API; móvil: no-op (ver `PUSH.md`) |
+| Avisos | `notification_service.dart` | Escritorio: plugin SO; web: Notification API; móvil: no-op (ver [PUSH.md](PUSH.md)) |
 | Navegación | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer siempre; 10 pantallas cacheadas |
 | i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` es fallback; 0 claves ausentes (verificado con script) |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Red, ubicación, cámara, fototeca, alarmas exactas |

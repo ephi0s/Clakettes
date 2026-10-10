@@ -1,6 +1,6 @@
 # Administración — Clakettes
 
-Guía para quien opera un despliegue. Infraestructura en `INFRAESTRUCTURA.md`, checklist prod en `SEGURIDAD.md`.
+Guía para quien opera un despliegue. Infraestructura en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md), checklist de producción en [SEGURIDAD.md](SEGURIDAD.md).
 
 ## Cuenta inicial
 
@@ -24,7 +24,7 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 
 - SQLite: copiar `*.db` en caliente parado (`-Kill` antes). MariaDB: `mariadb-dump` (volumen `db-data`).
 - Migraciones: `alembic upgrade head` desde `backend/` (15 versiones; prod **solo** Alembic, nunca `create_all`).
-- Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en `../backend/DATABASE.md`.
+- Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en [../backend/DATABASE.md](../backend/DATABASE.md).
 
 ## Troubleshooting
 
@@ -38,3 +38,10 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 | `429` generalizado | rate limit 100/60s por IP (o 3/300s en reset) | Espera y reintenta; revisa `TESTING=true` residual |
 | WS no conecta | JWT sin `type=access` o sesión revocada/expirada | Re-login; revisa `/api/auth/sessions` |
 | App offline no sincroniza | cola con fallos agotados (`failed`, 3 intentos + backoff) | Revisa errores en el prompt de sync; `clear()` tras confirmar en logout |
+
+## Ver también
+
+- [USO.md](USO.md): arranque y operación del sistema
+- [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md): despliegue, puertos y CI
+- [SEGURIDAD.md](SEGURIDAD.md): checklist de endurecimiento y políticas
+- [../README.md](../README.md): contexto global del proyecto

@@ -1,6 +1,6 @@
 # Funcional — qué se puede hacer en Clakettes
 
-Utilidad real del proyecto por rol, con el flujo que la sostiene. Detalle operativo en `USO.md`, referencia de endpoints en `API.md`.
+Utilidad real del proyecto por rol, con el flujo que la sostiene. Detalle operativo en [USO.md](USO.md), referencia de endpoints en [API.md](API.md).
 
 ## Festival (organizer)
 
@@ -32,7 +32,7 @@ Descubre festivales (`GET /api/festivals/` paginado y público), sigue cortos y 
 
 ## Administrador global (admin)
 
-Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Operativa en `ADMINISTRACION.md` (stats, tablas, reset, backups, secretos).
+Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tablas, reset, backups, secretos).
 
 ## Estados que debes conocer
 

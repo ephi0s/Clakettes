@@ -158,7 +158,7 @@ alembic current
 | `EventTicketType` | `event_ticket_types` | Event ticket categories |
 | `EventSeat` | `event_seats` | Seat map with positions |
 
-See `DATABASE.md` for complete schema documentation with ER diagrams.
+See [DATABASE.md](DATABASE.md) for complete schema documentation with ER diagrams.
 
 ---
 
