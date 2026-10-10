@@ -9,6 +9,7 @@ LABEL stage="flutter-sdk"
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
     unzip \
@@ -28,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH=$FLUTTER_HOME/bin:$FLUTTER_HOME/bin/cache/dart-sdk/bin:$PATH
 
-RUN git clone --depth 1 --branch 3.24.0 https://github.com/flutter/flutter.git $FLUTTER_HOME \
+RUN git clone --depth 1 --branch 3.47.3 https://github.com/flutter/flutter.git $FLUTTER_HOME \
     && flutter config --enable-web --enable-linux-desktop \
     && flutter precache
 
@@ -92,6 +93,7 @@ LABEL stage="linux-x86"
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
     unzip \
@@ -111,7 +113,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH=$FLUTTER_HOME/bin:$FLUTTER_HOME/bin/cache/dart-sdk/bin:$PATH
 
-RUN git clone --depth 1 --branch 3.24.0 https://github.com/flutter/flutter.git $FLUTTER_HOME \
+RUN git clone --depth 1 --branch 3.47.3 https://github.com/flutter/flutter.git $FLUTTER_HOME \
     && flutter config --enable-linux-desktop \
     && flutter precache
 

@@ -5,15 +5,13 @@ FROM ubuntu:24.04 AS flutter-sdk
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip xz-utils zip \
-    libglu1-mesa clang cmake ninja-build \
-    pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev \
+    ca-certificates curl git unzip xz-utils zip \
     && rm -rf /var/lib/apt/lists/*
 
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH=$FLUTTER_HOME/bin:$FLUTTER_HOME/bin/cache/dart-sdk/bin:$PATH
 
-RUN git clone --depth 1 --branch 3.24.0 https://github.com/flutter/flutter.git $FLUTTER_HOME \
+RUN git clone --depth 1 --branch 3.47.3 https://github.com/flutter/flutter.git $FLUTTER_HOME \
     && flutter config --enable-web \
     && dart --version
 
