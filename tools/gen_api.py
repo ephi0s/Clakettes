@@ -1,4 +1,5 @@
-import ast, re
+import ast
+import re
 from pathlib import Path
 
 ROOT = Path("C:/Users/abdon/Desktop/proyectos/cine/backend")
@@ -6,12 +7,18 @@ ROUTERS = ROOT / "app" / "routers"
 MAIN = (ROOT / "app" / "main.py").read_text(encoding="utf-8")
 
 prefix_of = {}
-for m in re.finditer(r"app\.include_router\(\s*(\w+)\.router,\s*prefix=\"([^\"]+)\"", MAIN):
+for m in re.finditer(
+    r"app\.include_router\(\s*(\w+)\.router,\s*prefix=\"([^\"]+)\"", MAIN
+):
     prefix_of[m.group(1)] = m.group(2)
 
-out = ["# API — referencia de endpoints", "",
-       "Generado desde `app/routers/*.py` + prefijos de `app/main.py`.",
-       "Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.", ""]
+out = [
+    "# API — referencia de endpoints",
+    "",
+    "Generado desde `app/routers/*.py` + prefijos de `app/main.py`.",
+    "Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.",
+    "",
+]
 total = 0
 for f in sorted(ROUTERS.glob("*.py")):
     if f.name == "__init__.py":
@@ -41,7 +48,11 @@ for f in sorted(ROUTERS.glob("*.py")):
     src = f.read_text(encoding="utf-8")
     for method, path, name in rows:
         # auth: busca el cuerpo de la función para get_current_user / optional / nada
-        m = re.search(rf"(async )?def {name}\(.*?\):(.*?)(?=\n@router|\ndef |\nasync def |\Z)", src, re.S)
+        m = re.search(
+            rf"(async )?def {name}\(.*?\):(.*?)(?=\n@router|\ndef |\nasync def |\Z)",
+            src,
+            re.S,
+        )
         body = m.group(0) if m else ""
         if method == "WEBSOCKET":
             auth = "token (query)"
@@ -57,5 +68,7 @@ for f in sorted(ROUTERS.glob("*.py")):
     out.append("")
 
 out.append(f"Total: {total} endpoints en {len(prefix_of)} routers.")
-Path("C:/Users/abdon/Desktop/proyectos/cine/docs/API.md").write_text("\n".join(out), encoding="utf-8")
+Path("C:/Users/abdon/Desktop/proyectos/cine/docs/API.md").write_text(
+    "\n".join(out), encoding="utf-8"
+)
 print("endpoints:", total, "| routers con prefijo:", len(prefix_of))
