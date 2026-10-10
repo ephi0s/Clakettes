@@ -3,14 +3,14 @@
   Builds Clakettes backend distributable packages using Docker.
 
 .EXAMPLE
-  .\build.ps1 -Target pyinstaller
+  .\build.ps1 -Target windows-x64
   .\build.ps1 -Target all
 #>
 
 [CmdletBinding()]
 param(
   [Parameter(Mandatory)]
-  [ValidateSet('pyinstaller', 'windows-x64', 'windows-x86', 'all')]
+  [ValidateSet('windows-x64', 'windows-x86', 'all')]
   [string]$Target,
 
   [string]$OutputDir = (Join-Path -Path $PSScriptRoot -ChildPath '..\..\builds'),
@@ -84,19 +84,12 @@ if (-not (Test-DockerAvailable)) { throw 'Docker is not available.' }
 try {
   switch ($Target) {
     'all' {
-      Invoke-Build -TargetName 'pyinstaller-linux'
-      Copy-BuildOutput -ImageName 'clakettes-backend-pyinstaller-linux' -ContainerPath '/app/dist' -LocalPath (Join-Path $OutputDir 'backend-linux-x86_64')
-
       if (Test-WindowsContainers) {
         Invoke-Build -TargetName 'windows-x64'
         Copy-BuildOutput -ImageName 'clakettes-backend-windows-x64' -ContainerPath 'C:\app\dist' -LocalPath (Join-Path $OutputDir 'backend-windows-x86_64')
       } else {
         Write-Color "  -> Skipping windows-x64 (not on Windows containers mode)" Yellow
       }
-    }
-    'pyinstaller' {
-      Invoke-Build -TargetName 'pyinstaller-linux'
-      Copy-BuildOutput -ImageName 'clakettes-backend-pyinstaller-linux' -ContainerPath '/app/dist' -LocalPath (Join-Path $OutputDir 'backend-linux-x86_64')
     }
     'windows-x64' {
       Invoke-BuildWindows -TargetName 'windows-x64'

@@ -559,7 +559,6 @@ Genera en `builds/`:
 - `frontend-windows-x86_64/` — Windows 64-bit
 - `frontend-linux-x86_64/` — Linux 64-bit bundle / AppImage
 - `frontend-android/` — APK y AAB
-- `backend-linux-x86_64/` — PyInstaller binary
 - *(macOS/iOS requieren máquina macOS nativa)*
 
 ---

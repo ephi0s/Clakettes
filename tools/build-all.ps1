@@ -60,10 +60,6 @@ if ($Frontend) {
 
 # ---- BACKEND ----
 if ($Backend) {
-  Step "Building Backend (Docker)"
-  & "$ROOT\backend\docker\build.ps1" -Target all -NoCache:$NoCache
-  if (-not $?) { throw "Backend build failed" }
-
   # macOS backend (if on macOS)
   if (-not $SkipMacOS) {
     Step "Building Backend for macOS"
@@ -72,7 +68,7 @@ if ($Backend) {
 
   # Windows backend (if Docker is in Windows containers mode)
   Step "Building Backend for Windows (PyInstaller)"
-  & "$ROOT\backend\docker\build.ps1" -Target windows-x64 -NoCache:$NoCache
+  & "$ROOT\backend\docker\build.ps1" -Target all -NoCache:$NoCache
   if (-not $?) { Write-Color "  -> Windows backend build skipped or failed (not on Windows containers mode?)" Yellow }
 }
 
