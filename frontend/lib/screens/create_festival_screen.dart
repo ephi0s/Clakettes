@@ -109,11 +109,16 @@ class _CreateFestivalScreenState extends State<CreateFestivalScreen> {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      await SyncQueueService.instance.enqueue(
-        entityType: 'festival',
-        operation: 'create',
-        payload: festival.toJson(),
-      );
+      final queue = SyncQueueService.instance;
+      final payload = festival.toJson();
+      if (!queue.contains(
+          entityType: 'festival', operation: 'create', payload: payload)) {
+        await queue.enqueue(
+          entityType: 'festival',
+          operation: 'create',
+          payload: payload,
+        );
+      }
       if (mounted) {
         showAppSnack(
           context,

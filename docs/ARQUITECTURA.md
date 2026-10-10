@@ -12,7 +12,7 @@ Puertos (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `
 
 ## Backend (`backend/`, detalle en `BACKEND.md` y `DATABASE.md`)
 
-Capas: Routers (33) → Services (33) → Models (34) → Schemas (32), tipos vía `app.enums`.
+Capas: Routers (35) → Services (34) → Models (35), tipos vía `app.enums`.
 
 | Pieza | Dónde | Regla |
 |---|---|---|

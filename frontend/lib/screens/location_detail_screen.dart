@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/location_model.dart';
 import '../models/location_tag_model.dart';
@@ -10,6 +9,7 @@ import '../services/auth_service.dart';
 import '../widgets/reusable_widgets.dart';
 import '../widgets/location_badge_chip.dart';
 import '../widgets/location_tag_editor.dart';
+import '../widgets/open_in_maps_action.dart';
 
 /// Muestra el detalle completo de una localización: cabecera, insignia,
 /// descripción, etiquetas, galería de imágenes, mapa de coordenadas y
@@ -137,20 +137,8 @@ class _LocationDetailScreenState extends State<LocationDetailScreen> {
     }
   }
 
-  /// Abre la localización en la app de mapas del sistema, usando
-  /// OpenStreetMap cuando el esquema geo no está disponible.
-  Future<void> _openInMaps(double lat, double lng, String label) async {
-    final encodedLabel = Uri.encodeComponent(label);
-    final geoUri = Uri.parse('geo:0,0?q=$lat,$lng($encodedLabel)');
-    if (await canLaunchUrl(geoUri)) {
-      await launchUrl(geoUri);
-      return;
-    }
-    final osmUri = Uri.parse('https://www.openstreetmap.org/?mlat=$lat&mlon=$lng');
-    if (await canLaunchUrl(osmUri)) {
-      await launchUrl(osmUri, webOnlyWindowName: '_blank');
-    }
-  }
+  Future<void> _openInMaps(double lat, double lng, String label) =>
+      openInMaps(lat, lng, label: label);
 
   /// Muestra la imagen a pantalla completa en un diálogo con visor interactivo.
   void _showImagePreview(String imageUrl) {

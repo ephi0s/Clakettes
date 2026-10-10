@@ -109,12 +109,16 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      // Offline: queue for later sync.
-      await SyncQueueService.instance.enqueue(
-        entityType: 'user',
-        operation: 'create',
-        payload: user.toJson(),
-      );
+      final queue = SyncQueueService.instance;
+      final payload = user.toJson();
+      if (!queue.contains(
+          entityType: 'user', operation: 'create', payload: payload)) {
+        await queue.enqueue(
+          entityType: 'user',
+          operation: 'create',
+          payload: payload,
+        );
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -13,6 +13,7 @@ import '../widgets/reusable_widgets.dart';
 import '../widgets/location_selector.dart';
 import '../widgets/festival_sections.dart';
 import '../widgets/confirm_dialog.dart';
+import '../widgets/open_in_maps_action.dart';
 import 'location_detail_screen.dart';
 import 'registration_forms_screen.dart';
 import 'events_management_screen.dart';
@@ -191,20 +192,8 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
     }
   }
 
-  Future<void> _openInMaps(double lat, double lng, String label) async {
-    final encodedLabel = Uri.encodeComponent(label);
-    final geoUri = Uri.parse('geo:0,0?q=$lat,$lng($encodedLabel)');
-    if (await canLaunchUrl(geoUri)) {
-      await launchUrl(geoUri);
-      return;
-    }
-    final osmUri = Uri.parse(
-      'https://www.openstreetmap.org/?mlat=$lat&mlon=$lng',
-    );
-    if (await canLaunchUrl(osmUri)) {
-      await launchUrl(osmUri, mode: LaunchMode.externalApplication);
-    }
-  }
+  Future<void> _openInMaps(double lat, double lng, String label) =>
+      openInMaps(lat, lng, label: label);
 
   Future<void> _openWebsite(String url) async {
     var uri = Uri.tryParse(url);

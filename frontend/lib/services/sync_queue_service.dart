@@ -132,6 +132,28 @@ class SyncQueueService {
     await _saveQueue(queue);
   }
 
+  /// Indica si ya existe una operación equivalente en cola.
+  bool contains({
+    required String entityType,
+    required String operation,
+    int? entityId,
+    Map<String, dynamic>? payload,
+  }) {
+    final queue = _loadQueue();
+    return queue.any((op) {
+      if (op.entityType != entityType) return false;
+      if (op.operation != operation) return false;
+      if (op.status == SyncStatus.syncing) return false;
+      if (entityId != null && op.entityId != entityId) return false;
+      if (payload != null &&
+          payload['content'] != null &&
+          op.payload['content'] != payload['content']) {
+        return false;
+      }
+      return true;
+    });
+  }
+
   /// Número de operaciones pendientes (y reintentables).
   int get pendingCount => _loadQueue()
       .where((op) =>

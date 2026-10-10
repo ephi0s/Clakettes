@@ -208,7 +208,7 @@ class TestChannelMembers:
 
 
 class TestChannelAuthorization:
-    """403/422 authorization tests (pilot for MEJORAS.md security block)."""
+    """403/422 authorization tests (pilot for security block)."""
 
     def _create_channel(self, client, headers, **kwargs):
         data = {

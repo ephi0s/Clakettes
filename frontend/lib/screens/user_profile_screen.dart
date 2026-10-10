@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/session_model.dart';
@@ -15,6 +14,7 @@ import '../widgets/dav_subscription_section.dart';
 import '../widgets/language_picker.dart';
 import '../services/auth_service.dart';
 import '../services/offline_cache_service.dart';
+import '../widgets/open_in_maps_action.dart';
 import '../main_scaffold.dart';
 
 
@@ -113,22 +113,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     super.dispose();
   }
 
-/// Abre las coordenadas en la app de mapas del sistema, usando
-/// OpenStreetMap cuando el esquema geo no está disponible.
-  Future<void> _openInMaps(double lat, double lng, String label) async {
-    final encodedLabel = Uri.encodeComponent(label);
-    final geoUri = Uri.parse('geo:0,0?q=$lat,$lng($encodedLabel)');
-    if (await canLaunchUrl(geoUri)) {
-      await launchUrl(geoUri);
-      return;
-    }
-    final osmUri = Uri.parse(
-      'https://www.openstreetmap.org/?mlat=$lat&mlon=$lng',
-    );
-    if (await canLaunchUrl(osmUri)) {
-      await launchUrl(osmUri, mode: LaunchMode.externalApplication);
-    }
-  }
+  Future<void> _openInMaps(double lat, double lng, String label) =>
+      openInMaps(lat, lng, label: label);
 
   /// Valida el formulario y persiste los campos del perfil editados.
   Future<void> _saveProfile() async {

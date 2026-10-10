@@ -170,11 +170,16 @@ class _CreateShortFilmScreenState extends State<CreateShortFilmScreen> {
       }
     } catch (e) {
       debugPrint('Error: $e');
-      await SyncQueueService.instance.enqueue(
-        entityType: 'shortfilm',
-        operation: 'create',
-        payload: shortFilm.toJson(),
-      );
+      final queue = SyncQueueService.instance;
+      final payload = shortFilm.toJson();
+      if (!queue.contains(
+          entityType: 'shortfilm', operation: 'create', payload: payload)) {
+        await queue.enqueue(
+          entityType: 'shortfilm',
+          operation: 'create',
+          payload: payload,
+        );
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

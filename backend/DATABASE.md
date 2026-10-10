@@ -10,7 +10,7 @@ Migration tools are available to sync between environments:
 - `python export_sqlite_to_mariadb.py` — Dev to Prod
 - `python import_mariadb_to_sqlite.py` — Prod to Dev
 
-## Model Summary (31 models)
+## Model Summary (41 constructs: 39 entities + 2 association tables)
 
 | # | Model | Table | Type |
 |---|-------|-------|------|

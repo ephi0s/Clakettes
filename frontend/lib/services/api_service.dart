@@ -99,7 +99,6 @@ class ApiService {
   }
 
   /// Actualiza la URL base en runtime (p. ej., desde la pantalla de configuración del backend).
-  /// Aviso: _rootUrl es late-final; la reasignación funciona pero no es idiomática.
   void setBaseUrl(String url) {
     _rootUrl = url;
     _baseUrl = '$url/api';

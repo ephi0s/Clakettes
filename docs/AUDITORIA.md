@@ -63,7 +63,7 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
    (ya usado en `_deleteAward`); requerirían un `CreateEntityDialog` común.
 9. CI: gate `ruff format --check` añadido (GH + GitLab) tras verificar
    `215 files already formatted` — desbloquea la propuesta de HERRAMIENTAS.md.
-10. Seguridad (piloto `channels.py`, MEJORAS.md §1): nuevo
+10. Seguridad (piloto `channels.py`, bloque seguridad): nuevo
     `require_channel_member`/`is_channel_member` en `permissions.py` y uso en
     `channels.py` + `chat.py` (elimina 3 bloques inline con imports diferidos);
     `channels.py` migrado a `get_or_404` (7 bloques menos); whitelist de rol

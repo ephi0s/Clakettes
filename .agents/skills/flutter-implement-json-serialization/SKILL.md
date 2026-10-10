@@ -1,153 +1,64 @@
 ---
 name: flutter-implement-json-serialization
-description: Create model classes with `fromJson` and `toJson` methods using `dart:convert`. Use when manually mapping JSON keys to class properties for simple data structures.
+description: Clakettes model serialization. Plain classes with fromJson/toJson plus Hive TypeAdapters via build_runner where offline persistence applies. Use when adding or changing lib/models/.
 metadata:
   model: models/gemini-3.1-pro-preview
-  last_modified: Tue, 21 Apr 2026 21:44:50 GMT
+  last_modified: Sat, 10 Oct 2026 00:00:00 GMT
 ---
-# Serializing JSON Manually in Flutter
+# Clakettes JSON Serialization
 
 ## Contents
 - [Core Guidelines](#core-guidelines)
-- [Workflow: Implementing a Serializable Model](#workflow-implementing-a-serializable-model)
-- [Workflow: Fetching and Parsing JSON](#workflow-fetching-and-parsing-json)
+- [Workflow: Model Change](#workflow-model-change)
 - [Examples](#examples)
 
 ## Core Guidelines
 
-- **Import `dart:convert`**: Utilize Flutter's built-in `dart:convert` library for manual JSON encoding (`jsonEncode`) and decoding (`jsonDecode`).
-- **Enforce Type Safety**: Always cast the `dynamic` result of `jsonDecode()` to the expected type, typically `Map<String, dynamic>` for objects or `List<dynamic>` for arrays.
-- **Encapsulate Serialization Logic**: Define plain model classes containing properties corresponding to the JSON structure. Implement a `fromJson` factory constructor and a `toJson` method within the model.
-- **Handle Background Parsing**: If parsing large JSON documents (execution time > 16ms), offload the parsing logic to a separate isolate using Flutter's `compute()` function to prevent UI jank.
-- **Throw Exceptions on Failure**: When handling HTTP responses, throw an exception if the status code is not successful (e.g., not 200 OK or 201 Created). Do not return `null`.
+- **Plain models first**: `factory Model.fromJson(Map<String, dynamic> json)` + `Map<String, dynamic> toJson()`, `final` properties, explicit casts. Pattern-match syntax is used in this codebase.
+- **Hive when offline**: models persisted by `DatabaseService` (`festivals`, `users`, `shortfilms`, `messages` boxes) or cached by `OfflineCacheService` need a Hive `TypeAdapter` with a unique `typeId`. Register it in `DatabaseService.init()` alongside the existing 36 adapters.
+- **Regenerate, never hand-write adapters**: `flutter pub run build_runner build --delete-conflicting-outputs`.
+- **SyncQueue payloads**: `SyncOperation.toJson()` uses `entity_type`/`entity_id`/`created_at`/`status`/`attempts` keys; keep them stable — the queue replays them against the backend.
+- **Schema contract**: `OfflineCacheService._validateEntitySchema` requires `festival.name: String`, `user.username/email: String` + `role` in `{admin, organizer, user, jury, moderator}`, `shortfilm.title: String` + `user_id: int`, `message.content: String` + `sender_id: int`. New required fields must be added there too.
+- **Large payloads**: `compute()` for crypto/parse off the UI thread (see `crypto_utils.dart`); small payloads parse synchronously.
+- **Tests**: unit-test `fromJson`/`toJson` round-trip for every model change.
 
-## Workflow: Implementing a Serializable Model
+## Workflow: Model Change
 
-Use this checklist to implement manual JSON serialization for a data model.
-
-**Task Progress:**
-- [ ] Define the plain model class with `final` properties.
-- [ ] Implement the `factory Model.fromJson(Map<String, dynamic> json)` constructor.
-- [ ] Implement the `Map<String, dynamic> toJson()` method.
-- [ ] Write unit tests for both serialization methods.
-- [ ] Run validator -> review type mismatch errors -> fix casting logic.
-
-1. **Define the Model**: Create a class with properties matching the JSON keys.
-2. **Implement `fromJson`**: Extract values from the `Map` and cast them to the appropriate Dart types. Use pattern matching or explicit casting.
-3. **Implement `toJson`**: Return a `Map<String, dynamic>` mapping the class properties back to their JSON string keys.
-4. **Validate**: Execute unit tests to ensure type safety, autocompletion, and compile-time exception handling function correctly.
-
-## Workflow: Fetching and Parsing JSON
-
-Use this conditional workflow when retrieving and parsing JSON from a network request.
-
-**Task Progress:**
-- [ ] Execute the HTTP request.
-- [ ] Validate the response status code.
-- [ ] Determine parsing strategy (Synchronous vs. Isolate).
-- [ ] Decode and map the JSON to the model.
-
-1. **Execute Request**: Use the `http` package to perform the network call.
-2. **Validate Response**: 
-   - If `response.statusCode == 200` (or 201 for POST), proceed to parsing.
-   - If the status code indicates failure, throw an `Exception`.
-3. **Determine Parsing Strategy**:
-   - If parsing a **small payload** (e.g., a single object), parse synchronously on the main thread.
-   - If parsing a **large payload** (e.g., an array of thousands of objects), use `compute(parseFunction, response.body)` to parse in a background isolate.
-4. **Decode and Map**: Pass the decoded JSON to your model's `fromJson` constructor.
+- [ ] Update the plain class + `fromJson`/`toJson`.
+- [ ] If persisted/cached: add/update the `TypeAdapter` (unique `typeId`), register in `DatabaseService.init()`, run build_runner.
+- [ ] If the entity is cached: extend `_validateEntitySchema` for new required fields.
+- [ ] Run `flutter analyze` + model tests.
 
 ## Examples
 
-### High-Fidelity Model Implementation
+### Model With Pattern-Match fromJson
 
 ```dart
-import 'dart:convert';
+class ShortFilm {
+  final int? id;
+  final String title;
+  final int userId;
 
-class User {
-  final int id;
-  final String name;
-  final String email;
+  const ShortFilm({this.id, required this.title, required this.userId});
 
-  const User({
-    required this.id,
-    required this.name,
-    required this.email,
-  });
-
-  // Factory constructor for deserialization
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory ShortFilm.fromJson(Map<String, dynamic> json) {
     return switch (json) {
-      {
-        'id': int id,
-        'name': String name,
-        'email': String email,
-      } => 
-        User(
-          id: id,
-          name: name,
-          email: email,
-        ),
-      _ => throw const FormatException('Failed to load User.'),
+      {'id': int? id, 'title': String title, 'user_id': int userId} =>
+        ShortFilm(id: id, title: title, userId: userId),
+      _ => throw const FormatException('Failed to load ShortFilm.'),
     };
   }
 
-  // Method for serialization
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-    };
+    return {'id': id, 'title': title, 'user_id': userId};
   }
 }
 ```
 
-### Synchronous Parsing (Small Payload)
+### Hive Adapter Registration
 
 ```dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-Future<User> fetchUser(http.Client client, int userId) async {
-  final response = await client.get(
-    Uri.parse('https://api.example.com/users/$userId'),
-    headers: {'Accept': 'application/json'},
-  );
-
-  if (response.statusCode == 200) {
-    // Decode returns dynamic, cast to Map<String, dynamic>
-    final Map<String, dynamic> jsonMap = jsonDecode(response.body) as Map<String, dynamic>;
-    return User.fromJson(jsonMap);
-  } else {
-    throw Exception('Failed to load user');
-  }
-}
-```
-
-### Background Parsing (Large Payload)
-
-```dart
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-
-// Top-level function required for compute()
-List<User> parseUsers(String responseBody) {
-  final parsed = (jsonDecode(responseBody) as List<dynamic>).cast<Map<String, dynamic>>();
-  return parsed.map<User>((json) => User.fromJson(json)).toList();
-}
-
-Future<List<User>> fetchUsers(http.Client client) async {
-  final response = await client.get(
-    Uri.parse('https://api.example.com/users'),
-    headers: {'Accept': 'application/json'},
-  );
-
-  if (response.statusCode == 200) {
-    // Offload expensive parsing to a background isolate
-    return compute(parseUsers, response.body);
-  } else {
-    throw Exception('Failed to load users');
-  }
-}
+await Hive.initFlutter();
+Hive.registerAdapter(ShortFilmAdapter());
+await DatabaseService.init();
 ```

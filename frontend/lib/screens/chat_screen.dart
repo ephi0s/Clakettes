@@ -521,7 +521,13 @@ class _ChatScreenState extends State<ChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.messageQueuedOffline), behavior: SnackBarBehavior.floating),
         );
-        await SyncQueueService.instance.enqueue(entityType: 'message', operation: 'create', payload: localMsg.toJson());
+        final queue = SyncQueueService.instance;
+        final payload = localMsg.toJson();
+        if (!queue.contains(
+            entityType: 'message', operation: 'create', payload: payload)) {
+          await queue.enqueue(
+              entityType: 'message', operation: 'create', payload: payload);
+        }
       }
     } finally {
       if (mounted) setState(() => _isSending = false);

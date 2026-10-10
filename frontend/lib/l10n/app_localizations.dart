@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -40,7 +41,11 @@ class AppLocalizations {
   /// Devuelve la cadena traducida para [key], interpolando opcionalmente los
   /// valores placeholder de [args] (p. ej. `{min}`).
   String translate(String key, {Map<String, dynamic>? args}) {
-    String value = _localizedStrings[key] ?? key;
+    final raw = _localizedStrings[key];
+    if (raw == null && kDebugMode) {
+      debugPrint('Missing l10n key: $key');
+    }
+    String value = raw ?? key;
     if (args != null) {
       args.forEach((argKey, argValue) {
         value = value.replaceAll('{$argKey}', argValue.toString());
