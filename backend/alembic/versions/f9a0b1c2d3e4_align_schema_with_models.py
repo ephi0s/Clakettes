@@ -69,6 +69,37 @@ def _backfill_show_in_calendar() -> None:
     op.execute(sa.text(SHOW_IN_CALENDAR_BACKFILL_SQL))
 
 
+def _role_fk_name() -> str | None:
+    """Name of the FK on ``event_visibility_roles.role_id``, if present.
+
+    The constraint was created inline (auto-named ``..._ibfk_N``), so the
+    exact name is discovered at runtime instead of hard-coded.
+    """
+    insp = sa.inspect(op.get_bind())
+    for fk in insp.get_foreign_keys("event_visibility_roles"):
+        if list(fk["constrained_columns"]) == ["role_id"]:
+            return fk["name"]
+    return None
+
+
+def _drop_stray_role_index() -> None:
+    """Drop ``ix_event_visibility_roles_role_id`` keeping the FK intact.
+
+    MariaDB/InnoDB refuses to drop an index backing a foreign key, so the
+    FK is dropped first and re-created afterwards (InnoDB then auto-creates
+    its own backing index). SQLite does not enforce this, keeping the plain
+    ``drop_index`` path.
+    """
+    if op.get_bind().dialect.name != "sqlite":
+        fk_name = _role_fk_name()
+        if fk_name:
+            op.drop_constraint(fk_name, "event_visibility_roles", type_="foreignkey")
+            op.drop_index(op.f("ix_event_visibility_roles_role_id"), table_name="event_visibility_roles")
+            op.create_foreign_key(fk_name, "event_visibility_roles", "roles", ["role_id"], ["id"], ondelete="CASCADE")
+            return
+    op.drop_index(op.f("ix_event_visibility_roles_role_id"), table_name="event_visibility_roles")
+
+
 def upgrade() -> None:
     _assert_usernames_unique()
 
@@ -81,7 +112,7 @@ def upgrade() -> None:
             nullable=True,
         )
 
-    op.drop_index(op.f("ix_event_visibility_roles_role_id"), table_name="event_visibility_roles")
+    _drop_stray_role_index()
 
     op.drop_index(op.f("ix_users_username"), table_name="users")
     op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
