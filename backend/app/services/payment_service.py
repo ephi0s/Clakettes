@@ -1,30 +1,15 @@
-import secrets
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.payment import Payment
 from app.schemas.payment import PaymentCheckoutRequest
+from app.services.payment_providers import get_provider
 from .base_service import BaseService
 
 
-class MockPaymentProvider:
-    name = "mock"
-
-    def create_checkout(self, amount: float, currency: str) -> tuple[str, str]:
-        ref = f"mock_{secrets.token_hex(8)}"
-        return ref, f"mock://pay/{ref}"
-
-    def confirm(self, payment: Payment) -> str:
-        if (payment.amount or 0) <= 0:
-            return "failed"
-        if getattr(settings, "MOCK_PAYMENTS_FORCE_FAIL", False):
-            return "failed"
-        return "paid"
-
-
 class PaymentService(BaseService[Payment, PaymentCheckoutRequest, PaymentCheckoutRequest]):
-    def __init__(self):
+    def __init__(self, provider=None):
         super().__init__(Payment)
-        self.provider = MockPaymentProvider()
+        self.provider = provider or get_provider()
 
     def create_checkout(self, db: Session, data: PaymentCheckoutRequest) -> Payment:
         amount = data.amount

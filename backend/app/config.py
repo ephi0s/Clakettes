@@ -58,9 +58,20 @@ class Settings(BaseSettings):
     # Defaults to None so a fresh checkout needs no configuration.
     PUBLIC_BASE_URL: str | None = None
 
-    # Pagos online: "mock" por defecto hasta elegir pasarela (stripe/redsys/paypal).
+    # Pagos online: "mock" por defecto hasta elegir pasarela (stripe/redsys).
     PAYMENTS_PROVIDER: str = "mock"
     MOCK_PAYMENTS_FORCE_FAIL: bool = False
+    MOCK_WEBHOOK_SECRET: str = ""
+    # Stripe (requiere `pip install stripe` + claves de https://dashboard.stripe.com/apikeys)
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    # Redsys (sin SDK: firma HMAC_SHA256_V1 con stdlib + cryptography).
+    # Claves del panel del banco; en sandbox apunta a sis-t.redsys.es.
+    REDSYS_MERCHANT_CODE: str = ""
+    REDSYS_TERMINAL: str = "1"
+    REDSYS_SECRET_KEY: str = ""
+    REDSYS_SANDBOX: bool = True
+    REDSYS_CURRENCY: str = "978"
 
     # Load from .env file, case-insensitive
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
