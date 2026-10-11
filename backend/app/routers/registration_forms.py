@@ -1,5 +1,7 @@
 """Router for registration forms, links, sections, and festival registrations."""
 
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
@@ -8,6 +10,7 @@ from app.database import get_db
 from app.auth import get_current_user
 from app.schemas.registration import (
     RegistrationFormCreate,
+    RegistrationFormCreateWithSections,
     RegistrationFormUpdate,
     RegistrationFormResponse,
     RegistrationFormPublicResponse,
@@ -65,8 +68,7 @@ async def list_registration_forms(
 @router.post("/festivals/{festival_id}/registration-forms/", response_model=RegistrationFormResponse, status_code=201)
 async def create_registration_form(
     festival_id: int,
-    form: RegistrationFormCreate,
-    sections: list[RegistrationFormSectionCreate] | None = None,
+    form: RegistrationFormCreateWithSections,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -74,10 +76,11 @@ async def create_registration_form(
     if not festival:
         raise HTTPException(status_code=404, detail="Festival not found")
     require_festival_admin(db, current_user, festival_id)
-    data = form.model_dump()
+    data = form.model_dump(exclude={"sections"})
     data["festival_id"] = festival_id
     form_create = RegistrationFormCreate(**data)
-    return form_service.create_with_sections(db, form_create, sections or [], created_by=current_user.id)
+    sections = [RegistrationFormSectionCreate(form_id=0, **s.model_dump()) for s in form.sections]
+    return form_service.create_with_sections(db, form_create, sections, created_by=current_user.id)
 
 
 @router.get("/festivals/{festival_id}/registration-forms/{form_id}", response_model=RegistrationFormResponse)
@@ -94,6 +97,66 @@ async def get_registration_form(
     if not form or form.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Form not found in this festival")
     return form
+
+
+@router.get("/registration-forms/{form_id}", response_model=RegistrationFormResponse)
+async def get_registration_form_by_id(
+    form_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope (used by form detail screens)."""
+    form = form_service.get(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    return form
+
+
+@router.put("/registration-forms/{form_id}", response_model=RegistrationFormResponse)
+async def update_registration_form_by_id(
+    form_id: int,
+    form: RegistrationFormUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the form."""
+    existing = form_service.get(db, form_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    return form_service.update(db, form_id, form)
+
+
+@router.delete("/registration-forms/{form_id}")
+async def delete_registration_form_by_id(
+    form_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the form."""
+    existing = form_service.get(db, form_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, existing.festival_id)
+    form_service.delete(db, form_id)
+    return {"message": "Registration form deleted"}
+
+
+@router.get("/registration-forms/{form_id}/registrations/", response_model=FestivalRegistrationPage)
+async def list_form_registrations(
+    form_id: int,
+    page: int = 1,
+    size: int = 20,
+    status: str | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the form."""
+    form = form_service.get(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, form.festival_id)
+    return reg_service.get_by_form_paginated(db, form_id, page, size, status)
 
 
 @router.put("/festivals/{festival_id}/registration-forms/{form_id}", response_model=RegistrationFormResponse)
@@ -155,7 +218,7 @@ async def register_via_public_link(
 ):
     """Register for a festival through a public/unique link."""
     if not current_user:
-        raise HTTPException(status_code=400, detail="Authentication required to complete registration")
+        raise HTTPException(status_code=401, detail="Authentication required to complete registration")
     registration.link_token = token
     result = reg_service.register_user(db, current_user.id, registration)
     if not result:
@@ -206,6 +269,136 @@ async def generate_registration_link(
     data["form_id"] = form_id
     link_create = RegistrationFormLinkCreate(**data)
     return link_service.generate_link(db, link_create)
+
+
+@router.delete("/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}")
+async def delete_registration_form_link(
+    festival_id: int,
+    form_id: int,
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    require_festival_admin(db, current_user, festival_id)
+    link = link_service.get(db, link_id)
+    if not link or link.form_id != form_id:
+        raise HTTPException(status_code=404, detail="Link not found")
+    link_service.delete(db, link_id)
+    return {"message": "Link deleted"}
+
+
+@router.post(
+    "/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}/regenerate",
+    response_model=RegistrationFormLinkResponse,
+)
+async def regenerate_registration_form_link(
+    festival_id: int,
+    form_id: int,
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    festival = festival_service.get(db, festival_id)
+    if not festival:
+        raise HTTPException(status_code=404, detail="Festival not found")
+    require_festival_admin(db, current_user, festival_id)
+    link = link_service.get(db, link_id)
+    if not link or link.form_id != form_id:
+        raise HTTPException(status_code=404, detail="Link not found")
+    link.token = uuid.uuid4().hex
+    link.use_count = 0
+    link.is_active = True
+    db.commit()
+    db.refresh(link)
+    return link
+
+
+def _get_link_or_404(db, form_id: int, link_id: int):
+    link = link_service.get(db, link_id)
+    if not link or link.form_id != form_id:
+        raise HTTPException(status_code=404, detail="Link not found")
+    return link
+
+
+@router.get("/registration-forms/{form_id}/links/", response_model=RegistrationFormLinkPage)
+async def list_registration_form_links_by_form(
+    form_id: int,
+    page: int = 1,
+    size: int = 20,
+    is_active: bool | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the form."""
+    form = form_service.get(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, form.festival_id)
+    return link_service.get_by_form_paginated(db, form_id, page, size, is_active)
+
+
+@router.post(
+    "/registration-forms/{form_id}/links/",
+    response_model=RegistrationFormLinkResponse,
+    status_code=201,
+)
+async def generate_registration_link_by_form(
+    form_id: int,
+    link: RegistrationFormLinkCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the form."""
+    form = form_service.get(db, form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, form.festival_id)
+    data = link.model_dump()
+    data["form_id"] = form_id
+    return link_service.generate_link(db, RegistrationFormLinkCreate(**data))
+
+
+@router.delete("/registration-form-links/{link_id}")
+async def delete_registration_form_link_by_id(
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the link's form."""
+    link = link_service.get(db, link_id)
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    form = form_service.get(db, link.form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, form.festival_id)
+    link_service.delete(db, link_id)
+    return {"message": "Link deleted"}
+
+
+@router.post("/registration-form-links/{link_id}/regenerate", response_model=RegistrationFormLinkResponse)
+async def regenerate_registration_form_link_by_id(
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Shorthand without festival scope; festival admin is resolved from the link's form."""
+    link = link_service.get(db, link_id)
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    form = form_service.get(db, link.form_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    require_festival_admin(db, current_user, form.festival_id)
+    link.token = uuid.uuid4().hex
+    link.use_count = 0
+    link.is_active = True
+    db.commit()
+    db.refresh(link)
+    return link
 
 
 @router.get("/festivals/{festival_id}/registrations/", response_model=FestivalRegistrationPage)

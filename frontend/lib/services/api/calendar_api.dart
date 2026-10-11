@@ -19,10 +19,15 @@ extension CalendarApi on ApiService {
     if (from != null) params['date_from'] = from.toIso8601String();
     if (to != null) params['date_to'] = to.toIso8601String();
     if (eventType != null) params['event_type'] = eventType;
+    var path = '/calendar/agenda';
+    final query = _buildQuery(params);
+    if (query.isNotEmpty) path = '$path?$query';
     if (festivalIds != null && festivalIds.isNotEmpty) {
-      params['festival_ids'] = festivalIds.join(',');
+      final repeated =
+          festivalIds.map((i) => 'festival_ids=$i').join('&');
+      path = query.isEmpty ? '$path?$repeated' : '$path&$repeated';
     }
-    final data = await _get('/calendar/agenda', params);
+    final data = await request('GET', path);
     return Agenda.fromJson(Map<String, dynamic>.from(data as Map));
   }
 

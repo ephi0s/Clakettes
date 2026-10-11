@@ -66,11 +66,6 @@ extension EventApi on ApiService {
             as Map);
   }
 
-  Future<List<int>> getEventScreenings(int eventId) async {
-    final data = await request('GET', '/events/$eventId/screenings');
-    return List<int>.from((data as Map)['shortfilm_ids'] as List? ?? []);
-  }
-
   Future<Map<String, dynamic>> getEventScreeningBlock(int eventId) async {
     return Map<String, dynamic>.from(
         await request('GET', '/events/$eventId/screenings') as Map);
@@ -79,7 +74,7 @@ extension EventApi on ApiService {
   Future<List<int>> setEventScreenings(
       int eventId, List<int> shortfilmIds) async {
     final data = await request('PUT', '/events/$eventId/screenings',
-        body: {'shortfilm_ids': shortfilmIds});
+        body: json.encode({'shortfilm_ids': shortfilmIds}));
     return List<int>.from((data as Map)['shortfilm_ids'] as List? ?? []);
   }
 

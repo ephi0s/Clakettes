@@ -60,17 +60,12 @@ extension LocationApi on ApiService {
   }
 
   /// Sube una imagen para una localización.
-  Future<Location> uploadLocationImage(int locationId, String filePath) async {
-    final data = await _uploadFile('/locations/$locationId/images', filePath,
+  Future<LocationImage> uploadLocationImage(
+      int locationId, String filePath) async {
+    final data = await _uploadFile('/locations/$locationId/images/upload',
+        filePath,
         errorLabel: 'Location image');
-    return Location.fromJson(data);
-  }
-
-  /// Elimina una imagen de una localización por su URL.
-  Future<Location> deleteLocationImage(int locationId, String imageUrl) async {
-    final data = await request('DELETE',
-        '/locations/$locationId/images?url=${Uri.encodeComponent(imageUrl)}');
-    return Location.fromJson(data);
+    return LocationImage.fromJson(data);
   }
 
   /// Obtiene las etiquetas de una localización.

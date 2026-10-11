@@ -743,7 +743,7 @@ async def propfind_root(request: Request, db: Session = Depends(get_db)) -> Resp
     return _multistatus([dav_response("/dav/", {q("D", "current-user-principal"): link})])
 
 
-@router.api_route("/{principal}/calendars/{collection}.ics", methods=["GET", "HEAD"])
+@router.get("/{principal}/calendars/{collection}.ics", operation_id="get_feed")
 async def get_feed(request: Request, principal: str, collection: str, db: Session = Depends(get_db)) -> Response:
     """Download a whole collection as one ICS file (the webcal:// target).
 
@@ -753,11 +753,25 @@ async def get_feed(request: Request, principal: str, collection: str, db: Sessio
     return await _get_feed(request, db, principal, collection)
 
 
-@router.api_route("/{principal}/calendars/{collection}/{resource}", methods=["GET", "HEAD"])
+@router.head("/{principal}/calendars/{collection}.ics", operation_id="get_feed_head")
+async def get_feed_head(request: Request, principal: str, collection: str, db: Session = Depends(get_db)) -> Response:
+    """HEAD variant of get_feed (headers only, no body)."""
+    return await _get_feed(request, db, principal, collection)
+
+
+@router.get("/{principal}/calendars/{collection}/{resource}", operation_id="get_resource")
 async def get_resource(
     request: Request, principal: str, collection: str, resource: str, db: Session = Depends(get_db)
 ) -> Response:
     """Download a single event as an ICS file."""
+    return await _get_resource(request, db, principal, collection, resource)
+
+
+@router.head("/{principal}/calendars/{collection}/{resource}", operation_id="get_resource_head")
+async def get_resource_head(
+    request: Request, principal: str, collection: str, resource: str, db: Session = Depends(get_db)
+) -> Response:
+    """HEAD variant of get_resource (headers only, no body)."""
     return await _get_resource(request, db, principal, collection, resource)
 
 
@@ -773,7 +787,16 @@ async def get_resource_slash(
     return await _get_resource(request, db, principal, collection, resource)
 
 
-@router.api_route("/{principal}/calendars/{collection}/{resource}", methods=["PROPFIND", "REPORT"])
+@router.api_route(
+    "/{principal}/calendars/{collection}/{resource}",
+    methods=["PROPFIND"],
+    operation_id="propfind_resource_propfind",
+)
+@router.api_route(
+    "/{principal}/calendars/{collection}/{resource}",
+    methods=["REPORT"],
+    operation_id="propfind_resource_report",
+)
 async def propfind_resource(
     request: Request, principal: str, collection: str, resource: str, db: Session = Depends(get_db)
 ) -> Response:

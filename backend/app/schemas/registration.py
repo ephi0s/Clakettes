@@ -81,6 +81,24 @@ class RegistrationFormSectionCreate(RegistrationFormSectionBase):
     tag_ids: list[int] = []
 
 
+class RegistrationFormSectionInput(BaseModel):
+    """Section payload for form creation (form_id is assigned server-side)."""
+
+    title: str
+    description: str | None = None
+    sort_order: int = 0
+    allow_multiple_roles: bool = False
+    max_selections: int | None = None
+    is_required: bool = True
+    role_ids: list[int] = []
+    tag_ids: list[int] = []
+
+
+class RegistrationFormCreateWithSections(RegistrationFormCreate):
+    festival_id: int | None = None
+    sections: list[RegistrationFormSectionInput] = []
+
+
 class RegistrationFormSectionUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
@@ -146,7 +164,7 @@ class RegistrationFormLinkBase(BaseModel):
 
 
 class RegistrationFormLinkCreate(BaseModel):
-    form_id: int
+    form_id: int | None = None
     is_unique: bool = False
     is_public: bool = True
     expires_at: datetime | None = None

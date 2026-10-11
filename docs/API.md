@@ -9,6 +9,7 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 |---|---|---|
 | GET | `/api/admin/stats` | sí |
 | GET | `/api/admin/tables` | sí |
+| GET | `/api/admin/audit-log` | sí |
 | POST | `/api/admin/reset` | sí |
 
 ## `auth` → `/api/users`
@@ -93,9 +94,12 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | OPTIONS | `/dav/` | no |
 | OPTIONS | `/dav/{dav_path:path}` | no |
 | PROPFIND | `/dav/` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}.ics` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | no |
+| GET | `/dav/{principal}/calendars/{collection}.ics` | no |
+| HEAD | `/dav/{principal}/calendars/{collection}.ics` | no |
+| GET | `/dav/{principal}/calendars/{collection}/{resource}` | no |
+| HEAD | `/dav/{principal}/calendars/{collection}/{resource}` | no |
 | API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | no |
+| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | no |
 | API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | no |
 | API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | no |
 | PROPFIND | `/dav/{principal}/calendars/{collection}/` | no |
@@ -316,12 +320,22 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | GET | `/api/festivals/{festival_id}/registration-forms/` | sí |
 | POST | `/api/festivals/{festival_id}/registration-forms/` | sí |
 | GET | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
+| GET | `/api/registration-forms/{form_id}` | sí |
+| PUT | `/api/registration-forms/{form_id}` | sí |
+| DELETE | `/api/registration-forms/{form_id}` | sí |
+| GET | `/api/registration-forms/{form_id}/registrations/` | sí |
 | PUT | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
 | GET | `/api/public/forms/{token}` | no |
 | POST | `/api/public/forms/{token}/register` | opcional |
 | GET | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | sí |
 | POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | sí |
+| DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}` | sí |
+| POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}/regenerate` | sí |
+| GET | `/api/registration-forms/{form_id}/links/` | sí |
+| POST | `/api/registration-forms/{form_id}/links/` | sí |
+| DELETE | `/api/registration-form-links/{link_id}` | sí |
+| POST | `/api/registration-form-links/{link_id}/regenerate` | sí |
 | GET | `/api/festivals/{festival_id}/registrations/` | sí |
 | GET | `/api/festivals/{festival_id}/registrations/export/csv` | sí |
 | GET | `/api/festivals/{festival_id}/registrations/export/pdf` | sí |
@@ -356,10 +370,10 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 |---|---|---|
 | GET | `/api/roles/` | sí |
 | POST | `/api/roles/` | sí |
+| GET | `/api/roles/hierarchy/` | opcional |
 | GET | `/api/roles/{role_id}` | opcional |
 | PUT | `/api/roles/{role_id}` | sí |
 | DELETE | `/api/roles/{role_id}` | sí |
-| GET | `/api/roles/hierarchy/` | opcional |
 | GET | `/api/festivals/{festival_id}/roles/` | opcional |
 | POST | `/api/festivals/{festival_id}/roles/` | sí |
 | POST | `/api/festivals/{festival_id}/roles/initialize` | sí |
@@ -444,6 +458,8 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | GET | `/api/users/` | sí |
 | GET | `/api/users/public` | no |
 | GET | `/api/users/me` | sí |
+| GET | `/api/users/me/export` | sí |
+| DELETE | `/api/users/me` | sí |
 | POST | `/api/users/` | sí |
 | GET | `/api/users/{user_id}` | sí |
 | GET | `/api/users/{user_id}/public` | no |
@@ -462,4 +478,4 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | GET | `/api/validation-rule-groups/` | no |
 | POST | `/api/validation-rule-groups/` | sí |
 
-Total: 294 endpoints en 33 routers.
+Total: 310 endpoints en 33 routers.

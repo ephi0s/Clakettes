@@ -179,6 +179,16 @@ class TestTransportSecurity:
         assert response.status_code == 200
         assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
 
+    def test_openapi_is_exportable(self, client):
+        response = client.get("/openapi.json")
+        assert response.status_code == 200
+        spec = response.json()
+        assert spec["openapi"].startswith("3.")
+        ids = [operation.get("operationId") for path in spec["paths"].values() for operation in path.values()]
+        assert len(ids) == len(set(ids))
+        assert "/api/users/me/export" in spec["paths"]
+        assert "/api/admin/audit-log" in spec["paths"]
+
     def test_hsts_only_in_production(self, client, monkeypatch):
         from app.config import settings
 

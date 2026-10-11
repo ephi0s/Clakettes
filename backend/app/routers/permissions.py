@@ -224,18 +224,14 @@ def can_edit_festival(db: Session, editor: User, festival: Festival) -> bool:
     """Return True if *editor* can modify *festival*."""
     if _is_admin(db, editor):
         return True
-    if _is_organizer(db, editor):
-        return _is_organizer_of_festival(db, editor.id, festival.id)
-    return False
+    return _is_organizer_of_festival(db, editor.id, festival.id)
 
 
 def can_delete_festival(db: Session, deleter: User, festival: Festival) -> bool:
     """Return True if *deleter* can delete *festival*."""
     if _is_admin(db, deleter):
         return True
-    if _is_organizer(db, deleter):
-        return _is_organizer_of_festival(db, deleter.id, festival.id)
-    return False
+    return _is_organizer_of_festival(db, deleter.id, festival.id)
 
 
 def can_edit_shortfilm(db: Session, editor: User, shortfilm: ShortFilm) -> bool:

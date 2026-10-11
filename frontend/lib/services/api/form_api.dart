@@ -26,7 +26,7 @@ extension FormApi on ApiService {
       'sections': sections.map((s) => s.toJson()).toList(),
     };
     final data = await create(
-        '/festivals/$festivalId/registration-forms/with-sections', body);
+        '/festivals/$festivalId/registration-forms/', body);
     return RegistrationForm.fromJson(data);
   }
 
@@ -57,13 +57,6 @@ extension FormApi on ApiService {
     return _paginated(data, FestivalRegistration.fromJson);
   }
 
-  Future<FestivalRegistration> createFestivalRegistration(
-      int formId, FestivalRegistration r) async {
-    final data =
-        await create('/registration-forms/$formId/registrations/', r.toJson());
-    return FestivalRegistration.fromJson(data);
-  }
-
   Future<FestivalRegistration> updateFestivalRegistration(
       int registrationId, Map<String, dynamic> fields) async {
     final data = await _put('/registrations/$registrationId', fields);
@@ -88,7 +81,6 @@ extension FormApi on ApiService {
     final data = await request(
       'POST',
       '/registrations/$registrationId/payment/mark-refunded',
-      body: json.encode({}),
     );
     return FestivalRegistration.fromJson(data);
   }
@@ -227,7 +219,8 @@ extension FormApi on ApiService {
 
   Future<FormResponse> submitPublicResponse(
       String token, Map<String, dynamic> data) async {
-    final result = await create('/forms/public/$token/submit', data);
+    final result =
+        await create('/forms/public/$token/submit', {'field_values': data});
     return FormResponse.fromJson(result);
   }
 
@@ -237,7 +230,7 @@ extension FormApi on ApiService {
 
   Future<FormDefinition> cloneForm(int formId, {String? title}) async {
     final data = await request('POST', '/forms/$formId/clone',
-        body: jsonEncode({'title': title}));
+        body: jsonEncode(title != null ? {'title': title} : {}));
     return FormDefinition.fromJson(data as Map<String, dynamic>);
   }
 
@@ -251,19 +244,20 @@ extension FormApi on ApiService {
 
   Future<FormResponse> updateFormResponse(
       int responseId, Map<String, dynamic> fields) async {
-    final data = await _put('/responses/$responseId', fields);
+    final data = await _put('/forms/responses/$responseId', fields);
     return FormResponse.fromJson(data);
   }
 
   Future<FormResponse> approveResponse(int responseId) async {
-    final data = await request('POST', '/responses/$responseId/approve');
+    final data = await request('POST', '/forms/responses/$responseId/approve');
     return FormResponse.fromJson(data);
   }
 
   Future<FormResponse> rejectResponse(int responseId, {String? reason}) async {
-    final body = reason != null ? json.encode({'reason': reason}) : null;
-    final data =
-        await request('POST', '/responses/$responseId/reject', body: body);
+    final path = reason != null
+        ? '/forms/responses/$responseId/reject?reason=${Uri.encodeComponent(reason)}'
+        : '/forms/responses/$responseId/reject';
+    final data = await request('POST', path);
     return FormResponse.fromJson(data);
   }
 }

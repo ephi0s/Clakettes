@@ -382,6 +382,12 @@ class FestivalRegistrationService(
         query = db.query(FestivalRegistration).filter(FestivalRegistration.user_id == user_id)
         return self.paginate(query.order_by(FestivalRegistration.created_at.desc()), page, size)
 
+    def get_by_form_paginated(self, db: Session, form_id: int, page: int, size: int, status: str | None = None) -> dict:
+        query = db.query(FestivalRegistration).filter(FestivalRegistration.form_id == form_id)
+        if status:
+            query = query.filter(FestivalRegistration.status == status)
+        return self.paginate(query.order_by(FestivalRegistration.created_at.desc()), page, size)
+
     def approve_registration(self, db: Session, registration_id: int, approved_by: int) -> FestivalRegistration | None:
         reg = self.get(db, registration_id)
         if not reg or reg.status != RegistrationStatus.PENDING:

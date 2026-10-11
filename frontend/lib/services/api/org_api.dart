@@ -109,8 +109,10 @@ extension OrgApi on ApiService {
 
   /// Revoca una delegación, con motivo opcional.
   Future<void> revokeDelegation(int delegationId, {String? reason}) async {
-    final body = reason != null ? json.encode({'reason': reason}) : null;
-    await request('POST', '/delegations/$delegationId/revoke', body: body);
+    final path = reason != null
+        ? '/delegations/$delegationId/revoke?reason=${Uri.encodeComponent(reason)}'
+        : '/delegations/$delegationId/revoke';
+    await request('POST', path);
   }
 
   /// Obtiene las transiciones de rol paginadas, con filtros opcionales.

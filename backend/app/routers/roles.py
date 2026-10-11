@@ -54,6 +54,14 @@ async def create_role(role: RoleCreate, db: Session = Depends(get_db), current_u
     return role_service.create(db, role)
 
 
+@router.get("/roles/hierarchy/", response_model=list[RoleResponse])
+async def get_role_hierarchy(
+    db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
+):
+    """Returns roles in hierarchy order (highest level first)."""
+    return role_service.get_all_ordered_by_hierarchy(db)
+
+
 @router.get("/roles/{role_id}", response_model=RoleResponse)
 async def get_role(
     role_id: int, db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
@@ -88,14 +96,6 @@ async def delete_role(role_id: int, db: Session = Depends(get_db), current_user:
     if not deleted:
         raise HTTPException(status_code=404, detail="Role not found")
     return {"message": "Role deleted"}
-
-
-@router.get("/roles/hierarchy/", response_model=list[RoleResponse])
-async def get_role_hierarchy(
-    db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
-):
-    """Returns roles in hierarchy order (highest level first)."""
-    return role_service.get_all_ordered_by_hierarchy(db)
 
 
 @router.get("/festivals/{festival_id}/roles/", response_model=FestivalRolesPage)

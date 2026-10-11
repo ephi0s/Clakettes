@@ -4,6 +4,7 @@ from app.database import get_db
 from app.auth import get_current_user
 from app.models.festival import Festival
 from app.models.location import Location
+from app.models.user_festival import user_festival
 from app.routers.dependencies import get_or_404
 from app.schemas.festival import FestivalCreate, FestivalUpdate, FestivalResponse, FestivalsPage
 from app.schemas.location import LocationResponse
@@ -30,7 +31,10 @@ async def list_festivals(page: int = 1, size: int = 20, is_active: bool | None =
 async def create_festival(
     festival: FestivalCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    return service.create(db, festival)
+    created = service.create(db, festival)
+    db.execute(user_festival.insert().values(user_id=current_user.id, festival_id=created.id, role="organizer"))
+    db.commit()
+    return created
 
 
 @router.get("/{festival_id}", response_model=FestivalResponse)

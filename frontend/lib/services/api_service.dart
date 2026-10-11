@@ -384,12 +384,11 @@ class ApiService {
   // Search
   // ---------------------------------------------------------------------------
 
-  /// Realiza una búsqueda global en el backend.
+  /// Realiza una búsqueda global en el backend (requiere autenticación).
   Future<Map<String, dynamic>> search(String query,
       {String type = 'all'}) async {
     final params = <String, String>{'q': query, 'type': type};
-    return await request('GET', '/search/?${_buildQuery(params)}',
-        withAuth: false);
+    return await request('GET', '/search/?${_buildQuery(params)}');
   }
 
   // ---------------------------------------------------------------------------

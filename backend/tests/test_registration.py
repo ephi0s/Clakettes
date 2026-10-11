@@ -90,7 +90,7 @@ class TestCreateRegistrationForm:
         db_session.refresh(fest)
         response = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "Registration Form"}, "sections": []},
+            json={"festival_id": fest.id, "title": "Registration Form", "sections": []},
             headers=headers,
         )
         assert response.status_code == 201
@@ -106,7 +106,7 @@ class TestCreateRegistrationForm:
         db_session.refresh(fest)
         response = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "No Auth"}, "sections": []},
+            json={"festival_id": fest.id, "title": "No Auth", "sections": []},
         )
         assert response.status_code == 401
 
@@ -114,7 +114,7 @@ class TestCreateRegistrationForm:
         headers, _ = auth_headers
         response = client.post(
             "/api/festivals/9999/registration-forms/",
-            json={"form": {"festival_id": 9999, "title": "Ghost"}, "sections": []},
+            json={"festival_id": 9999, "title": "Ghost", "sections": []},
             headers=headers,
         )
         assert response.status_code == 404
@@ -131,7 +131,7 @@ class TestGetRegistrationForm:
         db_session.refresh(fest)
         create_resp = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "My Form"}, "sections": []},
+            json={"festival_id": fest.id, "title": "My Form", "sections": []},
             headers=headers,
         )
         form_id = create_resp.json()["id"]
@@ -147,7 +147,7 @@ class TestGetRegistrationForm:
         db_session.refresh(fest)
         create_resp = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "Auth Form"}, "sections": []},
+            json={"festival_id": fest.id, "title": "Auth Form", "sections": []},
             headers=headers,
         )
         form_id = create_resp.json()["id"]
@@ -190,7 +190,7 @@ class TestUpdateRegistrationForm:
         db_session.refresh(fest)
         create_resp = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "Old"}, "sections": []},
+            json={"festival_id": fest.id, "title": "Old", "sections": []},
             headers=headers,
         )
         form_id = create_resp.json()["id"]
@@ -242,7 +242,7 @@ class TestDeleteRegistrationForm:
         db_session.refresh(fest)
         create_resp = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
-            json={"form": {"festival_id": fest.id, "title": "Delete Me"}, "sections": []},
+            json={"festival_id": fest.id, "title": "Delete Me", "sections": []},
             headers=headers,
         )
         form_id = create_resp.json()["id"]
@@ -641,7 +641,7 @@ class TestPublicRegistration:
             "/api/public/forms/regtoken2/register",
             json={"form_id": form.id, "link_token": "regtoken2", "sections": []},
         )
-        assert response.status_code == 400
+        assert response.status_code == 401
 
     def test_register_with_invalid_token(self, client, auth_headers):
         headers, _ = auth_headers
@@ -938,10 +938,10 @@ class TestRegistrationFlow:
         form_resp = client.post(
             f"/api/festivals/{fest.id}/registration-forms/",
             json={
-                "form": {"festival_id": fest.id, "title": "Flow Form"},
+                "festival_id": fest.id,
+                "title": "Flow Form",
                 "sections": [
                     {
-                        "form_id": fest.id,
                         "title": "Jury Section",
                         "sort_order": 0,
                         "role_ids": [role.id],
