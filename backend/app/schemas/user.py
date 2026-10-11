@@ -10,12 +10,14 @@ class UserBase(BaseModel):
     role: str | None = Field(None, max_length=50)
     bio: str | None = Field(None, max_length=2000)
     avatar_url: str | None = Field(None, max_length=500)
-    is_public: bool | None = True
-    is_public_email: bool | None = True
-    is_public_bio: bool | None = True
-    is_public_location: bool | None = True
+    is_public: bool | None = False
+    is_public_email: bool | None = False
+    is_public_bio: bool | None = False
+    is_public_location: bool | None = False
     latitude: float | None = Field(None, ge=-90, le=90)
     longitude: float | None = Field(None, ge=-180, le=180)
+    privacy_policy_version: str | None = Field(None, max_length=20)
+    privacy_accepted_at: datetime | None = None
 
 
 class UserCreate(UserBase):

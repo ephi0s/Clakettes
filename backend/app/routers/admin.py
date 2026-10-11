@@ -8,10 +8,13 @@ from app.auth import get_current_user
 from app.models.user import User
 from app.services.user_service import verify_password
 from app.services.admin_service import AdminService
+from app.services.audit_service import AuditService
+from app.schemas.audit_log import AuditLogsPage
 from app.rate_limiter import RateLimiter
 
 router = APIRouter()
 admin_service = AdminService()
+audit_service = AuditService()
 _reset_limiter = RateLimiter()
 
 
@@ -45,6 +48,20 @@ async def database_stats(db: Session = Depends(get_db), current_user: User = Dep
 async def list_tables(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     _require_admin(current_user)
     return admin_service.get_tables(db)
+
+
+@router.get("/audit-log", response_model=AuditLogsPage)
+async def list_audit_log(
+    page: int = 1,
+    size: int = 20,
+    action: str | None = None,
+    actor_user_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Append-only record of sensitive actions (RGPD art. 5.2). Admin only."""
+    _require_admin(current_user)
+    return audit_service.list_paginated(db, page=page, size=size, action=action, actor_user_id=actor_user_id)
 
 
 @router.post("/reset")

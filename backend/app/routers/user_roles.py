@@ -1,6 +1,6 @@
 """Router for user role and user participant tag management."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,6 +14,7 @@ from app.schemas.user_role import (
     UserParticipantTagResponse,
     UserParticipantTagsPage,
 )
+from app.services.audit_service import AuditService
 from app.services.role_service import RoleService, UserRoleService
 from app.services.user_service import UserService
 from app.services.festival_service import FestivalService
@@ -24,6 +25,7 @@ from app.models.user import User
 router = APIRouter()
 
 user_service = UserService()
+audit_service = AuditService()
 role_service = RoleService()
 user_role_service = UserRoleService()
 festival_service = FestivalService()
@@ -59,6 +61,7 @@ async def list_user_roles(
 async def assign_user_role(
     user_id: int,
     ur: UserRoleCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -81,7 +84,16 @@ async def assign_user_role(
         if r.role_id == ur.role_id and r.festival_id == ur.festival_id:
             raise HTTPException(status_code=400, detail="User already has this role in this scope")
     create_data = UserRoleCreate(**data)
-    return user_role_service.create(db, create_data)
+    created = user_role_service.create(db, create_data)
+    audit_service.log(
+        db,
+        "user.role.assign",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={"role_id": ur.role_id, "festival_id": ur.festival_id},
+        ip_address=request.client.host if request.client else "unknown",
+    )
+    return created
 
 
 @router.put("/users/{user_id}/roles/{ur_id}", response_model=UserRoleResponse)
@@ -89,6 +101,7 @@ async def update_user_role(
     user_id: int,
     ur_id: int,
     ur: UserRoleUpdate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -100,6 +113,14 @@ async def update_user_role(
         raise HTTPException(status_code=404, detail="User role not found")
     require_role_scope_admin(db, current_user, existing.festival_id)
     updated = user_role_service.update(db, ur_id, ur)
+    audit_service.log(
+        db,
+        "user.role.update",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={"user_role_id": ur_id},
+        ip_address=request.client.host if request.client else "unknown",
+    )
     return updated
 
 
@@ -107,6 +128,7 @@ async def update_user_role(
 async def remove_user_role(
     user_id: int,
     ur_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -118,6 +140,14 @@ async def remove_user_role(
         raise HTTPException(status_code=404, detail="User role not found")
     require_role_scope_admin(db, current_user, existing.festival_id)
     user_role_service.delete(db, ur_id)
+    audit_service.log(
+        db,
+        "user.role.remove",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={"user_role_id": ur_id},
+        ip_address=request.client.host if request.client else "unknown",
+    )
     return {"message": "Role removed from user"}
 
 
@@ -147,6 +177,7 @@ async def list_user_participant_tags(
 async def assign_user_participant_tag(
     user_id: int,
     upt: UserParticipantTagCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -164,13 +195,23 @@ async def assign_user_participant_tag(
     if existing:
         raise HTTPException(status_code=400, detail="User already has this tag in this scope")
     create_data = UserParticipantTagCreate(**data)
-    return user_participant_tag_service.create(db, create_data)
+    created = user_participant_tag_service.create(db, create_data)
+    audit_service.log(
+        db,
+        "user.tag.assign",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={"tag_id": upt.tag_id, "festival_id": upt.festival_id},
+        ip_address=request.client.host if request.client else "unknown",
+    )
+    return created
 
 
 @router.delete("/users/{user_id}/participant-tags/{upt_id}")
 async def remove_user_participant_tag(
     user_id: int,
     upt_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -182,4 +223,12 @@ async def remove_user_participant_tag(
         raise HTTPException(status_code=404, detail="User tag not found")
     require_role_scope_admin(db, current_user, existing.festival_id)
     user_participant_tag_service.delete(db, upt_id)
+    audit_service.log(
+        db,
+        "user.tag.remove",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={"tag_id": existing.tag_id},
+        ip_address=request.client.host if request.client else "unknown",
+    )
     return {"message": "Tag removed from user"}

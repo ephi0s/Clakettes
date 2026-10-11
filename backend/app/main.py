@@ -88,6 +88,21 @@ def _validate_secret_key():
             "CORS_ORIGINS must be set to explicit origins in production (APP_ENV=production). "
             "Wildcard '*' is not allowed with credentials."
         )
+    if settings.is_production and settings.DATABASE_URL.startswith("mariadb"):
+        from urllib.parse import parse_qsl, urlsplit
+
+        query = dict(parse_qsl(urlsplit(settings.DATABASE_URL).query))
+        tls_keys = {"ssl_ca", "ssl_cert", "ssl_key", "ssl_verify_cert", "ssl_verify_identity"}
+        if "ssl" in query:
+            raise RuntimeError(
+                "DATABASE_URL uses '?ssl=...', which PyMySQL cannot parse. "
+                "Use '?ssl_ca=/path/to/ca.pem' (or ssl_verify_identity=true) instead."
+            )
+        if not any(key in query for key in tls_keys):
+            raise RuntimeError(
+                "DATABASE_URL must enable TLS in production (APP_ENV=production), "
+                "e.g. mariadb+pymysql://user:pass@host:3306/db?ssl_ca=/run/secrets/db-ca.pem"
+            )
 
 
 _validate_secret_key()
@@ -102,6 +117,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     - X-XSS-Protection: 1; mode=block — Legacy XSS filter (older browsers)
     - Referrer-Policy: strict-origin-when-cross-origin — Controls referrer info
     - Permissions-Policy: camera=(), microphone=(), geolocation=() — Disables powerful features
+    - Strict-Transport-Security (production only) — Force HTTPS
+    - Content-Security-Policy — API responses carry no active content; the
+      interactive docs (/docs, /redoc) keep a minimal frame-ancestors-only policy
     - X-Dev-Mode: true (only in dev) — Indicates insecure default key in use
     """
 
@@ -112,6 +130,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if request.url.path in ("/docs", "/redoc", "/openapi.json"):
+            response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
+        else:
+            response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+        if settings.is_production:
+            response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
         return response
 
 
@@ -268,6 +292,22 @@ def _init_admin_user():
         db.close()
 
 
+def _purge_expired_sessions() -> None:
+    """Delete revoked/expired login sessions (RGPD art. 5 — limitación del plazo)."""
+    try:
+        from app.services.auth_session_service import AuthSessionService
+
+        db = SessionLocal()
+        try:
+            removed = AuthSessionService().purge_expired(db)
+        finally:
+            db.close()
+        if removed:
+            logger.info("Purged %d expired login sessions", removed)
+    except Exception:
+        logger.exception("Session purge failed")
+
+
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     """Application lifespan manager.
@@ -275,7 +315,8 @@ async def lifespan(application: FastAPI):
     Startup:
     1. Create database tables (dev only; prod uses Alembic migrations)
     2. Create default admin user (dev only)
-    3. Initialize WebSocket chat backend
+    3. Purge revoked/expired login sessions (RGPD art. 5)
+    4. Initialize WebSocket chat backend
 
     Shutdown:
     - Stop chat backend gracefully
@@ -286,6 +327,8 @@ async def lifespan(application: FastAPI):
     _warn_about_dav_transport()
 
     _init_admin_user()
+
+    _purge_expired_sessions()
 
     # Initialise the real-time chat backend (WebSockets by default).
     chat_backend = WebSocketChatBackend()

@@ -6,7 +6,7 @@ and authenticated callers additionally see events addressed to them.
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
@@ -125,26 +125,52 @@ def _dav_collections(db: Session, user: User) -> list[DavCollectionResponse]:
 
 
 @router.post("/dav/token", response_model=DavTokenResponse)
-async def create_dav_token(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_dav_token(
+    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     """Issue a CalDAV token and return it once. Generating rotates any previous token."""
+    from app.services.audit_service import AuditService
+
     raw = dav_auth.generate_token()
     current_user.dav_token_hash = dav_auth.hash_token(raw)
+    current_user.dav_token_expires_at = dav_auth.token_expiry()
     db.commit()
-    return DavTokenResponse(token=raw, collections=_dav_collections(db, current_user))
+    AuditService().log(
+        db,
+        "dav.token.issue",
+        actor_user_id=current_user.id,
+        ip_address=request.client.host if request.client else "unknown",
+    )
+    return DavTokenResponse(
+        token=raw, expires_at=current_user.dav_token_expires_at, collections=_dav_collections(db, current_user)
+    )
 
 
 @router.get("/dav/token", response_model=DavTokenStatusResponse)
 async def get_dav_token_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Report whether a CalDAV token exists. The token itself is never returned."""
+    active = not dav_auth.is_token_expired(current_user)
     return DavTokenStatusResponse(
-        has_token=bool(current_user.dav_token_hash),
+        has_token=active,
+        expires_at=current_user.dav_token_expires_at if active else None,
         collections=_dav_collections(db, current_user),
     )
 
 
 @router.delete("/dav/token", response_model=DavTokenStatusResponse)
-async def revoke_dav_token(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def revoke_dav_token(
+    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     """Revoke the CalDAV token, immediately breaking every subscription."""
+    from app.services.audit_service import AuditService
+
     current_user.dav_token_hash = None
+    current_user.dav_token_expires_at = None
     db.commit()
+    AuditService().log(
+        db,
+        "dav.token.revoke",
+        actor_user_id=current_user.id,
+        ip_address=request.client.host if request.client else "unknown",
+    )
     return DavTokenStatusResponse(has_token=False, collections=_dav_collections(db, current_user))

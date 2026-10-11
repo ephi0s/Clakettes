@@ -121,10 +121,19 @@ class TestSearch:
 
     def test_search_users_public_only(self, client, auth_headers, db_session):
         headers, user = auth_headers
+        user.is_public = True
+        db_session.commit()
         response = client.get(f"/api/search/?q={user.username}&type=users", headers=headers)
         assert response.status_code == 200
         data = response.json()
         assert data["total"] >= 1
+
+    def test_search_users_excludes_private_by_default(self, client, auth_headers, db_session):
+        headers, user = auth_headers
+        assert user.is_public is False
+        response = client.get(f"/api/search/?q={user.username}&type=users", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["total"] == 0
 
     def test_search_all(self, client, auth_headers, db_session):
         headers, _ = auth_headers
@@ -149,11 +158,14 @@ class TestUpload:
         headers, _ = auth_headers
         import io
 
-        image_bytes = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100  # fake PNG header
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGB", (8, 8), "red").save(buf, format="PNG")
         response = client.post(
             "/api/uploads/avatar",
             headers=headers,
-            files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
+            files={"file": ("test.png", buf.getvalue(), "image/png")},
         )
         assert response.status_code == 200
         assert "url" in response.json()

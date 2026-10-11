@@ -77,10 +77,16 @@ class TestCreateRulebook:
         assert resp.status_code == 403
 
     def test_upload_pdf(self, client, admin_headers, tmp_path):
+        from pypdf import PdfWriter
+
         headers, _ = admin_headers
         fest_id = _create_festival(client, headers)
         pdf = tmp_path / "bases.pdf"
-        pdf.write_bytes(b"%PDF-1.4 fake content")
+        writer = PdfWriter()
+        writer.add_blank_page(100, 100)
+        writer.add_metadata({"/Author": "John Doe"})
+        with open(pdf, "wb") as f:
+            writer.write(f)
         with open(pdf, "rb") as f:
             resp = client.post(
                 f"/api/festivals/{fest_id}/rulebooks/upload",
@@ -90,6 +96,29 @@ class TestCreateRulebook:
             )
         assert resp.status_code == 201
         assert resp.json()["file_url"].startswith("/uploads/rulebooks/")
+
+    def test_upload_pdf_metadata_stripped(self, client, admin_headers, tmp_path, monkeypatch):
+        from pypdf import PdfReader, PdfWriter
+
+        headers, _ = admin_headers
+        fest_id = _create_festival(client, headers)
+        monkeypatch.chdir(tmp_path)
+        pdf = tmp_path / "meta.pdf"
+        writer = PdfWriter()
+        writer.add_blank_page(100, 100)
+        writer.add_metadata({"/Author": "John Doe"})
+        with open(pdf, "wb") as f:
+            writer.write(f)
+        with open(pdf, "rb") as f:
+            resp = client.post(
+                f"/api/festivals/{fest_id}/rulebooks/upload",
+                files={"file": ("meta.pdf", f, "application/pdf")},
+                data={"title": "Meta PDF", "category": "contest"},
+                headers=headers,
+            )
+        assert resp.status_code == 201
+        stored = tmp_path / "uploads" / resp.json()["file_url"].split("/uploads/")[1]
+        assert PdfReader(str(stored)).metadata.author in (None, "")
 
     def test_upload_rejects_non_pdf(self, client, admin_headers, tmp_path):
         headers, _ = admin_headers

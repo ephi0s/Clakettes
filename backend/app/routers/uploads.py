@@ -23,11 +23,24 @@ _IMAGE_MAGIC_BYTES = {
     b"\x89PNG\r\n\x1a\n",
     b"GIF87a",
     b"GIF89a",
-    b"RIFF",
 }
 
 
+def _has_valid_magic(content_type: str, header: bytes) -> bool:
+    if content_type in ALLOWED_IMAGE_TYPES:
+        if any(header[: len(sig)] == sig for sig in _IMAGE_MAGIC_BYTES):
+            return True
+        return header[:4] == b"RIFF" and header[8:12] == b"WEBP"
+    if content_type in ALLOWED_VIDEO_TYPES:
+        return header[4:8] == b"ftyp" or header[:4] == b"\x1a\x45\xdf\xa3"
+    if content_type in ALLOWED_DOC_TYPES:
+        return header[:4] == b"%PDF"
+    return False
+
+
 async def _save_file(file: UploadFile, subfolder: str, allowed_types: set, max_size: int) -> str:
+    from app.services.media_sanitize_service import sanitize_file
+
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=f"File type '{file.content_type}' not allowed"
@@ -39,33 +52,40 @@ async def _save_file(file: UploadFile, subfolder: str, allowed_types: set, max_s
         )
     folder = UPLOAD_DIR / subfolder
     folder.mkdir(parents=True, exist_ok=True)
-    if allowed_types & ALLOWED_IMAGE_TYPES:
-        header = await file.read(8)
-        await file.seek(0)
-        if header[:8] not in _IMAGE_MAGIC_BYTES and allowed_types & ALLOWED_IMAGE_TYPES:
-            valid_magic = any(header[: len(sig)] == sig for sig in _IMAGE_MAGIC_BYTES)
-            if not valid_magic:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="File content does not match image type",
-                )
+    header = await file.read(16)
+    await file.seek(0)
+    if not _has_valid_magic(file.content_type, header):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File content does not match file type",
+        )
     ext = Path(file.filename or "file").suffix or ".bin"
     filename = f"{uuid.uuid4().hex}{ext}"
-    total = 0
     file_path = folder / filename
-    with file_path.open("wb") as f:
+    tmp_path = folder / f"{filename}.part"
+    total = 0
+    with tmp_path.open("wb") as f:
         while True:
             chunk = await file.read(1024 * 1024)
             if not chunk:
                 break
             total += len(chunk)
             if total > max_size:
-                file_path.unlink(missing_ok=True)
+                tmp_path.unlink(missing_ok=True)
                 raise HTTPException(
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                     detail=f"File too large (max {max_size // (1024 * 1024)}MB)",
                 )
             f.write(chunk)
+    try:
+        sanitize_file(tmp_path, file.content_type)
+    except HTTPException:
+        tmp_path.unlink(missing_ok=True)
+        raise
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File could not be processed")
+    tmp_path.replace(file_path)
     return f"/uploads/{subfolder}/{filename}"
 
 

@@ -65,3 +65,24 @@ class AuthSessionService(BaseService[UserSession, UserSessionCreate, UserSession
             s.is_active = False
         db.commit()
         return len(sessions)
+
+    def purge_expired(self, db: Session, grace_days: int = 30) -> int:
+        """RGPD art. 5 — elimina sesiones revocadas o caducadas hace más de `grace_days`.
+
+        Las sesiones simplemente caducadas pero recientes se conservan durante el
+        periodo de gracia por auditoría; las revocadas se eliminan siempre.
+        """
+        from datetime import timedelta
+
+        cutoff = datetime.now(timezone.utc) - timedelta(days=grace_days)
+        rows = (
+            db.query(UserSession)
+            .filter(
+                (UserSession.revoked_at.is_not(None)) | (UserSession.expires_at < cutoff),
+            )
+            .all()
+        )
+        for s in rows:
+            db.delete(s)
+        db.commit()
+        return len(rows)

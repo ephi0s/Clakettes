@@ -1,6 +1,6 @@
 """User model — platform user profile with authentication and geolocation."""
 
-from sqlalchemy import Column, String, Text, Float, Boolean
+from sqlalchemy import Column, String, Text, Float, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -29,17 +29,24 @@ class User(BaseModel):
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
-    is_public = Column(Boolean, default=True)
-    is_public_email = Column(Boolean, default=True)
-    is_public_bio = Column(Boolean, default=True)
-    is_public_location = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=False)
+    is_public_email = Column(Boolean, default=False)
+    is_public_bio = Column(Boolean, default=False)
+    is_public_location = Column(Boolean, default=False)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+
+    # RGPD art. 7 — registro del consentimiento de la política de privacidad.
+    # NULL en cuentas anteriores = consentimiento no registrado.
+    privacy_policy_version = Column(String(20), nullable=True)
+    privacy_accepted_at = Column(DateTime, nullable=True)
 
     # SHA-256 of the CalDAV access token. NULL means no token has been issued.
     # The plaintext is shown once at generation time and never stored, so a
     # database leak cannot be replayed as a calendar credential.
     dav_token_hash = Column(String(64), nullable=True, unique=True, index=True)
+    # RGPD art. 32 — los tokens DAV caducan (ver DAV_TOKEN_EXPIRE_DAYS).
+    dav_token_expires_at = Column(DateTime, nullable=True)
 
     shortfilms = relationship("ShortFilm", back_populates="user")
     festivals = relationship("Festival", secondary="user_festival", back_populates="users")

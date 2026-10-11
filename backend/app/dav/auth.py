@@ -9,12 +9,33 @@ import base64
 import hashlib
 import re
 import secrets
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, Request, Response
 
 from app.dav import constants
 from app.models.user import User
 from sqlalchemy.orm import Session
+
+#: RGPD art. 32 — los tokens DAV caducan y deben regenerarse.
+DAV_TOKEN_EXPIRE_DAYS = 180
+
+
+def token_expiry() -> datetime:
+    from datetime import timedelta
+
+    return datetime.now(timezone.utc) + timedelta(days=DAV_TOKEN_EXPIRE_DAYS)
+
+
+def is_token_expired(user: User) -> bool:
+    if not user.dav_token_hash:
+        return True
+    expires = user.dav_token_expires_at
+    if expires is None:
+        return False
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    return expires < datetime.now(timezone.utc)
 
 
 PRINCIPAL_ID_RE = re.compile(r"^u\d+$")
@@ -33,13 +54,16 @@ def hash_token(raw: str) -> str:
 
 
 def user_by_token(db: Session, raw: str) -> User | None:
-    """Look up a User by dav_token_hash == hash_token(raw)."""
+    """Look up a User by dav_token_hash == hash_token(raw). Expired tokens never match."""
     if not raw:
         return None
     token_hash = hash_token(raw)
     if not token_hash:
         return None
-    return db.query(User).filter(User.dav_token_hash == token_hash).first()
+    user = db.query(User).filter(User.dav_token_hash == token_hash).first()
+    if user is not None and is_token_expired(user):
+        return None
+    return user
 
 
 def token_from_request(request: Request) -> str | None:

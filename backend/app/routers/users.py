@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
 from app.routers.dependencies import get_or_404
 from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserPublicResponse, UsersPage, UsersPublicPage
+from app.services.audit_service import AuditService
 from app.services.user_service import UserService
 from app.services.notification_service import NotificationService
 from app.routers.permissions import can_edit_user, can_delete_user, is_admin
@@ -11,7 +12,12 @@ from app.models.user import User
 
 router = APIRouter()
 service = UserService()
+audit_service = AuditService()
 notification_service = NotificationService()
+
+
+def _client_ip(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
 
 
 @router.get("/", response_model=UsersPage | UsersPublicPage)
@@ -40,6 +46,35 @@ async def list_public_users(page: int = 1, size: int = 50, db: Session = Depends
 async def get_current_user_profile(current_user: User = Depends(get_current_user)):
     """Return the full profile of the currently authenticated user."""
     return current_user
+
+
+@router.get("/me/export")
+async def export_my_data(
+    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    """RGPD art. 20 — descarga todos los datos personales en JSON."""
+    audit_service.log(db, "user.export", actor_user_id=current_user.id, ip_address=_client_ip(request))
+    return service.export_personal_data(db, current_user)
+
+
+@router.delete("/me")
+async def delete_my_account(
+    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    """RGPD art. 17 — borra los datos personales de la propia cuenta."""
+    try:
+        summary = service.erase_personal_data(db, current_user)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    audit_service.log(
+        db,
+        "user.erase",
+        actor_user_id=current_user.id,
+        target_user_id=current_user.id,
+        detail=summary,
+        ip_address=_client_ip(request),
+    )
+    return {"message": "Account data erased", "summary": summary}
 
 
 @router.post("/", response_model=UserResponse, status_code=201)
@@ -96,11 +131,22 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-async def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def delete_user(
+    request: Request, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     target_user = get_or_404(db, User, user_id, "User")
     if not can_delete_user(db, current_user, target_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins and organizers can delete users")
-    deleted = service.delete(db, user_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"message": "User deleted"}
+    try:
+        summary = service.erase_personal_data(db, target_user)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    audit_service.log(
+        db,
+        "user.erase",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail=summary,
+        ip_address=_client_ip(request),
+    )
+    return {"message": "User deleted", "summary": summary}

@@ -111,6 +111,7 @@ class DavTokenResponse(BaseModel):
     """Issued by token creation. `token` is returned exactly once."""
 
     token: str
+    expires_at: datetime | None = None
     collections: list[DavCollectionResponse] = []
 
 
@@ -118,4 +119,5 @@ class DavTokenStatusResponse(BaseModel):
     """Never contains the token itself."""
 
     has_token: bool
+    expires_at: datetime | None = None
     collections: list[DavCollectionResponse] = []
