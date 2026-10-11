@@ -32,6 +32,7 @@ set IS_TEST_BACKEND=0
 set IS_TEST_FRONTEND=0
 set NO_BACKEND=0
 set NO_FRONTEND=0
+set IS_KILL=0
 set IS_BUILD=0
 set IS_BUILD_ALL=0
 set IS_BUILD_FRONTEND=0
@@ -48,6 +49,7 @@ for %%a in (%*) do (
     if /I "%%a"=="--test-frontend" set IS_TEST_FRONTEND=1
     if /I "%%a"=="--no-backend" set NO_BACKEND=1
     if /I "%%a"=="--no-frontend" set NO_FRONTEND=1
+    if /I "%%a"=="--kill" set IS_KILL=1
     if /I "%%a"=="--build" set IS_BUILD=1
     if /I "%%a"=="--build-all" set IS_BUILD_ALL=1
     if /I "%%a"=="--build-frontend" set IS_BUILD_FRONTEND=1
@@ -55,9 +57,16 @@ for %%a in (%*) do (
 )
 
 :: --- Docker check ---
+if %IS_KILL%==1 goto :kill
 if %IS_WEB%==1 goto :local_mode
 where docker >nul 2>&1
-if not errorlevel 1 goto :docker_mode
+if errorlevel 1 goto :local_mode
+docker info >nul 2>&1
+if errorlevel 1 (
+    echo [DOCKER] Docker instalado pero el daemon no responde — usando entorno local.
+    goto :local_mode
+)
+goto :docker_mode
 :local_mode
 
 :: ============================================
@@ -75,8 +84,37 @@ if %IS_BUILD_FRONTEND%==1 goto :setup_help
 if %IS_BUILD_BACKEND%==1 goto :setup_help
 if %IS_TEST_MIGRATION%==1 goto :setup_help
 
-set FLUTTER_DIR=C:\tools\flutter\bin
-if exist "%FLUTTER_DIR%\flutter.bat" set PATH=%PATH%;%FLUTTER_DIR%
+for %%F in ("C:\tools\flutter\bin" "%USERPROFILE%\flutter\bin" "C:\flutter\bin" "C:\src\flutter\bin" "%LOCALAPPDATA%\Flutter\bin") do if exist "%%~F\flutter.bat" set "PATH=%PATH%;%%~F"
+
+set NEED_PY=1
+if %NO_BACKEND%==1 set NEED_PY=0
+if %IS_MIGRATE%==1 set NEED_PY=1
+if %IS_TEST_BACKEND%==1 set NEED_PY=1
+set NEED_FLUTTER=1
+if %NO_FRONTEND%==1 set NEED_FLUTTER=0
+if %IS_TEST_FRONTEND%==1 set NEED_FLUTTER=1
+if %IS_FINAL%==1 set NEED_FLUTTER=1
+if %IS_FINAL%==1 set NEED_PY=1
+
+call :find_python
+if errorlevel 1 (
+    if %NEED_PY%==1 (
+        echo ========================================
+        echo   ERROR: Python 3.12+ no detectado
+        echo ========================================
+        echo   Descarga: https://www.python.org/downloads/
+        echo   Requiere 'py -3', 'python' o 'python3' en PATH.
+        pause
+        exit /b 1
+    )
+    echo [SISTEMA] WARNING: Python no detectado ^(solo frontend^).
+) else (
+    echo [SISTEMA] Python detectado.
+)
+where flutter >nul 2>&1
+if errorlevel 1 (
+    if %NEED_FLUTTER%==1 echo [SISTEMA] WARNING: Flutter no detectado. Descarga: https://docs.flutter.dev/get-started/install
+)
 
 :: Environment setup
 if not exist "%ROOT%backend\.env" (
@@ -86,8 +124,8 @@ if not exist "%ROOT%backend\.env" (
     )
 )
 
-set BACKEND_PYTHON=python
-if exist "%ROOT%backend\requirements.txt" (
+set BACKEND_PYTHON=%PYTHON_CMD%
+if %NEED_PY%==1 if exist "%ROOT%backend\requirements.txt" (
     call :check_venv
     if errorlevel 1 (
         if exist "%ROOT%backend\.venv\" (
@@ -97,7 +135,7 @@ if exist "%ROOT%backend\requirements.txt" (
             echo [ENV] Creando entorno virtual para backend...
         )
         cd /d "%ROOT%backend"
-        python -m venv .venv
+        call %PYTHON_CMD% %PYTHON_ARGS% -m venv .venv
         if errorlevel 1 (
             echo [ENV] ERROR: No se pudo crear .venv
             pause
@@ -106,15 +144,36 @@ if exist "%ROOT%backend\requirements.txt" (
         cd /d "%ROOT%"
     )
     if exist "%ROOT%backend\.venv\Scripts\python.exe" (
-        "%ROOT%backend\.venv\Scripts\pip" install -r "%ROOT%backend\requirements.txt" -q
-        if exist "%ROOT%backend\requirements-dev.txt" (
-            "%ROOT%backend\.venv\Scripts\pip" install -r "%ROOT%backend\requirements-dev.txt" -q
+        call :need_pip
+        if errorlevel 1 (
+            echo [ENV] Instalando dependencias del backend ^(puede tardar minutos la primera vez^)...
+            "%ROOT%backend\.venv\Scripts\pip" install -r "%ROOT%backend\requirements.txt"
+            if errorlevel 1 (
+                echo [ENV] ERROR en pip install
+                pause
+                exit /b 1
+            )
+            if exist "%ROOT%backend\requirements-dev.txt" (
+                "%ROOT%backend\.venv\Scripts\pip" install -r "%ROOT%backend\requirements-dev.txt"
+                if errorlevel 1 (
+                    echo [ENV] ERROR en pip install ^(dev^)
+                    pause
+                    exit /b 1
+                )
+            )
+            call :save_pip_hash
+        ) else (
+            echo [ENV] Dependencias del backend al dia, omitiendo pip install.
         )
         set BACKEND_PYTHON=%ROOT%backend\.venv\Scripts\python
+    ) else (
+        echo [ENV] ERROR: .venv sin python.exe tras crearlo
+        pause
+        exit /b 1
     )
 )
 
-if exist "%ROOT%frontend\pubspec.yaml" (
+if %NEED_FLUTTER%==1 if exist "%ROOT%frontend\pubspec.yaml" (
     call :check_pubcache
     if errorlevel 1 (
         where flutter >nul 2>&1
@@ -124,6 +183,8 @@ if exist "%ROOT%frontend\pubspec.yaml" (
             call flutter pub get
             if errorlevel 1 call flutter pub get --offline
             cd /d "%ROOT%"
+            call :check_pubcache
+            if errorlevel 1 echo [ENV] ERROR: no se pudo regenerar la cache de Flutter
         ) else (
             echo [ENV] WARNING: Flutter no encontrado. Instalalo para desarrollo frontend.
         )
@@ -131,6 +192,29 @@ if exist "%ROOT%frontend\pubspec.yaml" (
 )
 
 echo [ENV] Entorno listo.
+echo.
+
+:: Tests (ajustan NO_BACKEND/NO_FRONTEND antes del mapeo de puertos)
+if %IS_TEST_BACKEND%==1 if %NO_BACKEND%==0 set NO_BACKEND=1
+if %IS_TEST_FRONTEND%==1 if %NO_FRONTEND%==0 set NO_FRONTEND=1
+
+:: Port auto-assignment (antes de DATABASE_URL y del encabezado)
+set BACKEND_PORT=8000
+set FRONTEND_PORT=3000
+set MARIADB_PORT=3306
+set FRONTEND_PROD_PORT=80
+
+if %NO_BACKEND%==0 call :find_free_port 8000 Backend BACKEND_PORT
+if %NO_FRONTEND%==0 call :find_free_port 3000 Frontend FRONTEND_PORT
+if %IS_MARIADB%==1 call :find_free_port 3306 MariaDB MARIADB_PORT
+if %IS_FINAL%==1 if %NO_FRONTEND%==0 call :find_free_port 80 Frontend^(prod^) FRONTEND_PROD_PORT
+
+echo.
+echo [PUERTO] Mapeo final:
+if %NO_BACKEND%==0 echo   Backend       -^> http://localhost:%BACKEND_PORT%
+if %NO_FRONTEND%==0 if %IS_FINAL%==0 echo   Frontend      -^> http://localhost:%FRONTEND_PORT%
+if %NO_FRONTEND%==0 if %IS_FINAL%==1 echo   Frontend      -^> http://localhost:%FRONTEND_PROD_PORT%
+if %IS_MARIADB%==1 echo   MariaDB       -^> localhost:%MARIADB_PORT%
 echo.
 
 :: Database URL
@@ -152,9 +236,6 @@ if %IS_MIGRATE%==1 (
 )
 
 :: Tests
-if %IS_TEST_BACKEND%==1 if %NO_BACKEND%==0 set NO_BACKEND=1
-if %IS_TEST_FRONTEND%==1 if %NO_FRONTEND%==0 set NO_FRONTEND=1
-
 if %IS_TEST_BACKEND%==1 (
     echo [TEST:BACKEND] Ejecutando pytest...
     cd /d "%ROOT%backend"
@@ -171,25 +252,6 @@ if %IS_TEST_FRONTEND%==1 (
     goto :eof
 )
 
-:: Port auto-assignment
-set BACKEND_PORT=8000
-set FRONTEND_PORT=3000
-set MARIADB_PORT=3306
-set FRONTEND_PROD_PORT=80
-
-if %NO_BACKEND%==0 call :find_free_port 8000 Backend BACKEND_PORT
-if %NO_FRONTEND%==0 call :find_free_port 3000 Frontend FRONTEND_PORT
-if %IS_MARIADB%==1 call :find_free_port 3306 MariaDB MARIADB_PORT
-if %IS_FINAL%==1 if %NO_FRONTEND%==0 call :find_free_port 80 Frontend^(prod^) FRONTEND_PROD_PORT
-
-echo.
-echo [PUERTO] Mapeo final:
-if %NO_BACKEND%==0 echo   Backend       -^> http://localhost:%BACKEND_PORT%
-if %NO_FRONTEND%==0 if %IS_FINAL%==0 echo   Frontend      -^> http://localhost:%FRONTEND_PORT%
-if %NO_FRONTEND%==0 if %IS_FINAL%==1 echo   Frontend      -^> http://localhost:%FRONTEND_PROD_PORT%
-if %IS_MARIADB%==1 echo   MariaDB       -^> localhost:%MARIADB_PORT%
-echo.
-
 :: Backend (local)
 if %NO_BACKEND%==0 (
     echo [BACKEND] Iniciando uvicorn en http://localhost:%BACKEND_PORT% ...
@@ -198,6 +260,7 @@ if %NO_BACKEND%==0 (
     ) else (
         start "Clakettes Backend" cmd /c "cd /d ""%ROOT%backend"" && "%BACKEND_PYTHON%" -m uvicorn app.main:app --host 0.0.0.0 --port %BACKEND_PORT% --reload"
     )
+    call :wait_backend
 )
 
 :: Frontend (local)
@@ -258,6 +321,7 @@ if defined DOCKER_MDB set PORT_DB=%DOCKER_MDB%
 if %IS_FINAL%==1 call :find_free_port 80 "Frontend prod" DOCKER_FEP
 set PORT_BACKEND=%DOCKER_BCK%
 set PORT_FRONTEND=%DOCKER_FNT%
+set BACKEND_URL=http://localhost:%DOCKER_BCK%
 echo [DOCKER] Usando puertos: BACKEND=%PORT_BACKEND% FRONTEND=%PORT_FRONTEND%
 if %IS_FINAL%==1 set PORT_FRONTEND_PROD=%DOCKER_FEP% & echo [DOCKER]   Frontend prod: %DOCKER_FEP%
 :docker_port_skip
@@ -329,9 +393,9 @@ if not defined PORT_BACKEND set PORT_BACKEND=8000
 if not defined PORT_FRONTEND set PORT_FRONTEND=3000
 echo [DOCKER] Iniciando servicios de desarrollo en http://localhost:%PORT_BACKEND% y http://localhost:%PORT_FRONTEND% ...
 if %NO_BACKEND%==1 (
-    docker compose up frontend
+    docker compose up --no-deps frontend
 ) else if %NO_FRONTEND%==1 (
-    docker compose up backend
+    docker compose up --no-deps backend
 ) else if %IS_MARIADB%==1 (
     docker compose --profile db up
 ) else (
@@ -343,6 +407,7 @@ goto :eof
 :: TEST MIGRATION
 :: ============================================
 :run_test_migration
+setlocal enabledelayedexpansion
 echo [TEST-MIGRATION] Iniciando MariaDB...
 docker compose --profile db up -d db
 
@@ -362,7 +427,6 @@ if errorlevel 1 (
     goto test_mig_wait
 )
 
-setlocal enabledelayedexpansion
 set DB_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
 
 echo [TEST-MIGRATION] MariaDB lista. Ejecutando migraciones...
@@ -426,9 +490,9 @@ echo   - Docker Desktop (https://docs.docker.com/desktop/)
 echo   - Docker automaticamente crea pip install + flutter pub get
 echo.
 echo REQUISITOS (local, si no hay Docker):
-echo   - Python 3.12+ con pip
-echo   - Flutter SDK en C:\tools\flutter\bin
-echo   - Los scripts crean .venv y ejecutan flutter pub get automaticamente
+echo   - Python 3.12+ con pip ^(se detecta py -3 / python / python3; error si falta^)
+echo   - Flutter SDK en PATH o rutas habituales ^(aviso si falta^)
+echo   - .venv se crea solo si es invalido; pip install solo si cambian requirements
 echo.
 pause
 goto :eof
@@ -471,14 +535,64 @@ if %TRY% gtr 65535 (
 goto ffp_loop
 
 :: ============================================
-:: CHECK VENV / PUBCACHE
+:: CHECK VENV / PUBCACHE / PYTHON / PIP HASH
 :: ============================================
 :check_venv
 if not exist "%ROOT%backend\.venv\Scripts\python.exe" exit /b 1
 if not exist "%ROOT%backend\.venv\pyvenv.cfg" exit /b 1
+for /f "tokens=1* delims==" %%a in ('findstr /b /c:"home" "%ROOT%backend\.venv\pyvenv.cfg" 2^>nul') do (
+    for /f "tokens=*" %%c in ("%%b") do if not exist "%%~c" exit /b 1
+)
 "%ROOT%backend\.venv\Scripts\python.exe" --version >nul 2>&1
 if errorlevel 1 exit /b 1
 exit /b 0
+
+:find_python
+set PYTHON_CMD=
+set PYTHON_ARGS=
+set PYVER=
+py -3 --version >nul 2>&1
+if not errorlevel 1 (
+    set PYTHON_CMD=py
+    set PYTHON_ARGS=-3
+)
+if not defined PYTHON_CMD (
+    python --version >nul 2>&1
+    if not errorlevel 1 set PYTHON_CMD=python
+)
+if not defined PYTHON_CMD (
+    python3 --version >nul 2>&1
+    if not errorlevel 1 set PYTHON_CMD=python3
+)
+if not defined PYTHON_CMD exit /b 1
+for /f "tokens=2 delims= " %%v in ('%PYTHON_CMD% %PYTHON_ARGS% --version 2^>^&1') do set PYVER=%%v
+for /f "tokens=1,2 delims=." %%a in ("%PYVER%") do (
+    set PYMAJ=%%a
+    set PYMIN=%%b
+)
+if not "%PYMAJ%"=="3" exit /b 1
+if %PYMIN% lss 12 echo [SISTEMA] WARNING: Python %PYVER% detectado — se requiere 3.12+.
+exit /b 0
+
+:need_pip
+set REQ_HASH=
+for /f %%h in ('powershell -NoProfile -Command "$h=(Get-FileHash '%ROOT%backend\requirements.txt' -Algorithm SHA256).Hash; if (Test-Path '%ROOT%backend\requirements-dev.txt') { $h+=(Get-FileHash '%ROOT%backend\requirements-dev.txt' -Algorithm SHA256).Hash }; Write-Output ($h -join '')"') do set REQ_HASH=%%h
+set SAVED_HASH=
+if exist "%ROOT%backend\.venv\.req_hash" set /p SAVED_HASH=<"%ROOT%backend\.venv\.req_hash"
+if not "%REQ_HASH%"=="%SAVED_HASH%" exit /b 1
+"%ROOT%backend\.venv\Scripts\python.exe" -c "import uvicorn, fastapi" >nul 2>&1
+if errorlevel 1 exit /b 1
+exit /b 0
+
+:save_pip_hash
+echo %REQ_HASH%>"%ROOT%backend\.venv\.req_hash"
+goto :eof
+
+:wait_backend
+echo [BACKEND] Esperando respuesta en http://localhost:%BACKEND_PORT%/health ...
+powershell -NoProfile -Command "$ok=$false; for ($i=0;$i -lt 30;$i++) { try { $c=[Net.Sockets.TcpClient]::new(); $r=$c.BeginConnect('127.0.0.1',%BACKEND_PORT%,$null,$null); if ($r.AsyncWaitHandle.WaitOne(1000)) { $c.EndConnect($r); $ok=$true; $c.Close(); break }; $c.Close() } catch {}; Start-Sleep -Seconds 2 }; if (-not $ok) { exit 1 }"
+if errorlevel 1 echo [BACKEND] WARNING: sin respuesta tras 60s — revisa la ventana "Clakettes Backend".
+goto :eof
 
 :check_pubcache
 powershell -NoProfile -Command "$c='%ROOT%frontend\.dart_tool\package_config.json'; if (-not (Test-Path $c)) { exit 1 }; try { $j=Get-Content $c -Raw | ConvertFrom-Json; if (-not $j.packages) { exit 1 }; $n=0; foreach ($p in $j.packages) { $u=''+$p.rootUri; if ($u -match '^file:///') { $l=$u.Substring(8) -replace '/','\'; if (-not (Test-Path $l)) { exit 1 }; $n++; if ($n -ge 8) { break } } elseif ($u -match '^file:') { $r=Join-Path (Split-Path $c -Parent) ($u.Substring(5) -replace '/','\'); if (-not (Test-Path $r)) { exit 1 } } }; if ($n -eq 0) { exit 1 }; exit 0 } catch { exit 1 }" >nul 2>&1
@@ -504,7 +618,7 @@ echo     https://docs.docker.com/desktop/
 echo.
 echo   Opcion 2 — Entorno local (sin Docker):
 echo     - Python 3.12+ con pip
-echo     - Flutter SDK en C:\tools\flutter\bin
+echo     - Flutter SDK en PATH o rutas habituales
 echo     - Ejecuta el script sin flags para que configure .venv y flutter pub get
 echo.
 echo   Ejecuta "start.bat --help" para mas detalles.

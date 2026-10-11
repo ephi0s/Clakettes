@@ -330,7 +330,15 @@ URIS
 # ================================================================
 # DOCKER MODE
 # ================================================================
-if command -v docker >/dev/null 2>&1; then
+DOCKER_DAEMON=0
+if command -v docker >/dev/null 2>&1 && [ "$IS_WEB" -eq 0 ]; then
+  if docker info >/dev/null 2>&1; then
+    DOCKER_DAEMON=1
+  else
+    echo "[DOCKER] Docker instalado pero el daemon no responde — usando entorno local."
+  fi
+fi
+if [ "$DOCKER_DAEMON" -eq 1 ]; then
   echo "[DOCKER] Usando Docker..."
   cd "$ROOT"
 
@@ -349,6 +357,7 @@ if command -v docker >/dev/null 2>&1; then
     fi
     export PORT_BACKEND="$DOCKER_BACKEND_PORT"
     export PORT_FRONTEND="$DOCKER_FRONTEND_PORT"
+    export BACKEND_URL="http://localhost:$DOCKER_BACKEND_PORT"
     echo "[DOCKER] Usando puertos: BACKEND=$DOCKER_BACKEND_PORT FRONTEND=$DOCKER_FRONTEND_PORT"
     if [ "$IS_FINAL" -eq 1 ]; then
       export PORT_FRONTEND_PROD="$DOCKER_FRONTEND_PROD"
@@ -476,9 +485,9 @@ if command -v docker >/dev/null 2>&1; then
   : ${PORT_BACKEND:=8000}; : ${PORT_FRONTEND:=3000}
   echo "[DOCKER] Iniciando servicios de desarrollo en http://localhost:$PORT_BACKEND y http://localhost:$PORT_FRONTEND ..."
   if [ "$NO_BACKEND" -eq 1 ]; then
-    docker compose up frontend
+    docker compose up --no-deps frontend
   elif [ "$NO_FRONTEND" -eq 1 ]; then
-    docker compose up backend
+    docker compose up --no-deps backend
   elif [ "$IS_MARIADB" -eq 1 ]; then
     docker compose --profile db up
   else
@@ -622,6 +631,12 @@ setup_env() {
     exit 1
   fi
 
+  pyver_full="$($PYTHON_CMD --version 2>&1 | awk '{print $2}')"
+  case "$pyver_full" in
+    3.1[2-9]*|3.[2-9][0-9]*|[4-9]*) ;;
+    *) echo "[SISTEMA] WARNING: Python $pyver_full detectado — se requiere 3.12+." ;;
+  esac
+
   if [ -f "$BACKEND_DIR/requirements.txt" ]; then
     if ! venv_ok; then
       if [ -d "$BACKEND_DIR/.venv" ]; then
@@ -641,10 +656,28 @@ setup_env() {
       }
     fi
     if [ -f "$BACKEND_DIR/.venv/bin/python" ]; then
-      echo "[ENV] Instalando/actualizando dependencias del backend..."
-      "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements.txt" -q
+      hash_file() {
+        if command -v sha256sum >/dev/null 2>&1; then
+          sha256sum "$1" | cut -d' ' -f1 | tr 'a-f' 'A-F'
+        else
+          shasum -a 256 "$1" | cut -d' ' -f1 | tr 'a-f' 'A-F'
+        fi
+      }
+      new_hash="$(hash_file "$BACKEND_DIR/requirements.txt")"
       if [ -f "$BACKEND_DIR/requirements-dev.txt" ]; then
-        "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements-dev.txt" -q
+        new_hash="$new_hash$(hash_file "$BACKEND_DIR/requirements-dev.txt")"
+      fi
+      saved_hash=""
+      [ -f "$BACKEND_DIR/.venv/.req_hash" ] && saved_hash="$(cat "$BACKEND_DIR/.venv/.req_hash")"
+      if [ -n "$new_hash" ] && [ "$new_hash" = "$saved_hash" ] && "$BACKEND_DIR/.venv/bin/python" -c "import uvicorn, fastapi" >/dev/null 2>&1; then
+        echo "[ENV] Dependencias del backend al dia, omitiendo pip install."
+      else
+        echo "[ENV] Instalando dependencias del backend (puede tardar minutos la primera vez)..."
+        "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements.txt" || { echo "[ENV] ERROR en pip install"; exit 1; }
+        if [ -f "$BACKEND_DIR/requirements-dev.txt" ]; then
+          "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements-dev.txt" || { echo "[ENV] ERROR en pip install (dev)"; exit 1; }
+        fi
+        [ -n "$new_hash" ] && printf '%s' "$new_hash" > "$BACKEND_DIR/.venv/.req_hash"
       fi
       BACKEND_PYTHON="$BACKEND_DIR/.venv/bin/python"
     fi
@@ -668,6 +701,27 @@ setup_env() {
 
 setup_env
 
+if [ "$IS_TEST_BACKEND" -eq 1 ] || [ "$IS_TEST_FRONTEND" -eq 1 ]; then
+  [ "$IS_TEST_BACKEND" -eq 1 ] && NO_BACKEND=1
+  [ "$IS_TEST_FRONTEND" -eq 1 ] && NO_FRONTEND=1
+fi
+
+BACKEND_PORT=8000; FRONTEND_PORT=3000; MARIADB_PORT=3306; FRONTEND_PROD_PORT=80
+[ "$NO_BACKEND" -eq 0 ] && find_free_port 8000 BACKEND_PORT
+[ "$NO_FRONTEND" -eq 0 ] && find_free_port 3000 FRONTEND_PORT
+[ "$IS_MARIADB" -eq 1 ] && find_free_port 3306 MARIADB_PORT
+[ "$IS_FINAL" -eq 1 ] && [ "$NO_FRONTEND" -eq 0 ] && find_free_port 80 FRONTEND_PROD_PORT
+echo ""
+echo "[PUERTO] Mapeo final:"
+[ "$NO_BACKEND" -eq 0 ] && echo "  Backend       -> http://localhost:$BACKEND_PORT"
+if [ "$NO_FRONTEND" -eq 0 ]; then
+  if [ "$IS_FINAL" -eq 1 ]; then echo "  Frontend      -> http://localhost:$FRONTEND_PROD_PORT"
+  else echo "  Frontend      -> http://localhost:$FRONTEND_PORT"
+  fi
+fi
+[ "$IS_MARIADB" -eq 1 ] && echo "  MariaDB       -> localhost:$MARIADB_PORT"
+echo ""
+
 # ---- MariaDB ----
 DB_URL=""
 if [ "$IS_MARIADB" -eq 1 ]; then
@@ -683,11 +737,6 @@ if [ "$IS_MIGRATE" -eq 1 ]; then
 fi
 
 # ---- Tests ----
-if [ "$IS_TEST_BACKEND" -eq 1 ] || [ "$IS_TEST_FRONTEND" -eq 1 ]; then
-  [ "$IS_TEST_BACKEND" -eq 1 ] && NO_BACKEND=1
-  [ "$IS_TEST_FRONTEND" -eq 1 ] && NO_FRONTEND=1
-fi
-
 if [ "$IS_TEST_BACKEND" -eq 1 ]; then
   echo "[TEST:BACKEND] Ejecutando pytest..."
   (cd "$BACKEND_DIR" && "$BACKEND_PYTHON" -m pytest tests/ -x -q --tb=short)
@@ -706,22 +755,6 @@ ONLY_TESTS=0
 [ "$IS_TEST_BACKEND" -eq 1 ] || [ "$IS_TEST_FRONTEND" -eq 1 ] && ONLY_TESTS=1
 if [ "$ONLY_TESTS" -eq 1 ]; then exit 0; fi
 
-BACKEND_PORT=8000; FRONTEND_PORT=3000; MARIADB_PORT=3306; FRONTEND_PROD_PORT=80
-[ "$NO_BACKEND" -eq 0 ] && find_free_port 8000 BACKEND_PORT
-[ "$NO_FRONTEND" -eq 0 ] && find_free_port 3000 FRONTEND_PORT
-[ "$IS_MARIADB" -eq 1 ] && find_free_port 3306 MARIADB_PORT
-[ "$IS_FINAL" -eq 1 ] && [ "$NO_FRONTEND" -eq 0 ] && find_free_port 80 FRONTEND_PROD_PORT
-echo ""
-echo "[PUERTO] Mapeo final:"
-[ "$NO_BACKEND" -eq 0 ] && echo "  Backend       -> http://localhost:$BACKEND_PORT"
-if [ "$NO_FRONTEND" -eq 0 ]; then
-  if [ "$IS_FINAL" -eq 1 ]; then echo "  Frontend      -> http://localhost:$FRONTEND_PROD_PORT"
-  else echo "  Frontend      -> http://localhost:$FRONTEND_PORT"
-  fi
-fi
-[ "$IS_MARIADB" -eq 1 ] && echo "  MariaDB       -> localhost:$MARIADB_PORT"
-echo ""
-
 PID_FILE="$(mktemp)"
 cleanup() {
   echo ""; echo "Deteniendo procesos..."
@@ -734,11 +767,27 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # ---- Backend (local) ----
-DART_DEFINE="--dart-define=BACKEND_URL=http://localhost:$BACKEND_PORT/api"
+DART_DEFINE="--dart-define=BACKEND_URL=http://localhost:$BACKEND_PORT"
 if [ "$NO_BACKEND" -eq 0 ]; then
   echo "[BACKEND] Iniciando uvicorn en http://localhost:$BACKEND_PORT ..."
   (cd "$BACKEND_DIR" && "$BACKEND_PYTHON" -m uvicorn app.main:app --host 0.0.0.0 --port "$BACKEND_PORT" --reload) &
   echo $! >> "$PID_FILE"
+  echo "[BACKEND] Esperando respuesta en http://localhost:$BACKEND_PORT/health ..."
+  backend_pid="$(tail -n 1 "$PID_FILE")"
+  healthy=0
+  for i in $(seq 1 30); do
+    sleep 2
+    if ! kill -0 "$backend_pid" 2>/dev/null; then
+      echo "[BACKEND] ERROR: el proceso termino al arrancar."
+      break
+    fi
+    if "$BACKEND_PYTHON" -c "import urllib.request; urllib.request.urlopen('http://localhost:$BACKEND_PORT/health',timeout=3)" >/dev/null 2>&1; then
+      healthy=1
+      break
+    fi
+  done
+  if [ "$healthy" -eq 1 ]; then echo "[BACKEND] OK (200 /health)"
+  else echo "[BACKEND] WARNING: sin respuesta tras 60s."; fi
 fi
 
 # ---- Frontend (local) ----

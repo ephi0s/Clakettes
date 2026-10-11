@@ -37,6 +37,7 @@ foreach ($a in $args) {
         '--build-all'        { $BuildAll = $true }
         '--build-frontend'   { $BuildFrontend = $true }
         '--build-backend'    { $BuildBackend = $true }
+        '--kill'             { $Kill = $true }
         '--help'             { $Help = $true }
         '/?'                 { $Help = $true }
     }
@@ -118,9 +119,9 @@ REQUISITOS (Docker):
     - Docker levanta automaticamente pip install + flutter pub get
 
 REQUISITOS (local, si no hay Docker):
-    - Python 3.12+ con pip
-    - Flutter SDK en PATH
-    - Los scripts crean .venv y ejecutan flutter pub get automaticamente
+    - Python 3.12+ con pip (se detecta py -3 / python / python3; error si falta)
+    - Flutter SDK en PATH o rutas habituales (aviso si falta)
+    - .venv se crea solo si es invalido; pip install solo si cambian requirements
 "@
     return
 }
@@ -147,14 +148,72 @@ if ($browser) {
     Write-Host "[DETECTADO] CHROME_EXECUTABLE = $browser" -ForegroundColor Green
 }
 
+# ---- Detect Python (py -3 > python > python3, exige 3.12+) ----
+function Find-PythonCmd {
+    foreach ($c in @('py', 'python', 'python3')) {
+        $cmd = Get-Command $c -ErrorAction SilentlyContinue
+        if (-not $cmd) { continue }
+        $extra = @()
+        if ($c -eq 'py') { $extra = @('-3') }
+        try {
+            $ver = & $c @extra --version 2>&1
+            if ($LASTEXITCODE -ne 0) { continue }
+            if ("$ver" -match 'Python\s+3\.(\d+)') {
+                if ([int]$Matches[1] -ge 12) { return @{ Cmd = $c; Args = $extra } }
+                Write-Host "[SISTEMA] WARNING: $c es $ver — se requiere Python 3.12+" -ForegroundColor Yellow
+            }
+        } catch { continue }
+    }
+    return $null
+}
+
+# ---- Detect Flutter (PATH + rutas habituales) ----
+function Find-FlutterCmd {
+    if (Get-Command flutter -ErrorAction SilentlyContinue) { return $true }
+    $candidates = @(
+        "C:\tools\flutter\bin",
+        "$env:USERPROFILE\flutter\bin",
+        "C:\flutter\bin",
+        "C:\src\flutter\bin",
+        "$env:LOCALAPPDATA\Flutter\bin"
+    )
+    foreach ($fp in $candidates) {
+        if ((Test-Path "$fp\flutter.bat") -and ($env:Path -notlike "*$fp*")) { $env:Path += ";$fp" }
+    }
+    return ($null -ne (Get-Command flutter -ErrorAction SilentlyContinue))
+}
+
+$script:PythonInfo = Find-PythonCmd
+$script:FlutterOk = Find-FlutterCmd
+$pyLabel = if ($script:PythonInfo) { "$($script:PythonInfo.Cmd) 3.12+" } else { "NO DETECTADO" }
+$flLabel = if ($script:FlutterOk) { "si" } else { "no" }
+Write-Host "[SISTEMA] Windows | Python: $pyLabel | Flutter: $flLabel"
+
 # ============================================================
 # DOCKER MODE
 # ============================================================
 $dockerAvailable = $null -ne (Get-Command docker -ErrorAction SilentlyContinue)
+$dockerDaemon = $false
+if ($dockerAvailable -and -not $Web) {
+    docker info 2>&1 | Out-Null
+    $dockerDaemon = ($LASTEXITCODE -eq 0)
+    if (-not $dockerDaemon) {
+        Write-Host "[DOCKER] Docker instalado pero el daemon no responde — usando entorno local." -ForegroundColor Yellow
+    }
+}
+
+if ($Kill) {
+    Set-Location $root
+    Write-Host "[KILL] Deteniendo servicios..." -ForegroundColor Yellow
+    if ($dockerDaemon) { docker compose down 2>&1 | Out-Null }
+    Get-Process -Name python, python3, dart, flutter -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-Host "[KILL] Hecho." -ForegroundColor Green
+    return
+}
 
 if ($Web) {
     # --web siempre usa modo local (como start.bat)
-} elseif ($dockerAvailable) {
+} elseif ($dockerDaemon) {
     Write-Host "[DOCKER] Usando Docker..." -ForegroundColor Cyan
     Set-Location $root
 
@@ -168,6 +227,7 @@ if ($Web) {
         if ($Final) { $dcFeProd = Find-FreePort 80 "Frontend prod (Docker)" }
         $env:PORT_BACKEND = "$dcBackend"
         $env:PORT_FRONTEND = "$dcFrontend"
+        $env:BACKEND_URL = "http://localhost:$dcBackend"
         Write-Host "[DOCKER] Usando puertos: BACKEND=$dcBackend FRONTEND=$dcFrontend" -ForegroundColor Cyan
         if ($Final) { $env:PORT_FRONTEND_PROD = "$dcFeProd"; Write-Host "[DOCKER]   Frontend prod: $dcFeProd" -ForegroundColor Cyan }
     }
@@ -266,9 +326,9 @@ if ($Web) {
     if (-not $env:PORT_FRONTEND) { $env:PORT_FRONTEND = "3000" }
     Write-Host "[DOCKER] Iniciando servicios de desarrollo en http://localhost:$($env:PORT_BACKEND) y http://localhost:$($env:PORT_FRONTEND) ..." -ForegroundColor Cyan
     if ($NoBackend) {
-        docker compose up frontend
+        docker compose up --no-deps frontend
     } elseif ($NoFrontend) {
-        docker compose up backend
+        docker compose up --no-deps backend
     } elseif ($MariaDB) {
         docker compose --profile db up
     } else {
@@ -305,14 +365,40 @@ function Show-SetupHelp {
 $backendDir = Join-Path $root "backend"
 $frontendDir = Join-Path $root "frontend"
 
-# Flutter en PATH
-$flutterPaths = @("C:\tools\flutter\bin")
-foreach ($fp in $flutterPaths) {
-    if ((Test-Path "$fp\flutter.bat") -and ($env:Path -notlike "*$fp*")) { $env:Path += ";$fp" }
+$needsPython = (-not $NoBackend) -or $Migrate -or $TestBackend -or $Final
+$needsFlutter = (-not $NoFrontend) -or $TestFrontend -or $Final
+
+if ($needsPython -and -not $script:PythonInfo) {
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "  ERROR: Python 3.12+ no detectado" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "  Descarga: https://www.python.org/downloads/"
+    Write-Host "  Requiere 'py -3', 'python' o 'python3' en PATH con 3.12+."
+    exit 1
+}
+if ($needsFlutter -and -not $script:FlutterOk) {
+    Write-Host "[ENV] WARNING: Flutter no encontrado — el frontend no podra iniciarse." -ForegroundColor Yellow
+    Write-Host "  Descarga: https://docs.flutter.dev/get-started/install"
 }
 
 # ── Local environment setup ──
 $script:BackendPython = "python"
+
+function Get-ReqHash {
+    param([string]$BackendDir)
+    $h = (Get-FileHash (Join-Path $BackendDir "requirements.txt") -Algorithm SHA256).Hash
+    $dev = Join-Path $BackendDir "requirements-dev.txt"
+    if (Test-Path $dev) { $h += (Get-FileHash $dev -Algorithm SHA256).Hash }
+    return ($h -join '')
+}
+
+function Test-BackendDeps {
+    param([string]$VenvPython)
+    try {
+        & $VenvPython -c "import uvicorn, fastapi" 2>&1 | Out-Null
+        return ($LASTEXITCODE -eq 0)
+    } catch { return $false }
+}
 
 function Test-BackendVenv {
     param([string]$BackendDir)
@@ -387,8 +473,9 @@ function Invoke-LocalSetup {
 
     $reqFile = Join-Path $backendDir "requirements.txt"
     $venvPython = Join-Path $backendDir ".venv\Scripts\python.exe"
+    $hashFile = Join-Path $backendDir ".venv\.req_hash"
 
-    if (Test-Path $reqFile) {
+    if ($needsPython -and (Test-Path $reqFile)) {
         if (-not (Test-BackendVenv $backendDir)) {
             $oldVenv = Join-Path $backendDir ".venv"
             if (Test-Path $oldVenv) {
@@ -397,33 +484,55 @@ function Invoke-LocalSetup {
             } else {
                 Write-Host "[ENV] Creando entorno virtual para backend..." -ForegroundColor Yellow
             }
+            $py = $script:PythonInfo.Cmd
+            $pyArgs = @() + $script:PythonInfo.Args + @('-m', 'venv', '.venv')
             Push-Location $backendDir
-            python -m venv .venv
-            if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR: No se pudo crear .venv" -ForegroundColor Red; Pop-Location; exit 1 }
+            & $py @pyArgs 2>&1
+            if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR: No se pudo crear .venv con $py" -ForegroundColor Red; Pop-Location; exit 1 }
             Pop-Location
         }
         if (Test-Path $venvPython) {
-            Write-Host "[ENV] Instalando/actualizando dependencias del backend..." -ForegroundColor Yellow
-            $pip = Join-Path $backendDir ".venv\Scripts\pip"
-            & $pip install -r $reqFile -q 2>&1 | Out-Null
-            $devReq = Join-Path $backendDir "requirements-dev.txt"
-            if (Test-Path $devReq) { & $pip install -r $devReq -q 2>&1 | Out-Null }
+            $reqHash = Get-ReqHash $backendDir
+            $savedHash = if (Test-Path $hashFile) { (Get-Content $hashFile -Raw).Trim() } else { "" }
+            if (($reqHash -eq $savedHash) -and (Test-BackendDeps $venvPython)) {
+                Write-Host "[ENV] Dependencias del backend al dia, omitiendo pip install." -ForegroundColor Green
+            } else {
+                Write-Host "[ENV] Instalando dependencias del backend (puede tardar minutos la primera vez)..." -ForegroundColor Yellow
+                $sw = [System.Diagnostics.Stopwatch]::StartNew()
+                $pip = Join-Path $backendDir ".venv\Scripts\pip"
+                $pipOut = & $pip install -r $reqFile 2>&1
+                if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install:" -ForegroundColor Red; Write-Host $pipOut; exit 1 }
+                $devReq = Join-Path $backendDir "requirements-dev.txt"
+                if (Test-Path $devReq) {
+                    $pipOut = & $pip install -r $devReq 2>&1
+                    if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install (dev):" -ForegroundColor Red; Write-Host $pipOut; exit 1 }
+                }
+                $sw.Stop()
+                Set-Content -Path $hashFile -Value $reqHash -NoNewline
+                Write-Host "[ENV] Dependencias listas en $([int]$sw.Elapsed.TotalSeconds)s." -ForegroundColor Green
+            }
             $script:BackendPython = $venvPython
+        } else {
+            Write-Host "[ENV] ERROR: .venv sin python.exe tras crearlo" -ForegroundColor Red
+            exit 1
         }
     }
 
     $pubspec = Join-Path $frontendDir "pubspec.yaml"
-    if ((Test-Path $pubspec) -and -not (Test-FlutterPubCache $frontendDir)) {
-        if (Get-Command flutter -ErrorAction SilentlyContinue) {
+    if ($needsFlutter -and (Test-Path $pubspec) -and -not (Test-FlutterPubCache $frontendDir)) {
+        if ($script:FlutterOk) {
             Write-Host "[ENV] Caché de Flutter obsoleta (de otro equipo), regenerando..." -ForegroundColor Yellow
             Push-Location $frontendDir
-            flutter pub get 2>&1 | Out-Null
+            $pubOut = flutter pub get 2>&1
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "[ENV] Reintentando sin red (offline)..." -ForegroundColor Yellow
-                flutter pub get --offline 2>&1 | Out-Null
+                $pubOut = flutter pub get --offline 2>&1
             }
             Pop-Location
-            if (-not (Test-FlutterPubCache $frontendDir)) { Write-Host "[ENV] WARNING: No se pudo regenerar la caché de Flutter" -ForegroundColor Yellow }
+            if (-not (Test-FlutterPubCache $frontendDir)) {
+                Write-Host "[ENV] ERROR: no se pudo regenerar la caché de Flutter:" -ForegroundColor Red
+                Write-Host $pubOut
+            }
         } else {
             Write-Host "[ENV] WARNING: Flutter no encontrado. Instalalo para desarrollo frontend." -ForegroundColor Yellow
         }
@@ -447,6 +556,7 @@ if ($Migrate) {
     Write-Host "[MIGRATE] Ejecutando migraciones de base de datos..." -ForegroundColor Magenta
     Push-Location $backendDir
     & $script:BackendPython -m alembic upgrade head 2>&1
+    if ($LASTEXITCODE -ne 0) { Write-Host "[MIGRATE] ERROR en migraciones" -ForegroundColor Red; Pop-Location; exit 1 }
     Pop-Location
 }
 
@@ -527,6 +637,26 @@ if (-not $NoFrontend) {
 if ($jobs.Count -eq 0) {
     Write-Host "No hay nada que iniciar." -ForegroundColor Yellow
     return
+}
+
+if (-not $NoBackend) {
+    Write-Host "[BACKEND] Esperando respuesta en http://localhost:$BACKEND_PORT/health ..." -ForegroundColor Cyan
+    $healthy = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Seconds 2
+        $bj = Get-Job -Name "backend" -ErrorAction SilentlyContinue
+        if ($bj -and $bj.State -ne 'Running') {
+            Write-Host "[BACKEND] ERROR: el proceso termino al arrancar. Salida:" -ForegroundColor Red
+            Receive-Job -Job $bj -ErrorAction SilentlyContinue
+            break
+        }
+        try {
+            $r = Invoke-WebRequest "http://localhost:$BACKEND_PORT/health" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
+            if ($r.StatusCode -eq 200) { $healthy = $true; break }
+        } catch {}
+    }
+    if ($healthy) { Write-Host "[BACKEND] OK (200 /health)" -ForegroundColor Green }
+    else { Write-Host "[BACKEND] WARNING: sin respuesta tras 60s — revisa la salida de [backend]" -ForegroundColor Red }
 }
 
 Write-Host "`nPresiona Ctrl+C para detener todo.`n" -ForegroundColor Magenta
