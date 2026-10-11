@@ -268,6 +268,16 @@ function Clear-FlutterGenerated {
     Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins") -ErrorAction SilentlyContinue
     Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins-dependencies") -ErrorAction SilentlyContinue
 }
+
+function Write-CleanLines {
+    param([string]$Tag, $Lines)
+    $esc = [char]27
+    foreach ($l in @($Lines)) {
+        $s = (([string]$l -replace "$esc\[[0-9;]*m", '') -replace '\r', '').TrimEnd()
+        if ($s -eq '') { continue }
+        if ($Tag) { Write-Host "[$Tag] $s" } else { Write-Host $s }
+    }
+}
 $script:PythonInfo = Find-PythonCmd
 $script:FlutterOk = Find-FlutterCmd
 
@@ -324,7 +334,10 @@ function Install-MissingDeps {
         $script:FlutterOk = Find-FlutterCmd
         if ($script:FlutterOk) {
             Write-Host "[INSTALL] Comprobando Flutter..." -ForegroundColor Cyan
-            flutter --version 2>&1 | Select-Object -First 3
+            $esc = [char]27
+            flutter --version 2>&1 | ForEach-Object {
+                (($_ -replace "$esc\[[0-9;]*m", '') -replace '\r', '').Trim()
+            } | Where-Object { $_ } | Select-Object -First 8 | ForEach-Object { Write-Host "  $_" }
             Write-Host "[INSTALL] Flutter OK" -ForegroundColor Green
         } else {
             Write-Host "[INSTALL] ERROR: Flutter sigue sin detectarse" -ForegroundColor Red
@@ -613,11 +626,11 @@ function Invoke-LocalSetup {
                 $sw = [System.Diagnostics.Stopwatch]::StartNew()
                 $pip = Join-Path $backendDir ".venv\Scripts\pip"
                 $pipOut = & $pip install -r $reqFile 2>&1
-                if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install:" -ForegroundColor Red; Write-Host $pipOut; exit 1 }
+                if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install:" -ForegroundColor Red; Write-CleanLines "" $pipOut; exit 1 }
                 $devReq = Join-Path $backendDir "requirements-dev.txt"
                 if (Test-Path $devReq) {
                     $pipOut = & $pip install -r $devReq 2>&1
-                    if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install (dev):" -ForegroundColor Red; Write-Host $pipOut; exit 1 }
+                    if ($LASTEXITCODE -ne 0) { Write-Host "[ENV] ERROR en pip install (dev):" -ForegroundColor Red; Write-CleanLines "" $pipOut; exit 1 }
                 }
                 $sw.Stop()
                 Set-Content -Path $hashFile -Value $reqHash -NoNewline
@@ -643,7 +656,7 @@ function Invoke-LocalSetup {
             Pop-Location
             if (-not (Test-FlutterPubCache $frontendDir)) {
                 Write-Host "[ENV] ERROR: no se pudo regenerar la caché de Flutter:" -ForegroundColor Red
-                Write-Host $pubOut
+                Write-CleanLines "" $pubOut
             }
         } else {
             Write-Host "[ENV] WARNING: Flutter no encontrado. Instalalo para desarrollo frontend." -ForegroundColor Yellow
@@ -715,7 +728,7 @@ if (-not $NoFrontend) {
         $buildOk = $true
         try {
             $buildOutput = & flutter build web $dartDefine 2>&1
-            if ($LASTEXITCODE -ne 0) { $buildOk = $false; Write-Host "[FRONTEND] ERROR en build: $buildOutput" -ForegroundColor Red }
+            if ($LASTEXITCODE -ne 0) { $buildOk = $false; Write-Host "[FRONTEND] ERROR en build:" -ForegroundColor Red; Write-CleanLines "flutter" $buildOutput }
         } catch { $buildOk = $false; Write-Host "[FRONTEND] ERROR: $_" -ForegroundColor Red }
         if ($buildOk) {
             Write-Host "[FRONTEND] Sirviendo build/web en http://localhost:$FRONTEND_PROD_PORT ..." -ForegroundColor Cyan
@@ -759,7 +772,7 @@ if (-not $NoBackend) {
         $bj = Get-Job -Name "backend" -ErrorAction SilentlyContinue
         if ($bj -and $bj.State -ne 'Running') {
             Write-Host "[BACKEND] ERROR: el proceso termino al arrancar. Salida:" -ForegroundColor Red
-            Receive-Job -Job $bj -ErrorAction SilentlyContinue
+            Write-CleanLines "backend" (Receive-Job -Job $bj -ErrorAction SilentlyContinue)
             break
         }
         try {
@@ -779,7 +792,7 @@ try {
         if ($running.Count -eq 0) { Write-Host "`nTodos los procesos han terminado." -ForegroundColor Yellow; break }
         foreach ($job in $running) {
             $msg = Receive-Job -Job $job -ErrorAction SilentlyContinue
-            if ($msg) { Write-Host "[$($job.Name)] $msg" }
+            if ($msg) { Write-CleanLines $job.Name $msg }
         }
         Start-Sleep -Milliseconds 500
     }

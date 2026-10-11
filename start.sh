@@ -231,7 +231,7 @@ install_missing() {
     PATH="$HOME/flutter/bin:$PATH"; export PATH
     if command -v flutter >/dev/null 2>&1; then
       echo "[INSTALL] Comprobando Flutter..."
-      flutter --version 2>&1 | head -3
+      flutter --version 2>&1 | tr -d '\r' | sed 's/\x1b\[[0-9;]*m//g' | head -8
       echo "[INSTALL] Flutter OK"
     else
       echo "[INSTALL] ERROR: Flutter sigue sin detectarse"
