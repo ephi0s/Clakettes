@@ -33,6 +33,8 @@ set IS_TEST_FRONTEND=0
 set NO_BACKEND=0
 set NO_FRONTEND=0
 set IS_KILL=0
+set IS_CHECK=0
+set IS_INSTALL_MISSING=0
 set IS_BUILD=0
 set IS_BUILD_ALL=0
 set IS_BUILD_FRONTEND=0
@@ -49,40 +51,14 @@ for %%a in (%*) do (
     if /I "%%a"=="--test-frontend" set IS_TEST_FRONTEND=1
     if /I "%%a"=="--no-backend" set NO_BACKEND=1
     if /I "%%a"=="--no-frontend" set NO_FRONTEND=1
+    if /I "%%a"=="--install-missing" set IS_INSTALL_MISSING=1
+    if /I "%%a"=="--check" set IS_CHECK=1
     if /I "%%a"=="--kill" set IS_KILL=1
     if /I "%%a"=="--build" set IS_BUILD=1
     if /I "%%a"=="--build-all" set IS_BUILD_ALL=1
     if /I "%%a"=="--build-frontend" set IS_BUILD_FRONTEND=1
     if /I "%%a"=="--build-backend" set IS_BUILD_BACKEND=1
 )
-
-:: --- Docker check ---
-if %IS_KILL%==1 goto :kill
-if %IS_WEB%==1 goto :local_mode
-where docker >nul 2>&1
-if errorlevel 1 goto :local_mode
-docker info >nul 2>&1
-if errorlevel 1 (
-    echo [DOCKER] Docker instalado pero el daemon no responde — usando entorno local.
-    goto :local_mode
-)
-goto :docker_mode
-:local_mode
-
-:: ============================================
-:: LOCAL FALLBACK (Docker no disponible)
-:: ============================================
-if %IS_WEB%==0 (
-    echo.
-    echo [DOCKER] Docker no disponible — usando entorno local.
-    echo.
-)
-
-if %IS_BUILD_ALL%==1 goto :setup_help
-if %IS_BUILD%==1 goto :setup_help
-if %IS_BUILD_FRONTEND%==1 goto :setup_help
-if %IS_BUILD_BACKEND%==1 goto :setup_help
-if %IS_TEST_MIGRATION%==1 goto :setup_help
 
 for %%F in ("C:\tools\flutter\bin" "%USERPROFILE%\flutter\bin" "C:\flutter\bin" "C:\src\flutter\bin" "%LOCALAPPDATA%\Flutter\bin") do if exist "%%~F\flutter.bat" set "PATH=%PATH%;%%~F"
 
@@ -96,24 +72,76 @@ if %IS_TEST_FRONTEND%==1 set NEED_FLUTTER=1
 if %IS_FINAL%==1 set NEED_FLUTTER=1
 if %IS_FINAL%==1 set NEED_PY=1
 
-call :find_python
+:: --- Docker check ---
+if %IS_CHECK%==1 goto :check
+if %IS_KILL%==1 goto :kill
+if %IS_WEB%==1 goto :local_mode
+where docker >nul 2>&1
+if errorlevel 1 goto :local_mode
+docker info >nul 2>&1
 if errorlevel 1 (
+    echo [DOCKER] Docker instalado pero el daemon no responde ??? usando entorno local.
+    goto :local_mode
+)
+goto :docker_mode
+:local_mode
+
+:: ============================================
+:: LOCAL FALLBACK (Docker no disponible)
+:: ============================================
+if %IS_WEB%==0 (
+    echo.
+    echo [DOCKER] Docker no disponible ??? usando entorno local.
+    echo.
+)
+
+if %IS_BUILD_ALL%==1 goto :setup_help
+if %IS_BUILD%==1 goto :setup_help
+if %IS_BUILD_FRONTEND%==1 goto :setup_help
+if %IS_BUILD_BACKEND%==1 goto :setup_help
+if %IS_TEST_MIGRATION%==1 goto :setup_help
+
+call :find_python
+if errorlevel 1 ( set PY_MISSING=1 ) else ( set PY_MISSING=0 )
+if %PY_MISSING%==0 echo [SISTEMA] Python detectado.
+where flutter >nul 2>&1
+if errorlevel 1 ( set FL_MISSING=1 ) else ( set FL_MISSING=0 )
+
+set NEED_ASK=0
+set DO_INSTALL=%IS_INSTALL_MISSING%
+if %PY_MISSING%==1 if %NEED_PY%==1 set NEED_ASK=1
+if %FL_MISSING%==1 if %NEED_FLUTTER%==1 set NEED_ASK=1
+if %DO_INSTALL%==1 set NEED_ASK=0
+if %NEED_ASK%==0 goto :skip_ask
+call :install_guide
+set /p INSTALL_ANS="??Intentar instalacion automatica de lo que falta? (s/N): "
+if /i not "%INSTALL_ANS%"=="s" goto :skip_ask
+set DO_INSTALL=1
+:skip_ask
+if %DO_INSTALL%==1 (
+    if %PY_MISSING%==1 if %NEED_PY%==1 call :install_python
+    if %FL_MISSING%==1 if %NEED_FLUTTER%==1 call :install_flutter
+    call :find_python
+    if errorlevel 1 ( set PY_MISSING=1 ) else ( set PY_MISSING=0 & echo [SISTEMA] Python detectado. )
+    where flutter >nul 2>&1
+    if errorlevel 1 ( set FL_MISSING=1 ) else ( set FL_MISSING=0 )
+)
+
+if %PY_MISSING%==1 (
     if %NEED_PY%==1 (
         echo ========================================
         echo   ERROR: Python 3.12+ no detectado
         echo ========================================
         echo   Descarga: https://www.python.org/downloads/
         echo   Requiere 'py -3', 'python' o 'python3' en PATH.
+        echo   O re-ejecuta con --install-missing para intentarlo automatico.
         pause
         exit /b 1
     )
     echo [SISTEMA] WARNING: Python no detectado ^(solo frontend^).
-) else (
-    echo [SISTEMA] Python detectado.
 )
-where flutter >nul 2>&1
-if errorlevel 1 (
-    if %NEED_FLUTTER%==1 echo [SISTEMA] WARNING: Flutter no detectado. Descarga: https://docs.flutter.dev/get-started/install
+if %FL_MISSING%==1 (
+    if %NEED_FLUTTER%==1 echo [SISTEMA] WARNING: Flutter no detectado. Descarga: https://docs.flutter.dev/get-started/install o re-ejecuta con --install-missing.
 )
 
 :: Environment setup
@@ -448,6 +476,47 @@ pause
 goto :eof
 
 :: ============================================
+:: CHECK (solo lectura, sin cambios)
+:: ============================================
+:check
+set CHECK_FAIL=0
+echo [CHECK] Revisando entorno (sin cambios)...
+where docker >nul 2>&1
+if errorlevel 1 (
+    echo [CHECK] Docker: ausente — se usara modo local.
+) else (
+    docker info >nul 2>&1
+    if errorlevel 1 ( echo [CHECK] Docker: daemon parado — se usara modo local. ) else ( echo [CHECK] Docker: OK. )
+)
+if %NEED_PY%==1 (
+    call :find_python >nul 2>&1
+    if errorlevel 1 ( echo [CHECK] Python 3.12+: NO DETECTADO. & set CHECK_FAIL=1 ) else ( echo [CHECK] Python: OK. )
+    if exist "%ROOT%backend\.venv\Scripts\python.exe" (
+        call :check_venv
+        if errorlevel 1 ( echo [CHECK] .venv: invalido — se recreara al arrancar. ) else ( echo [CHECK] .venv: OK. )
+    ) else (
+        echo [CHECK] .venv: no existe — se creara al arrancar.
+    )
+    if exist "%ROOT%backend\.env" ( echo [CHECK] backend/.env: OK. ) else ( echo [CHECK] backend/.env: se creara desde .env.example. )
+)
+if %NEED_FLUTTER%==1 (
+    where flutter >nul 2>&1
+    if errorlevel 1 ( echo [CHECK] Flutter: NO DETECTADO. & set CHECK_FAIL=1 ) else ( echo [CHECK] Flutter: OK. )
+    call :check_pubcache
+    if errorlevel 1 ( echo [CHECK] Flutter pub cache: se regenerara al arrancar. ) else ( echo [CHECK] Flutter pub cache: OK. )
+)
+netstat -ano | findstr ":8000 " >nul 2>&1
+if errorlevel 1 ( echo [CHECK] Puerto 8000 libre. ) else ( echo [CHECK] Puerto 8000 ocupado — se reasignara solo. )
+netstat -ano | findstr ":3000 " >nul 2>&1
+if errorlevel 1 ( echo [CHECK] Puerto 3000 libre. ) else ( echo [CHECK] Puerto 3000 ocupado — se reasignara solo. )
+if %CHECK_FAIL%==1 (
+    echo [CHECK] Faltan requisitos — ver arriba.
+    exit /b 1
+)
+echo [CHECK] Entorno listo para arrancar.
+exit /b 0
+
+:: ============================================
 :: KILL
 :: ============================================
 :kill
@@ -483,10 +552,13 @@ echo   start.bat --build-all           Construye paquetes distribubles (final)
 echo   start.bat --build-frontend      Construye solo frontend (Docker)
 echo   start.bat --build-backend       Construye solo backend (Docker)
 echo   start.bat --kill                Para contenedores Docker y procesos locales
+echo   start.bat --install-missing     Instala lo que falte (winget + git clone)
+echo   start.bat --check               Revisa el entorno sin arrancar nada
 echo   start.bat --help                Muestra esta ayuda
 echo.
 echo REQUISITOS (Docker):
 echo   - Docker Desktop (https://docs.docker.com/desktop/)
+echo   - O automatico: winget install -e --id Docker.DockerDesktop (requiere WSL2 + reinicio)
 echo   - Docker automaticamente crea pip install + flutter pub get
 echo.
 echo REQUISITOS (local, si no hay Docker):
@@ -512,11 +584,11 @@ if errorlevel 1 (
 )
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%DESIRED% "') do (
     for /f "tokens=1 delims= " %%b in ('tasklist /fi "PID eq %%a" /nh 2^>nul') do (
-        echo [PUERTO] %SERVICE% necesita puerto %DESIRED% — ocupado por %%b (PID %%a), buscando libre...
+        echo [PUERTO] %SERVICE% necesita puerto %DESIRED% ??? ocupado por %%b (PID %%a), buscando libre...
         goto :ffp_owner
     )
 )
-echo [PUERTO] %SERVICE% necesita puerto %DESIRED% — esta en uso, buscando libre...
+echo [PUERTO] %SERVICE% necesita puerto %DESIRED% ??? esta en uso, buscando libre...
 :ffp_owner
 set TRY=60000
 :ffp_loop
@@ -571,8 +643,62 @@ for /f "tokens=1,2 delims=." %%a in ("%PYVER%") do (
     set PYMIN=%%b
 )
 if not "%PYMAJ%"=="3" exit /b 1
-if %PYMIN% lss 12 echo [SISTEMA] WARNING: Python %PYVER% detectado — se requiere 3.12+.
+if %PYMIN% lss 12 echo [SISTEMA] WARNING: Python %PYVER% detectado ??? se requiere 3.12+.
 exit /b 0
+
+:install_guide
+echo.
+echo Como instalar lo que falta (Windows):
+echo   Python 3.12+:  winget install -e --id Python.Python.3.12
+echo   o manual: https://www.python.org/downloads/ ^(marca 'Add python.exe to PATH'^)
+echo   Flutter:       start.bat --install-missing  ^(clona el SDK estable en %%USERPROFILE%%\flutter^)
+echo   o manual: https://docs.flutter.dev/get-started/install/windows
+echo   Docker:        winget install -e --id Docker.DockerDesktop
+echo   Requiere WSL2 y reinicio. https://docs.docker.com/desktop/install/windows/
+echo.
+goto :eof
+
+:update_path
+if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts"
+if exist "%LOCALAPPDATA%\Programs\Python\Launcher\py.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Programs\Python\Launcher"
+goto :eof
+
+:install_python
+where winget >nul 2>&1
+if errorlevel 1 (
+    echo [INSTALL] ERROR: winget no disponible ??? instala Python manual: https://www.python.org/downloads/
+    goto :eof
+)
+echo [INSTALL] Instalando Python 3.12 con winget...
+winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements --silent
+call :update_path
+goto :eof
+
+:install_flutter
+where git >nul 2>&1
+if errorlevel 1 (
+    where winget >nul 2>&1
+    if errorlevel 1 (
+        echo [INSTALL] ERROR: se necesita git ??? https://git-scm.com/download/win
+        goto :eof
+    )
+    echo [INSTALL] Instalando Git con winget...
+    winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements --silent
+    call :update_path
+)
+if not exist "%USERPROFILE%\flutter\bin\flutter.bat" (
+    echo [INSTALL] Clonando Flutter estable en %USERPROFILE%\flutter ^(puede tardar^)...
+    git clone --depth 1 -b stable https://github.com/flutter/flutter.git "%USERPROFILE%\flutter"
+)
+set "PATH=%PATH%;%USERPROFILE%\flutter\bin"
+if exist "%USERPROFILE%\flutter\bin\flutter.bat" (
+    echo [INSTALL] Comprobando Flutter...
+    call "%USERPROFILE%\flutter\bin\flutter.bat" --version
+    echo [INSTALL] Flutter OK.
+) else (
+    echo [INSTALL] ERROR: Flutter sigue sin detectarse.
+)
+goto :eof
 
 :need_pip
 set REQ_HASH=
@@ -591,7 +717,7 @@ goto :eof
 :wait_backend
 echo [BACKEND] Esperando respuesta en http://localhost:%BACKEND_PORT%/health ...
 powershell -NoProfile -Command "$ok=$false; for ($i=0;$i -lt 30;$i++) { try { $c=[Net.Sockets.TcpClient]::new(); $r=$c.BeginConnect('127.0.0.1',%BACKEND_PORT%,$null,$null); if ($r.AsyncWaitHandle.WaitOne(1000)) { $c.EndConnect($r); $ok=$true; $c.Close(); break }; $c.Close() } catch {}; Start-Sleep -Seconds 2 }; if (-not $ok) { exit 1 }"
-if errorlevel 1 echo [BACKEND] WARNING: sin respuesta tras 60s — revisa la ventana "Clakettes Backend".
+if errorlevel 1 echo [BACKEND] WARNING: sin respuesta tras 60s ??? revisa la ventana "Clakettes Backend".
 goto :eof
 
 :check_pubcache
@@ -613,12 +739,13 @@ echo requieren Docker para funcionar.
 echo.
 echo Para configurar el entorno de desarrollo:
 echo.
-echo   Opcion 1 — Instalar Docker Desktop:
+echo   Opcion 1 ??? Instalar Docker Desktop:
+echo     winget install -e --id Docker.DockerDesktop  (requiere WSL2 + reinicio)
 echo     https://docs.docker.com/desktop/
 echo.
-echo   Opcion 2 — Entorno local (sin Docker):
-echo     - Python 3.12+ con pip
-echo     - Flutter SDK en PATH o rutas habituales
+echo   Opcion 2 ??? Entorno local (sin Docker):
+echo     - Python 3.12+ con pip (o start.bat --install-missing)
+echo     - Flutter SDK en PATH o rutas habituales (o start.bat --install-missing)
 echo     - Ejecuta el script sin flags para que configure .venv y flutter pub get
 echo.
 echo   Ejecuta "start.bat --help" para mas detalles.

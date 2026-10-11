@@ -11,7 +11,11 @@
 | Tests | `-TestBackend` / `-TestFrontend` |
 | Migraciones / con MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |
 | Parar todo | `-Kill` |
+| Instalar dependencias que falten | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: gestor del SO + git clone) |
+| Revisar el entorno sin arrancar | `-Check` (doctor: Docker, Python, Flutter, .venv, puertos; sale 1 si falta algo) |
 | Builds distribuibles | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
+
+Sin Docker, el lanzador crea un entorno bare-metal local: detecta Python 3.12+ y Flutter, muestra cómo instalarlos según tu SO y ofrece instalarlos con `-InstallMissing` (pregunta antes salvo que vayas con el flag).
 
 URLs dev: backend `http://localhost:8000` (Swagger en `/docs`), frontend `http://localhost:3000`.
 Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.

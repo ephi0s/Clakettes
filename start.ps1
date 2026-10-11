@@ -14,7 +14,9 @@ param(
     [switch]$Build,
     [switch]$BuildAll,
     [switch]$BuildFrontend,
-    [switch]$BuildBackend
+    [switch]$BuildBackend,
+    [switch]$InstallMissing,
+    [switch]$Check
 )
 
 $ErrorActionPreference = 'Continue'
@@ -37,6 +39,8 @@ foreach ($a in $args) {
         '--build-all'        { $BuildAll = $true }
         '--build-frontend'   { $BuildFrontend = $true }
         '--build-backend'    { $BuildBackend = $true }
+        '--install-missing'  { $InstallMissing = $true }
+        '--check'            { $Check = $true }
         '--kill'             { $Kill = $true }
         '--help'             { $Help = $true }
         '/?'                 { $Help = $true }
@@ -112,10 +116,13 @@ USO:
     .\start.ps1 -BuildFrontend         Construye solo frontend (Docker)
     .\start.ps1 -BuildBackend          Construye solo backend (Docker)
     .\start.ps1 -Kill                  Para contenedores Docker y procesos locales
+    .\start.ps1 -InstallMissing        Instala lo que falte (winget + git clone)
+    .\start.ps1 -Check                 Revisa el entorno sin arrancar nada
     .\start.ps1 -Help                  Muestra esta ayuda
 
 REQUISITOS (Docker):
     - Docker Desktop (https://docs.docker.com/desktop/)
+    - O automatico: winget install -e --id Docker.DockerDesktop (requiere WSL2 + reinicio)
     - Docker levanta automaticamente pip install + flutter pub get
 
 REQUISITOS (local, si no hay Docker):
@@ -183,11 +190,157 @@ function Find-FlutterCmd {
     return ($null -ne (Get-Command flutter -ErrorAction SilentlyContinue))
 }
 
+function Get-ReqHash {
+    param([string]$BackendDir)
+    $h = (Get-FileHash (Join-Path $BackendDir "requirements.txt") -Algorithm SHA256).Hash
+    $dev = Join-Path $BackendDir "requirements-dev.txt"
+    if (Test-Path $dev) { $h += (Get-FileHash $dev -Algorithm SHA256).Hash }
+    return ($h -join '')
+}
+
+function Test-BackendDeps {
+    param([string]$VenvPython)
+    try {
+        & $VenvPython -c "import uvicorn, fastapi" 2>&1 | Out-Null
+        return ($LASTEXITCODE -eq 0)
+    } catch { return $false }
+}
+
+function Test-BackendVenv {
+    param([string]$BackendDir)
+    $venvPython = Join-Path $BackendDir ".venv\Scripts\python.exe"
+    $cfg = Join-Path $BackendDir ".venv\pyvenv.cfg"
+    if (-not (Test-Path $venvPython)) { return $false }
+    if (-not (Test-Path $cfg)) { return $false }
+    $homeLine = Select-String -Path $cfg -Pattern '^\s*home\s*=\s*(.+?)\s*$' | Select-Object -First 1
+    if ($homeLine -and -not (Test-Path $homeLine.Matches[0].Groups[1].Value)) { return $false }
+    try {
+        & $venvPython --version 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { return $false }
+    } catch { return $false }
+    return $true
+}
+
+function Test-FlutterPubCache {
+    param([string]$FrontendDir)
+    $cfg = Join-Path $FrontendDir ".dart_tool\package_config.json"
+    if (-not (Test-Path $cfg)) { return $false }
+    try {
+        $json = Get-Content $cfg -Raw | ConvertFrom-Json
+        if (-not $json.packages) { return $false }
+        $checked = 0
+        foreach ($p in $json.packages) {
+            $u = "$($p.rootUri)"
+            if ($u -match '^file:///') {
+                $local = [System.Uri]::UnescapeDataString($u.Substring(8)) -replace '/', '\'
+                if (-not (Test-Path $local)) { return $false }
+                $checked++
+                if ($checked -ge 8) { break }
+            } elseif ($u -match '^file:') {
+                $rel = ($u.Substring(5) -replace '/', '\')
+                if (-not (Test-Path (Join-Path (Split-Path $cfg -Parent) $rel))) { return $false }
+            }
+        }
+        if ($checked -eq 0) { return $false }
+    } catch { return $false }
+    return $true
+}
+
+function Test-ContainerPubCache {
+    param([string]$FrontendDir)
+    $cfg = Join-Path $FrontendDir ".dart_tool\package_config.json"
+    if (-not (Test-Path $cfg)) { return $true }
+    foreach ($m in [regex]::Matches((Get-Content $cfg -Raw), '"rootUri":\s*"([^"]+)"')) {
+        $u = $m.Groups[1].Value
+        if ($u -match '^file:///') {
+            if ($u.Substring(8) -notmatch '^(app|root|tmp)/') { return $false }
+        } elseif ($u -match '^[a-zA-Z][a-zA-Z0-9+.-]*:') {
+            return $false
+        }
+    }
+    return $true
+}
+
+function Clear-FlutterGenerated {
+    param([string]$FrontendDir)
+    Write-Host "[ENV] Caché de Flutter de otro entorno, regenerando..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force (Join-Path $FrontendDir ".dart_tool") -ErrorAction SilentlyContinue
+    Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins") -ErrorAction SilentlyContinue
+    Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins-dependencies") -ErrorAction SilentlyContinue
+}
 $script:PythonInfo = Find-PythonCmd
 $script:FlutterOk = Find-FlutterCmd
+
+function Show-InstallGuide {
+    Write-Host ""
+    Write-Host "Como instalar lo que falta (Windows):" -ForegroundColor Cyan
+    Write-Host "  Python 3.12+:  winget install -e --id Python.Python.3.12"
+    Write-Host "    o manual: https://www.python.org/downloads/ (marca 'Add python.exe to PATH')"
+    Write-Host "  Flutter:     .\start.ps1 -InstallMissing  (clona el SDK estable en %USERPROFILE%\flutter)"
+    Write-Host "    o manual: https://docs.flutter.dev/get-started/install/windows"
+    Write-Host "  Docker:      winget install -e --id Docker.DockerDesktop"
+    Write-Host "    Requiere WSL2 y reinicio. https://docs.docker.com/desktop/install/windows/"
+    Write-Host ""
+}
+
+function Update-SessionPath {
+    $m = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $u = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = "$m;$u"
+}
+
+function Install-MissingDeps {
+    param([bool]$NeedPython, [bool]$NeedFlutter)
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if ($NeedPython -and -not $script:PythonInfo) {
+        if ($winget) {
+            Write-Host "[INSTALL] Instalando Python 3.12 con winget..." -ForegroundColor Cyan
+            winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements --silent 2>&1
+            Update-SessionPath
+            $script:PythonInfo = Find-PythonCmd
+        } else {
+            Write-Host "[INSTALL] ERROR: winget no disponible — instala Python manual: https://www.python.org/downloads/" -ForegroundColor Red
+        }
+        if ($script:PythonInfo) { Write-Host "[INSTALL] Python OK" -ForegroundColor Green }
+        else { Write-Host "[INSTALL] ERROR: Python sigue sin detectarse" -ForegroundColor Red }
+    }
+    if ($NeedFlutter -and -not $script:FlutterOk) {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+            if ($winget) {
+                Write-Host "[INSTALL] Instalando Git con winget..." -ForegroundColor Cyan
+                winget install -e --id Git.Git --accept-source-agreements --accept-package-agreements --silent 2>&1
+                Update-SessionPath
+            } else {
+                Write-Host "[INSTALL] ERROR: se necesita git — https://git-scm.com/download/win" -ForegroundColor Red
+                return
+            }
+        }
+        $dest = Join-Path $env:USERPROFILE "flutter"
+        if (-not (Test-Path (Join-Path $dest "bin\flutter.bat"))) {
+            Write-Host "[INSTALL] Clonando Flutter estable en $dest (puede tardar)..." -ForegroundColor Cyan
+            git clone --depth 1 -b stable https://github.com/flutter/flutter.git $dest 2>&1
+        }
+        if ($env:Path -notlike "*$dest\bin*") { $env:Path += ";$dest\bin" }
+        $script:FlutterOk = Find-FlutterCmd
+        if ($script:FlutterOk) {
+            Write-Host "[INSTALL] Comprobando Flutter..." -ForegroundColor Cyan
+            flutter --version 2>&1 | Select-Object -First 3
+            Write-Host "[INSTALL] Flutter OK" -ForegroundColor Green
+        } else {
+            Write-Host "[INSTALL] ERROR: Flutter sigue sin detectarse" -ForegroundColor Red
+        }
+    }
+}
+
 $pyLabel = if ($script:PythonInfo) { "$($script:PythonInfo.Cmd) 3.12+" } else { "NO DETECTADO" }
 $flLabel = if ($script:FlutterOk) { "si" } else { "no" }
 Write-Host "[SISTEMA] Windows | Python: $pyLabel | Flutter: $flLabel"
+
+$backendDir = Join-Path $root "backend"
+$frontendDir = Join-Path $root "frontend"
+
+$needsPython = (-not $NoBackend) -or $Migrate -or $TestBackend -or $Final
+$needsFlutter = (-not $NoFrontend) -or $TestFrontend -or $Final
 
 # ============================================================
 # DOCKER MODE
@@ -211,10 +364,39 @@ if ($Kill) {
     return
 }
 
+if ($Check) {
+    $checkFail = 0
+    Write-Host "[CHECK] Revisando entorno (sin cambios)..." -ForegroundColor Cyan
+    if ($dockerDaemon) { Write-Host "[CHECK] Docker: OK." -ForegroundColor Green }
+    elseif ($dockerAvailable) { Write-Host "[CHECK] Docker: daemon parado — se usara modo local." -ForegroundColor Yellow }
+    else { Write-Host "[CHECK] Docker: ausente — se usara modo local." -ForegroundColor Yellow }
+    if ($needsPython) {
+        if ($script:PythonInfo) { Write-Host "[CHECK] Python: OK." -ForegroundColor Green }
+        else { Write-Host "[CHECK] Python 3.12+: NO DETECTADO." -ForegroundColor Red; $checkFail = 1 }
+        if (-not (Test-Path (Join-Path $backendDir ".venv\Scripts\python.exe"))) {
+            Write-Host "[CHECK] .venv: no existe — se creara al arrancar." -ForegroundColor Yellow
+        } elseif (Test-BackendVenv $backendDir) { Write-Host "[CHECK] .venv: OK." -ForegroundColor Green }
+        else { Write-Host "[CHECK] .venv: invalido — se recreara al arrancar." -ForegroundColor Yellow }
+        if (Test-Path (Join-Path $backendDir ".env")) { Write-Host "[CHECK] backend/.env: OK." -ForegroundColor Green }
+        else { Write-Host "[CHECK] backend/.env: se creara desde .env.example." -ForegroundColor Yellow }
+    }
+    if ($needsFlutter) {
+        if ($script:FlutterOk) { Write-Host "[CHECK] Flutter: OK." -ForegroundColor Green }
+        else { Write-Host "[CHECK] Flutter: NO DETECTADO." -ForegroundColor Red; $checkFail = 1 }
+        if (Test-FlutterPubCache $frontendDir) { Write-Host "[CHECK] Flutter pub cache: OK." -ForegroundColor Green }
+        else { Write-Host "[CHECK] Flutter pub cache: se regenerara al arrancar." -ForegroundColor Yellow }
+    }
+    foreach ($p in @(8000, 3000)) {
+        if (Test-PortInUse $p) { Write-Host "[CHECK] Puerto $p ocupado — se reasignara solo." -ForegroundColor Yellow }
+        else { Write-Host "[CHECK] Puerto $p libre." -ForegroundColor Green }
+    }
+    if ($checkFail -eq 0) { Write-Host "[CHECK] Entorno listo para arrancar." -ForegroundColor Green; exit 0 }
+    else { Write-Host "[CHECK] Faltan requisitos — ver arriba." -ForegroundColor Red; exit 1 }
+}
+
 if ($Web) {
     # --web siempre usa modo local (como start.bat)
-} elseif ($dockerDaemon) {
-    Write-Host "[DOCKER] Usando Docker..." -ForegroundColor Cyan
+} elseif ($dockerDaemon) {    Write-Host "[DOCKER] Usando Docker..." -ForegroundColor Cyan
     Set-Location $root
 
     if (-not $env:SECRET_KEY) { $env:SECRET_KEY = "dev-secret-change-in-production" }
@@ -352,21 +534,29 @@ function Show-SetupHelp {
     Write-Host "requieren Docker para funcionar.`n"
     Write-Host "Para configurar el entorno de desarrollo:`n"
     Write-Host "  Opcion 1 — Instalar Docker Desktop:"
+    Write-Host "    winget install -e --id Docker.DockerDesktop  (requiere WSL2 + reinicio)"
     Write-Host "    https://docs.docker.com/desktop/`n"
     Write-Host "  Opcion 2 — Entorno local (sin Docker):"
-    Write-Host "    - Python 3.12+ con pip"
-    Write-Host "    - Flutter SDK en PATH"
+    Write-Host "    - Python 3.12+ con pip (o .\start.ps1 -InstallMissing)"
+    Write-Host "    - Flutter SDK en PATH (o .\start.ps1 -InstallMissing)"
     Write-Host "    - Ejecuta el script sin flags para que configure .venv y flutter pub get`n"
     Write-Host "  Ejecuta 'start.ps1 -Help' para mas detalles.`n"
 }
 
     if ($BuildAll -or $Build -or $BuildFrontend -or $BuildBackend -or $TestMigration) { Show-SetupHelp; exit 1 }
 
-$backendDir = Join-Path $root "backend"
-$frontendDir = Join-Path $root "frontend"
-
-$needsPython = (-not $NoBackend) -or $Migrate -or $TestBackend -or $Final
-$needsFlutter = (-not $NoFrontend) -or $TestFrontend -or $Final
+$missingDeps = @()
+if ($needsPython -and -not $script:PythonInfo) { $missingDeps += 'Python 3.12+' }
+if ($needsFlutter -and -not $script:FlutterOk) { $missingDeps += 'Flutter' }
+if ($missingDeps.Count -gt 0) {
+    Show-InstallGuide
+    $doInstall = [bool]$InstallMissing
+    if (-not $doInstall -and [Environment]::UserInteractive -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host "¿Intentar instalacion automatica de: $($missingDeps -join ', ')? (s/N)"
+        if ($ans -match '^[sSyY]') { $doInstall = $true }
+    }
+    if ($doInstall) { Install-MissingDeps $needsPython $needsFlutter }
+}
 
 if ($needsPython -and -not $script:PythonInfo) {
     Write-Host "========================================" -ForegroundColor Red
@@ -384,84 +574,6 @@ if ($needsFlutter -and -not $script:FlutterOk) {
 # ── Local environment setup ──
 $script:BackendPython = "python"
 
-function Get-ReqHash {
-    param([string]$BackendDir)
-    $h = (Get-FileHash (Join-Path $BackendDir "requirements.txt") -Algorithm SHA256).Hash
-    $dev = Join-Path $BackendDir "requirements-dev.txt"
-    if (Test-Path $dev) { $h += (Get-FileHash $dev -Algorithm SHA256).Hash }
-    return ($h -join '')
-}
-
-function Test-BackendDeps {
-    param([string]$VenvPython)
-    try {
-        & $VenvPython -c "import uvicorn, fastapi" 2>&1 | Out-Null
-        return ($LASTEXITCODE -eq 0)
-    } catch { return $false }
-}
-
-function Test-BackendVenv {
-    param([string]$BackendDir)
-    $venvPython = Join-Path $BackendDir ".venv\Scripts\python.exe"
-    $cfg = Join-Path $BackendDir ".venv\pyvenv.cfg"
-    if (-not (Test-Path $venvPython)) { return $false }
-    if (-not (Test-Path $cfg)) { return $false }
-    $homeLine = Select-String -Path $cfg -Pattern '^\s*home\s*=\s*(.+?)\s*$' | Select-Object -First 1
-    if ($homeLine -and -not (Test-Path $homeLine.Matches[0].Groups[1].Value)) { return $false }
-    try {
-        & $venvPython --version 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { return $false }
-    } catch { return $false }
-    return $true
-}
-
-function Test-FlutterPubCache {
-    param([string]$FrontendDir)
-    $cfg = Join-Path $FrontendDir ".dart_tool\package_config.json"
-    if (-not (Test-Path $cfg)) { return $false }
-    try {
-        $json = Get-Content $cfg -Raw | ConvertFrom-Json
-        if (-not $json.packages) { return $false }
-        $checked = 0
-        foreach ($p in $json.packages) {
-            $u = "$($p.rootUri)"
-            if ($u -match '^file:///') {
-                $local = [System.Uri]::UnescapeDataString($u.Substring(8)) -replace '/', '\'
-                if (-not (Test-Path $local)) { return $false }
-                $checked++
-                if ($checked -ge 8) { break }
-            } elseif ($u -match '^file:') {
-                $rel = ($u.Substring(5) -replace '/', '\')
-                if (-not (Test-Path (Join-Path (Split-Path $cfg -Parent) $rel))) { return $false }
-            }
-        }
-        if ($checked -eq 0) { return $false }
-    } catch { return $false }
-    return $true
-}
-
-function Test-ContainerPubCache {
-    param([string]$FrontendDir)
-    $cfg = Join-Path $FrontendDir ".dart_tool\package_config.json"
-    if (-not (Test-Path $cfg)) { return $true }
-    foreach ($m in [regex]::Matches((Get-Content $cfg -Raw), '"rootUri":\s*"([^"]+)"')) {
-        $u = $m.Groups[1].Value
-        if ($u -match '^file:///') {
-            if ($u.Substring(8) -notmatch '^(app|root|tmp)/') { return $false }
-        } elseif ($u -match '^[a-zA-Z][a-zA-Z0-9+.-]*:') {
-            return $false
-        }
-    }
-    return $true
-}
-
-function Clear-FlutterGenerated {
-    param([string]$FrontendDir)
-    Write-Host "[ENV] Caché de Flutter de otro entorno, regenerando..." -ForegroundColor Yellow
-    Remove-Item -Recurse -Force (Join-Path $FrontendDir ".dart_tool") -ErrorAction SilentlyContinue
-    Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins") -ErrorAction SilentlyContinue
-    Remove-Item -Force (Join-Path $FrontendDir ".flutter-plugins-dependencies") -ErrorAction SilentlyContinue
-}
 
 function Invoke-LocalSetup {
     $envFile = Join-Path $backendDir ".env"

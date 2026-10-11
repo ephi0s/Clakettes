@@ -31,6 +31,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - `--test-backend` / `--test-frontend` | `--test-migration`: MariaDB + migrate + validate
 - `--build`: `docker compose build dev` | `--build-all`: via `tools\build-all.ps1`
 - Detecta Brave/Chrome para `CHROME_EXECUTABLE`. Crea `.venv` + `flutter pub get`.
+- `--install-missing`: instala deps bare-metal (winget/apt/dnf/brew + git clone); si no, guía por SO + pregunta.
 
 ## CI
 - `.github/workflows/ci.yml`: GitHub Actions (lint → test → docker build on push/PR)

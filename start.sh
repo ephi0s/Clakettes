@@ -22,6 +22,8 @@ IS_BUILD=0
 IS_BUILD_ALL=0
 IS_BUILD_FRONTEND=0
 IS_BUILD_BACKEND=0
+IS_INSTALL_MISSING=0
+IS_CHECK=0
 
 # ── OS detection ────────────────────────────────────────────────
 OS=""
@@ -141,6 +143,102 @@ detect_python
 detect_flutter
 detect_browser
 
+install_guide() {
+  echo ""
+  echo "Como instalar un entorno bare-metal (sin Docker) en ${OS:-?} / ${OS_FAMILY:-?}:"
+  case "$OS_FAMILY" in
+    debian)
+      echo "  Python 3.12+: sudo apt update && sudo apt install -y python3 python3-venv python3-pip"
+      echo "  Flutter:      sudo snap install flutter --classic   (o ./start.sh --install-missing)"
+      echo "  Docker:       curl -fsSL https://get.docker.com | sh && sudo usermod -aG docker \$USER"
+      ;;
+    fedora)
+      echo "  Python 3.12+: sudo dnf install -y python3 python3-pip"
+      echo "  Flutter:      ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:       sudo dnf install -y docker-ce docker-ce-cli containerd.io && sudo systemctl start docker"
+      ;;
+    arch)
+      echo "  Python 3.12+: sudo pacman -S --noconfirm python python-pip"
+      echo "  Flutter:      ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:       sudo pacman -S docker docker-compose && sudo systemctl start docker"
+      ;;
+    alpine)
+      echo "  Python 3.12+: sudo apk add python3 py3-pip"
+      echo "  Flutter:      ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:       sudo apk add docker docker-compose && sudo service docker start"
+      ;;
+    suse)
+      echo "  Python 3.12+: sudo zypper install -y python3 python3-pip"
+      echo "  Flutter:      ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:       sudo zypper install -y docker docker-compose && sudo systemctl start docker"
+      ;;
+    macos)
+      echo "  Python 3.12+: brew install python@3.12"
+      echo "  Flutter:      ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:       brew install --cask docker   (o https://docs.docker.com/desktop/install/mac/)"
+      ;;
+    freebsd)
+      echo "  Python:  sudo pkg install -y python3 py3-pip py3-venv"
+      echo "  Flutter: ./start.sh --install-missing   (clona el SDK en ~/flutter)"
+      echo "  Docker:  sudo pkg install docker docker-compose"
+      ;;
+    *)
+      echo "  Python 3.12+: https://www.python.org/downloads/"
+      echo "  Flutter:      https://docs.flutter.dev/get-started/install"
+      echo "  Docker:       https://docs.docker.com/engine/install/"
+      ;;
+  esac
+  echo "  Re-ejecuta con --install-missing para intentarlo automatico."
+  echo ""
+}
+
+install_missing() {
+  need_py=$1; need_fl=$2
+  if [ "$need_py" -eq 1 ] && [ -z "$PYTHON_CMD" ]; then
+    echo "[INSTALL] Instalando Python..."
+    case "$OS_FAMILY" in
+      debian) sudo apt update && sudo apt install -y python3 python3-venv python3-pip ;;
+      fedora) sudo dnf install -y python3 python3-pip ;;
+      arch) sudo pacman -S --noconfirm python python-pip ;;
+      alpine) sudo apk add python3 py3-pip ;;
+      suse) sudo zypper install -y python3 python3-pip ;;
+      macos) brew install python@3.12 ;;
+      freebsd) sudo pkg install -y python3 py3-pip ;;
+      *) echo "[INSTALL] ERROR: instala Python manual: https://www.python.org/downloads/"; return 1 ;;
+    esac
+    detect_python
+    if [ -n "$PYTHON_CMD" ]; then echo "[INSTALL] Python OK ($PYTHON_CMD)"
+    else echo "[INSTALL] ERROR: Python sigue sin detectarse"; fi
+  fi
+  if [ "$need_fl" -eq 1 ] && ! command -v flutter >/dev/null 2>&1; then
+    if ! command -v git >/dev/null 2>&1; then
+      echo "[INSTALL] Instalando git..."
+      case "$OS_FAMILY" in
+        debian) sudo apt update && sudo apt install -y git ;;
+        fedora) sudo dnf install -y git ;;
+        arch) sudo pacman -S --noconfirm git ;;
+        alpine) sudo apk add git ;;
+        suse) sudo zypper install -y git ;;
+        macos) brew install git ;;
+        freebsd) sudo pkg install -y git ;;
+        *) echo "[INSTALL] ERROR: se necesita git: https://git-scm.com/downloads"; return 1 ;;
+      esac
+    fi
+    if [ ! -x "$HOME/flutter/bin/flutter" ]; then
+      echo "[INSTALL] Clonando Flutter estable en $HOME/flutter (puede tardar)..."
+      git clone --depth 1 -b stable https://github.com/flutter/flutter.git "$HOME/flutter"
+    fi
+    PATH="$HOME/flutter/bin:$PATH"; export PATH
+    if command -v flutter >/dev/null 2>&1; then
+      echo "[INSTALL] Comprobando Flutter..."
+      flutter --version 2>&1 | head -3
+      echo "[INSTALL] Flutter OK"
+    else
+      echo "[INSTALL] ERROR: Flutter sigue sin detectarse"
+    fi
+  fi
+}
+
 if [ -n "$BROWSER" ]; then
   echo "[DETECTADO] Navegador: $BROWSER"
   case "$OS" in
@@ -173,6 +271,8 @@ USO:
     ./start.sh --build-frontend       Construye solo frontend (Docker)
     ./start.sh --build-backend        Construye solo backend (Docker)
     ./start.sh --kill                 Para contenedores Docker y procesos locales
+    ./start.sh --install-missing       Instala lo que falte (gestor del SO + git clone)
+    ./start.sh --check                 Revisa el entorno sin arrancar nada
     ./start.sh --help                 Muestra esta ayuda
 
 SISTEMA DETECTADO: ${OS:-desconocido} / ${OS_FAMILY:-desconocido}
@@ -207,6 +307,8 @@ for arg in "$@"; do
     --build-all)     IS_BUILD_ALL=1 ;;
     --build-frontend) IS_BUILD_FRONTEND=1 ;;
     --build-backend)  IS_BUILD_BACKEND=1 ;;
+    --install-missing) IS_INSTALL_MISSING=1 ;;
+    --check) IS_CHECK=1 ;;
     --help|-h|/?)
       show_help
       exit 0
@@ -218,6 +320,15 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+NEED_PY=1; [ "$NO_BACKEND" -eq 1 ] && NEED_PY=0
+[ "$IS_MIGRATE" -eq 1 ] && NEED_PY=1
+[ "$IS_TEST_BACKEND" -eq 1 ] && NEED_PY=1
+[ "$IS_FINAL" -eq 1 ] && NEED_PY=1
+NEED_FL=1; [ "$NO_FRONTEND" -eq 1 ] && NEED_FL=0
+[ "$IS_TEST_FRONTEND" -eq 1 ] && NEED_FL=1
+[ "$IS_FINAL" -eq 1 ] && NEED_FL=1
+export NEED_PY NEED_FL
 
 # ---- Port auto-assignment ----
 port_in_use() {
@@ -330,6 +441,38 @@ URIS
 # ================================================================
 # DOCKER MODE
 # ================================================================
+if [ "$IS_CHECK" -eq 1 ]; then
+  fail=0
+  echo "[CHECK] Revisando entorno (sin cambios)..."
+  if command -v docker >/dev/null 2>&1; then
+    if docker info >/dev/null 2>&1; then echo "[CHECK] Docker: OK."
+    else echo "[CHECK] Docker: daemon parado — se usara modo local."; fi
+  else
+    echo "[CHECK] Docker: ausente — se usara modo local."
+  fi
+  if [ "$NEED_PY" -eq 1 ]; then
+    if [ -n "$PYTHON_CMD" ]; then echo "[CHECK] Python: OK ($PYTHON_CMD)."
+    else echo "[CHECK] Python 3.12+: NO DETECTADO."; fail=1; fi
+    if venv_ok; then echo "[CHECK] .venv: OK."
+    else echo "[CHECK] .venv: se creara o recreara al arrancar."; fi
+    if [ -f "$BACKEND_DIR/.env" ]; then echo "[CHECK] backend/.env: OK."
+    else echo "[CHECK] backend/.env: se creara desde .env.example."; fi
+  fi
+  if [ "$NEED_FL" -eq 1 ]; then
+    if command -v flutter >/dev/null 2>&1; then echo "[CHECK] Flutter: OK."
+    else echo "[CHECK] Flutter: NO DETECTADO."; fail=1; fi
+    if [ -n "$PYTHON_CMD" ] && pub_cache_ok; then echo "[CHECK] Flutter pub cache: OK."
+    else echo "[CHECK] Flutter pub cache: se regenerara al arrancar."; fi
+  fi
+  for p in 8000 3000; do
+    if port_in_use "$p"; then echo "[CHECK] Puerto $p ocupado — se reasignara solo."
+    else echo "[CHECK] Puerto $p libre."; fi
+  done
+  if [ "$fail" -eq 0 ]; then echo "[CHECK] Entorno listo para arrancar."; exit 0; fi
+  echo "[CHECK] Faltan requisitos — ver arriba."
+  exit 1
+fi
+
 DOCKER_DAEMON=0
 if command -v docker >/dev/null 2>&1 && [ "$IS_WEB" -eq 0 ]; then
   if docker info >/dev/null 2>&1; then
@@ -583,6 +726,8 @@ show_setup_help() {
   fi
 
   echo ""
+  echo "  O re-ejecuta con --install-missing para intentarlo automatico."
+  echo ""
   echo "  Ejecuta './start.sh --help' para mas detalles."
   echo ""
   exit 1
@@ -617,8 +762,8 @@ setup_env() {
 
   BACKEND_PYTHON="$PYTHON_CMD"
 
-  if [ -z "$PYTHON_CMD" ]; then
-    echo "[ENV] ERROR: Python 3 no encontrado."
+  if [ -z "$PYTHON_CMD" ] && [ "$NEED_PY" -eq 1 ]; then
+    echo "[ENV] ERROR: Python 3 no encontrado (o re-ejecuta con --install-missing)."
     case "$OS_FAMILY" in
       freebsd) echo "  Solucion: sudo pkg install python3 py3-pip" ;;
       debian) echo "  Solucion: sudo apt install -y python3 python3-venv python3-pip" ;;
@@ -629,6 +774,8 @@ setup_env() {
       *)      echo "  Descarga Python 3.12+ desde https://www.python.org/downloads/" ;;
     esac
     exit 1
+  elif [ -z "$PYTHON_CMD" ]; then
+    echo "[SISTEMA] WARNING: Python no detectado (solo frontend)."
   fi
 
   pyver_full="$($PYTHON_CMD --version 2>&1 | awk '{print $2}')"
@@ -637,7 +784,7 @@ setup_env() {
     *) echo "[SISTEMA] WARNING: Python $pyver_full detectado — se requiere 3.12+." ;;
   esac
 
-  if [ -f "$BACKEND_DIR/requirements.txt" ]; then
+  if [ "$NEED_PY" -eq 1 ] && [ -f "$BACKEND_DIR/requirements.txt" ]; then
     if ! venv_ok; then
       if [ -d "$BACKEND_DIR/.venv" ]; then
         echo "[ENV] Entorno virtual obsoleto (de otro equipo), recreando..."
@@ -683,7 +830,7 @@ setup_env() {
     fi
   fi
 
-  if [ -f "$FRONTEND_DIR/pubspec.yaml" ] && ! pub_cache_ok; then
+  if [ "$NEED_FL" -eq 1 ] && [ -f "$FRONTEND_DIR/pubspec.yaml" ] && ! pub_cache_ok; then
     if command -v flutter >/dev/null 2>&1; then
       echo "[ENV] Caché de Flutter obsoleta (de otro equipo), regenerando..."
       (cd "$FRONTEND_DIR" && flutter pub get) || (cd "$FRONTEND_DIR" && flutter pub get --offline) || {
@@ -698,6 +845,21 @@ setup_env() {
   echo "[ENV] Entorno listo."
   export BACKEND_PYTHON
 }
+
+if { [ "$NEED_PY" -eq 1 ] && [ -z "$PYTHON_CMD" ]; } || { [ "$NEED_FL" -eq 1 ] && ! command -v flutter >/dev/null 2>&1; }; then
+  install_guide
+  do_install="$IS_INSTALL_MISSING"
+  if [ "$do_install" -eq 0 ] && [ -t 0 ]; then
+    printf "¿Intentar instalacion automatica de lo que falta? (s/N): "
+    read -r ans || true
+    case "$ans" in [sSyY]*) do_install=1 ;; esac
+  fi
+  if [ "$do_install" -eq 1 ]; then
+    install_missing "$NEED_PY" "$NEED_FL"
+    detect_python
+    detect_flutter
+  fi
+fi
 
 setup_env
 
