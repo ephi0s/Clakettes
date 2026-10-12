@@ -1,6 +1,6 @@
 """Router for committees and committee members."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -31,8 +31,8 @@ committee_member_service = CommitteeMemberService()
 @router.get("/festivals/{festival_id}/committees/", response_model=CommitteePage)
 async def list_committees(
     festival_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
@@ -100,8 +100,8 @@ async def delete_committee(
 @router.get("/committees/{committee_id}/members/", response_model=CommitteeMemberPage)
 async def list_committee_members(
     committee_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):

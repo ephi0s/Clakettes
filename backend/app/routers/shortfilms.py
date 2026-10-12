@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -15,8 +15,8 @@ service = ShortFilmService()
 
 @router.get("/", response_model=ShortFilmsPage)
 async def list_shortfilms(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     festival_id: int | None = None,
     user_id: int | None = None,
     is_public: bool | None = None,

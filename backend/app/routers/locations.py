@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -15,8 +15,8 @@ service = LocationService()
 
 @router.get("/", response_model=LocationsPage)
 async def list_locations(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     search: str | None = None,
     tag: str | None = None,
     is_active: bool | None = None,

@@ -1,7 +1,7 @@
 """Router for user alias management."""
 
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -25,8 +25,8 @@ user_alias_service = UserAliasService()
 @router.get("/users/{user_id}/aliases/", response_model=UserAliasesPage)
 async def list_user_aliases(
     user_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     context: str | None = None,
     db: Session = Depends(get_db),
 ):

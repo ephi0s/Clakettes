@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.user_session import (
@@ -43,8 +43,8 @@ async def refresh_token(body: TokenRefreshRequest, db: Session = Depends(get_db)
 
 @router.get("/sessions", response_model=UserSessionPage)
 async def list_sessions(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

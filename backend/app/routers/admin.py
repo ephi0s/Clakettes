@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -52,8 +52,8 @@ async def list_tables(db: Session = Depends(get_db), current_user: User = Depend
 
 @router.get("/audit-log", response_model=AuditLogsPage)
 async def list_audit_log(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     action: str | None = None,
     actor_user_id: int | None = None,
     db: Session = Depends(get_db),

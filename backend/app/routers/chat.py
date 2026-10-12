@@ -34,8 +34,8 @@ group_service = GroupService()
 
 @router.get("/messages", response_model=MessagesPage)
 async def list_messages(
-    page: int = 1,
-    size: int = 50,
+    page: int = Query(1, ge=1),
+    size: int = Query(50, ge=1, le=100),
     sender_id: int | None = None,
     receiver_id: int | None = None,
     group_id: int | None = None,

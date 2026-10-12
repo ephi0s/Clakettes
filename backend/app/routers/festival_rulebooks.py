@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Query, Depends, Form, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -49,8 +49,8 @@ def _check_document_present(file_url: str | None, external_url: str | None):
 @router.get("/", response_model=FestivalRulebooksPage)
 async def list_rulebooks(
     festival_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     category: str | None = None,
     db: Session = Depends(get_db),
 ):

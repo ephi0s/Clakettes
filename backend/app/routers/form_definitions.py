@@ -1,6 +1,6 @@
 """Router for form definitions, pages, fields, responses, and links."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -36,9 +36,9 @@ from app.services.form_service import (
 )
 from app.services.export_service import export_form_responses_csv
 from app.routers.permissions import require_form_admin
-from app.routers.dependencies import get_current_user_optional
+from app.routers.dependencies import get_current_user_optional, get_or_404
 from app.models.user import User
-from app.models.form_definition import FormPage, FormField, FormFieldOption, FormResponse
+from app.models.form_definition import FormDefinition, FormPage, FormField, FormFieldOption, FormResponse
 
 router = APIRouter()
 
@@ -54,8 +54,8 @@ async def list_forms(
     form_type: str | None = None,
     festival_id: int | None = None,
     is_active: bool | None = None,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -86,10 +86,7 @@ async def get_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    return form
+    return get_or_404(db, FormDefinition, form_id, "Form")
 
 
 @router.put("/forms/{form_id}", response_model=FormDefinitionResponse)
@@ -99,9 +96,7 @@ async def update_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, existing)
     updated = form_service.update(db, form_id, form)
     return updated
@@ -277,8 +272,8 @@ async def delete_field(
 @router.get("/forms/{form_id}/links/", response_model=FormLinkPage)
 async def list_form_links(
     form_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_active: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -352,8 +347,8 @@ async def submit_public_response(
 @router.get("/forms/{form_id}/responses/", response_model=FormResponsePage)
 async def list_form_responses(
     form_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     status: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

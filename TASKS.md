@@ -1,5 +1,4 @@
 # Mejoras — lista ordenada simple → complejo
-- [ ] 2. Query(page/size ge/le) en ~25 routers (patrón festivals.py:27)
 - [ ] 3. get_or_404: migrar 120 raise 404 inline restantes
 - [ ] 4. paginate_filtered: migrar clones get_all_paginated
 - [ ] 5. SyncQueue _pluralize + whitelist entityType/operation

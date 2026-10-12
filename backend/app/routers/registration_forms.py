@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -54,8 +54,8 @@ user_service = UserService()
 async def list_registration_forms(
     festival_id: int,
     is_active: bool | None = None,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -145,8 +145,8 @@ async def delete_registration_form_by_id(
 @router.get("/registration-forms/{form_id}/registrations/", response_model=FestivalRegistrationPage)
 async def list_form_registrations(
     form_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     status: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -230,8 +230,8 @@ async def register_via_public_link(
 async def list_registration_form_links(
     festival_id: int,
     form_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_active: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -326,8 +326,8 @@ def _get_link_or_404(db, form_id: int, link_id: int):
 @router.get("/registration-forms/{form_id}/links/", response_model=RegistrationFormLinkPage)
 async def list_registration_form_links_by_form(
     form_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_active: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -404,8 +404,8 @@ async def regenerate_registration_form_link_by_id(
 @router.get("/festivals/{festival_id}/registrations/", response_model=FestivalRegistrationPage)
 async def list_festival_registrations(
     festival_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     status: str | None = None,
     include_hidden: bool = False,
     db: Session = Depends(get_db),
@@ -457,8 +457,8 @@ async def export_festival_registrations_pdf(
 @router.get("/users/{user_id}/registrations/", response_model=FestivalRegistrationPage)
 async def list_user_registrations(
     user_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

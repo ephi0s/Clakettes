@@ -1,6 +1,6 @@
 """Notifications router — list, unread count, mark as read, delete."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -14,8 +14,8 @@ service = NotificationService()
 
 @router.get("/", response_model=NotificationsPage)
 async def list_notifications(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_read: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

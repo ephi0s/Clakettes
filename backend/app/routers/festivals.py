@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -23,7 +23,12 @@ location_service = LocationService()
 
 
 @router.get("/", response_model=FestivalsPage)
-async def list_festivals(page: int = 1, size: int = 20, is_active: bool | None = None, db: Session = Depends(get_db)):
+async def list_festivals(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    is_active: bool | None = None,
+    db: Session = Depends(get_db),
+):
     return service.get_multi_paginated(db, page=page, size=size, is_active=is_active)
 
 

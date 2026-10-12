@@ -1,6 +1,6 @@
 """Router for user role and user participant tag management."""
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Query, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -36,8 +36,8 @@ user_participant_tag_service = UserParticipantTagService()
 @router.get("/users/{user_id}/roles/", response_model=UserRolesPage)
 async def list_user_roles(
     user_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     festival_id: int | None = None,
     include_hidden: bool = False,
     db: Session = Depends(get_db),
@@ -154,8 +154,8 @@ async def remove_user_role(
 @router.get("/users/{user_id}/participant-tags/", response_model=UserParticipantTagsPage)
 async def list_user_participant_tags(
     user_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     festival_id: int | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Query, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -22,8 +22,8 @@ def _client_ip(request: Request) -> str:
 
 @router.get("/", response_model=UsersPage | UsersPublicPage)
 async def list_users(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_active: bool | None = None,
     role: str | None = None,
     db: Session = Depends(get_db),
@@ -37,7 +37,9 @@ async def list_users(
 
 
 @router.get("/public", response_model=list[UserPublicResponse])
-async def list_public_users(page: int = 1, size: int = 50, db: Session = Depends(get_db)):
+async def list_public_users(
+    page: int = Query(1, ge=1), size: int = Query(50, ge=1, le=100), db: Session = Depends(get_db)
+):
     """List users with only their publicly visible fields."""
     return service.get_public_users(db, page=page, size=size)
 

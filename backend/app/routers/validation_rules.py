@@ -1,6 +1,6 @@
 """Router for validation rules and validation rule groups."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -31,8 +31,8 @@ def require_admin(user: User):
 
 @router.get("/validation-rules/", response_model=ValidationRulesPage)
 async def list_validation_rules(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     scope: str | None = None,
     scope_id: int | None = None,
     db: Session = Depends(get_db),
@@ -87,8 +87,8 @@ async def delete_validation_rule(
 
 @router.get("/validation-rule-groups/", response_model=ValidationRuleGroupsPage)
 async def list_validation_rule_groups(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     scope: str | None = None,
     db: Session = Depends(get_db),
 ):

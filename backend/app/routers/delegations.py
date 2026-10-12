@@ -1,6 +1,6 @@
 """Router for role delegations and role transitions."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -34,8 +34,8 @@ role_service = RoleService()
 
 @router.get("/delegations/", response_model=RoleDelegationPage)
 async def list_delegations(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     delegator_id: int | None = None,
     delegate_id: int | None = None,
     status: str | None = None,
@@ -113,8 +113,8 @@ async def get_user_active_delegations(
 
 @router.get("/role-transitions/", response_model=RoleTransitionPage)
 async def list_role_transitions(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     user_id: int | None = None,
     transition_type: str | None = None,
     db: Session = Depends(get_db),
@@ -139,8 +139,8 @@ async def create_role_transition(
 @router.get("/users/{user_id}/role-transitions", response_model=RoleTransitionPage)
 async def get_user_role_transitions(
     user_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

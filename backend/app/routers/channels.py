@@ -1,6 +1,6 @@
 """Channel CRUD and membership router for community rooms and private groups."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
@@ -34,8 +34,8 @@ async def create_channel(
 
 @router.get("", response_model=ChannelsPage)
 async def list_my_channels(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
@@ -44,8 +44,8 @@ async def list_my_channels(
 
 @router.get("/public", response_model=ChannelsPage)
 async def list_public_channels(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):

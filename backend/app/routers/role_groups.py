@@ -1,6 +1,6 @@
 """Router for role groups and role group memberships."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -34,8 +34,8 @@ def require_admin(user: User):
 
 @router.get("/role-groups/", response_model=RoleGroupPage)
 async def list_role_groups(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     is_active: bool | None = None,
     db: Session = Depends(get_db),
 ):
@@ -90,8 +90,8 @@ async def delete_role_group(
 @router.get("/role-groups/{group_id}/memberships/", response_model=RoleGroupMembershipPage)
 async def list_group_memberships(
     group_id: int,
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     group = role_group_service.get(db, group_id)
