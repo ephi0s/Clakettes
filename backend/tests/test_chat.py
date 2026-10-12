@@ -314,7 +314,7 @@ class TestWebSocketAuth:
     def test_ws_refresh_type_token_rejected(self, client, db_session, create_user):
         """A refresh-type JWT must not be able to connect to the WebSocket."""
         from datetime import datetime, timedelta, timezone
-        from jose import jwt
+        import jwt
         from app.auth import _hash_token
         from app.config import settings
         from app.models.user_session import UserSession

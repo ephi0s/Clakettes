@@ -20,7 +20,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
 from sqlalchemy.orm import Session, selectinload
 from app.config import settings
 from app.database import get_db
@@ -153,7 +153,7 @@ def validate_access_token(db: Session, token: str) -> tuple[int, UserSession] | 
         user_id: int | None = payload.get("user_id")
         if user_id is None or payload.get("type") != "access":
             return None
-    except JWTError:
+    except jwt.PyJWTError:
         return None
 
     # Verify session is active in database
