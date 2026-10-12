@@ -11,11 +11,11 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   shared_preferences: ^2.2.2
-  connectivity_plus: ^6.0.0
+  connectivity_plus: ^7.3.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   image_picker: ^1.0.4
-  file_picker: ^8.0.0
+  file_picker: ^13.1.0
   geolocator: ^11.0.0
   flutter_localizations:
     sdk: flutter
@@ -23,10 +23,10 @@ dependencies:
   web_socket_channel: ^2.4.0
   url_launcher: ^6.2.1
   pointycastle: ^3.7.3
-  flutter_map: ^7.0.2
+  flutter_map: ^8.3.2
   latlong2: ^0.9.1
   path_provider: ^2.1.6
-  web: ^0.5.1
+  web: ^1.1.1
   table_calendar: ^3.2.1
   flutter_local_notifications: ^21.0.0
   timezone: ^0.11.0

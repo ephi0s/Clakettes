@@ -5,4 +5,4 @@
 - [x] 5. SyncQueue whitelist + paths estrictos (3 tests nuevos)
 - [x] 6. python-jose → PyJWT 2.10.1 (jose desinstalado del venv)
 - [x] 7. JWT iss/aud + HS256 fijo + SECRET_KEY requerido (docs 9 lenguas)
-- [ ] 8. Deps majors frontend (connectivity_plus 6→7, flutter_map 7→8, file_picker 8→13, web 0.5→1.1)
+- [x] 8. Deps majors frontend (web 1.x, connectivity_plus 7, flutter_map 8, file_picker 13)

@@ -175,15 +175,14 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
                   icon: const Icon(Icons.picture_as_pdf_outlined),
                   label: Text(pickedPdfName ?? l10n.rulebookPickPdf),
                   onPressed: () async {
-                    final result = await FilePicker.platform.pickFiles(
+                    final files = await FilePicker.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
-                      withData: false,
                     );
-                    if (result != null && result.files.single.path != null) {
+                    if (files.isNotEmpty && files.single.path != null) {
                       setDialogState(() {
-                        pickedPdfPath = result.files.single.path;
-                        pickedPdfName = result.files.single.name;
+                        pickedPdfPath = files.single.path;
+                        pickedPdfName = files.single.name;
                       });
                     }
                   },
@@ -263,7 +262,7 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
       debugPrint('Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -279,7 +278,7 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating),
+            SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
           );
         }
       }
