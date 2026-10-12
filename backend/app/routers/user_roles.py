@@ -20,7 +20,11 @@ from app.services.user_service import UserService
 from app.services.festival_service import FestivalService
 from app.services.participant_tag_service import ParticipantTagService, UserParticipantTagService
 from app.routers.permissions import is_admin, require_role_scope_admin
+from app.routers.dependencies import get_or_404
 from app.models.user import User
+from app.models.role import Role
+from app.models.festival import Festival
+from app.models.participant_tag import ParticipantTag
 
 router = APIRouter()
 
@@ -43,9 +47,7 @@ async def list_user_roles(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     if user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="You can only view your own roles")
     show_hidden = include_hidden if is_admin(current_user) else False
@@ -65,20 +67,14 @@ async def assign_user_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user_obj = user_service.get(db, user_id)
-    if not user_obj:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     require_role_scope_admin(db, current_user, ur.festival_id)
-    role_obj = role_service.get(db, ur.role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, ur.role_id, "Role")
     data = ur.model_dump()
     data["user_id"] = user_id
     data["assigned_by"] = current_user.id
     if ur.festival_id:
-        festival = festival_service.get(db, ur.festival_id)
-        if not festival:
-            raise HTTPException(status_code=404, detail="Festival not found")
+        get_or_404(db, Festival, ur.festival_id, "Festival")
     existing = user_role_service.get_by_user(db, user_id)
     for r in existing:
         if r.role_id == ur.role_id and r.festival_id == ur.festival_id:
@@ -105,9 +101,7 @@ async def update_user_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     existing = user_role_service.get(db, ur_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="User role not found")
@@ -132,9 +126,7 @@ async def remove_user_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     existing = user_role_service.get(db, ur_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="User role not found")
@@ -160,9 +152,7 @@ async def list_user_participant_tags(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     if user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="You can only view your own participant tags")
     result = user_participant_tag_service.get_by_user_paginated(db, user_id, page, size, festival_id)
@@ -181,13 +171,9 @@ async def assign_user_participant_tag(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     require_role_scope_admin(db, current_user, upt.festival_id)
-    tag = participant_tag_service.get(db, upt.tag_id)
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
+    get_or_404(db, ParticipantTag, upt.tag_id, "Tag")
     data = upt.model_dump()
     data["user_id"] = user_id
     data["assigned_by"] = current_user.id
@@ -215,9 +201,7 @@ async def remove_user_participant_tag(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     existing = user_participant_tag_service.get(db, upt_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="User tag not found")

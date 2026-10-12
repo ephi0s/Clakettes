@@ -13,6 +13,9 @@ from app.services.festival_rulebook_service import FestivalRulebookService
 from app.services.festival_service import FestivalService
 from app.services.event_service import EventService
 from app.routers.permissions import can_edit_festival, require_festival_admin
+from app.routers.dependencies import get_or_404
+from app.models.festival import Festival
+from app.models.event import Event
 from app.routers.uploads import _save_file, ALLOWED_DOC_TYPES, MAX_DOC_SIZE
 
 router = APIRouter()
@@ -22,18 +25,13 @@ event_service = EventService()
 
 
 def _get_festival_or_404(db: Session, festival_id: int):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
-    return festival
+    return get_or_404(db, Festival, festival_id, "Festival")
 
 
 def _check_event_belongs(db: Session, festival_id: int, event_id: int | None):
     if event_id is None:
         return
-    event = event_service.get(db, event_id)
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+    event = get_or_404(db, Event, event_id, "Event")
     if event.festival_id != festival_id:
         raise HTTPException(status_code=400, detail="Event does not belong to this festival")
 

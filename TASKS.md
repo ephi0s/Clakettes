@@ -1,5 +1,6 @@
 # Mejoras — lista ordenada simple → complejo
-- [ ] 3. get_or_404: migrar 120 raise 404 inline restantes
+- [x] 3a. get_or_404 lote A (roles, user_roles, participant_tags, payments, delegations, festival_rulebooks)
+- [ ] 3b. get_or_404 lote B (events, chat, form_definitions, committees, festivals, locations, resto)
 - [ ] 4. paginate_filtered: migrar clones get_all_paginated
 - [ ] 5. SyncQueue _pluralize + whitelist entityType/operation
 - [ ] 6. python-jose → PyJWT (CVE-2026-85394 CRIT 9.1, sin parche)

@@ -20,6 +20,7 @@ from app.services.group_service import RoleDelegationService, RoleTransitionServ
 from app.services.user_service import UserService
 from app.services.role_service import RoleService
 from app.models.role_delegation import RoleDelegation
+from app.models.role import Role
 from app.routers.permissions import is_admin
 from app.routers.dependencies import get_current_user_optional, get_or_404
 from app.models.user import User
@@ -146,9 +147,7 @@ async def get_user_role_transitions(
 ):
     if user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     return transition_service.get_all_paginated(db, page, size, user_id=user_id)
 
 
@@ -162,12 +161,8 @@ async def check_user_role_eligibility(
     """Check if a user can be assigned a role (dependencies + conflicts)."""
     if user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, User, user_id, "User")
+    get_or_404(db, Role, role_id, "Role")
     return {
         "conflicts": role_service.check_role_conflicts(db, user_id, role_id),
         "dependencies": role_service.check_fulfilled_dependencies(db, user_id, role_id),

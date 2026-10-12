@@ -4,6 +4,8 @@ from app.database import get_db
 from app.auth import get_current_user
 from app.models.user import User
 from app.routers.permissions import is_admin, require_festival_admin
+from app.routers.dependencies import get_or_404
+from app.models.payment import Payment
 from app.schemas.payment import PaymentCheckoutRequest, PaymentPage, PaymentResponse
 from app.services.payment_service import PaymentService
 
@@ -71,9 +73,7 @@ async def list_payments(
 
 @router.get("/payments/{payment_id}", response_model=PaymentResponse)
 async def get_payment(payment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    obj = payment_service.get(db, payment_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Payment not found")
+    obj = get_or_404(db, Payment, payment_id, "Payment")
     _require_payment_access(db, current_user, obj)
     return obj
 
@@ -82,9 +82,7 @@ async def get_payment(payment_id: int, db: Session = Depends(get_db), current_us
 async def confirm_payment(
     payment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    obj = payment_service.get(db, payment_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Payment not found")
+    obj = get_or_404(db, Payment, payment_id, "Payment")
     _require_payment_access(db, current_user, obj)
     return payment_service.confirm(db, obj)
 
@@ -93,9 +91,7 @@ async def confirm_payment(
 async def refund_payment(
     payment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    obj = payment_service.get(db, payment_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Payment not found")
+    obj = get_or_404(db, Payment, payment_id, "Payment")
     if obj.registration_id is not None:
         from app.models.registration import FestivalRegistration
 

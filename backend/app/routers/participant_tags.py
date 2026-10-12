@@ -18,7 +18,10 @@ from app.schemas.participant_tag import (
 from app.services.participant_tag_service import ParticipantTagService, FestivalParticipantTagService
 from app.services.festival_service import FestivalService
 from app.routers.permissions import require_admin, require_festival_admin
+from app.routers.dependencies import get_or_404
 from app.models.user import User
+from app.models.participant_tag import ParticipantTag
+from app.models.festival import Festival
 
 router = APIRouter()
 
@@ -51,9 +54,7 @@ async def create_participant_tag(
 
 @router.get("/participant-tags/{tag_id}", response_model=ParticipantTagResponse)
 async def get_participant_tag(tag_id: int, db: Session = Depends(get_db)):
-    tag = tag_service.get(db, tag_id)
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
+    tag = get_or_404(db, ParticipantTag, tag_id, "Tag")
     return tag
 
 
@@ -91,9 +92,7 @@ async def list_festival_participant_tags(
     size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     result = festival_tag_service.get_by_festival_paginated(db, festival_id, page, size)
     enriched = []
     for fpt in result["items"]:
@@ -111,13 +110,9 @@ async def create_festival_participant_tag(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    tag = tag_service.get(db, fpt.tag_id)
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
+    get_or_404(db, ParticipantTag, fpt.tag_id, "Tag")
     data = fpt.model_dump()
     data["festival_id"] = festival_id
     existing = festival_tag_service.get_by_festival_and_tag(db, festival_id, fpt.tag_id)
@@ -135,9 +130,7 @@ async def update_festival_participant_tag(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     existing = festival_tag_service.get(db, fpt_id)
     if not existing or existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Festival tag not found")
@@ -153,9 +146,7 @@ async def delete_festival_participant_tag(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     existing = festival_tag_service.get(db, fpt_id)
     if not existing or existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Festival tag not found")

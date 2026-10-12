@@ -19,8 +19,10 @@ from app.services.role_service import RoleService, FestivalRoleService
 from app.services.user_service import UserService
 from app.services.festival_service import FestivalService
 from app.routers.permissions import is_admin, require_festival_admin
-from app.routers.dependencies import get_current_user_optional
+from app.routers.dependencies import get_current_user_optional, get_or_404
 from app.models.user import User
+from app.models.role import Role
+from app.models.festival import Festival
 
 router = APIRouter()
 
@@ -66,9 +68,7 @@ async def get_role_hierarchy(
 async def get_role(
     role_id: int, db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
 ):
-    role = role_service.get(db, role_id)
-    if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
+    role = get_or_404(db, Role, role_id, "Role")
     return role
 
 
@@ -77,9 +77,7 @@ async def update_role(
     role_id: int, role: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     require_admin(current_user)
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, role_id, "Role")
     updated = role_service.update(db, role_id, role)
     if not updated:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -89,9 +87,7 @@ async def update_role(
 @router.delete("/roles/{role_id}")
 async def delete_role(role_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     require_admin(current_user)
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, role_id, "Role")
     deleted = role_service.delete(db, role_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -106,9 +102,7 @@ async def list_festival_roles(
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     result = festival_role_service.get_by_festival_paginated(db, festival_id, page, size)
     enriched = []
     for fr in result["items"]:
@@ -124,13 +118,9 @@ async def create_festival_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    role_obj = role_service.get(db, fr.role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, fr.role_id, "Role")
     fr_data = FestivalRoleCreate(**{**fr.model_dump(), "festival_id": festival_id})
     return role_service.create_festival_role(db, fr_data)
 
@@ -141,9 +131,7 @@ async def initialize_festival_roles(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     if not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin only")
     return festival_role_service.initialize_default_festival_roles(db, festival_id)
@@ -157,9 +145,7 @@ async def update_festival_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     existing = festival_role_service.get(db, fr_id)
     if not existing or existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Festival role not found")
@@ -175,9 +161,7 @@ async def delete_festival_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     existing = festival_role_service.get(db, fr_id)
     if not existing or existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Festival role not found")
@@ -190,9 +174,7 @@ async def delete_festival_role(
 async def list_role_dependencies(
     role_id: int, db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
 ):
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, role_id, "Role")
     deps = festival_role_service.get_dependencies(db, role_id)
     return {"items": deps}
 
@@ -226,9 +208,7 @@ async def delete_role_dependency(
 async def list_role_conflicts(
     role_id: int, db: Session = Depends(get_db), current_user: User | None = Depends(get_current_user_optional)
 ):
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+    get_or_404(db, Role, role_id, "Role")
     conflicts = festival_role_service.get_conflicting_roles(db, role_id)
     return {"items": conflicts}
 
@@ -266,12 +246,8 @@ async def check_role_conflicts(
     current_user: User | None = Depends(get_current_user_optional),
 ):
     """Check if assigning this role to a user would cause conflicts."""
-    role_obj = role_service.get(db, role_id)
-    if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
-    user_obj = user_service.get(db, user_id)
-    if not user_obj:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, Role, role_id, "Role")
+    get_or_404(db, User, user_id, "User")
     return {
         "conflicts": festival_role_service.check_role_conflicts(db, user_id, role_id),
         "unfulfilled_dependencies": festival_role_service.check_fulfilled_dependencies(db, user_id, role_id),
