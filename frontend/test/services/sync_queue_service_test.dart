@@ -196,8 +196,7 @@ void main() {
       expect(fake.calls, 2);
     });
 
-    test('clear resets queue and pendingCount', () async {
-      final fake = _FakeApi()..throwError = true;
+    test('clear resets queue and pendingCount', () async {      final fake = _FakeApi()..throwError = true;
       final sync = SyncQueueService(api: fake);
       await sync.init();
       await sync.enqueue(
@@ -212,6 +211,36 @@ void main() {
       expect(sync.pendingCount, 0);
       expect(sync.hasPending, isFalse);
       expect(sync.pendingCount, 0);
+    });
+
+    test('enqueue rejects unknown entityType', () async {
+      final sync = SyncQueueService();
+      await sync.init();
+      expect(
+        () => sync.enqueue(entityType: 'event', operation: 'create', payload: {}),
+        throwsArgumentError,
+      );
+      expect(sync.hasPending, isFalse);
+    });
+
+    test('enqueue rejects unknown operation', () async {
+      final sync = SyncQueueService();
+      await sync.init();
+      expect(
+        () => sync.enqueue(entityType: 'festival', operation: 'publish', payload: {}),
+        throwsArgumentError,
+      );
+      expect(sync.hasPending, isFalse);
+    });
+
+    test('enqueue rejects update without entityId', () async {
+      final sync = SyncQueueService();
+      await sync.init();
+      expect(
+        () => sync.enqueue(entityType: 'user', operation: 'update', payload: {}),
+        throwsArgumentError,
+      );
+      expect(sync.hasPending, isFalse);
     });
   });
 }

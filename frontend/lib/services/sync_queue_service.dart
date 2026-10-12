@@ -82,6 +82,8 @@ class SyncQueueService {
   static const String _queueKey = 'operations';
   /// Número máximo de reintentos por operación.
   static const int maxAttempts = 3;
+  static const Set<String> allowedEntityTypes = {'festival', 'user', 'shortfilm', 'message'};
+  static const Set<String> allowedOperations = {'create', 'update', 'delete'};
 
   late Box _box;
   final ApiService _api;
@@ -120,6 +122,15 @@ class SyncQueueService {
     int? entityId,
     required Map<String, dynamic> payload,
   }) async {
+    if (!allowedEntityTypes.contains(entityType)) {
+      throw ArgumentError.value(entityType, 'entityType', 'Unsupported entity type');
+    }
+    if (!allowedOperations.contains(operation)) {
+      throw ArgumentError.value(operation, 'operation', 'Unsupported operation');
+    }
+    if ((operation == 'update' || operation == 'delete') && entityId == null) {
+      throw ArgumentError.value(entityId, 'entityId', 'entityId required for $operation');
+    }
     final queue = _loadQueue();
     queue.add(SyncOperation(
       id: _newId(),
@@ -145,13 +156,23 @@ class SyncQueueService {
       if (op.operation != operation) return false;
       if (op.status == SyncStatus.syncing) return false;
       if (entityId != null && op.entityId != entityId) return false;
-      if (payload != null &&
-          payload['content'] != null &&
-          op.payload['content'] != payload['content']) {
-        return false;
+      if (payload != null) {
+        if (payload['content'] != null) {
+          if (op.payload['content'] != payload['content']) return false;
+        } else if (!_mapEquals(op.payload, payload)) {
+          return false;
+        }
       }
       return true;
     });
+  }
+
+  bool _mapEquals(Map a, Map b) {
+    if (a.length != b.length) return false;
+    for (final k in a.keys) {
+      if (!b.containsKey(k) || b[k] != a[k]) return false;
+    }
+    return true;
   }
 
   /// Número de operaciones pendientes (y reintentables).
@@ -243,22 +264,21 @@ class SyncQueueService {
         if (op.entityId == null) throw Exception('entityId required for delete');
         await api.request('DELETE', path);
         break;
+      default:
+        throw Exception('unknown operation ${op.operation}');
     }
   }
 
   String _pluralize(String entity) {
-    switch (entity) {
-      case 'festival':
-        return 'festivals';
-      case 'user':
-        return 'users';
-      case 'shortfilm':
-        return 'shortfilms';
-      case 'message':
-        return 'chat/messages';
-      default:
-        return '${entity}s';
-    }
+    const paths = {
+      'festival': 'festivals',
+      'user': 'users',
+      'shortfilm': 'shortfilms',
+      'message': 'chat/messages',
+    };
+    final path = paths[entity];
+    if (path == null) throw Exception('unknown entityType $entity');
+    return path;
   }
 
   /// Elimina todas las operaciones en cola.
