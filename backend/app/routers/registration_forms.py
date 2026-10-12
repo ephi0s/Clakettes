@@ -37,8 +37,10 @@ from app.services.festival_service import FestivalService
 from app.services.user_service import UserService
 from app.services.export_service import export_registrations_csv, export_registrations_pdf
 from app.routers.permissions import is_admin, require_festival_admin
-from app.routers.dependencies import get_current_user_optional
+from app.routers.dependencies import get_current_user_optional, get_or_404
 from app.models.user import User
+from app.models.festival import Festival
+from app.models.registration import RegistrationForm, RegistrationFormLink, FestivalRegistration
 
 router = APIRouter()
 
@@ -59,9 +61,7 @@ async def list_registration_forms(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     return form_service.get_by_festival_paginated(db, festival_id, page, size, is_active)
 
 
@@ -72,9 +72,7 @@ async def create_registration_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     data = form.model_dump(exclude={"sections"})
     data["festival_id"] = festival_id
@@ -90,9 +88,7 @@ async def get_registration_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     form = form_service.get(db, form_id)
     if not form or form.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Form not found in this festival")
@@ -106,9 +102,7 @@ async def get_registration_form_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope (used by form detail screens)."""
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     return form
 
 
@@ -120,9 +114,7 @@ async def update_registration_form_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the form."""
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, existing.festival_id)
     return form_service.update(db, form_id, form)
 
@@ -134,9 +126,7 @@ async def delete_registration_form_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the form."""
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, existing.festival_id)
     form_service.delete(db, form_id)
     return {"message": "Registration form deleted"}
@@ -152,9 +142,7 @@ async def list_form_registrations(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the form."""
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     return reg_service.get_by_form_paginated(db, form_id, page, size, status)
 
@@ -167,12 +155,8 @@ async def update_registration_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    get_or_404(db, Festival, festival_id, "Festival")
+    existing = get_or_404(db, RegistrationForm, form_id, "Form")
     if existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Form not found in this festival")
     require_festival_admin(db, current_user, festival_id)
@@ -187,12 +171,8 @@ async def delete_registration_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    get_or_404(db, Festival, festival_id, "Festival")
+    existing = get_or_404(db, RegistrationForm, form_id, "Form")
     if existing.festival_id != festival_id:
         raise HTTPException(status_code=404, detail="Form not found in this festival")
     require_festival_admin(db, current_user, festival_id)
@@ -236,13 +216,9 @@ async def list_registration_form_links(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    get_or_404(db, RegistrationForm, form_id, "Form")
     return link_service.get_by_form_paginated(db, form_id, page, size, is_active)
 
 
@@ -258,13 +234,9 @@ async def generate_registration_link(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    get_or_404(db, RegistrationForm, form_id, "Form")
     data = link.model_dump()
     data["form_id"] = form_id
     link_create = RegistrationFormLinkCreate(**data)
@@ -279,9 +251,7 @@ async def delete_registration_form_link(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     link = link_service.get(db, link_id)
     if not link or link.form_id != form_id:
@@ -301,9 +271,7 @@ async def regenerate_registration_form_link(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     link = link_service.get(db, link_id)
     if not link or link.form_id != form_id:
@@ -333,9 +301,7 @@ async def list_registration_form_links_by_form(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the form."""
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     return link_service.get_by_form_paginated(db, form_id, page, size, is_active)
 
@@ -352,9 +318,7 @@ async def generate_registration_link_by_form(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the form."""
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     data = link.model_dump()
     data["form_id"] = form_id
@@ -368,12 +332,8 @@ async def delete_registration_form_link_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the link's form."""
-    link = link_service.get(db, link_id)
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
-    form = form_service.get(db, link.form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    link = get_or_404(db, RegistrationFormLink, link_id, "Link")
+    form = get_or_404(db, RegistrationForm, link.form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     link_service.delete(db, link_id)
     return {"message": "Link deleted"}
@@ -386,12 +346,8 @@ async def regenerate_registration_form_link_by_id(
     current_user: User = Depends(get_current_user),
 ):
     """Shorthand without festival scope; festival admin is resolved from the link's form."""
-    link = link_service.get(db, link_id)
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
-    form = form_service.get(db, link.form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    link = get_or_404(db, RegistrationFormLink, link_id, "Link")
+    form = get_or_404(db, RegistrationForm, link.form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     link.token = uuid.uuid4().hex
     link.use_count = 0
@@ -411,9 +367,7 @@ async def list_festival_registrations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     return reg_service.get_by_festival_paginated(db, festival_id, page, size, status, include_hidden)
 
@@ -424,9 +378,7 @@ async def export_festival_registrations_csv(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    festival = get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     csv_buffer = export_registrations_csv(festival)
     return StreamingResponse(
@@ -442,9 +394,7 @@ async def export_festival_registrations_pdf(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=404, detail="Festival not found")
+    festival = get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
     pdf_bytes = export_registrations_pdf(festival)
     return Response(
@@ -462,9 +412,7 @@ async def list_user_registrations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     if user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return reg_service.get_by_user_paginated(db, user_id, page, size)
@@ -478,9 +426,7 @@ async def modify_registration(
     current_user: User = Depends(get_current_user),
 ):
     """Allow upper hierarchy to modify any registration they manage."""
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     require_festival_admin(db, current_user, existing.festival_id)
     result = reg_service.modify_registration(db, registration_id, reg, modified_by=current_user.id)
     if not result:
@@ -494,9 +440,7 @@ async def approve_registration(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     require_festival_admin(db, current_user, existing.festival_id)
     result = reg_service.approve_registration(db, registration_id, approved_by=current_user.id)
     if not result:
@@ -511,9 +455,7 @@ async def reject_registration(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     require_festival_admin(db, current_user, existing.festival_id)
     result = reg_service.reject_registration(db, registration_id, rejected_by=current_user.id, reason=reason)
     if not result:
@@ -528,9 +470,7 @@ async def mark_registration_paid(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     require_festival_admin(db, current_user, existing.festival_id)
     result = reg_service.mark_paid(db, existing, method=payment.method, transaction_id=payment.transaction_id)
     if not result:
@@ -544,9 +484,7 @@ async def mark_registration_refunded(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     require_festival_admin(db, current_user, existing.festival_id)
     result = reg_service.mark_refunded(db, existing)
     if not result:
@@ -560,9 +498,7 @@ async def cancel_registration(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = reg_service.get(db, registration_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Registration not found")
+    existing = get_or_404(db, FestivalRegistration, registration_id, "Registration")
     if existing.user_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     reg_service.delete(db, registration_id)
@@ -576,9 +512,7 @@ async def create_registration_form_section(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
     return section_service.create_with_relations(db, form_id, section)
 
@@ -591,9 +525,7 @@ async def update_registration_form_section(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     existing = section_service.get(db, section_id)
     if not existing or existing.form_id != form_id:
         raise HTTPException(status_code=404, detail="Section not found in form")
@@ -609,9 +541,7 @@ async def delete_registration_form_section(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, RegistrationForm, form_id, "Form")
     existing = section_service.get(db, section_id)
     if not existing or existing.form_id != form_id:
         raise HTTPException(status_code=404, detail="Section not found in form")

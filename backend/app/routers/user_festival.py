@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
 from app.models.user import User
+from app.models.festival import Festival
+from app.routers.dependencies import get_or_404
 from app.routers.permissions import is_admin
 from app.services.user_festival_service import UserFestivalService
 from app.services.festival_service import FestivalService
@@ -18,9 +20,7 @@ user_service = UserService()
 async def join_festival(
     festival_id: int, role: str = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    festival = festival_service.get(db, festival_id)
-    if not festival:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Festival not found")
+    festival = get_or_404(db, Festival, festival_id, "Festival")
     allowed_roles = {"attendee"}
     if role is not None and not is_admin(current_user) and role not in allowed_roles:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Role not allowed for self join")

@@ -108,9 +108,7 @@ async def delete_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, existing)
     form_service.delete(db, form_id)
     return {"message": "Form deleted"}
@@ -123,9 +121,7 @@ async def clone_form(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = form_service.get(db, form_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, existing)
     cloned = form_service.clone_form(db, form_id, new_title=body.title)
     return cloned
@@ -138,9 +134,7 @@ async def create_page(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     page_dict = page.model_dump(exclude={"fields"})
     page_dict["form_id"] = form_id
@@ -173,9 +167,7 @@ async def update_page(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     existing = page_service.get(db, page_id)
     if not existing or existing.form_id != form_id:
@@ -191,9 +183,7 @@ async def delete_page(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     existing = page_service.get(db, page_id)
     if not existing or existing.form_id != form_id:
@@ -210,9 +200,7 @@ async def create_field(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     page = page_service.get(db, page_id)
     if not page or page.form_id != form_id:
@@ -240,13 +228,9 @@ async def update_field(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
-    existing = field_service.get(db, field_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Field not found")
+    get_or_404(db, FormField, field_id, "Field")
     updated = field_service.update(db, field_id, field)
     return updated
 
@@ -258,13 +242,9 @@ async def delete_field(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
-    existing = field_service.get(db, field_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Field not found")
+    get_or_404(db, FormField, field_id, "Field")
     field_service.delete(db, field_id)
     return {"message": "Field deleted"}
 
@@ -278,9 +258,7 @@ async def list_form_links(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     return link_service.get_by_form_paginated(db, form_id, page, size, is_active)
 
@@ -292,9 +270,7 @@ async def create_form_link(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     return link_service.generate_link(db, link, form_id=form_id)
 
@@ -306,9 +282,7 @@ async def delete_form_link(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     existing = link_service.get(db, link_id)
     if not existing or existing.form_id != form_id:
@@ -353,9 +327,7 @@ async def list_form_responses(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     query = db.query(FormResponse).filter(FormResponse.form_id == form_id)
     if status:
@@ -370,9 +342,7 @@ async def export_form_responses_csv_endpoint(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    form = form_service.get(db, form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    form = get_or_404(db, FormDefinition, form_id, "Form")
     require_form_admin(db, current_user, form)
     csv_buffer = export_form_responses_csv(db, form_id)
     return StreamingResponse(
@@ -389,12 +359,8 @@ async def update_form_response(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = response_service.get(db, response_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Response not found")
-    form = form_service.get(db, existing.form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormResponse, response_id, "Response")
+    form = get_or_404(db, FormDefinition, existing.form_id, "Form")
     require_form_admin(db, current_user, form)
     updated = response_service.update(db, response_id, response)
     return updated
@@ -406,12 +372,8 @@ async def approve_response(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = response_service.get(db, response_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Response not found")
-    form = form_service.get(db, existing.form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormResponse, response_id, "Response")
+    form = get_or_404(db, FormDefinition, existing.form_id, "Form")
     require_form_admin(db, current_user, form)
     result = response_service.approve_response(db, response_id, reviewer_id=current_user.id)
     if not result:
@@ -426,12 +388,8 @@ async def reject_response(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    existing = response_service.get(db, response_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Response not found")
-    form = form_service.get(db, existing.form_id)
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
+    existing = get_or_404(db, FormResponse, response_id, "Response")
+    form = get_or_404(db, FormDefinition, existing.form_id, "Form")
     require_form_admin(db, current_user, form)
     result = response_service.reject_response(db, response_id, reviewer_id=current_user.id, reason=reason)
     if not result:

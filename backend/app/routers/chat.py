@@ -16,6 +16,7 @@ from app.services.channel_service import ChannelService
 from app.services.group_service import GroupService
 from app.schemas.group import GroupCreate, GroupResponse, GroupsPage, GroupMemberResponse
 from app.models.channel import Channel
+from app.models.message import Message
 from app.routers.dependencies import get_or_404
 from app.routers.permissions import is_admin, require_channel_member
 
@@ -150,9 +151,7 @@ async def mark_message_read(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    message = service.get(db, message_id)
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
+    message = get_or_404(db, Message, message_id, "Message")
     if not is_admin(current_user) and message.sender_id != current_user.id and message.receiver_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not a participant of this conversation")
 
@@ -171,9 +170,7 @@ async def delete_message(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    message = service.get(db, message_id)
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
+    message = get_or_404(db, Message, message_id, "Message")
     if message.sender_id != current_user.id and not is_admin(current_user):
         raise HTTPException(status_code=403, detail="Only the sender can delete this message")
     deleted = service.delete(db, message_id)

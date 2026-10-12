@@ -15,6 +15,7 @@ from app.schemas.user_alias import (
 from app.services.user_alias_service import UserAliasService
 from app.services.user_service import UserService
 from app.models.user import User
+from app.routers.dependencies import get_or_404
 
 router = APIRouter()
 
@@ -30,9 +31,7 @@ async def list_user_aliases(
     context: str | None = None,
     db: Session = Depends(get_db),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     return user_alias_service.get_by_user_paginated(db, user_id, page, size, context)
 
 
@@ -43,9 +42,7 @@ async def create_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     data = alias.model_dump()
     data["user_id"] = user_id
     if not data.get("profile_token"):
@@ -62,9 +59,7 @@ async def update_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     existing = user_alias_service.get(db, alias_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="Alias not found")
@@ -79,9 +74,7 @@ async def delete_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get(db, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    get_or_404(db, User, user_id, "User")
     existing = user_alias_service.get(db, alias_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="Alias not found")
