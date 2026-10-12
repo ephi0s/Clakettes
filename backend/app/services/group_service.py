@@ -189,11 +189,10 @@ class RoleGroupService(BaseService[RoleGroup, RoleGroupCreate, RoleGroupUpdate])
         return db.query(RoleGroup).filter(RoleGroup.is_active).order_by(RoleGroup.sort_order).all()
 
     def get_all_paginated(self, db: Session, page: int, size: int, is_active: bool | None = None):
-        query = db.query(RoleGroup)
+        filters = []
         if is_active is not None:
-            query = query.filter(RoleGroup.is_active == is_active)
-        query = query.order_by(RoleGroup.sort_order)
-        return self.paginate(query, page, size)
+            filters.append(RoleGroup.is_active == is_active)
+        return self.paginate_filtered(db, page, size, *filters, order_by=RoleGroup.sort_order)
 
 
 class RoleGroupMembershipService(
@@ -314,15 +313,14 @@ class RoleDelegationService(BaseService[RoleDelegation, RoleDelegationCreate, Ro
         delegate_id: int | None = None,
         status: str | None = None,
     ):
-        query = db.query(RoleDelegation)
+        filters = []
         if delegator_id is not None:
-            query = query.filter(RoleDelegation.delegator_id == delegator_id)
+            filters.append(RoleDelegation.delegator_id == delegator_id)
         if delegate_id is not None:
-            query = query.filter(RoleDelegation.delegate_id == delegate_id)
+            filters.append(RoleDelegation.delegate_id == delegate_id)
         if status is not None:
-            query = query.filter(RoleDelegation.status == status)
-        query = query.order_by(RoleDelegation.created_at.desc())
-        return self.paginate(query, page, size)
+            filters.append(RoleDelegation.status == status)
+        return self.paginate_filtered(db, page, size, *filters, order_by=RoleDelegation.created_at.desc())
 
     def revoke(
         self,
@@ -419,10 +417,9 @@ class RoleTransitionService(BaseService[RoleTransition, RoleTransitionCreate, No
         user_id: int | None = None,
         transition_type: str | None = None,
     ):
-        query = db.query(RoleTransition)
+        filters = []
         if user_id is not None:
-            query = query.filter(RoleTransition.user_id == user_id)
+            filters.append(RoleTransition.user_id == user_id)
         if transition_type is not None:
-            query = query.filter(RoleTransition.transition_type == transition_type)
-        query = query.order_by(RoleTransition.transitioned_at.desc())
-        return self.paginate(query, page, size)
+            filters.append(RoleTransition.transition_type == transition_type)
+        return self.paginate_filtered(db, page, size, *filters, order_by=RoleTransition.transitioned_at.desc())

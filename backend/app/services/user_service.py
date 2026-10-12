@@ -30,12 +30,12 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
     def get_multi_paginated(
         self, db: Session, page: int = 1, size: int = 20, is_active: bool | None = None, role: str | None = None
     ):
-        query = db.query(User)
+        filters = []
         if is_active is not None:
-            query = query.filter(User.is_active == is_active)
+            filters.append(User.is_active == is_active)
         if role:
-            query = query.filter(User.role == role)
-        return self.paginate(query, page, size)
+            filters.append(User.role == role)
+        return self.paginate_filtered(db, page, size, *filters)
 
     def get_public_users(self, db: Session, page: int = 1, size: int = 50) -> list[dict]:
         """Return users with only their publicly visible fields."""

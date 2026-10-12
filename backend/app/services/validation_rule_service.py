@@ -31,12 +31,12 @@ class ValidationRuleService(BaseService[ValidationRule, ValidationRuleCreate, Va
         scope: str | None = None,
         scope_id: int | None = None,
     ) -> dict:
-        query = db.query(ValidationRule)
+        filters = []
         if scope:
-            query = query.filter(ValidationRule.scope == scope)
+            filters.append(ValidationRule.scope == scope)
         if scope_id is not None:
-            query = query.filter(ValidationRule.scope_id == scope_id)
-        return self.paginate(query.order_by(ValidationRule.display_order), page, size)
+            filters.append(ValidationRule.scope_id == scope_id)
+        return self.paginate_filtered(db, page, size, *filters, order_by=ValidationRule.display_order)
 
 
 class ValidationRuleGroupService(
@@ -52,10 +52,10 @@ class ValidationRuleGroupService(
         return query.all()
 
     def get_all_paginated(self, db: Session, page: int, size: int, scope: str | None = None) -> dict:
-        query = db.query(ValidationRuleGroup)
+        filters = []
         if scope:
-            query = query.filter(ValidationRuleGroup.scope == scope)
-        return self.paginate(query, page, size)
+            filters.append(ValidationRuleGroup.scope == scope)
+        return self.paginate_filtered(db, page, size, *filters)
 
     def create_with_rules(self, db: Session, obj_in: ValidationRuleGroupCreate):
         group_data = obj_in.model_dump(exclude={"rule_ids"})

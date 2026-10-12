@@ -5,6 +5,8 @@ Uses SQLAlchemy 2.0 style with Pydantic v2 model_dump().
 """
 
 from sqlalchemy.orm import Query, Session
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, status
 from typing import Generic, TypeVar, Type, Optional
 from pydantic import BaseModel
 from pydantic.networks import AnyUrl
@@ -52,7 +54,13 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         obj_data = self._dump(obj_in)
         db_obj = self.model(**obj_data)
         db.add(db_obj)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Resource already exists or violates constraints"
+            ) from e
         db.refresh(db_obj)
         return db_obj
 
@@ -68,7 +76,11 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         update_data = self._dump(obj_in, exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Update violates constraints") from e
         db.refresh(db_obj)
         return db_obj
 
@@ -116,6 +128,10 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = db.query(self.model)
         for criterion in filters:
             query = query.filter(criterion)
-        if order_by is not None:
+        if order_by is None:
+            pk = getattr(self.model, "id", None)
+            if pk is not None:
+                query = query.order_by(pk)
+        else:
             query = query.order_by(order_by)
         return self.paginate(query, page, size)

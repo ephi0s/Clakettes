@@ -32,10 +32,10 @@ class RoleService(BaseService[Role, RoleCreate, RoleUpdate]):
         return query.all()
 
     def get_all_paginated(self, db: Session, page: int, size: int, scope: str | None = None) -> dict:
-        query = db.query(Role)
+        filters = []
         if scope:
-            query = query.filter(Role.scope == RoleScope(scope))
-        return self.paginate(query, page, size)
+            filters.append(Role.scope == RoleScope(scope))
+        return self.paginate_filtered(db, page, size, *filters)
 
     def get_all_ordered_by_hierarchy(self, db: Session) -> list:
         return db.query(Role).order_by(Role.hierarchy_level.desc()).all()

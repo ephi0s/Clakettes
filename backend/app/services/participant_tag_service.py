@@ -24,10 +24,10 @@ class ParticipantTagService(BaseService[ParticipantTag, ParticipantTagCreate, Pa
         return query.order_by(ParticipantTag.sort_order).all()
 
     def get_all_paginated(self, db: Session, page: int, size: int, category: str | None = None) -> dict:
-        query = db.query(ParticipantTag)
+        filters = []
         if category:
-            query = query.filter(ParticipantTag.category == category)
-        return self.paginate(query.order_by(ParticipantTag.sort_order), page, size)
+            filters.append(ParticipantTag.category == category)
+        return self.paginate_filtered(db, page, size, *filters, order_by=ParticipantTag.sort_order)
 
     def get_by_name(self, db: Session, name: str):
         return db.query(ParticipantTag).filter(ParticipantTag.name == name).first()

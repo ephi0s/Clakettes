@@ -17,11 +17,11 @@ class ShortFilmService(BaseService[ShortFilm, ShortFilmCreate, ShortFilmUpdate])
         user_id: int | None = None,
         is_public: bool | None = None,
     ):
-        query = db.query(ShortFilm)
+        filters = []
         if festival_id:
-            query = query.filter(ShortFilm.festival_id == festival_id)
+            filters.append(ShortFilm.festival_id == festival_id)
         if user_id:
-            query = query.filter(ShortFilm.user_id == user_id)
+            filters.append(ShortFilm.user_id == user_id)
         if is_public is not None:
-            query = query.filter(ShortFilm.is_public == is_public)
-        return self.paginate(query, page, size)
+            filters.append(ShortFilm.is_public == is_public)
+        return self.paginate_filtered(db, page, size, *filters)

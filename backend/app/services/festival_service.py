@@ -9,10 +9,10 @@ class FestivalService(BaseService[Festival, FestivalCreate, FestivalUpdate]):
         super().__init__(Festival)
 
     def get_multi_paginated(self, db: Session, page: int = 1, size: int = 20, is_active: bool | None = None):
-        query = db.query(Festival)
+        filters = []
         if is_active is not None:
-            query = query.filter(Festival.is_active == is_active)
-        return self.paginate(query, page, size)
+            filters.append(Festival.is_active == is_active)
+        return self.paginate_filtered(db, page, size, *filters)
 
     def get_multi_by_ids(self, db: Session, festival_ids: list[int]) -> list[Festival]:
         if not festival_ids:

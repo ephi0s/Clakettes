@@ -21,22 +21,21 @@ class MessageService(BaseService[Message, MessageCreate, MessageUpdate]):
         unread_only: bool = False,
         user_id: int | None = None,
     ):
-        query = db.query(Message)
+        filters = []
         if user_id is not None and group_id is None and channel_id is None:
             # DM scope: restrict to conversations where the caller is a participant
-            query = query.filter(or_(Message.sender_id == user_id, Message.receiver_id == user_id))
+            filters.append(or_(Message.sender_id == user_id, Message.receiver_id == user_id))
         if sender_id:
-            query = query.filter(Message.sender_id == sender_id)
+            filters.append(Message.sender_id == sender_id)
         if receiver_id:
-            query = query.filter(Message.receiver_id == receiver_id)
+            filters.append(Message.receiver_id == receiver_id)
         if group_id:
-            query = query.filter(Message.group_id == group_id)
+            filters.append(Message.group_id == group_id)
         if channel_id:
-            query = query.filter(Message.channel_id == channel_id)
+            filters.append(Message.channel_id == channel_id)
         if unread_only:
-            query = query.filter(~Message.is_read)
-        query = query.order_by(Message.created_at.desc())
-        return self.paginate(query, page, size)
+            filters.append(~Message.is_read)
+        return self.paginate_filtered(db, page, size, *filters, order_by=Message.created_at.desc())
 
     def mark_as_read(self, db: Session, message_id: int) -> Message | None:
         message = self.get(db, message_id)

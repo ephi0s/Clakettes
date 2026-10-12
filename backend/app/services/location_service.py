@@ -19,20 +19,17 @@ class LocationService(BaseService[Location, LocationCreate, LocationUpdate]):
         is_active: bool | None = None,
         badge: str | None = None,
     ):
-        query = db.query(Location)
+        filters = []
         if search:
             like = f"%{search}%"
-            query = query.filter(
-                Location.name.ilike(like) | Location.description.ilike(like) | Location.address.ilike(like)
-            )
+            filters.append(Location.name.ilike(like) | Location.description.ilike(like) | Location.address.ilike(like))
         if tag:
-            query = query.filter(Location.tags.any(tag))
+            filters.append(Location.tags.any(tag))
         if is_active is not None:
-            query = query.filter(Location.is_active == is_active)
+            filters.append(Location.is_active == is_active)
         if badge:
-            query = query.filter(Location.badge == badge)
-        query = query.order_by(Location.name.asc())
-        return self.paginate(query, page, size)
+            filters.append(Location.badge == badge)
+        return self.paginate_filtered(db, page, size, *filters, order_by=Location.name.asc())
 
     def get_with_details(self, db: Session, location_id: int):
         return (
