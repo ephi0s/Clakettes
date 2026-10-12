@@ -19,8 +19,9 @@ class Settings(BaseSettings):
     Attributes:
         APP_ENV: Runtime environment (development, production, ...).
         DATABASE_URL: SQLAlchemy database connection string.
-        SECRET_KEY: Key used for JWT signing.
-        ALGORITHM: JWT signing algorithm (default HS256).
+        SECRET_KEY: Key used for JWT signing (required, no default).
+        JWT_ISSUER: Expected JWT issuer claim.
+        JWT_AUDIENCE: Expected JWT audience claim.
         ACCESS_TOKEN_EXPIRE_MINUTES: JWT expiration in minutes.
         CORS_ORIGINS: Optional comma-separated allowed origins.
         PUBLIC_BASE_URL: Public origin of the site, without a trailing slash.
@@ -35,12 +36,13 @@ class Settings(BaseSettings):
     #   mariadb+pymysql://user:pass@host:3306/dbname
     DATABASE_URL: str = "sqlite:///./clakettes.db"
 
-    # JWT secret key - MUST be changed in production!
+    # JWT secret key — required, no default (fail fast without env).
     # Generate with: python -c "import secrets; print(secrets.token_urlsafe(64))"
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    SECRET_KEY: str
 
-    # JWT algorithm (HS256 = symmetric, RS256 = asymmetric)
-    ALGORITHM: str = "HS256"
+    # JWT issuer/audience claims (validated on decode).
+    JWT_ISSUER: str = "clakettes"
+    JWT_AUDIENCE: str = "clakettes-api"
 
     # Access token lifetime in minutes (default 30)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30

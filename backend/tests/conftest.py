@@ -7,6 +7,7 @@ import tempfile
 # Set up test environment BEFORE importing app modules
 os.environ["TESTING"] = "true"
 os.environ["APP_ENV"] = "testing"
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key")
 
 # Use shared in-memory SQLite for consistent behavior across test connections
 TEST_SQLITE_URL = "sqlite:///:memory:"

@@ -35,6 +35,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
+JWT_ALGORITHM = "HS256"
+
 
 def _hash_token(token: str) -> str:
     """SHA-256 hash of a token for secure storage.
@@ -64,8 +66,16 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire, "type": "access", "jti": secrets.token_hex(8)})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    to_encode.update(
+        {
+            "exp": expire,
+            "type": "access",
+            "jti": secrets.token_hex(8),
+            "iss": settings.JWT_ISSUER,
+            "aud": settings.JWT_AUDIENCE,
+        }
+    )
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def create_refresh_token() -> str:
@@ -149,7 +159,14 @@ def validate_access_token(db: Session, token: str) -> tuple[int, UserSession] | 
     Returns ``None`` when validation fails.
     """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+            issuer=settings.JWT_ISSUER,
+            audience=settings.JWT_AUDIENCE,
+            options={"require": ["exp", "iss", "aud"]},
+        )
         user_id: int | None = payload.get("user_id")
         if user_id is None or payload.get("type") != "access":
             return None

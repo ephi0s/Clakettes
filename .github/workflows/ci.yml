@@ -127,6 +127,7 @@ jobs:
       - name: Run migrations
         env:
           DATABASE_URL: mariadb+pymysql://clakettes_user:clakettes_password@127.0.0.1:3306/clakettes_test
+          SECRET_KEY: "test-secret-key-for-ci-only"
         run: alembic upgrade head
 
   frontend-test:

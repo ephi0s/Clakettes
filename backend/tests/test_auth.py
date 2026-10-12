@@ -85,14 +85,18 @@ class TestTokenTypeValidation:
 
     @staticmethod
     def _forge_token(user_id, token_type):
+        from app.auth import JWT_ALGORITHM
+
         payload = {
             "sub": str(user_id),
             "user_id": user_id,
             "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+            "iss": settings.JWT_ISSUER,
+            "aud": settings.JWT_AUDIENCE,
         }
         if token_type is not None:
             payload["type"] = token_type
-        return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm=JWT_ALGORITHM)
 
     def _register_session_for_token(self, db_session, user_id, token):
         db_session.add(

@@ -315,7 +315,7 @@ class TestWebSocketAuth:
         """A refresh-type JWT must not be able to connect to the WebSocket."""
         from datetime import datetime, timedelta, timezone
         import jwt
-        from app.auth import _hash_token
+        from app.auth import JWT_ALGORITHM, _hash_token
         from app.config import settings
         from app.models.user_session import UserSession
 
@@ -326,9 +326,11 @@ class TestWebSocketAuth:
                 "user_id": user.id,
                 "type": "refresh",
                 "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+                "iss": settings.JWT_ISSUER,
+                "aud": settings.JWT_AUDIENCE,
             },
             settings.SECRET_KEY,
-            algorithm=settings.ALGORITHM,
+            algorithm=JWT_ALGORITHM,
         )
         db_session.add(
             UserSession(

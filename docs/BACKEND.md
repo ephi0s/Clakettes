@@ -1,8 +1,8 @@
-# Clakettes Backend — Technical Documentation
+# Clakettes Backend — Documentación técnica
 
-FastAPI backend for the Clakettes film festival management platform.
+Backend FastAPI para la plataforma de gestión de festivales de cine Clakettes.
 
-## Quick Start
+## Inicio rápido
 
 ```bash
 cd backend
@@ -17,15 +17,15 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ---
 
-## Architecture
+## Arquitectura
 
-### Layered Structure
+### Estructura por capas
 
 ```
 Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
 ```
 
-| Layer | Location | Responsibility |
+| Capa | Ubicación | Responsabilidad |
 |-------|----------|----------------|
 | **Routers** | `app/routers/` | HTTP endpoints, request/response validation, pagination |
 | **Services** | `app/services/` | Business logic, CRUD operations, cross-cutting concerns |
@@ -35,40 +35,42 @@ Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
 | **Config** | `app/config.py` | Pydantic Settings from `.env` |
 | **Database** | `app/database.py` | Engine, session factory, `get_db()` dependency |
 
-### Key Design Principles
+### Principios clave de diseño
 
-1. **Routers are thin** — delegate to services
-2. **Services are stateless** — receive `db: Session` via dependency injection
-3. **Models inherit `BaseModel`** — `id`, `created_at`, `updated_at` on all entities
-4. **Enums centralized** — `app/enums.py` shared across models/schemas
-5. **Generic CRUD base** — `BaseService` in `app/services/base_service.py`
+1. **Routers ligeros** — delegan en los servicios
+2. **Servicios sin estado** — reciben `db: Session` mediante inyección de dependencias
+3. **Los modelos heredan `BaseModel`** — `id`, `created_at`, `updated_at` en todas las entidades
+4. **Enums centralizados** — `app/enums.py` compartido entre modelos y esquemas
+5. **Base CRUD genérica** — `BaseService` en `app/services/base_service.py`
 
 ---
 
-## Configuration
+## Configuración
 
-All settings via `backend/.env` (loaded by `pydantic-settings`):
+Toda la configuración se realiza mediante `backend/.env` (cargado por `pydantic-settings`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DATABASE_URL` | `sqlite:///./clakettes.db` | SQLAlchemy connection string |
-| `SECRET_KEY` | `your-secret-key-change-in-production` | JWT signing key |
-| `ALGORITHM` | `HS256` | JWT algorithm |
+| `SECRET_KEY` | (required, no default) | JWT signing key |
+| `JWT_ISSUER` | `clakettes` | JWT issuer claim |
+| `JWT_AUDIENCE` | `clakettes-api` | JWT audience claim |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Comma-separated allowed origins |
 | `PORT_BACKEND` | `8000` | Server port (used by Docker/start scripts) |
 
-**Production `.env` example:**
+**Ejemplo de `.env` en producción:**
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
 SECRET_KEY=super-secret-64-char-urlsafe-string
-ALGORITHM=HS256
+JWT_ISSUER=clakettes
+JWT_AUDIENCE=clakettes-api
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 CORS_ORIGINS=https://app.example.com,https://admin.example.com
 ```
 
-Generate a strong `SECRET_KEY`:
+Generen una clave `SECRET_KEY` robusta:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(64))"
@@ -76,18 +78,18 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 
 ---
 
-## Database
+## Base de datos
 
-### Dual Database Support
+### Compatibilidad con dos bases de datos
 
 | Environment | Database | Connection String |
 |-------------|----------|-------------------|
 | Development | SQLite | `sqlite:///./data/clakettes.db` |
 | Production | MariaDB | `mariadb+pymysql://user:pass@host:3306/db` |
 
-### Base Model
+### Modelo base
 
-All models inherit from `BaseModel` (`app/models/base.py`):
+Todos los modelos heredan de `BaseModel` (`app/models/base.py`):
 
 ```python
 class BaseModel(Base):
@@ -97,7 +99,7 @@ class BaseModel(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 ```
 
-### Migrations (Alembic)
+### Migraciones (Alembic)
 
 ```bash
 cd backend
@@ -115,15 +117,15 @@ alembic downgrade -1
 alembic current
 ```
 
-**Migration notes (SQLite ↔ MariaDB):**
+**Notas de migración (SQLite ↔ MariaDB):**
 - SQLite `INTEGER PRIMARY KEY` → MariaDB `INT AUTO_INCREMENT`
 - SQLite `TEXT` → MariaDB `TEXT`/`VARCHAR`
 - SQLite `DATETIME` (stored as TEXT) → MariaDB native `DATETIME`
-- Export/import scripts in `backend/tools/` handle type conversions
+- Los scripts de exportación/importación en `backend/tools/` gestionan las conversiones de tipos
 
-### Models Overview (31 models)
+### Resumen de modelos (31 modelos)
 
-| Model | Table | Key Relationships |
+| Modelo | Tabla | Relaciones clave |
 |-------|-------|-------------------|
 | `Festival` | `festivals` | ShortFilms, Users (M2M), Roles, Events, Awards, Committees, Locations |
 | `User` | `users` | ShortFilms, Festivals (M2M), Sessions, Keys, Aliases, Roles, Tags |
@@ -158,20 +160,20 @@ alembic current
 | `EventTicketType` | `event_ticket_types` | Event ticket categories |
 | `EventSeat` | `event_seats` | Seat map with positions |
 
-See [DATABASE.md](DATABASE.md) for complete schema documentation with ER diagrams.
+Consulten [DATABASE.md](DATABASE.md) para la documentación completa del esquema con diagramas ER.
 
 ---
 
-## Authentication
+## Autenticación
 
-### JWT + Session Tracking
+### JWT + Seguimiento de sesiones
 
 | Token Type | Format | TTL | Storage |
 |------------|--------|-----|---------|
 | **Access Token** | JWT (HS256) | 30 min (configurable) | Client memory |
 | **Refresh Token** | Opaque (SHA-256 hash in DB) | 30 days | `UserSession.refresh_token_hash` |
 
-### Login Flow
+### Flujo de inicio de sesión
 
 ```
 POST /api/users/login
@@ -179,13 +181,13 @@ POST /api/users/login
 → 200 {access_token, refresh_token, token_type: "bearer", user: {...}}
 ```
 
-### Token Usage
+### Uso del token
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
-### Refresh Flow
+### Flujo de renovación
 
 ```
 POST /api/users/refresh
@@ -193,30 +195,30 @@ POST /api/users/refresh
 → 200 {access_token, refresh_token, token_type: "bearer"}
 ```
 
-### Session Management
+### Gestión de sesiones
 
-- `GET /api/auth/sessions` — List active sessions
-- `DELETE /api/auth/sessions/{session_id}` — Revoke session
-- Session created on login with device info (IP, UA, name)
-- Tokens rotated on refresh; old tokens invalidated
+- `GET /api/auth/sessions` — Listar las sesiones activas
+- `DELETE /api/auth/sessions/{session_id}` — Revocar la sesión
+- La sesión se crea al iniciar sesión con información del dispositivo (IP, UA, nombre)
+- Los tokens se rotan al renovar; los tokens antiguos quedan invalidados
 
-### Password Hashing
+### Hash de contraseñas
 
-- **bcrypt** via `passlib` (rounds=12)
-- Hash stored in `User.password_hash`
-- Verified via `pwd_context.verify(plain, hash)`
+- **bcrypt** mediante `passlib` (rounds=12)
+- Hash guardado en `User.password_hash`
+- Se verifica mediante `pwd_context.verify(plain, hash)`
 
-### Rate Limiting
+### Límite de peticiones
 
-- **100 requests / 60 seconds** per IP (SQLite-backed)
-- Applied via `RateLimitMiddleware` in `main.py`
-- Disabled when `TESTING=true` env var set
+- **100 requests / 60 seconds** por IP (con respaldo en SQLite)
+- Se aplica mediante `RateLimitMiddleware` en `main.py`
+- Se desactiva cuando se establece la variable de entorno `TESTING=true`
 
 ---
 
-## API Endpoints
+## Endpoints de la API
 
-### Router Registry (`app/main.py`)
+### Registro de routers (`app/main.py`)
 
 | Router | Prefix | Tags | Description |
 |--------|--------|------|-------------|
@@ -229,7 +231,7 @@ POST /api/users/refresh
 | `user_festival` | `/api/festivals` | user-festival | Join/leave, members |
 | `uploads` | `/api/uploads` | uploads | Avatar upload |
 | `search` | `/api/search` | search | Global search |
-| `admin` | `/api/admin` | admin | Stats, seed, activity |
+| `admin` | `/api/admin` | admin | Stats, tables, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, unread count |
 | `roles` | `/api` | roles | Roles, groups, deps, conflicts |
 | `participant_tags` | `/api` | participant-tags | Tags, festival config |
@@ -250,17 +252,17 @@ POST /api/users/refresh
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Shortfilm locations |
 | `form_definitions` | `/api` | forms | Form builder |
 
-Total: 32 routers
+Total: 33 routers
 
-### Pagination & Filtering
+### Paginación y filtrado
 
-Standard query params on list endpoints:
+Parámetros de consulta estándar en los endpoints de listado:
 
 ```
 GET /api/festivals/?page=1&size=20&search=cannes&is_active=true
 ```
 
-Response envelope:
+Envolvente de respuesta:
 
 ```json
 {
@@ -274,9 +276,9 @@ Response envelope:
 
 ---
 
-## Real-time Chat
+## Chat en tiempo real
 
-### WebSocket Backend (`app/chat_backend/`)
+### Backend WebSocket (`app/chat_backend/`)
 
 | Component | Description |
 |-----------|-------------|
@@ -286,14 +288,14 @@ Response envelope:
 
 ### Endpoints
 
-| Method | Path | Description |
+| Método | Ruta | Descripción |
 |--------|------|-------------|
 | `GET` | `/api/chat/ws` | WebSocket connection (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Send message (REST fallback) |
 | `GET` | `/api/chat/messages` | Paginated history |
 | `PATCH` | `/api/chat/messages/{id}/read` | Mark read |
 
-### Message Types
+### Tipos de mensaje
 
 ```python
 class MessageType(str, Enum):
@@ -309,15 +311,15 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- X25519 key exchange via `/api/users/{id}/keys`
-- Public keys stored in `UserKey` (one active per user)
-- Encryption/decryption in frontend (`e2ee_service.dart`)
+- Intercambio de claves X25519 mediante `/api/users/{id}/keys`
+- Claves públicas guardadas en `UserKey` (una activa por usuario)
+- Cifrado/descifrado en el frontend (`e2ee_service.dart`)
 
 ---
 
-## File Uploads
+## Subida de archivos
 
-### Avatar Upload
+### Subida de avatar
 
 ```
 POST /api/uploads/avatar
@@ -327,26 +329,25 @@ Authorization: Bearer <token>
 file: <image/*>
 ```
 
-- Saved to `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
-- Served statically at `/uploads/avatars/...`
-- Max size: 10 MB (enforced by `RequestSizeLimitMiddleware`)
+- Guardado en `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
+- Servido de forma estática en `/uploads/avatars/...`
+- Tamaño máximo: 10 MB (aplicado por `RequestSizeLimitMiddleware`)
 
 ---
 
-## Admin Endpoints
+## Endpoints de administración
 
-Require `role=admin` (checked in `admin_service.py`):
+Requiere `role=admin` (comprobado en `admin_service.py`):
 
-| Endpoint | Description |
+| Endpoint | Descripción |
 |----------|-------------|
 | `GET /api/admin/stats` | Platform statistics |
-| `GET /api/admin/activity` | Recent activity feed |
-| `POST /api/admin/seed` | Seed development data |
-| `GET /api/admin/users` | Paginated user list with filters |
+| `GET /api/admin/tables` | Row counts per table |
+| `GET /api/admin/audit-log` | Audit trail (filtros `action`, `actor_user_id`) |
 
 ---
 
-## Testing
+## Pruebas
 
 ```bash
 cd backend
@@ -361,7 +362,7 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Test config** (`pyproject.toml` / `pytest.ini`):
+**Configuración de pruebas** (`pyproject.toml` / `pytest.ini`):
 
 ```ini
 [pytest]
@@ -372,15 +373,15 @@ python_functions = test_*
 ```
 
 **Fixtures** (`tests/conftest.py`):
-- `db_session` — SQLite in-memory session
-- `client` — `AsyncClient` (httpx) against test app
-- `auth_headers` — Pre-authenticated headers
+- `db_session` — sesión SQLite en memoria
+- `client` — `AsyncClient` (httpx) contra la app de pruebas
+- `auth_headers` — cabeceras ya autenticadas
 
-**Note**: There's a duplicate `conftest.py` in `tests/services/` — should be consolidated.
+**Nota**: Hay un `conftest.py` duplicado en `tests/services/` — deberían unificarlo.
 
 ---
 
-## Linting & Formatting
+## Lint y formato
 
 ```bash
 # Check
@@ -393,7 +394,7 @@ ruff check . --fix
 ruff format .
 ```
 
-**Config** (`pyproject.toml`):
+**Configuración** (`pyproject.toml`):
 
 ```toml
 [tool.ruff]
@@ -405,9 +406,9 @@ ignore = ["E501", "SIM102", "SIM103"]
 
 ---
 
-## Development Workflow
+## Flujo de desarrollo
 
-### Local Development
+### Desarrollo local
 
 ```bash
 # Terminal 1: Backend
@@ -419,7 +420,7 @@ cd frontend
 flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=http://localhost:8000/api
 ```
 
-### Docker Development
+### Desarrollo con Docker
 
 ```bash
 # From project root
@@ -427,20 +428,13 @@ docker compose up        # Backend:8000, Frontend:3000
 docker compose --profile db up  # + MariaDB:3306
 ```
 
-### Database Seeding
+### Carga inicial de la base de datos
 
-```bash
-cd backend
-python -m app.scripts.seed_dev_data
-```
+No hay script de seed: en desarrollo la app crea el admin inicial (`admin` /
+`setup`, cambien la contraseña al entrar) y las tablas mediante `create_all`. En producción los
+datos llegan por la API y el esquema solo mediante Alembic.
 
-Or via API:
-```bash
-curl -X POST http://localhost:8000/api/admin/seed \
-  -H "Authorization: Bearer <admin_token>"
-```
-
-### Common Commands
+### Comandos habituales
 
 ```bash
 # Generate Hive adapters (frontend)
@@ -461,15 +455,15 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Project Structure
+## Estructura del proyecto
 
 ```
 backend/
 ├── app/
-│   ├── models/              # 33 SQLAlchemy models
-│   ├── schemas/             # 32 Pydantic schemas
-│   ├── services/            # 33 business logic services
-│   ├── routers/             # 35 API routers (33 con APIRouter)
+│   ├── models/              # 34 SQLAlchemy models
+│   ├── schemas/             # 33 Pydantic schemas
+│   ├── services/            # 36 business logic services
+│   ├── routers/             # 36 API routers (33 con APIRouter)
 │   ├── chat_backend/        # WebSocket chat implementation
 │   ├── auth.py              # JWT + session auth
 │   ├── config.py            # Pydantic Settings
@@ -478,9 +472,9 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate limiter
 │   ├── enums.py             # Shared enums
 │   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (15 versions)
+├── alembic/                 # Migrations (18 versions)
 ├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (33 files)
+├── tests/                   # pytest tests (37 files)
 ├── uploads/                 # Static file uploads
 ├── .env.example             # Config template
 ├── requirements.txt         # Production deps
@@ -493,26 +487,26 @@ Docs en `docs/BACKEND.md` (este archivo) y `docs/DATABASE.md`.
 
 ---
 
-## Deployment
+## Despliegue
 
-### Docker (Production)
+### Docker (Producción)
 
 ```yaml
 # docker-compose.yml uses --profile prod
 docker compose --profile prod up -d
 ```
 
-Services:
-- `backend-prod` — FastAPI (Uvicorn workers) on :8000
-- `frontend-prod` — Nginx + Flutter web on :80
-- `db` — MariaDB 11 (healthy check)
+Servicios:
+- `backend-prod` — FastAPI (workers Uvicorn) en :8000
+- `frontend-prod` — Nginx + Flutter web en :80
+- `db` — MariaDB 11 (comprobación de estado)
 
-Profiles available:
-- `dev` (default): backend + frontend dev servers
-- `db`: adds MariaDB container
-- `prod`: production stack with nginx
+Perfiles disponibles:
+- `dev` (predeterminado): servidores de desarrollo de backend y frontend
+- `db`: añade el contenedor MariaDB
+- `prod`: pila de producción con nginx
 
-### Environment Variables (Production)
+### Variables de entorno (Producción)
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
@@ -520,7 +514,7 @@ SECRET_KEY=<64-char-urlsafe>
 CORS_ORIGINS=https://app.example.com
 ```
 
-### Health Check
+### Comprobación de estado
 
 ```bash
 curl http://localhost:8000/health
@@ -529,31 +523,31 @@ curl http://localhost:8000/health
 
 ---
 
-## Security Checklist
+## Lista de comprobación de seguridad
 
-- [ ] Change `SECRET_KEY` in production
-- [ ] Set `CORS_ORIGINS` to specific domains
-- [ ] Use MariaDB (not SQLite) in production
-- [ ] Enable HTTPS (reverse proxy: nginx/Traefik)
-- [ ] Set `TrustedHostMiddleware` allowed hosts
-- [ ] Rotate JWT keys periodically
-- [ ] Monitor rate limiter logs
-- [ ] Review admin user password after first login
+- [ ] Cambien `SECRET_KEY` en producción
+- [ ] Establezcan `CORS_ORIGINS` en dominios específicos
+- [ ] Usen MariaDB (no SQLite) en producción
+- [ ] Habiliten HTTPS (proxy inverso: nginx/Traefik)
+- [ ] Configuren los hosts permitidos en `TrustedHostMiddleware`
+- [ ] Roten las claves JWT periódicamente
+- [ ] Vigilen los registros del limitador de peticiones
+- [ ] Revisen la contraseña del usuario admin tras el primer inicio de sesión
 
 ---
 
-## Extending the API
+## Ampliar la API
 
-### Adding a New Resource
+### Añadir un recurso nuevo
 
-1. **Model** — `app/models/new_resource.py` (inherit `BaseModel`)
-2. **Schema** — `app/schemas/new_resource.py` (Pydantic)
-3. **Service** — `app/services/new_resource_service.py` (extend `BaseService`)
-4. **Router** — `app/routers/new_resource.py` (include in `main.py`)
-5. **Migration** — `alembic revision --autogenerate -m "add new_resource"`
-6. **Tests** — `tests/test_new_resource.py`
+1. **Modelo** — `app/models/new_resource.py` (hereda `BaseModel`)
+2. **Esquema** — `app/schemas/new_resource.py` (Pydantic)
+3. **Servicio** — `app/services/new_resource_service.py` (extiende `BaseService`)
+4. **Router** — `app/routers/new_resource.py` (incluir en `main.py`)
+5. **Migración** — `alembic revision --autogenerate -m "add new_resource"`
+6. **Pruebas** — `tests/test_new_resource.py`
 
-### Adding a Custom Endpoint to Existing Router
+### Añadir un endpoint personalizado a un router existente
 
 ```python
 # In router file
@@ -569,7 +563,7 @@ async def custom_action(
 
 ---
 
-## Troubleshooting
+## Resolución de problemas
 
 | Issue | Solution |
 |-------|----------|
@@ -583,7 +577,7 @@ async def custom_action(
 
 ---
 
-## References
+## Referencias
 
 - [FastAPI Docs](https://fastapi.tiangolo.com/)
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
