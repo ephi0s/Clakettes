@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Consulta a referencia completa do arranque e despregamento en [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.gl.md) e [docs/USO.md](docs/USO.gl.md).
+Consulta a referencia completa do arranque e despregamento en [docs/gl/HERRAMIENTAS.md](docs/gl/HERRAMIENTAS.md) e [docs/gl/USO.md](docs/gl/USO.md).
 
 ## Variables de entorno e configuración
 
@@ -107,40 +107,40 @@ O arranque automático do proxecto xa configura isto cando se usa `start.*`.
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/gl/API.md` regenerado)
 
 ## Documentación do proxecto
 
-O mapa de documentación está en [docs/README.md](docs/README.gl.md). É a mellor entrada para cada tipo de usuario:
+O mapa de documentación está en [docs/gl/README.md](docs/gl/README.md). É a mellor entrada para cada tipo de usuario:
 
-- [docs/USO.md](docs/USO.gl.md): arranque, operación, entorno e uso diario
-- [docs/ADMINISTRACION.md](docs/ADMINISTRACION.gl.md): administración, contas e despregamento
-- [docs/INFRAESTRUCTURA.md](docs/INFRAESTRUCTURA.gl.md): Docker, portos, CI e infra
-- [docs/SEGURIDAD.md](docs/SEGURIDAD.gl.md): tokens, políticas e checklist de produción
-- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.gl.md): arquitectura backend/frontend e fluxos clave
-- [docs/API.md](docs/API.gl.md): referencia de endpoints
-- [docs/DESARROLLO.md](docs/DESARROLLO.gl.md): como engadir endpoints ou pantallas
-- [docs/BACKEND.md](docs/BACKEND.gl.md): guía do backend (capas, config, auth, tests)
-- [docs/DATABASE.md](docs/DATABASE.gl.md): esquema e migracións
+- [docs/gl/USO.md](docs/gl/USO.md): arranque, operación, entorno e uso diario
+- [docs/gl/ADMINISTRACION.md](docs/gl/ADMINISTRACION.md): administración, contas e despregamento
+- [docs/gl/INFRAESTRUCTURA.md](docs/gl/INFRAESTRUCTURA.md): Docker, portos, CI e infra
+- [docs/gl/SEGURIDAD.md](docs/gl/SEGURIDAD.md): tokens, políticas e checklist de produción
+- [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md): arquitectura backend/frontend e fluxos clave
+- [docs/gl/API.md](docs/gl/API.md): referencia de endpoints
+- [docs/gl/DESARROLLO.md](docs/gl/DESARROLLO.md): como engadir endpoints ou pantallas
+- [docs/gl/BACKEND.md](docs/gl/BACKEND.md): guía do backend (capas, config, auth, tests)
+- [docs/gl/DATABASE.md](docs/gl/DATABASE.md): esquema e migracións
 
 Ademais, o punto de partida para desenvolvemento e convención de proxecto é [AGENTS.md](AGENTS.md).
 
 ### Ver tamén
 
-- [docs/README.md](docs/README.gl.md): índice xeral por audiencia
-- [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.gl.md): comandos de build, test e arranque
-- [docs/FUNCIONAL.md](docs/FUNCIONAL.gl.md): uso real do produto por rol
+- [docs/gl/README.md](docs/gl/README.md): índice xeral por audiencia
+- [docs/gl/HERRAMIENTAS.md](docs/gl/HERRAMIENTAS.md): comandos de build, test e arranque
+- [docs/gl/FUNCIONAL.md](docs/gl/FUNCIONAL.md): uso real do produto por rol
 
 ### FAQ rápida
 
 - **Necesito Docker para empezar?** Non. O arranque local con `start.*` funciona sen Docker; Docker serve para entorno produtivo e builds reproducibles.
 - **Que fago se a API non responde?** Comproba que o backend está correndo en `http://localhost:8000` e que `/docs` responde.
-- **Que documento debo ler primeiro?** Se es usuario, [docs/USO.md](docs/USO.gl.md); se es desenvolvedor, [docs/ARQUITECTURA.md](docs/ARQUITECTURA.gl.md).
+- **Que documento debo ler primeiro?** Se es usuario, [docs/gl/USO.md](docs/gl/USO.md); se es desenvolvedor, [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md).
 - **Como sei se un cambio require actualizar documentación?** Se cambia arranque, API, roles, permisos, variables de entorno ou esquema, actualiza tamén a documentación que corresponda.
 
 ## Para desenvolvedores
 
-> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos e convencións) e no índice de [`docs/`](docs/README.gl.md) (guías por rol: funcional, uso, administración, infraestrutura, seguridade, arquitectura, API).
+> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos e convencións) e no índice de [`docs/`](docs/gl/README.md) (guías por rol: funcional, uso, administración, infraestrutura, seguridade, arquitectura, API).
 
 **Dunha ollada**: backend FastAPI en capas (routers → servizos → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracións Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Linux, Android) xestiónanse con `start.bat --build-all` e o conxunto de scripts de [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.gl.md).
+Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Linux, Android) xestiónanse con `start.bat --build-all` e o conxunto de scripts de [docs/gl/HERRAMIENTAS.md](docs/gl/HERRAMIENTAS.md).
 
 ## Solución de problemas
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Lin
 ### Problemas con bases de datos ou migracións
 
 - Usa `cd backend && alembic upgrade head`.
-- Se cambias de SQLite a MariaDB, revisa [docs/USO.md](docs/USO.gl.md) e [docs/DATABASE.md](docs/DATABASE.gl.md).
+- Se cambias de SQLite a MariaDB, revisa [docs/gl/USO.md](docs/gl/USO.md) e [docs/gl/DATABASE.md](docs/gl/DATABASE.md).
 
 ### Frontend con erros de Flutter
 
 - Executa `cd frontend && flutter pub get`.
-- Se hai problemas de xeración de código, segue a documentación de Hive e build_runner en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.gl.md).
+- Se hai problemas de xeración de código, segue a documentación de Hive e build_runner en [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md).
 
 ## Contribuír
 

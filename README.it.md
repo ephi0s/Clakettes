@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Consulta il riferimento completo di avvio e deployment in [docs/HERRAMIENTAS.it.md](docs/HERRAMIENTAS.it.md) e [docs/USO.it.md](docs/USO.it.md).
+Consulta il riferimento completo di avvio e deployment in [docs/it/HERRAMIENTAS.md](docs/it/HERRAMIENTAS.md) e [docs/it/USO.md](docs/it/USO.md).
 
 ## Variabili di ambiente e configurazione
 
@@ -107,40 +107,40 @@ L'avvio automatico del progetto già configura questo quando si usa `start.*`.
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/it/API.md` regenerado)
 
 ## Documentazione del progetto
 
-La mappa della documentazione è in [docs/README.it.md](docs/README.it.md). È il miglior ingresso per ogni tipo di utente:
+La mappa della documentazione è in [docs/it/README.md](docs/it/README.md). È il miglior ingresso per ogni tipo di utente:
 
-- [docs/USO.it.md](docs/USO.it.md): avvio, gestione, ambiente e uso quotidiano
-- [docs/ADMINISTRACION.it.md](docs/ADMINISTRACION.it.md): amministrazione, account e deployment
-- [docs/INFRAESTRUCTURA.it.md](docs/INFRAESTRUCTURA.it.md): Docker, porte, CI e infra
-- [docs/SEGURIDAD.it.md](docs/SEGURIDAD.it.md): token, policy e checklist di produzione
-- [docs/ARQUITECTURA.it.md](docs/ARQUITECTURA.it.md): architettura backend/frontend e flussi chiave
-- [docs/API.md](docs/API.md): riferimento degli endpoint
-- [docs/DESARROLLO.it.md](docs/DESARROLLO.it.md): come aggiungere endpoint o schermate
-- [docs/BACKEND.it.md](docs/BACKEND.it.md): guida del backend (livelli, config, auth, test)
-- [docs/DATABASE.it.md](docs/DATABASE.it.md): schema e migrazioni
+- [docs/it/USO.md](docs/it/USO.md): avvio, gestione, ambiente e uso quotidiano
+- [docs/it/ADMINISTRACION.md](docs/it/ADMINISTRACION.md): amministrazione, account e deployment
+- [docs/it/INFRAESTRUCTURA.md](docs/it/INFRAESTRUCTURA.md): Docker, porte, CI e infra
+- [docs/it/SEGURIDAD.md](docs/it/SEGURIDAD.md): token, policy e checklist di produzione
+- [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md): architettura backend/frontend e flussi chiave
+- [docs/it/API.md](docs/it/API.md): riferimento degli endpoint
+- [docs/it/DESARROLLO.md](docs/it/DESARROLLO.md): come aggiungere endpoint o schermate
+- [docs/it/BACKEND.md](docs/it/BACKEND.md): guida del backend (livelli, config, auth, test)
+- [docs/it/DATABASE.md](docs/it/DATABASE.md): schema e migrazioni
 
 Inoltre, il punto di partenza per sviluppo e convenzione di progetto è [AGENTS.md](AGENTS.md).
 
 ### Vedi anche
 
-- [docs/README.it.md](docs/README.it.md): indice generale per pubblico
-- [docs/HERRAMIENTAS.it.md](docs/HERRAMIENTAS.it.md): comandi di build, test e avvio
-- [docs/FUNCIONAL.it.md](docs/FUNCIONAL.it.md): uso reale del prodotto per ruolo
+- [docs/it/README.md](docs/it/README.md): indice generale per pubblico
+- [docs/it/HERRAMIENTAS.md](docs/it/HERRAMIENTAS.md): comandi di build, test e avvio
+- [docs/it/FUNCIONAL.md](docs/it/FUNCIONAL.md): uso reale del prodotto per ruolo
 
 ### FAQ rapida
 
 - **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
 - **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
-- **¿Qué documento debo leer primero?** Si eres usuario, [docs/USO.it.md](docs/USO.it.md); si eres desarrollador, [docs/ARQUITECTURA.it.md](docs/ARQUITECTURA.it.md).
+- **¿Qué documento debo leer primero?** Si eres usuario, [docs/it/USO.md](docs/it/USO.md); si eres desarrollador, [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
 - **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
 
 ## Per sviluppatori
 
-> Dettaglio completo in [`AGENTS.md`](AGENTS.md) (architettura, comandi e convenzioni) e nell'indice di [`docs/`](docs/README.it.md) (guide per ruolo: funzionale, uso, amministrazione, infrastruttura, sicurezza, architettura, API).
+> Dettaglio completo in [`AGENTS.md`](AGENTS.md) (architettura, comandi e convenzioni) e nell'indice di [`docs/`](docs/it/README.md) (guide per ruolo: funzionale, uso, amministrazione, infrastruttura, sicurezza, architettura, API).
 
 **A colpo d'occhio**: backend FastAPI a livelli (router → servizi → modelli SQLAlchemy, SQLite in dev / MariaDB in prod, JWT + refresh, 18 migrazioni Alembic); frontend Flutter Material 3 con dark mode (singleton + `setState()` + streams, Hive offline, 24 widget riutilizzabili).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Le build distribuite (web, Windows, Linux, Android) si gestiscono con `start.bat --build-all` e l'insieme di script di [docs/HERRAMIENTAS.it.md](docs/HERRAMIENTAS.it.md).
+Backend + frontend (nginx) + MariaDB. Le build distribuite (web, Windows, Linux, Android) si gestiscono con `start.bat --build-all` e l'insieme di script di [docs/it/HERRAMIENTAS.md](docs/it/HERRAMIENTAS.md).
 
 ## Risoluzione dei problemi
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Le build distribuite (web, Windows, Linux,
 ### Problemi con database o migrazioni
 
 - Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/USO.it.md](docs/USO.it.md) y [docs/DATABASE.it.md](docs/DATABASE.it.md).
+- Si cambias de SQLite a MariaDB, revisa [docs/it/USO.md](docs/it/USO.md) y [docs/it/DATABASE.md](docs/it/DATABASE.md).
 
 ### Frontend con errori di Flutter
 
 - Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/ARQUITECTURA.it.md](docs/ARQUITECTURA.it.md).
+- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
 
 ## Contribuire
 

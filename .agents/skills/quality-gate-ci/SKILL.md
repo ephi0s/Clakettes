@@ -51,10 +51,10 @@ todo cambio que la afecte actualiza TODA la info pertinente en el mismo cambio.
 
 - Cifras: routers (36 ficheros, 33 con `APIRouter`), servicios (36), modelos (34),
   schemas (33), migraciones (18), tests backend (37 ficheros, ~1400) y frontend
-  (69 ficheros). Están en `AGENTS.md`, `README.md`, `docs/BACKEND.md`,
-  `docs/ARQUITECTURA.md`, `docs/ADMINISTRACION.md` y `docs/AUDITORIA.md` (addendum, sin reescribir).
-- Endpoints nuevos/movidos: regenera `docs/API.md` con `python tools/gen_api.py`
-  y revisa `docs/USO.md` + `docs/SEGURIDAD.md` (auth, pagos, RGPD).
-- Flags de arranque: ayuda de `start.ps1`/`start.bat`/`start.sh` + `docs/USO.md` +
-  `docs/HERRAMIENTAS.md` + línea de `AGENTS.md`.
+  (69 ficheros). Están en `AGENTS.md`, `README.md`, `docs/es/BACKEND.md`,
+  `docs/es/ARQUITECTURA.md`, `docs/es/ADMINISTRACION.md` y `docs/es/AUDITORIA.md` (addendum, sin reescribir).
+- Endpoints nuevos/movidos: regenera `docs/es/API.md` con `python tools/gen_api.py`
+  y revisa `docs/es/USO.md` + `docs/es/SEGURIDAD.md` (auth, pagos, RGPD).
+- Flags de arranque: ayuda de `start.ps1`/`start.bat`/`start.sh` + `docs/es/USO.md` +
+  `docs/es/HERRAMIENTAS.md` + línea de `AGENTS.md`.
 - Roadmap y variables: `README.md` + `backend/.env.example` al día.

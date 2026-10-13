@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Consulta la referència completa de l'arrencada i desplegament a [docs/HERRAMIENTAS.ca.md](docs/HERRAMIENTAS.ca.md) i [docs/USO.ca.md](docs/USO.ca.md).
+Consulta la referència completa de l'arrencada i desplegament a [docs/ca/HERRAMIENTAS.md](docs/ca/HERRAMIENTAS.md) i [docs/ca/USO.md](docs/ca/USO.md).
 
 ## Variables d'entorn i configuració
 
@@ -107,40 +107,40 @@ L'arrencada automàtica del projecte ja configura això quan s'utilitza `start.*
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/ca/API.md` regenerado)
 
 ## Documentació del projecte
 
-El mapa de documentació és a [docs/README.ca.md](docs/README.ca.md). És la millor entrada per a cada tipus d'usuari:
+El mapa de documentació és a [docs/ca/README.md](docs/ca/README.md). És la millor entrada per a cada tipus d'usuari:
 
-- [docs/USO.ca.md](docs/USO.ca.md): arrencada, operació, entorn i ús diari
-- [docs/ADMINISTRACION.ca.md](docs/ADMINISTRACION.ca.md): administració, comptes i desplegament
-- [docs/INFRAESTRUCTURA.ca.md](docs/INFRAESTRUCTURA.ca.md): Docker, ports, CI i infra
-- [docs/SEGURIDAD.ca.md](docs/SEGURIDAD.ca.md): tokens, polítiques i checklist de producció
-- [docs/ARQUITECTURA.ca.md](docs/ARQUITECTURA.ca.md): arquitectura backend/frontend i fluxos clau
-- [docs/API.md](docs/API.md): referència d'endpoints
-- [docs/DESARROLLO.ca.md](docs/DESARROLLO.ca.md): com afegir endpoints o pantalles
-- [docs/BACKEND.ca.md](docs/BACKEND.ca.md): guia del backend (capes, config, auth, tests)
-- [docs/DATABASE.ca.md](docs/DATABASE.ca.md): esquema i migracions
+- [docs/ca/USO.md](docs/ca/USO.md): arrencada, operació, entorn i ús diari
+- [docs/ca/ADMINISTRACION.md](docs/ca/ADMINISTRACION.md): administració, comptes i desplegament
+- [docs/ca/INFRAESTRUCTURA.md](docs/ca/INFRAESTRUCTURA.md): Docker, ports, CI i infra
+- [docs/ca/SEGURIDAD.md](docs/ca/SEGURIDAD.md): tokens, polítiques i checklist de producció
+- [docs/ca/ARQUITECTURA.md](docs/ca/ARQUITECTURA.md): arquitectura backend/frontend i fluxos clau
+- [docs/ca/API.md](docs/ca/API.md): referència d'endpoints
+- [docs/ca/DESARROLLO.md](docs/ca/DESARROLLO.md): com afegir endpoints o pantalles
+- [docs/ca/BACKEND.md](docs/ca/BACKEND.md): guia del backend (capes, config, auth, tests)
+- [docs/ca/DATABASE.md](docs/ca/DATABASE.md): esquema i migracions
 
 A més, el punt de partida per a desenvolupament i convenció de projecte és [AGENTS.md](AGENTS.md).
 
 ### Vegeu també
 
-- [docs/README.ca.md](docs/README.ca.md): índex general per audiència
-- [docs/HERRAMIENTAS.ca.md](docs/HERRAMIENTAS.ca.md): ordres de build, test i arrencada
-- [docs/FUNCIONAL.ca.md](docs/FUNCIONAL.ca.md): ús real del producte per rol
+- [docs/ca/README.md](docs/ca/README.md): índex general per audiència
+- [docs/ca/HERRAMIENTAS.md](docs/ca/HERRAMIENTAS.md): ordres de build, test i arrencada
+- [docs/ca/FUNCIONAL.md](docs/ca/FUNCIONAL.md): ús real del producte per rol
 
 ### FAQ ràpida
 
 - **Necessito Docker per començar?** No. L'arrencada local amb `start.*` funciona sense Docker; Docker serveix per a entorn productiu i builds reproduïbles.
 - **Què faig si l'API no respon?** Comprova que el backend és executant-se a `http://localhost:8000` i que `/docs` respon.
-- **Quin document he de llegir primer?** Si ets usuari, [docs/USO.ca.md](docs/USO.ca.md); si ets desenvolupador, [docs/ARQUITECTURA.ca.md](docs/ARQUITECTURA.ca.md).
+- **Quin document he de llegir primer?** Si ets usuari, [docs/ca/USO.md](docs/ca/USO.md); si ets desenvolupador, [docs/ca/ARQUITECTURA.md](docs/ca/ARQUITECTURA.md).
 - **Com sé si un canvi requereix actualitzar documentació?** Si canvia arrencada, API, rols, permisos, variables d'entorn o esquema, actualitza també la documentació que correspongui.
 
 ## Per a desenvolupadors
 
-> Detall complet a [`AGENTS.md`](AGENTS.md) (arquitectura, ordres i convencions) i a l'índex de [`docs/`](docs/README.ca.md) (guies per rol: funcional, ús, administració, infraestructura, seguretat, arquitectura, API).
+> Detall complet a [`AGENTS.md`](AGENTS.md) (arquitectura, ordres i convencions) i a l'índex de [`docs/`](docs/ca/README.md) (guies per rol: funcional, ús, administració, infraestructura, seguretat, arquitectura, API).
 
 **D'una ullada**: backend FastAPI en capes (routers → serveis → models SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilitzables).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Els builds distribuïts (web, Windows, Linux, Android) es gestionen amb `start.bat --build-all` i el conjunt de scripts de [docs/HERRAMIENTAS.ca.md](docs/HERRAMIENTAS.ca.md).
+Backend + frontend (nginx) + MariaDB. Els builds distribuïts (web, Windows, Linux, Android) es gestionen amb `start.bat --build-all` i el conjunt de scripts de [docs/ca/HERRAMIENTAS.md](docs/ca/HERRAMIENTAS.md).
 
 ## Solució de problemes
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Els builds distribuïts (web, Windows, Lin
 ### Problemes amb bases de dades o migracions
 
 - Utilitza `cd backend && alembic upgrade head`.
-- Si canvies de SQLite a MariaDB, revisa [docs/USO.ca.md](docs/USO.ca.md) i [docs/DATABASE.ca.md](docs/DATABASE.ca.md).
+- Si canvies de SQLite a MariaDB, revisa [docs/ca/USO.md](docs/ca/USO.md) i [docs/ca/DATABASE.md](docs/ca/DATABASE.md).
 
 ### Frontend amb errors de Flutter
 
 - Executa `cd frontend && flutter pub get`.
-- Si hi ha problemes de generació de codi, segueix la documentació d'Hive i build_runner a [docs/ARQUITECTURA.ca.md](docs/ARQUITECTURA.ca.md).
+- Si hi ha problemes de generació de codi, segueix la documentació d'Hive i build_runner a [docs/ca/ARQUITECTURA.md](docs/ca/ARQUITECTURA.md).
 
 ## Contribuir
 

@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Kontsultatu abiarazte eta hedapenaren erreferentzia osoa [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.eu.md)-n eta [docs/USO.md](docs/USO.eu.md)-n.
+Kontsultatu abiarazte eta hedapenaren erreferentzia osoa [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md)-n eta [docs/eu/USO.md](docs/eu/USO.md)-n.
 
 ## Ingurune-aldagaiak eta konfigurazioa
 
@@ -107,40 +107,40 @@ Proiektuaren abiarazte automatikoak hau jada konfiguratzen du `start.*` erabiltz
 - [ ] Push jakinarazpenak (Firebase/APNs)
 - [ ] Sinatutako Linux AppImage
 - [ ] Windows MSI installer
-- [x] Dokumentazio API OpenAPI esportagarria (`/openapi.json` operationId bikoiztu gabe + `docs/API.md` birsortua)
+- [x] Dokumentazio API OpenAPI esportagarria (`/openapi.json` operationId bikoiztu gabe + `docs/eu/API.md` birsortua)
 
 ## Proiektuaren dokumentazioa
 
-Dokumentazio-mapa [docs/README.md](docs/README.eu.md)-n dago. Sarrera onena da erabiltzaile-mota bakoitzerako:
+Dokumentazio-mapa [docs/eu/README.md](docs/eu/README.md)-n dago. Sarrera onena da erabiltzaile-mota bakoitzerako:
 
-- [docs/USO.md](docs/USO.eu.md): abiaraztea, operazioa, ingurunea eta eguneroko erabilera
-- [docs/ADMINISTRACION.md](docs/ADMINISTRACION.eu.md): administrazioa, kontuak eta hedapena
-- [docs/INFRAESTRUCTURA.md](docs/INFRAESTRUCTURA.eu.md): Docker, portuak, CI eta azpiegitura
-- [docs/SEGURIDAD.md](docs/SEGURIDAD.eu.md): token-ak, politikak eta ekoizpen-checklist-a
-- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.eu.md): backend/frontend arkitektura eta funtsezko fluxuak
-- [docs/API.md](docs/API.md): endpoint-en erreferentzia
-- [docs/DESARROLLO.md](docs/DESARROLLO.eu.md): endpoint-ak edo pantailak nola gehitu
-- [docs/BACKEND.md](docs/BACKEND.eu.md): backend-aren gida (geruzak, config, auth, test-ak)
-- [docs/DATABASE.md](docs/DATABASE.eu.md): eskema eta migrazioak
+- [docs/eu/USO.md](docs/eu/USO.md): abiaraztea, operazioa, ingurunea eta eguneroko erabilera
+- [docs/eu/ADMINISTRACION.md](docs/eu/ADMINISTRACION.md): administrazioa, kontuak eta hedapena
+- [docs/eu/INFRAESTRUCTURA.md](docs/eu/INFRAESTRUCTURA.md): Docker, portuak, CI eta azpiegitura
+- [docs/eu/SEGURIDAD.md](docs/eu/SEGURIDAD.md): token-ak, politikak eta ekoizpen-checklist-a
+- [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md): backend/frontend arkitektura eta funtsezko fluxuak
+- [docs/eu/API.md](docs/eu/API.md): endpoint-en erreferentzia
+- [docs/eu/DESARROLLO.md](docs/eu/DESARROLLO.md): endpoint-ak edo pantailak nola gehitu
+- [docs/eu/BACKEND.md](docs/eu/BACKEND.md): backend-aren gida (geruzak, config, auth, test-ak)
+- [docs/eu/DATABASE.md](docs/eu/DATABASE.md): eskema eta migrazioak
 
 Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.md) da.
 
 ### Ikusi halaber
 
-- [docs/README.md](docs/README.eu.md): audientziako indize orokorra
-- [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.eu.md): build, test eta abiarazte komandoak
-- [docs/FUNCIONAL.md](docs/FUNCIONAL.eu.md): produktuaren benetako erabilera rolez
+- [docs/eu/README.md](docs/eu/README.md): audientziako indize orokorra
+- [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md): build, test eta abiarazte komandoak
+- [docs/eu/FUNCIONAL.md](docs/eu/FUNCIONAL.md): produktuaren benetako erabilera rolez
 
 ### FAQ azkarra
 
 - **Docker behar dut hasteko?** Ez. `start.*`-rekin tokiko abiaraztea Docker gabe funtzionatzen du; Docker ingurune produktiborako eta build erreproduzigarrietarako da.
 - **Zer egin API-k erantzuten ez badu?** Egiaztatu backend-a `http://localhost:8000`-n martxan dagoela eta `/docs`-ek erantzuten duela.
-- **Zer dokumentu irakurri behar dut lehenik?** Erabiltzailea bazara, [docs/USO.md](docs/USO.eu.md); garatzailea bazara, [docs/ARQUITECTURA.md](docs/ARQUITECTURA.eu.md).
+- **Zer dokumentu irakurri behar dut lehenik?** Erabiltzailea bazara, [docs/eu/USO.md](docs/eu/USO.md); garatzailea bazara, [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md).
 - **Nola jakin aldaketa batek dokumentazioa eguneratzea behar duen?** Abiaraztea, API, rolak, baimenak, ingurune-aldagaiak edo eskema aldatzen badu, eguneratu dagokion dokumentazioa ere.
 
 ## Garatzaileentzat
 
-> Xehetasun osoa [`AGENTS.md`](AGENTS.md)-n (arkitektura, komandoak eta konbentzioak) eta [`docs/`](docs/README.eu.md)-ko indizean (rol-gidak: funtzionala, erabilera, administrazioa, azpiegitura, segurtasuna, arkitektura, API).
+> Xehetasun osoa [`AGENTS.md`](AGENTS.md)-n (arkitektura, komandoak eta konbentzioak) eta [`docs/`](docs/eu/README.md)-ko indizean (rol-gidak: funtzionala, erabilera, administrazioa, azpiegitura, segurtasuna, arkitektura, API).
 
 **Begirada batean**: FastAPI backend-a geruzatan (router-ak → zerbitzuak → SQLAlchemy modeloak, SQLite dev-ean / MariaDB prod-ean, JWT + refresh, 18 Alembic migrazio); Flutter frontend-a Material 3 dark mode-arekin (singleton-ak + `setState()` + stream-ak, Hive offline, 24 widget berrerabilgarri).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Android) `start.bat --build-all`-ekin eta [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.eu.md)-ko script-multzoarekin kudeatzen dira.
+Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Android) `start.bat --build-all`-ekin eta [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md)-ko script-multzoarekin kudeatzen dira.
 
 ## Arazoen konponbidea
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Andro
 ### Datu-base edo migrazio arazoak
 
 - Erabili `cd backend && alembic upgrade head`.
-- SQLite-tik MariaDB-ra aldatzen bazara, berrikusi [docs/USO.md](docs/USO.eu.md) eta [docs/DATABASE.md](docs/DATABASE.eu.md).
+- SQLite-tik MariaDB-ra aldatzen bazara, berrikusi [docs/eu/USO.md](docs/eu/USO.md) eta [docs/eu/DATABASE.md](docs/eu/DATABASE.md).
 
 ### Erroreak dituen Flutter frontend-a
 
 - Exekutatu `cd frontend && flutter pub get`.
-- Kode-sorkuntza arazoak badaude, jarraitu Hive eta build_runner dokumentazioa [docs/ARQUITECTURA.md](docs/ARQUITECTURA.eu.md)-n.
+- Kode-sorkuntza arazoak badaude, jarraitu Hive eta build_runner dokumentazioa [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md)-n.
 
 ## Laguntzea
 
