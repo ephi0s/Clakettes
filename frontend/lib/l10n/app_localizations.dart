@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import '../services/api_service.dart' show ApiException, UnauthorizedException;
 
 /// Clase de localización manual que carga archivos ARB JSON en runtime.
 ///
@@ -268,6 +269,47 @@ class AppLocalizations {
   String get channelRequired => translate('channelRequired');
   String get errorFormat => translate('errorFormat');
   String errorFormatWith(String error) => translate('errorFormat', args: {'error': error});
+  String get errorBadRequest => translate('errorBadRequest');
+  String get errorUnauthorized => translate('errorUnauthorized');
+  String get errorForbidden => translate('errorForbidden');
+  String get errorNotFound => translate('errorNotFound');
+  String get errorConflict => translate('errorConflict');
+  String get errorUnprocessable => translate('errorUnprocessable');
+  String get errorTooMany => translate('errorTooMany');
+  String get errorServer => translate('errorServer');
+  String get errorTimeout => translate('errorTimeout');
+  String get errorNetwork => translate('errorNetwork');
+
+  /// Mensaje localizado para un error de la API según su código HTTP.
+  String errorFor(Object e) {
+    if (e is UnauthorizedException) return errorUnauthorized;
+    if (e is ApiException) {
+      switch (e.statusCode) {
+        case 400:
+          return errorBadRequest;
+        case 401:
+          return errorUnauthorized;
+        case 403:
+          return errorForbidden;
+        case 404:
+          return errorNotFound;
+        case 409:
+          return errorConflict;
+        case 422:
+          return errorUnprocessable;
+        case 429:
+          return errorTooMany;
+        case 500:
+        case 502:
+        case 503:
+          return errorServer;
+      }
+      if (e.timedOut) return errorTimeout;
+      if (e.statusCode == null) return errorNetwork;
+      return errorServer;
+    }
+    return errorFormatWith(e.toString());
+  }
   String get registrationForms => translate('registrationForms');
   String get events => translate('events');
   String get committees => translate('committees');

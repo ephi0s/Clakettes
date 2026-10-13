@@ -59,7 +59,12 @@ async def _save_file(file: UploadFile, subfolder: str, allowed_types: set, max_s
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File content does not match file type",
         )
-    ext = Path(file.filename or "file").suffix or ".bin"
+    ext = Path(file.filename or "file").suffix.lower() or ".bin"
+    if ext in {".html", ".htm", ".svg", ".js", ".php", ".phtml"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File extension not allowed",
+        )
     filename = f"{uuid.uuid4().hex}{ext}"
     file_path = folder / filename
     tmp_path = folder / f"{filename}.part"

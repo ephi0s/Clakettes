@@ -62,7 +62,8 @@ class LocaleService {
     final prefs = await SharedPreferences.getInstance();
     final code = prefs.getString(_key);
     if (code != null) {
-      _locale = Locale(code);
+      final supported = supportedLocales.any((l) => l.languageCode == code);
+      _locale = Locale(supported ? code : 'en');
     }
     return _locale;
   }

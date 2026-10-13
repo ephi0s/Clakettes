@@ -173,10 +173,12 @@ class UnauthorizedException implements Exception {
   String toString() => 'Session expired. Please log in again.';
 }
 
-/// Error genérico de la API.
+/// Error genérico de la API, con código HTTP cuando lo hay.
 class ApiException implements Exception {
   final String message;
-  ApiException(this.message);
+  final int? statusCode;
+  final bool timedOut;
+  ApiException(this.message, {this.statusCode, this.timedOut = false});
   @override
   String toString() => message;
 }

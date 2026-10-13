@@ -224,6 +224,7 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     if (!_isEnabled) return const SizedBox.shrink();
 
     return Column(
@@ -280,13 +281,13 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
                         );
                       },
                     ),
-                    calendarStyle: const CalendarStyle(
+                    calendarStyle: CalendarStyle(
                       todayDecoration: BoxDecoration(
-                        color: Colors.deepOrangeAccent,
+                        color: colorScheme.secondary,
                         shape: BoxShape.circle,
                       ),
                       selectedDecoration: BoxDecoration(
-                        color: Color(0xFFB8956E),
+                        color: colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                     ),

@@ -74,6 +74,7 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: Semantics(header: true, child: Text(l10n.chat))),
       floatingActionButton: Semantics(
@@ -93,11 +94,11 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          ExcludeSemantics(child: Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey.shade400)),
+                          ExcludeSemantics(child: Icon(Icons.chat_bubble_outline, size: 64, color: colorScheme.onSurfaceVariant)),
                           const SizedBox(height: 16),
                           Semantics(
                             label: l10n.noMessages,
-                            child: Text(l10n.noMessages, style: TextStyle(color: Colors.grey.shade600)),
+                            child: Text(l10n.noMessages, style: TextStyle(color: colorScheme.onSurfaceVariant)),
                           ),
                           const SizedBox(height: 16),
                           Semantics(

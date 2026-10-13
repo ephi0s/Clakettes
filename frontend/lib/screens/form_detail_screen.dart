@@ -196,7 +196,7 @@ class _DetailsTabState extends State<_DetailsTab> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.saved), behavior: SnackBarBehavior.floating));
       widget.onChanged();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -399,7 +399,7 @@ class _FormLinksTabState extends State<_FormLinksTab> {
         _loadLinks();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -421,7 +421,7 @@ class _FormLinksTabState extends State<_FormLinksTab> {
       _loadLinks();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.tokenRegenerated), behavior: SnackBarBehavior.floating));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -498,7 +498,7 @@ class _FormResponsesTabState extends State<_FormResponsesTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(l10n.errorFormatWith('$e')),
+          content: Text(l10n.errorFor(e)),
           behavior: SnackBarBehavior.floating,
         ));
       }
@@ -560,7 +560,7 @@ class _FormResponsesTabState extends State<_FormResponsesTab> {
       }
       _loadData();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

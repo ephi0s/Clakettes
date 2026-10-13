@@ -97,6 +97,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       appBar: AppBar(
         title: Text(l10n.addLocation),
         leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
@@ -129,6 +130,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                             ),
                           )
                         : IconButton(
+                            tooltip: l10n.clear,
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               _searchCtrl.clear();

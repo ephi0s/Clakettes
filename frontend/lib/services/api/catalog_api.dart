@@ -112,11 +112,17 @@ extension CatalogApi on ApiService {
       req.fields['external_url'] = externalUrl;
     }
     req.files.add(await http.MultipartFile.fromPath('file', filePath));
-    final streamed = await req.send();
-    final response = await http.Response.fromStream(streamed);
+    late http.Response response;
+    try {
+      final streamed = await req.send();
+      response = await http.Response.fromStream(streamed);
+    } catch (_) {
+      throw ApiException('Network error (upload)');
+    }
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return FestivalRulebook.fromJson(json.decode(response.body));
     }
-    throw ApiException('Rulebook upload failed (${response.statusCode})');
+    throw ApiException('Rulebook upload failed (${response.statusCode})',
+        statusCode: response.statusCode);
   }
 }

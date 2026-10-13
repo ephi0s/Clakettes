@@ -124,7 +124,7 @@ class _EventsManagementScreenState extends State<EventsManagementScreen> {
         );
         _loadData();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
       }
     }
   }
@@ -153,7 +153,7 @@ class _EventsManagementScreenState extends State<EventsManagementScreen> {
       debugPrint('Error: $e');
       if (!mounted) return;
       setState(() { _isExporting = false; });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

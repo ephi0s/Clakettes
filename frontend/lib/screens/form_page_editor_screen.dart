@@ -93,7 +93,7 @@ class _FormPageEditorScreenState extends State<FormPageEditorScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
       }
     }
     return false;
@@ -111,7 +111,7 @@ class _FormPageEditorScreenState extends State<FormPageEditorScreen> {
       });
       setState(() => _fields.add(field));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -127,7 +127,7 @@ class _FormPageEditorScreenState extends State<FormPageEditorScreen> {
       final updated = await api.updateField(widget.form.id!, field.id!, result);
       setState(() => _fields[index] = updated);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

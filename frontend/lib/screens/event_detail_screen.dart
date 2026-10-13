@@ -111,7 +111,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
         await api.bulkCreateSeats(widget.eventId, config);
         _loadData();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith(e.toString())), behavior: SnackBarBehavior.floating));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
       }
     }
   }
@@ -159,7 +159,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorFormatWith(e.toString())), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -179,7 +179,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorFormatWith(e.toString())), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -200,7 +200,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorFormatWith(e.toString())), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -220,7 +220,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
       debugPrint('Error: $e');
       if (!mounted) return;
       setState(() { _isExporting = false; });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

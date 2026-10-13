@@ -102,7 +102,7 @@ class _FormDefinitionsScreenState extends State<FormDefinitionsScreen> {
       final form = await api.createForm(result);
       if (mounted) _openFormDetail(form);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -140,7 +140,7 @@ class _FormDefinitionsScreenState extends State<FormDefinitionsScreen> {
         _loadData();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

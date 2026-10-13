@@ -202,13 +202,21 @@ class ApiService {
       request.headers['Authorization'] = 'Bearer $token';
     }
     request.files.add(await http.MultipartFile.fromPath('file', filePath));
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+    late http.Response response;
+    try {
+      final streamedResponse = await request.send();
+      response = await http.Response.fromStream(streamedResponse);
+    } on TimeoutException {
+      throw ApiException('Upload timed out', timedOut: true);
+    } catch (_) {
+      throw ApiException('Network error (upload)');
+    }
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return json.decode(response.body);
     }
     throw ApiException(
-        '${errorLabel ?? 'Upload'} failed (${response.statusCode})');
+        '${errorLabel ?? 'Upload'} failed (${response.statusCode})',
+        statusCode: response.statusCode);
   }
 
   /// Ejecuta una petición HTTP contra el backend.
@@ -252,7 +260,9 @@ class ApiService {
             break;
         }
       } on TimeoutException {
-        throw ApiException('$method $path timed out');
+        throw ApiException('$method $path timed out', timedOut: true);
+      } catch (_) {
+        throw ApiException('Network error ($method $path)');
       }
 
       if (response.statusCode == 401 && attempt == 0 && withAuth) {
@@ -267,7 +277,8 @@ class ApiService {
         return json.decode(response.body);
       }
 
-      throw ApiException('$method $path failed (${response.statusCode})');
+      throw ApiException('$method $path failed (${response.statusCode})',
+          statusCode: response.statusCode);
     }
 
     throw ApiException('$method $path failed (unexpected)');
@@ -292,7 +303,9 @@ class ApiService {
             .get(uri, headers: headers)
             .timeout(const Duration(seconds: 30));
       } on TimeoutException {
-        throw ApiException('GET $path timed out');
+        throw ApiException('GET $path timed out', timedOut: true);
+      } catch (_) {
+        throw ApiException('Network error (GET $path)');
       }
 
       if (response.statusCode == 401 && attempt == 0) {
@@ -306,7 +319,8 @@ class ApiService {
         return response.bodyBytes;
       }
 
-      throw ApiException('GET $path failed (${response.statusCode})');
+      throw ApiException('GET $path failed (${response.statusCode})',
+          statusCode: response.statusCode);
     }
 
     throw ApiException('GET $path failed (unexpected)');

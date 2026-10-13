@@ -30,6 +30,18 @@ class ConnectivityMonitor {
   /// Empieza a escuchar los cambios de conectividad.
   void start() {
     _subscription = _connectivity.onConnectivityChanged.listen(_onConnectivityChange);
+    checkNow();
+  }
+
+  Future<bool> checkNow() async {
+    try {
+      final healthy = await _api.healthCheck();
+      _updateStatus(healthy);
+      return healthy;
+    } catch (_) {
+      _updateStatus(false);
+      return false;
+    }
   }
 
   /// Deja de escuchar y libera los recursos.

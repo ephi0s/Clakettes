@@ -77,7 +77,7 @@ class _CommitteesScreenState extends State<CommitteesScreen> {
         await api.createCommittee(widget.festivalId, Committee(festivalId: widget.festivalId, name: nameCtl.text, description: descCtl.text));
         _loadData();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
       }
     }
   }

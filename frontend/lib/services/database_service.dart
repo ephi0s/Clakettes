@@ -70,6 +70,9 @@ class DatabaseService {
     Hive.registerAdapter(FormFieldResponseAdapter());
     Hive.registerAdapter(FormResponseAdapter());
     Hive.registerAdapter(FormAccessRuleAdapter());
-
+    await Hive.openBox('festivals');
+    await Hive.openBox('users');
+    await Hive.openBox('shortfilms');
+    await Hive.openBox('messages');
   }
 }

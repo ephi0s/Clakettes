@@ -86,7 +86,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
       debugPrint('CalendarSettingsScreen save error: $e');
       if (!mounted) return;
       setState(() => _isSaving = false);
-      _showMessage(l10n.errorFormatWith('$e'));
+      _showMessage(l10n.errorFor(e));
     }
   }
 

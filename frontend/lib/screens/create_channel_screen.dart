@@ -49,7 +49,7 @@ class _CreateChannelScreenState extends State<CreateChannelScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorFormat.replaceAll('{error}', e.toString())), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating),
         );
         setState(() => _isCreating = false);
       }

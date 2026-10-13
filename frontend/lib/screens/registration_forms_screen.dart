@@ -98,7 +98,7 @@ class _RegistrationFormsScreenState extends State<RegistrationFormsScreen> {
       );
       if (mounted) _openFormDetail(form);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -136,7 +136,7 @@ class _RegistrationFormsScreenState extends State<RegistrationFormsScreen> {
       debugPrint('Error: $e');
       if (!mounted) return;
       setState(() { _isExporting = false; });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -400,7 +400,7 @@ class _DetailsTabState extends State<_DetailsTab> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.saved), behavior: SnackBarBehavior.floating));
       widget.onChanged();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -546,7 +546,7 @@ class _LinksTabState extends State<_LinksTab> {
         _loadLinks();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -568,7 +568,7 @@ class _LinksTabState extends State<_LinksTab> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.tokenRegenerated), behavior: SnackBarBehavior.floating));
       _loadLinks();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -722,7 +722,9 @@ class _RegistrationsTabState extends State<_RegistrationsTab> {
       _loadData();
     } catch (e) {
       if (mounted) {
-        final message = e.toString().contains('409') ? l10n.paymentRequiredForApproval : l10n.errorFormatWith('$e');
+        final message = (e is ApiException && e.statusCode == 409)
+            ? l10n.paymentRequiredForApproval
+            : l10n.errorFor(e);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), behavior: SnackBarBehavior.floating));
       }
     }
@@ -764,7 +766,7 @@ class _RegistrationsTabState extends State<_RegistrationsTab> {
       );
       _loadData();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 
@@ -777,7 +779,7 @@ class _RegistrationsTabState extends State<_RegistrationsTab> {
       await api.markRegistrationRefunded(reg.id!);
       _loadData();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFormatWith('$e')), behavior: SnackBarBehavior.floating));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
     }
   }
 

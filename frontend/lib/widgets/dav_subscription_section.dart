@@ -109,7 +109,7 @@ class _DavSubscriptionSectionState extends State<DavSubscriptionSection> {
       debugPrint('DavSubscriptionSection generate error: $e');
       if (!mounted) return;
       setState(() => _isBusy = false);
-      _showMessage(l10n.errorFormatWith('$e'));
+      _showMessage(l10n.errorFor(e));
     }
   }
 
@@ -151,7 +151,7 @@ class _DavSubscriptionSectionState extends State<DavSubscriptionSection> {
       debugPrint('DavSubscriptionSection revoke error: $e');
       if (!mounted) return;
       setState(() => _isBusy = false);
-      _showMessage(l10n.errorFormatWith('$e'));
+      _showMessage(l10n.errorFor(e));
     }
   }
 

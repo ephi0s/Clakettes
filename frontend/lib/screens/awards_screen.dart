@@ -80,7 +80,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
         await api.createAward(widget.festivalId, Award(festivalId: widget.festivalId, awardName: nameCtl.text, awardCategory: catCtl.text.isEmpty ? null : catCtl.text, description: descCtl.text.isEmpty ? null : descCtl.text));
         _loadData();
       } catch (e) {
-        if (mounted) showAppSnack(context, l10n.errorFormatWith('$e'));
+        if (mounted) showAppSnack(context, l10n.errorFor(e));
       }
     }
   }

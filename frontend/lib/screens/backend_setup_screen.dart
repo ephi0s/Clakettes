@@ -140,7 +140,7 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.link),
                         suffixIcon: _isSaved
-                            ? const Icon(Icons.check_circle, color: Colors.green)
+                            ? Icon(Icons.check_circle, color: colorScheme.primary)
                             : null,
                       ),
                       keyboardType: TextInputType.url,
@@ -156,15 +156,15 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
                           color: _isConnected!
-                              ? Colors.green.withAlpha(25)
-                              : Colors.red.withAlpha(25),
+                              ? colorScheme.primaryContainer
+                              : colorScheme.errorContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
                             Icon(
                               _isConnected! ? Icons.check_circle : Icons.error,
-                              color: _isConnected! ? Colors.green : Colors.red,
+                              color: _isConnected! ? colorScheme.primary : colorScheme.error,
                               size: 20,
                             ),
                             const SizedBox(width: 8),

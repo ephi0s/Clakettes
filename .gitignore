@@ -38,7 +38,7 @@ backend/.ruff_cache/
 *.db-journal
 *.db-wal
 *.db-shm
-*.hive
+*.hive*
 *.lock
 uploads/
 
