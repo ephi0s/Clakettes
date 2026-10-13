@@ -8,6 +8,8 @@ La piattaforma dove i festival cinematografici vivono tutto l'anno: bandi, corti
 [![WCAG](https://img.shields.io/badge/Accessibility-WCAG%202.1-success)](https://www.w3.org/WAI/WCAG21/quickref/)
 [![i18n](https://img.shields.io/badge/i18n-9%20idiomas-blue)](frontend/assets/l10n/)
 
+[Español](README.md) · [English](README.en.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [Català](README.ca.md) · [Euskara](README.eu.md) · [Galego](README.gl.md) · [Occitan](README.oc.md)
+
 Funziona su web, Android, iOS e desktop (Windows, macOS, Linux), in 9 lingue e anche senza connessione.
 
 ---

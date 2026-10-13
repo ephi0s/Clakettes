@@ -8,6 +8,8 @@ Zine-jaialdiak urte osoan bizi diren plataforma: deialdiak, laburrak, ekipoak, e
 [![WCAG](https://img.shields.io/badge/Accessibility-WCAG%202.1-success)](https://www.w3.org/WAI/WCAG21/quickref/)
 [![i18n](https://img.shields.io/badge/i18n-9%20idiomas-blue)](frontend/assets/l10n/)
 
+[Español](README.md) · [English](README.en.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [Català](README.ca.md) · [Euskara](README.eu.md) · [Galego](README.gl.md) · [Occitan](README.oc.md)
+
 Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, Linux), 9 hizkuntzatan eta konexiorik gabe ere.
 
 ---
