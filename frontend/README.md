@@ -286,10 +286,10 @@ frontend/
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # 20 modelos Dart (Hive + codegen)
-│   ├── screens/             # 31 pantallas
-│   ├── widgets/             # 13 widgets reutilizables
-│   ├── services/            # 10 servicios + chat_backend (4)
+│   ├── models/              # 44 modelos Dart (Hive + codegen)
+│   ├── screens/             # 36 pantallas
+│   ├── widgets/             # 24 widgets reutilizables
+│   ├── services/            # 17 servicios + api/ (9) + chat_backend (4)
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart

@@ -11,6 +11,9 @@
 | Tests backend | `-TestBackend` | pytest en `.venv` o Docker |
 | Tests frontend | `-TestFrontend` | `flutter test` o Docker |
 | Migraciones | `-Migrate` / `-TestMigration` (MariaDB) | alembic |
+| Revisar entorno sin arrancar | `-Check` | Doctor: Docker, Python, Flutter, .venv, puertos |
+| Instalar dependencias que falten | `-InstallMissing` | winget / gestor del SO + git clone |
+| Builds parciales | `-BuildFrontend` / `-BuildBackend` | Requieren Docker |
 | APK Android | `flutter build apk --release --dart-define=BACKEND_URL=<url>` | `frontend/` |
 | AppBundle (Play Store) | `flutter build appbundle --release --dart-define=BACKEND_URL=<url>` | `frontend/` |
 | iOS/iPad (requiere macOS) | `tools/build-ios.sh` | Solo en Mac con Xcode |

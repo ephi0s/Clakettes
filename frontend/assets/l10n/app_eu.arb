@@ -612,5 +612,15 @@
     "contest": "Lehiaketa",
     "activity": "Jarduera",
     "other": "Besteak"
-  }
+  },
+  "errorBadRequest": "Eskaera baliogabea",
+  "errorUnauthorized": "Saioa iraungi da. Hasi saioa berriro.",
+  "errorForbidden": "Ez duzue horretarako baimenik",
+  "errorNotFound": "Ez da aurkitu",
+  "errorConflict": "Badago lehendik (gatazka)",
+  "errorUnprocessable": "Datu baliogabeak",
+  "errorTooMany": "Saiakera gehiegi. Itxaron pixka bat.",
+  "errorServer": "Zerbitzariaren errorea. Saiatu geroago.",
+  "errorTimeout": "Denbora agortu da. Egiaztatu konexioa.",
+  "errorNetwork": "Ez dago konexiorik zerbitzariarekin."
 }

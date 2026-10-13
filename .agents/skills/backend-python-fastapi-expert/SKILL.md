@@ -22,9 +22,9 @@ metadata:
 ## Entrypoint
 
 `app/main.py` creates the FastAPI app with:
-- `lifespan` handler: `Base.metadata.create_all()`, seeds admin user (`admin`/`setup`), starts WebSocket chat backend
+- `lifespan` handler: `Base.metadata.create_all()`, seeds admin user (`admin`/`setup`), purges expired sessions, starts WebSocket chat backend
 - Middleware (last added = first executed): CORS → TrustedHost (non-dev only) → RateLimit (100/60s, skips when TESTING=true) → SecurityHeaders
-- 24 routers registered under `/api/...`, plus `/health` and `/api/health`
+- 33 routers registered under `/api/...`, plus `/health` and `/api/health`
 - Static files mounted at `/uploads`
 
 ## Auth

@@ -1,5 +1,12 @@
 # Auditoría de código — Clakettes (09/10/2026, ampl. multiplataforma 09/10/2026, rev. 10/10/2026)
 
+> **Addendum 11/10/2026** (cifras verificadas): backend 1402 tests en 37 archivos;
+> routers 36 ficheros (33 con `APIRouter`); services 36; models 34; schemas 33;
+> Alembic 18 versiones; `docs/API.md` 310 endpoints (operationIds únicos).
+> RGPD: privacidad por defecto, consentimiento, borrado/exportación, purga de
+> sesiones, auditoría append-only, sanitizado de metadatos, TLS MariaDB en prod,
+> DAV con caducidad, CSP/HSTS. Proveedores de pago mock/stripe/redsys.
+
 ## 0. Resumen ejecutivo (10/10/2026, cifras verificadas)
 
 | Área | Estado | Detalle |

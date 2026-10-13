@@ -612,5 +612,15 @@
     "contest": "Wettbewerb",
     "activity": "Aktivität",
     "other": "Sonstige"
-  }
+  },
+  "errorBadRequest": "Ungültige Anfrage",
+  "errorUnauthorized": "Sitzung abgelaufen. Bitte erneut anmelden.",
+  "errorForbidden": "Keine Berechtigung dafür",
+  "errorNotFound": "Nicht gefunden",
+  "errorConflict": "Existiert bereits (Konflikt)",
+  "errorUnprocessable": "Ungültige Daten",
+  "errorTooMany": "Zu viele Versuche. Bitte kurz warten.",
+  "errorServer": "Serverfehler. Bitte später erneut versuchen.",
+  "errorTimeout": "Zeitüberschreitung. Verbindung prüfen.",
+  "errorNetwork": "Keine Verbindung zum Server."
 }

@@ -612,5 +612,15 @@
     "contest": "Concorso",
     "activity": "Attività",
     "other": "Altre"
-  }
+  },
+  "errorBadRequest": "Richiesta non valida",
+  "errorUnauthorized": "Sessione scaduta. Accedete di nuovo.",
+  "errorForbidden": "Non avete il permesso",
+  "errorNotFound": "Non trovato",
+  "errorConflict": "Esiste già (conflitto)",
+  "errorUnprocessable": "Dati non validi",
+  "errorTooMany": "Troppi tentativi. Attendete un momento.",
+  "errorServer": "Errore del server. Riprova più tardi.",
+  "errorTimeout": "Timeout. Controlla la connessione.",
+  "errorNetwork": "Nessuna connessione al server."
 }

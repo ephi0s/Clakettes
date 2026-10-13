@@ -12,7 +12,7 @@ Puertos (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `
 
 ## Backend (`backend/`, detalle en [BACKEND.md](BACKEND.md) y [DATABASE.md](DATABASE.md))
 
-Capas: Routers (35) → Services (34) → Models (35), tipos vía `app.enums`.
+Capas: Routers (36) → Services (36) → Models (34), tipos vía `app.enums`.
 
 | Pieza | Dónde | Regla |
 |---|---|---|
@@ -21,11 +21,11 @@ Capas: Routers (35) → Services (34) → Models (35), tipos vía `app.enums`.
 | Auth | `app/auth.py:validate_access_token` | Firma + `type=access` + sesión activa/no revocada/no expirada; `last_used_at` lazy (5 min) |
 | Auth opcional | `routers/dependencies.py:get_current_user_optional` | Endpoints públicos sin 401 |
 | Permisos | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
-| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, 1 instancia, buckets `middleware:`/`dav:`) | Desactivado con `TESTING=true` |
+| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, buckets `middleware:`/`dav:`; instancias en `main`/`admin`/`auth`) | Desactivado con `TESTING=true` |
 | Chat realtime | `app/chat_backend/` (WebSocket) + REST en `routers/chat.py` | WS valida sesión vía `validate_access_token` |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefijo `/dav`, bucket propio 600/60s) | Token bearer en URL; TLS obligatorio en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import perezoso |
-| Migraciones | `alembic/` (15) | Prod solo Alembic; dev además `create_all` |
+| Migraciones | `alembic/` (18) | Prod solo Alembic; dev además `create_all` |
 
 ## Frontend (`frontend/`)
 

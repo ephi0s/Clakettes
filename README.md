@@ -79,9 +79,9 @@ Consulta la referencia completa del arranque y despliegue en [docs/HERRAMIENTAS.
 Crea o ajusta `backend/.env` con al menos:
 
 ```env
-DATABASE_URL=sqlite:///./app.db
+DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
-CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+CORS_ORIGINS=https://tu-dominio.com
 ```
 
 Para entorno productivo se usa MariaDB; los scripts y la documentación de despliegue lo gestionan con Docker.
@@ -98,14 +98,14 @@ El arranque automático del proyecto ya configura esto cuando se usa `start.*`.
 
 ## Estado del proyecto
 
-🚧 **En desarrollo activo** — Festivales, cortos, chat con E2EE, mapas, modo offline y 9 idiomas funcionando; con tests en backend (~1320) y frontend (70 archivos).
+🚧 **En desarrollo activo** — Festivales, cortos, chat con E2EE, mapas, modo offline y 9 idiomas funcionando; con tests en backend (~1400) y frontend (69 archivos).
 
 **Roadmap próximo:**
 
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [ ] Documentación API OpenAPI exportable
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
 
 ## Documentación del proyecto
 
@@ -140,7 +140,7 @@ Además, el punto de partida para desarrollo y convención de proyecto es [AGENT
 
 > Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos y convenciones) y en el índice de [`docs/`](docs/README.md) (guías por rol: funcional, uso, administración, infraestructura, seguridad, arquitectura, API).
 
-**De un vistazo**: backend FastAPI en capas (routers → servicios → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 15 migraciones Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
+**De un vistazo**: backend FastAPI en capas (routers → servicios → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migraciones Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
 
 ```bash
 # Tests

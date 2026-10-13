@@ -18,6 +18,7 @@
 Sin Docker, el lanzador crea un entorno bare-metal local: detecta Python 3.12+ y Flutter, muestra cómo instalarlos según tu SO y ofrece instalarlos con `-InstallMissing` (pregunta antes salvo que vayas con el flag).
 
 URLs dev: backend `http://localhost:8000` (Swagger en `/docs`), frontend `http://localhost:3000`.
+Si el puerto está ocupado se reasigna solo (mira `[PUERTO]` en la salida).
 Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 
 ## Configuración
@@ -25,7 +26,7 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 | Variable / flag | Dónde | Efecto |
 |---|---|---|
 | `BACKEND_URL` | `--dart-define` o pantalla de backend en la app | URL del API (persiste en SharedPreferences) |
-| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev) o `mariadb+pymysql://…` (prod) |
+| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; en Docker `./data/clakettes.db`) o `mariadb+pymysql://…?ssl_ca=…` (prod, TLS obligatorio) |
 | `SECRET_KEY` | env (obligatoria en `APP_ENV=production`) | Firma JWT; default inseguro bloquea el arranque en prod |
 | `CORS_ORIGINS` | env | Orígenes explícitos en prod (`*` prohibido con credenciales) |
 | `APP_ENV` | env | `development` crea admin + `create_all`; `production` exige Alembic |

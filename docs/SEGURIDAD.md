@@ -39,6 +39,13 @@
 | Delegación | delegador o admin para editar/revocar |
 | Roles globales | `is_admin`; auto-join solo con rol `attendee` |
 | Roles de canal | `Literal[admin,moderator,member]` (422 fuera de lista) |
+| Pagos | dueño vía inscripción, admin de festival o global; webhook mock con `MOCK_WEBHOOK_SECRET` |
+
+## Pagos
+
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sin PAN/IBAN en BD: solo importe, moneda, `provider_ref` y estado.
+- Stripe: SDK perezoso + verificación de firma (`STRIPE_WEBHOOK_SECRET`).
+- Redsys: firma HMAC_SHA256_V1 sin SDK; Bizum con `pay_methods="z"` (alta previa en el comercio). Validar contra el sandbox antes de prod.
 
 ## Perímetro
 

@@ -612,5 +612,15 @@
     "contest": "Concurso",
     "activity": "Actividade",
     "other": "Outras"
-  }
+  },
+  "errorBadRequest": "Solicitude non válida",
+  "errorUnauthorized": "Sesión caducada. Volvan entrar.",
+  "errorForbidden": "Non teñen permiso para isto",
+  "errorNotFound": "Non atopado",
+  "errorConflict": "Xa existe (conflito)",
+  "errorUnprocessable": "Datos non válidos",
+  "errorTooMany": "Demasiados intentos. Agarden un pouco.",
+  "errorServer": "Erro do servidor. Inténteno logo.",
+  "errorTimeout": "Tempo esgotado. Revisen a conexión.",
+  "errorNetwork": "Sen conexión co servidor."
 }

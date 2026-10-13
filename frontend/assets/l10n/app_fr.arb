@@ -612,5 +612,15 @@
     "contest": "Concours",
     "activity": "Activité",
     "other": "Autres"
-  }
+  },
+  "errorBadRequest": "Requête invalide",
+  "errorUnauthorized": "Session expirée. Reconnectez-vous.",
+  "errorForbidden": "Vous n'avez pas la permission",
+  "errorNotFound": "Introuvable",
+  "errorConflict": "Existe déjà (conflit)",
+  "errorUnprocessable": "Données invalides",
+  "errorTooMany": "Trop de tentatives. Patientez un moment.",
+  "errorServer": "Erreur serveur. Réessayez plus tard.",
+  "errorTimeout": "Délai dépassé. Vérifiez votre connexion.",
+  "errorNetwork": "Pas de connexion au serveur."
 }

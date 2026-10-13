@@ -612,5 +612,15 @@
     "contest": "Concors",
     "activity": "Activitat",
     "other": "Autras"
-  }
+  },
+  "errorBadRequest": "Requèsta invalida",
+  "errorUnauthorized": "Session expirada. Tornatz vos connectar.",
+  "errorForbidden": "Avetz pas la permission per aquò",
+  "errorNotFound": "Pas trobat",
+  "errorConflict": "Existís ja (conflicte)",
+  "errorUnprocessable": "Donadas invalidas",
+  "errorTooMany": "Tròp d’ensags. Esperatz un moment.",
+  "errorServer": "Error del servidor. Tornatz ensajar mai tard.",
+  "errorTimeout": "Temps esgotat. Verificatz la connexion.",
+  "errorNetwork": "Pas de connexion al servidor."
 }

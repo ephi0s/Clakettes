@@ -612,5 +612,15 @@
     "contest": "Contest",
     "activity": "Activity",
     "other": "Other"
-  }
+  },
+  "errorBadRequest": "Invalid request",
+  "errorUnauthorized": "Session expired. Please log in again.",
+  "errorForbidden": "You don't have permission for this",
+  "errorNotFound": "Not found",
+  "errorConflict": "Already exists (conflict)",
+  "errorUnprocessable": "Invalid data",
+  "errorTooMany": "Too many attempts. Wait a moment.",
+  "errorServer": "Server error. Try again later.",
+  "errorTimeout": "Timed out. Check your connection.",
+  "errorNetwork": "No connection to the server."
 }

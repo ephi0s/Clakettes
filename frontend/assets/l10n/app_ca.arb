@@ -612,5 +612,15 @@
     "contest": "Concurs",
     "activity": "Activitat",
     "other": "Altres"
-  }
+  },
+  "errorBadRequest": "Sol·licitud no vàlida",
+  "errorUnauthorized": "Sessió caducada. Torneu a entrar.",
+  "errorForbidden": "No teniu permís per a això",
+  "errorNotFound": "No s'ha trobat",
+  "errorConflict": "Ja existeix (conflicte)",
+  "errorUnprocessable": "Dades no vàlides",
+  "errorTooMany": "Massa intents. Espereu una mica.",
+  "errorServer": "Error del servidor. Torneu-ho a intentar.",
+  "errorTimeout": "Temps esgotat. Reviseu la connexió.",
+  "errorNetwork": "Sense connexió amb el servidor."
 }

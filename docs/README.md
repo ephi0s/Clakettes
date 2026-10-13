@@ -2,6 +2,11 @@
 
 Este índice es la entrada principal de la documentación del proyecto. Está pensado para que un usuario, un administrador o un desarrollador encuentre la guía correcta sin leer archivos al azar.
 
+## Idiomas
+
+Toda la documentación existe en las 9 lenguas de la plataforma. El español (canario) es el canónico:
+[English](README.en.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [Català](README.ca.md) · [Euskara](README.eu.md) · [Galego](README.gl.md) · [Occitan](README.oc.md).
+
 ## Cómo navegar por la documentación
 
 - **Quiero usar la app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
@@ -40,7 +45,7 @@ Este índice es la entrada principal de la documentación del proyecto. Está pe
 
 1. [USO.md](USO.md)
 2. [FUNCIONAL.md](FUNCIONAL.md)
-3. [SEGURIDAD.md](SEGURIDAD.md) solo si necesitas revisar permisos o entorno productivo
+3. [SEGURIDAD.md](SEGURIDAD.md) solo si necesitan revisar permisos o entorno productivo
 
 ### Administrador de despliegue
 

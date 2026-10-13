@@ -6,11 +6,11 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ## Backend (`backend/`)
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
 - Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
-- Migraciones: `alembic upgrade head` desde `backend/` (15 versiones)
-- Capas: Routers (35 archivos, 33 con APIRouter) → Services (33) → Models (33). Models/Schemas via `app.enums`
+- Migraciones: `alembic upgrade head` desde `backend/` (18 versiones)
+- Capas: Routers (36 archivos, 33 con APIRouter) → Services (36) → Models (34). Models/Schemas via `app.enums`
 - Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s (SQLite)
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (33 archivos, 1321 tests)
+- Tests: `pytest tests/ -x -q --tb=short` (37 archivos, ~1400 tests)
 - Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
 
 ## Frontend (`frontend/`)
@@ -43,6 +43,14 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 
 ## Docs ([docs/README.md](docs/README.md))
 - Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/SEGURIDAD.md](docs/SEGURIDAD.md), [docs/USO.md](docs/USO.md), [docs/DATABASE.md](docs/DATABASE.md), [docs/API.md](docs/API.md)
+- La documentación es oro y va en español (estilo canario, ustedes): al cambiar
+  código que la afecte, actualiza TODA la info pertinente en el mismo cambio —
+  cifras (routers/servicios/modelos/migraciones/tests), endpoints nuevos o
+  movidos (`python tools/gen_api.py --all` para `docs/API.*.md`), flags de arranque,
+  roadmap del README y variables de `.env.example`. Nunca dejes docs desfasadas.
+- La documentación vive en las 9 lenguas de la plataforma (`en,fr,de,it,ca,eu,gl,oc`
+  + español canónico sin sufijo): todo cambio en una doc en español se replica a
+  sus 8 hermanas (`docs/X.<lang>.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.
