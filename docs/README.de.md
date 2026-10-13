@@ -1,7 +1,7 @@
 # Dokumentation — Clakettes
 
 Die gesamte Dokumentation gibt es in den 9 Sprachen der Plattform. Spanisch ist kanonisch:
-[Español](README.md) · [English](README.en.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Català](README.ca.md) · [Euskara](README.eu.md) · [Galego](README.gl.md) · [Occitan](README.oc.md).
+[ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
 Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er soll Nutzer, Administrator oder Entwickler zur richtigen Anleitung führen, ohne Dateien zufällig zu lesen.
 

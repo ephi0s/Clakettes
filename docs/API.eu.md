@@ -1,5 +1,7 @@
 # API — endpointen erreferentzia
 
+[ES](API.md) · [EN](API.en.md) · [FR](API.fr.md) · [DE](API.de.md) · [IT](API.it.md) · [CA](API.ca.md) · [EU](API.eu.md) · [GL](API.gl.md) · [OC](API.oc.md)
+
 `app/routers/*.py` + `app/main.py`-ko aurrizkietatik sortua.
 Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 

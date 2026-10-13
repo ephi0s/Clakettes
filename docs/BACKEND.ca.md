@@ -1,5 +1,7 @@
 # Clakettes Backend — Documentació tècnica
 
+[ES](BACKEND.md) · [EN](BACKEND.en.md) · [FR](BACKEND.fr.md) · [DE](BACKEND.de.md) · [IT](BACKEND.it.md) · [CA](BACKEND.ca.md) · [EU](BACKEND.eu.md) · [GL](BACKEND.gl.md) · [OC](BACKEND.oc.md)
+
 Backend FastAPI per a la plataforma de gestió de festivals de cinema Clakettes.
 
 ## Inici ràpid

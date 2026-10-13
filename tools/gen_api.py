@@ -103,6 +103,13 @@ LANGS = {
 }
 
 
+LANGS_BAR = (
+    "[ES](API.md) · [EN](API.en.md) · [FR](API.fr.md) · "
+    "[DE](API.de.md) · [IT](API.it.md) · [CA](API.ca.md) · "
+    "[EU](API.eu.md) · [GL](API.gl.md) · [OC](API.oc.md)"
+)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--lang", default="es", choices=sorted(LANGS))
@@ -116,7 +123,7 @@ def main() -> None:
 
     for lang in langs:
         t = LANGS[lang]
-        out = [t["title"], "", t["gen"], t["detail"], ""]
+        out = [t["title"], "", LANGS_BAR, "", t["gen"], t["detail"], ""]
         total = 0
         for f in sorted(ROUTERS.glob("*.py")):
             if f.name == "__init__.py":

@@ -1,5 +1,7 @@
 # Azpiegitura — Clakettes
 
+[ES](INFRAESTRUCTURA.md) · [EN](INFRAESTRUCTURA.en.md) · [FR](INFRAESTRUCTURA.fr.md) · [DE](INFRAESTRUCTURA.de.md) · [IT](INFRAESTRUCTURA.it.md) · [CA](INFRAESTRUCTURA.ca.md) · [EU](INFRAESTRUCTURA.eu.md) · [GL](INFRAESTRUCTURA.gl.md) · [OC](INFRAESTRUCTURA.oc.md)
+
 Profilak, portuak, ingurunea eta CI. Eguneroko operatiba [USO.md](USO.eu.md)-n, gogortze-checklist-a [SEGURIDAD.md](SEGURIDAD.eu.md)-n.
 
 ## Docker profilak (`docker-compose.yml`)

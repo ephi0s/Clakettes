@@ -1,5 +1,7 @@
 # API — endpoint reference
 
+[ES](API.md) · [EN](API.en.md) · [FR](API.fr.md) · [DE](API.de.md) · [IT](API.it.md) · [CA](API.ca.md) · [EU](API.eu.md) · [GL](API.gl.md) · [OC](API.oc.md)
+
 Generated from `app/routers/*.py` + prefixes in `app/main.py`.
 Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 

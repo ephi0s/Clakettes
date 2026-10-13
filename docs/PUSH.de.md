@@ -1,5 +1,7 @@
 # Push / Erinnerungen — Entscheidung: nativ, ohne Firebase
 
+[ES](PUSH.md) · [EN](PUSH.en.md) · [FR](PUSH.fr.md) · [DE](PUSH.de.md) · [IT](PUSH.it.md) · [CA](PUSH.ca.md) · [EU](PUSH.eu.md) · [GL](PUSH.gl.md) · [OC](PUSH.oc.md)
+
 Ohne Firebase noch externe Anbieter. Strategie je Plattform:
 
 | Plataforma | Mecanismo | Estado |

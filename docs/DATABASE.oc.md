@@ -1,5 +1,7 @@
 # Documentacion de la banca de donadas
 
+[ES](DATABASE.md) · [EN](DATABASE.en.md) · [FR](DATABASE.fr.md) · [DE](DATABASE.de.md) · [IT](DATABASE.it.md) · [CA](DATABASE.ca.md) · [EU](DATABASE.eu.md) · [GL](DATABASE.gl.md) · [OC](DATABASE.oc.md)
+
 ## Descripcion generala
 
 Clakettes utiliza una configuracion amb doas bancas de donadas:

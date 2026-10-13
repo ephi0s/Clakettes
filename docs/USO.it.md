@@ -1,5 +1,7 @@
 # Uso — Clakettes
 
+[ES](USO.md) · [EN](USO.en.md) · [FR](USO.fr.md) · [DE](USO.de.md) · [IT](USO.it.md) · [CA](USO.ca.md) · [EU](USO.eu.md) · [GL](USO.gl.md) · [OC](USO.oc.md)
+
 ## Avvio rapido
 
 | Quiero | Comando |

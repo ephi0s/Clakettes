@@ -1,5 +1,7 @@
 # Administrazioa — Clakettes
 
+[ES](ADMINISTRACION.md) · [EN](ADMINISTRACION.en.md) · [FR](ADMINISTRACION.fr.md) · [DE](ADMINISTRACION.de.md) · [IT](ADMINISTRACION.it.md) · [CA](ADMINISTRACION.ca.md) · [EU](ADMINISTRACION.eu.md) · [GL](ADMINISTRACION.gl.md) · [OC](ADMINISTRACION.oc.md)
+
 Hedapen bat operatzen duenari zuzendutako gida. Azpiegitura [INFRAESTRUCTURA.md](INFRAESTRUCTURA.eu.md)-n, ekoizpeneko checklist-a [SEGURIDAD.md](SEGURIDAD.eu.md)-n.
 
 ## Hasierako kontua

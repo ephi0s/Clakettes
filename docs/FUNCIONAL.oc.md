@@ -1,5 +1,7 @@
 # Fonctionau — çò que se pòt far en Clakettes
 
+[ES](FUNCIONAL.md) · [EN](FUNCIONAL.en.md) · [FR](FUNCIONAL.fr.md) · [DE](FUNCIONAL.de.md) · [IT](FUNCIONAL.it.md) · [CA](FUNCIONAL.ca.md) · [EU](FUNCIONAL.eu.md) · [GL](FUNCIONAL.gl.md) · [OC](FUNCIONAL.oc.md)
+
 Utilitat reala del projècte per ròtle, amb lo flux que la sosten. Detalh operatiu en [USO.oc.md](USO.oc.md), referéncia d'endpoints en [API.oc.md](API.oc.md).
 
 ## Festivau (organizer)

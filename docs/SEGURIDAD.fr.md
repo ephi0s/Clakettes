@@ -1,5 +1,7 @@
 # Sécurité — modèle et liste de contrôle
 
+[ES](SEGURIDAD.md) · [EN](SEGURIDAD.en.md) · [FR](SEGURIDAD.fr.md) · [DE](SEGURIDAD.de.md) · [IT](SEGURIDAD.it.md) · [CA](SEGURIDAD.ca.md) · [EU](SEGURIDAD.eu.md) · [GL](SEGURIDAD.gl.md) · [OC](SEGURIDAD.oc.md)
+
 ## Tokens et sessions
 
 - Access JWT (HS256, 30 min, `type=access`, `jti` unique) + refresh opaque (SHA-256 en BD,

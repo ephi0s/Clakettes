@@ -1,5 +1,7 @@
 # Kode-auditoria — Clakettes (09/10/2026, plataforma-aniztasun zabalkuntza 09/10/2026, berrik. 10/10/2026)
 
+[ES](AUDITORIA.md) · [EN](AUDITORIA.en.md) · [FR](AUDITORIA.fr.md) · [DE](AUDITORIA.de.md) · [IT](AUDITORIA.it.md) · [CA](AUDITORIA.ca.md) · [EU](AUDITORIA.eu.md) · [GL](AUDITORIA.gl.md) · [OC](AUDITORIA.oc.md)
+
 > **11/10/2026ko gehigarria** (zifra egiaztatuak): backend-ean 1402 test 37 fitxategitan;
 > router-ak 36 fitxategi (33 `APIRouter`-dun); services 36; models 34; schemas 33;
 > Alembic 18 bertsio; `docs/API.md` 310 endpoint (operationId bakarrak).

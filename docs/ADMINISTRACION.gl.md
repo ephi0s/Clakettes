@@ -1,5 +1,7 @@
 # Administración — Clakettes
 
+[ES](ADMINISTRACION.md) · [EN](ADMINISTRACION.en.md) · [FR](ADMINISTRACION.fr.md) · [DE](ADMINISTRACION.de.md) · [IT](ADMINISTRACION.it.md) · [CA](ADMINISTRACION.ca.md) · [EU](ADMINISTRACION.eu.md) · [GL](ADMINISTRACION.gl.md) · [OC](ADMINISTRACION.oc.md)
+
 Guía para quen opera un despregamento. Infraestrutura en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.gl.md), lista de comprobación de produción en [SEGURIDAD.md](SEGURIDAD.gl.md).
 
 ## Conta inicial

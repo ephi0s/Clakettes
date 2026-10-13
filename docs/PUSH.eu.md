@@ -1,5 +1,7 @@
 # Push / gogorarazleak — erabakia: natiboa, Firebase gabe
 
+[ES](PUSH.md) · [EN](PUSH.en.md) · [FR](PUSH.fr.md) · [DE](PUSH.de.md) · [IT](PUSH.it.md) · [CA](PUSH.ca.md) · [EU](PUSH.eu.md) · [GL](PUSH.gl.md) · [OC](PUSH.oc.md)
+
 Firebase-rik ez kanpo-hornitzailerik ez. Plataformako estrategia:
 
 | Plataforma | Mecanismo | Estado |

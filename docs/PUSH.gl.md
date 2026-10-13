@@ -1,5 +1,7 @@
 # Push / recordatorios — decisión: nativo, sen Firebase
 
+[ES](PUSH.md) · [EN](PUSH.en.md) · [FR](PUSH.fr.md) · [DE](PUSH.de.md) · [IT](PUSH.it.md) · [CA](PUSH.ca.md) · [EU](PUSH.eu.md) · [GL](PUSH.gl.md) · [OC](PUSH.oc.md)
+
 Sen Firebase nin provedores externos. Estratexia por plataforma:
 
 | Plataforma | Mecanismo | Estado |

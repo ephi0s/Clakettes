@@ -1,5 +1,7 @@
 # Architecture — Clakettes
 
+[ES](ARQUITECTURA.md) · [EN](ARQUITECTURA.en.md) · [FR](ARQUITECTURA.fr.md) · [DE](ARQUITECTURA.de.md) · [IT](ARQUITECTURA.it.md) · [CA](ARQUITECTURA.ca.md) · [EU](ARQUITECTURA.eu.md) · [GL](ARQUITECTURA.gl.md) · [OC](ARQUITECTURA.oc.md)
+
 ## Map
 
 ```

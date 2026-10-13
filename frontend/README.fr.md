@@ -1,5 +1,7 @@
 # Clakettes — Frontend
 
+[ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
+
 Frontend Flutter multiplateforme pour la plateforme de gestion de festivals de cinéma.
 
 ## Stack technologique

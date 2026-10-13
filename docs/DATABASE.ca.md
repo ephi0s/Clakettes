@@ -1,5 +1,7 @@
 # Documentació de la base de dades
 
+[ES](DATABASE.md) · [EN](DATABASE.en.md) · [FR](DATABASE.fr.md) · [DE](DATABASE.de.md) · [IT](DATABASE.it.md) · [CA](DATABASE.ca.md) · [EU](DATABASE.eu.md) · [GL](DATABASE.gl.md) · [OC](DATABASE.oc.md)
+
 ## Descripció general
 
 Clakettes utilitza una configuració amb dues bases de dades:

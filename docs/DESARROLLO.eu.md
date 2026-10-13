@@ -1,5 +1,7 @@
 # Garapena — konbentzioak
 
+[ES](DESARROLLO.md) · [EN](DESARROLLO.en.md) · [FR](DESARROLLO.fr.md) · [DE](DESARROLLO.de.md) · [IT](DESARROLLO.it.md) · [CA](DESARROLLO.ca.md) · [EU](DESARROLLO.eu.md) · [GL](DESARROLLO.gl.md) · [OC](DESARROLLO.oc.md)
+
 ## Backend-a: endpoint bat gehitzea
 
 1. Schema `app/schemas/`-n (Pydantic v2; rol itxiak `Literal`-ekin).

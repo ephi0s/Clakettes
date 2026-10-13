@@ -1,5 +1,7 @@
 # Aisinas build / test / dev — Clakettes
 
+[ES](HERRAMIENTAS.md) · [EN](HERRAMIENTAS.en.md) · [FR](HERRAMIENTAS.fr.md) · [DE](HERRAMIENTAS.de.md) · [IT](HERRAMIENTAS.it.md) · [CA](HERRAMIENTAS.ca.md) · [EU](HERRAMIENTAS.eu.md) · [GL](HERRAMIENTAS.gl.md) · [OC](HERRAMIENTAS.oc.md)
+
 ## Matritz de comandas
 
 | Objetivo | Comando | Dónde |

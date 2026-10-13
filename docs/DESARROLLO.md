@@ -1,5 +1,7 @@
 # Desarrollo — convenciones
 
+[ES](DESARROLLO.md) · [EN](DESARROLLO.en.md) · [FR](DESARROLLO.fr.md) · [DE](DESARROLLO.de.md) · [IT](DESARROLLO.it.md) · [CA](DESARROLLO.ca.md) · [EU](DESARROLLO.eu.md) · [GL](DESARROLLO.gl.md) · [OC](DESARROLLO.oc.md)
+
 ## Backend: añadir un endpoint
 
 1. Schema en `app/schemas/` (Pydantic v2; roles cerrados con `Literal`).

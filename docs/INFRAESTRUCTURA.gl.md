@@ -1,5 +1,7 @@
 # Infraestrutura — Clakettes
 
+[ES](INFRAESTRUCTURA.md) · [EN](INFRAESTRUCTURA.en.md) · [FR](INFRAESTRUCTURA.fr.md) · [DE](INFRAESTRUCTURA.de.md) · [IT](INFRAESTRUCTURA.it.md) · [CA](INFRAESTRUCTURA.ca.md) · [EU](INFRAESTRUCTURA.eu.md) · [GL](INFRAESTRUCTURA.gl.md) · [OC](INFRAESTRUCTURA.oc.md)
+
 Perfís, portos, entorno e CI. Operativa diaria en [USO.md](USO.gl.md), lista de endurecido en [SEGURIDAD.md](SEGURIDAD.gl.md).
 
 ## Perfís Docker (`docker-compose.yml`)

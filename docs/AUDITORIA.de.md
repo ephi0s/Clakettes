@@ -1,5 +1,7 @@
 # Code-Audit — Clakettes (09/10/2026, erw. Multiplattform 09/10/2026, Rev. 10/10/2026)
 
+[ES](AUDITORIA.md) · [EN](AUDITORIA.en.md) · [FR](AUDITORIA.fr.md) · [DE](AUDITORIA.de.md) · [IT](AUDITORIA.it.md) · [CA](AUDITORIA.ca.md) · [EU](AUDITORIA.eu.md) · [GL](AUDITORIA.gl.md) · [OC](AUDITORIA.oc.md)
+
 > **Nachtrag 11/10/2026** (verifizierte Zahlen): Backend 1402 Tests in 37 Dateien;
 > Router 36 Dateien (33 mit `APIRouter`); Services 36; Models 34; Schemas 33;
 > Alembic 18 Versionen; `docs/API.md` 310 Endpunkte (eindeutige operationIds).

@@ -1,5 +1,7 @@
 # Seguridad — modelo y checklist
 
+[ES](SEGURIDAD.md) · [EN](SEGURIDAD.en.md) · [FR](SEGURIDAD.fr.md) · [DE](SEGURIDAD.de.md) · [IT](SEGURIDAD.it.md) · [CA](SEGURIDAD.ca.md) · [EU](SEGURIDAD.eu.md) · [GL](SEGURIDAD.gl.md) · [OC](SEGURIDAD.oc.md)
+
 ## Tokens y sesiones
 
 - Access JWT (HS256, 30 min, `type=access`, `jti` único) + refresh opaco (SHA-256 en BD,

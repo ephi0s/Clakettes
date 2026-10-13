@@ -1,5 +1,7 @@
 # API — Endpunktreferenz
 
+[ES](API.md) · [EN](API.en.md) · [FR](API.fr.md) · [DE](API.de.md) · [IT](API.it.md) · [CA](API.ca.md) · [EU](API.eu.md) · [GL](API.gl.md) · [OC](API.oc.md)
+
 Erzeugt aus `app/routers/*.py` + Präfixen in `app/main.py`.
 Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 

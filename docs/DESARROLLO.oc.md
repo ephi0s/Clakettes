@@ -1,5 +1,7 @@
 # Desvolopament — convencions
 
+[ES](DESARROLLO.md) · [EN](DESARROLLO.en.md) · [FR](DESARROLLO.fr.md) · [DE](DESARROLLO.de.md) · [IT](DESARROLLO.it.md) · [CA](DESARROLLO.ca.md) · [EU](DESARROLLO.eu.md) · [GL](DESARROLLO.gl.md) · [OC](DESARROLLO.oc.md)
+
 ## Backend: apondre un endpoint
 
 1. Schema en `app/schemas/` (Pydantic v2; ròtles tampats amb `Literal`).

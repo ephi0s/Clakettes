@@ -1,5 +1,7 @@
 # Push / recordatoris — decisió: natiu, sense Firebase
 
+[ES](PUSH.md) · [EN](PUSH.en.md) · [FR](PUSH.fr.md) · [DE](PUSH.de.md) · [IT](PUSH.it.md) · [CA](PUSH.ca.md) · [EU](PUSH.eu.md) · [GL](PUSH.gl.md) · [OC](PUSH.oc.md)
+
 Sense Firebase ni proveïdors externs. Estratègia per plataforma:
 
 | Plataforma | Mecanismo | Estado |

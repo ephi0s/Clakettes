@@ -1,5 +1,7 @@
 # Clakettes — Frontend-a
 
+[ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
+
 Zine-jaialdien kudeaketa plataformarako Flutter frontend multiplataforma.
 
 ## Pila teknologikoa

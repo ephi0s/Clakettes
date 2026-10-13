@@ -1,5 +1,7 @@
 # Funtzionala — zer egin daitekeen Clakettes-en
 
+[ES](FUNCIONAL.md) · [EN](FUNCIONAL.en.md) · [FR](FUNCIONAL.fr.md) · [DE](FUNCIONAL.de.md) · [IT](FUNCIONAL.it.md) · [CA](FUNCIONAL.ca.md) · [EU](FUNCIONAL.eu.md) · [GL](FUNCIONAL.gl.md) · [OC](FUNCIONAL.oc.md)
+
 Proiektuaren benetako erabilgarritasuna rol bakoitzeko, eusten dion fluxuarekin. Xehetasun operatiboa [USO.md](USO.eu.md)-n, endpoint-en erreferentzia [API.md](API.md)-n.
 
 ## Jaialdia (organizer)

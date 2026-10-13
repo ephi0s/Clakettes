@@ -1,5 +1,7 @@
 # Datu-basearen dokumentazioa
 
+[ES](DATABASE.md) · [EN](DATABASE.en.md) · [FR](DATABASE.fr.md) · [DE](DATABASE.de.md) · [IT](DATABASE.it.md) · [CA](DATABASE.ca.md) · [EU](DATABASE.eu.md) · [GL](DATABASE.gl.md) · [OC](DATABASE.oc.md)
+
 ## Ikuspegi orokorra
 
 Clakettes-ek bi datu-baseko konfigurazioa erabiltzen du:

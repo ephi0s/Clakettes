@@ -1,5 +1,7 @@
 # Administration — Clakettes
 
+[ES](ADMINISTRACION.md) · [EN](ADMINISTRACION.en.md) · [FR](ADMINISTRACION.fr.md) · [DE](ADMINISTRACION.de.md) · [IT](ADMINISTRACION.it.md) · [CA](ADMINISTRACION.ca.md) · [EU](ADMINISTRACION.eu.md) · [GL](ADMINISTRACION.gl.md) · [OC](ADMINISTRACION.oc.md)
+
 Anleitung für alle, die ein Deployment betreiben. Infrastruktur in [INFRAESTRUCTURA.de.md](INFRAESTRUCTURA.de.md), Produktions-Checkliste in [SEGURIDAD.de.md](SEGURIDAD.de.md).
 
 ## Initiales Konto

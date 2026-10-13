@@ -1,5 +1,7 @@
 # Sicherheit — Modell und Checkliste
 
+[ES](SEGURIDAD.md) · [EN](SEGURIDAD.en.md) · [FR](SEGURIDAD.fr.md) · [DE](SEGURIDAD.de.md) · [IT](SEGURIDAD.it.md) · [CA](SEGURIDAD.ca.md) · [EU](SEGURIDAD.eu.md) · [GL](SEGURIDAD.gl.md) · [OC](SEGURIDAD.oc.md)
+
 ## Tokens und Sitzungen
 
 - Access-JWT (HS256, 30 Min, `type=access`, eindeutige `jti`) + opaker Refresh (SHA-256 in DB,

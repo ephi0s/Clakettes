@@ -1,7 +1,7 @@
 # Documentació — Clakettes
 
 Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol és canònic:
-[Español](README.md) · [English](README.en.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Italiano](README.it.md) · [Euskara](README.eu.md) · [Galego](README.gl.md) · [Occitan](README.oc.md).
+[ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
 Aquest índex és l'entrada principal de la documentació del projecte. Està pensat perquè un usuari, un administrador o un desenvolupador trobi la guia correcta sense llegir fitxers a l'atzar.
 

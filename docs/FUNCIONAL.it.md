@@ -1,5 +1,7 @@
 # Funzionale — cosa si può fare in Clakettes
 
+[ES](FUNCIONAL.md) · [EN](FUNCIONAL.en.md) · [FR](FUNCIONAL.fr.md) · [DE](FUNCIONAL.de.md) · [IT](FUNCIONAL.it.md) · [CA](FUNCIONAL.ca.md) · [EU](FUNCIONAL.eu.md) · [GL](FUNCIONAL.gl.md) · [OC](FUNCIONAL.oc.md)
+
 Utilità reale del progetto per ruolo, con il flusso che la sostiene. Dettaglio operativo in [USO.it.md](USO.it.md), riferimento degli endpoint in [API.md](API.md).
 
 ## Festival (organizer)
