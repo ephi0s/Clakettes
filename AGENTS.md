@@ -41,16 +41,17 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - `graphify query "<pregunta>"` responde sobre arquitectura sin leer archivos
 - `graphify .` para regenerar (o skill graphify)
 
-## Docs ([docs/README.md](docs/README.md))
-- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/SEGURIDAD.md](docs/SEGURIDAD.md), [docs/USO.md](docs/USO.md), [docs/DATABASE.md](docs/DATABASE.md), [docs/API.md](docs/API.md)
+## Docs ([docs/es/README.md](docs/es/README.md))
+- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md), [docs/es/USO.md](docs/es/USO.md), [docs/es/DATABASE.md](docs/es/DATABASE.md), [docs/es/API.md](docs/es/API.md)
 - La documentación es oro y va en español (estilo canario, ustedes): al cambiar
   código que la afecte, actualiza TODA la info pertinente en el mismo cambio —
   cifras (routers/servicios/modelos/migraciones/tests), endpoints nuevos o
-  movidos (`python tools/gen_api.py --all` para `docs/API.*.md`), flags de arranque,
+  movidos (`python tools/gen_api.py --all` para `docs/<idioma>/API.md`), flags de arranque,
   roadmap del README y variables de `.env.example`. Nunca dejes docs desfasadas.
-- La documentación vive en las 9 lenguas de la plataforma (`en,fr,de,it,ca,eu,gl,oc`
-  + español canónico sin sufijo): todo cambio en una doc en español se replica a
-  sus 8 hermanas (`docs/X.<lang>.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- La documentación vive en las carpetas `docs/es/`, `docs/en/`, `docs/fr/`,
+  `docs/de/`, `docs/it/`, `docs/ca/`, `docs/eu/`, `docs/gl/` y `docs/oc/`.
+  El español es canónico: todo cambio en una doc en español se replica a sus
+  8 hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.

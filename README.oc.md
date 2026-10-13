@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Consulta la referéncia completa de l'aviada e desplegament en [docs/HERRAMIENTAS.oc.md](docs/HERRAMIENTAS.oc.md) e [docs/USO.oc.md](docs/USO.oc.md).
+Consulta la referéncia completa de l'aviada e desplegament en [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md) e [docs/oc/USO.md](docs/oc/USO.md).
 
 ## Variablas d'environa e configuracion
 
@@ -107,40 +107,40 @@ L'aviada automatica del projècte ja configura aquò quand s'utiliza `start.*`.
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/oc/API.md` regenerado)
 
 ## Documentacion del projècte
 
-Lo mapa de documentacion es en [docs/README.oc.md](docs/README.oc.md). Es la melhor intrada per cada tipe d'utilizaire:
+Lo mapa de documentacion es en [docs/oc/README.md](docs/oc/README.md). Es la melhor intrada per cada tipe d'utilizaire:
 
-- [docs/USO.oc.md](docs/USO.oc.md): aviada, operacion, environa e usatge vidant
-- [docs/ADMINISTRACION.oc.md](docs/ADMINISTRACION.oc.md): administracion, comptes e desplegament
-- [docs/INFRAESTRUCTURA.oc.md](docs/INFRAESTRUCTURA.oc.md): Docker, pòrts, CI e infra
-- [docs/SEGURIDAD.oc.md](docs/SEGURIDAD.oc.md): tokens, politicas e checklist de produccion
-- [docs/ARQUITECTURA.oc.md](docs/ARQUITECTURA.oc.md): arquitectura backend/frontend e fluxes claus
-- [docs/API.oc.md](docs/API.oc.md): referéncia d'endpoints
-- [docs/DESARROLLO.oc.md](docs/DESARROLLO.oc.md): cossí apondre endpoints o ecrans
-- [docs/BACKEND.oc.md](docs/BACKEND.oc.md): guida del backend (capas, config, auth, tèsts)
-- [docs/DATABASE.oc.md](docs/DATABASE.oc.md): esquèma e migracions
+- [docs/oc/USO.md](docs/oc/USO.md): aviada, operacion, environa e usatge vidant
+- [docs/oc/ADMINISTRACION.md](docs/oc/ADMINISTRACION.md): administracion, comptes e desplegament
+- [docs/oc/INFRAESTRUCTURA.md](docs/oc/INFRAESTRUCTURA.md): Docker, pòrts, CI e infra
+- [docs/oc/SEGURIDAD.md](docs/oc/SEGURIDAD.md): tokens, politicas e checklist de produccion
+- [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md): arquitectura backend/frontend e fluxes claus
+- [docs/oc/API.md](docs/oc/API.md): referéncia d'endpoints
+- [docs/oc/DESARROLLO.md](docs/oc/DESARROLLO.md): cossí apondre endpoints o ecrans
+- [docs/oc/BACKEND.md](docs/oc/BACKEND.md): guida del backend (capas, config, auth, tèsts)
+- [docs/oc/DATABASE.md](docs/oc/DATABASE.md): esquèma e migracions
 
 En mai, lo punt de partença per desvolopament e convencion de projècte es [AGENTS.md](AGENTS.md).
 
 ### Veire tanben
 
-- [docs/README.oc.md](docs/README.oc.md): indici generau per audiéncia
-- [docs/HERRAMIENTAS.oc.md](docs/HERRAMIENTAS.oc.md): comandas de build, tèst e aviada
-- [docs/FUNCIONAL.oc.md](docs/FUNCIONAL.oc.md): usatge reau del produch per ròtle
+- [docs/oc/README.md](docs/oc/README.md): indici generau per audiéncia
+- [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md): comandas de build, tèst e aviada
+- [docs/oc/FUNCIONAL.md](docs/oc/FUNCIONAL.md): usatge reau del produch per ròtle
 
 ### FAQ rapida
 
 - **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
 - **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
-- **¿Qué documento debo leer primero?** Si eres usuario, [docs/USO.oc.md](docs/USO.oc.md); si eres desarrollador, [docs/ARQUITECTURA.oc.md](docs/ARQUITECTURA.oc.md).
+- **¿Qué documento debo leer primero?** Si eres usuario, [docs/oc/USO.md](docs/oc/USO.md); si eres desarrollador, [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
 - **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
 
 ## Per desvolopaires
 
-> Detalh complet en [`AGENTS.md`](AGENTS.md) (arquitectura, comandas e convencions) e en l'indici de [`docs/`](docs/README.oc.md) (guidas per ròtle: foncionau, usatge, administracion, infraestructura, seguretat, arquitectura, API).
+> Detalh complet en [`AGENTS.md`](AGENTS.md) (arquitectura, comandas e convencions) e en l'indici de [`docs/`](docs/oc/README.md) (guidas per ròtle: foncionau, usatge, administracion, infraestructura, seguretat, arquitectura, API).
 
 **D'un uèlh**: backend FastAPI en capas (routers → servicis → modèls SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linux, Android) se gerisson amb `start.bat --build-all` e lo jòc de scripts de [docs/HERRAMIENTAS.oc.md](docs/HERRAMIENTAS.oc.md).
+Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linux, Android) se gerisson amb `start.bat --build-all` e lo jòc de scripts de [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md).
 
 ## Solucion de problèmas
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linu
 ### Problèmas amb bancas de donadas o migracions
 
 - Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/USO.oc.md](docs/USO.oc.md) y [docs/DATABASE.oc.md](docs/DATABASE.oc.md).
+- Si cambias de SQLite a MariaDB, revisa [docs/oc/USO.md](docs/oc/USO.md) y [docs/oc/DATABASE.md](docs/oc/DATABASE.md).
 
 ### Frontend amb errors de Flutter
 
 - Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/ARQUITECTURA.oc.md](docs/ARQUITECTURA.oc.md).
+- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
 
 ## Contribuir
 

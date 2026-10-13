@@ -72,7 +72,7 @@ start.bat --build
 start.bat --build-all
 ```
 
-Consulta la referencia completa del arranque y despliegue en [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md) y [docs/USO.md](docs/USO.md).
+Consulta la referencia completa del arranque y despliegue en [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md) y [docs/es/USO.md](docs/es/USO.md).
 
 ## Variables de entorno y configuración
 
@@ -107,40 +107,40 @@ El arranque automático del proyecto ya configura esto cuando se usa `start.*`.
 - [ ] Notificaciones push (Firebase/APNs)
 - [ ] AppImage Linux firmado
 - [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/API.md` regenerado)
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/es/API.md` regenerado)
 
 ## Documentación del proyecto
 
-El mapa de documentación está en [docs/README.md](docs/README.md). Es la mejor entrada para cada tipo de usuario:
+El mapa de documentación está en [docs/es/README.md](docs/es/README.md). Es la mejor entrada para cada tipo de usuario:
 
-- [docs/USO.md](docs/USO.md): arranque, operación, entorno y uso diario
-- [docs/ADMINISTRACION.md](docs/ADMINISTRACION.md): administración, cuentas y despliegue
-- [docs/INFRAESTRUCTURA.md](docs/INFRAESTRUCTURA.md): Docker, puertos, CI y infra
-- [docs/SEGURIDAD.md](docs/SEGURIDAD.md): tokens, políticas y checklist de producción
-- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): arquitectura backend/frontend y flujos clave
-- [docs/API.md](docs/API.md): referencia de endpoints
-- [docs/DESARROLLO.md](docs/DESARROLLO.md): cómo añadir endpoints o pantallas
-- [docs/BACKEND.md](docs/BACKEND.md): guía del backend (capas, config, auth, tests)
-- [docs/DATABASE.md](docs/DATABASE.md): esquema y migraciones
+- [docs/es/USO.md](docs/es/USO.md): arranque, operación, entorno y uso diario
+- [docs/es/ADMINISTRACION.md](docs/es/ADMINISTRACION.md): administración, cuentas y despliegue
+- [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md): Docker, puertos, CI y infra
+- [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md): tokens, políticas y checklist de producción
+- [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md): arquitectura backend/frontend y flujos clave
+- [docs/es/API.md](docs/es/API.md): referencia de endpoints
+- [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md): cómo añadir endpoints o pantallas
+- [docs/es/BACKEND.md](docs/es/BACKEND.md): guía del backend (capas, config, auth, tests)
+- [docs/es/DATABASE.md](docs/es/DATABASE.md): esquema y migraciones
 
 Además, el punto de partida para desarrollo y convención de proyecto es [AGENTS.md](AGENTS.md).
 
 ### Ver también
 
-- [docs/README.md](docs/README.md): índice general por audiencia
-- [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md): comandos de build, test y arranque
-- [docs/FUNCIONAL.md](docs/FUNCIONAL.md): uso real del producto por rol
+- [docs/es/README.md](docs/es/README.md): índice general por audiencia
+- [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md): comandos de build, test y arranque
+- [docs/es/FUNCIONAL.md](docs/es/FUNCIONAL.md): uso real del producto por rol
 
 ### FAQ rápida
 
 - **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
 - **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
-- **¿Qué documento debo leer primero?** Si eres usuario, [docs/USO.md](docs/USO.md); si eres desarrollador, [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+- **¿Qué documento debo leer primero?** Si eres usuario, [docs/es/USO.md](docs/es/USO.md); si eres desarrollador, [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md).
 - **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
 
 ## Para desarrolladores
 
-> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos y convenciones) y en el índice de [`docs/`](docs/README.md) (guías por rol: funcional, uso, administración, infraestructura, seguridad, arquitectura, API).
+> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos y convenciones) y en el índice de [`docs/`](docs/es/README.md) (guías por rol: funcional, uso, administración, infraestructura, seguridad, arquitectura, API).
 
 **De un vistazo**: backend FastAPI en capas (routers → servicios → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migraciones Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
 
@@ -175,7 +175,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Linux, Android) se gestionan con `start.bat --build-all` y el conjunto de scripts de [docs/HERRAMIENTAS.md](docs/HERRAMIENTAS.md).
+Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Linux, Android) se gestionan con `start.bat --build-all` y el conjunto de scripts de [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md).
 
 ## Solución de problemas
 
@@ -194,12 +194,12 @@ Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Lin
 ### Problemas con bases de datos o migraciones
 
 - Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/USO.md](docs/USO.md) y [docs/DATABASE.md](docs/DATABASE.md).
+- Si cambias de SQLite a MariaDB, revisa [docs/es/USO.md](docs/es/USO.md) y [docs/es/DATABASE.md](docs/es/DATABASE.md).
 
 ### Frontend con errores de Flutter
 
 - Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md).
 
 ## Contribuir
 

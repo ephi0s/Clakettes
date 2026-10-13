@@ -104,9 +104,9 @@ LANGS = {
 
 
 LANGS_BAR = (
-    "[ES](API.md) · [EN](API.en.md) · [FR](API.fr.md) · "
-    "[DE](API.de.md) · [IT](API.it.md) · [CA](API.ca.md) · "
-    "[EU](API.eu.md) · [GL](API.gl.md) · [OC](API.oc.md)"
+    "[ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · "
+    "[DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · "
+    "[EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)"
 )
 
 
@@ -171,7 +171,8 @@ def main() -> None:
                 total += 1
             out.append("")
         out.append(t["total"].format(n=total, m=len(prefix_of)))
-        target = DOCS / ("API.md" if lang == "es" else f"API.{lang}.md")
+        target = DOCS / lang / "API.md"
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text("\n".join(out), encoding="utf-8")
         print(lang, "endpoints:", total, "| routers con prefijo:", len(prefix_of))
 
