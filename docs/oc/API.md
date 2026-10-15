@@ -29,6 +29,24 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | DELETE | `/api/auth/sessions/{session_id}` | òc |
 | POST | `/api/auth/sessions/revoke-all` | òc |
 
+## `badges` → `/api`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| GET | `/api/badges/status` | non |
+| PUT | `/api/badges/settings` | òc |
+| GET | `/api/badges/` | opcional |
+| POST | `/api/badges/` | òc |
+| GET | `/api/badges/{badge_id}` | opcional |
+| PUT | `/api/badges/{badge_id}` | òc |
+| DELETE | `/api/badges/{badge_id}` | òc |
+| POST | `/api/badges/{badge_id}/image` | òc |
+| GET | `/api/badges/{badge_id}/eligibility` | opcional |
+| POST | `/api/badges/{badge_id}/assign` | òc |
+| DELETE | `/api/badge-assignments/{assignment_id}` | òc |
+| GET | `/api/users/{user_id}/badges/` | opcional |
+| GET | `/api/festivals/{festival_id}/badges/` | opcional |
+
 ## `calendar` → `/api/calendar`
 
 | Metòde | Camin | Auth |
@@ -315,6 +333,21 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | POST | `/api/payments/{payment_id}/refund` | òc |
 | POST | `/api/payments/webhook/mock` | non |
 
+## `posts` → `/api`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| GET | `/api/users/{user_id}/posts/` | opcional |
+| POST | `/api/users/{user_id}/posts/` | òc |
+| GET | `/api/festivals/{festival_id}/posts/` | opcional |
+| POST | `/api/festivals/{festival_id}/posts/` | òc |
+| GET | `/api/posts/{post_id}` | opcional |
+| PUT | `/api/posts/{post_id}` | òc |
+| DELETE | `/api/posts/{post_id}` | òc |
+| GET | `/api/posts/{post_id}/replies/` | opcional |
+| POST | `/api/posts/{post_id}/replies/` | òc |
+| POST | `/api/posts/{post_id}/moderate` | òc |
+
 ## `registration_forms` → `/api`
 
 | Metòde | Camin | Auth |
@@ -480,4 +513,4 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | òc |
 
-Total: 310 endpoints en 33 routers.
+Total: 333 endpoints en 35 routers.

@@ -41,9 +41,18 @@ Initialer Admin (nur Nicht-Prod): `admin` / `setup` — nach dem Login ändern.
 - **Logs**: Uvicorn-Stdout (DAV-Tokens bereits redigiert); API-Fehler in SnackBar + `debugPrint`.
 - **Limits**: Bodys ≤10 MB (413 wenn größer); Rate-Limit mit 429 + Retry.
 
+- **Auto-Migration**: Die App migriert die DB beim Start selbst und stempelt neue DBs mit der aktuellen Revision; `SKIP_AUTO_MIGRATE=1` zum Überspringen.
 ## Nutzerrollen
 
 `admin` (alles) → `organizer` (sein Festival: Events, Formulare, Komitees) → `attendee`/`juror`/etc. (von Organizern vergeben; Auto-Join gibt nur `attendee`). Kanäle: `admin`/`moderator`/`member`; Komitees mit Mitgliederzählung in der Liste.
+
+## Funktionen in aktiver Entwicklung
+
+🚧 Die folgenden Funktionen befinden sich in aktiver Entwicklung und können sich ändern:
+
+- **Soziale Profile**: Publikationswände (Microblogging mit Markdown und Video-/Podcast-Einbettungen) in Benutzer- und Festivalprofilen, mit optionalen Antwortsträngen pro Beitrag und rollenbasierter Moderation (Admins, Festivalleitung, Moderatoren). Vorerst keine Reaktionen, Sticker oder GIFs.
+- **Profilanpassung**: Banner, Tagline und Social Links bei Benutzern und Festivals.
+- **Abzeichen**: standardmäßig deaktiviert; nur das Admin-Team kann sie aktivieren (`PUT /api/badges/settings`). Plattform-Abzeichen vergeben Admins; Festival-Verdienstabzeichen (Veteran, beliebt, Rolle, Sonderpreis) die Festivalleitung. Jedes Abzeichen trägt ein Bild (SVG bevorzugt).
 
 ## Siehe auch
 

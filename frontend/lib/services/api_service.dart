@@ -25,6 +25,8 @@ import '../models/calendar_model.dart';
 import '../models/payment_model.dart';
 import '../models/role_model.dart';
 import '../models/festival_rulebook_model.dart';
+import '../models/post_model.dart';
+import '../models/badge_model.dart';
 import 'backend_config.dart';
 import 'auth_service.dart';
 
@@ -37,6 +39,8 @@ part 'api/catalog_api.dart';
 part 'api/org_api.dart';
 part 'api/event_api.dart';
 part 'api/location_api.dart';
+part 'api/post_api.dart';
+part 'api/badge_api.dart';
 
 /// Envoltorio de respuesta paginada que coincide con el envelope del backend.
 class PaginatedResult<T> {

@@ -14,6 +14,8 @@ import '../widgets/location_selector.dart';
 import '../widgets/festival_sections.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/open_in_maps_action.dart';
+import '../widgets/publication_panel.dart';
+import '../widgets/badges_row.dart';
 import 'location_detail_screen.dart';
 import 'registration_forms_screen.dart';
 import 'events_management_screen.dart';
@@ -49,6 +51,13 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
   late TextEditingController _longitudeController;
   late TextEditingController _websiteController;
   late TextEditingController _logoUrlController;
+  late TextEditingController _taglineController;
+  late TextEditingController _bannerController;
+  Map<String, String> _socialLinks = {};
+  late TextEditingController _socialWebsiteController;
+  late TextEditingController _instagramController;
+  late TextEditingController _xController;
+  late TextEditingController _youtubeController;
   late bool _isActive;
   late Festival _festival;
   List<String> _images = [];
@@ -62,6 +71,8 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
   bool _isEditing = false;
   bool _isSaving = false;
   bool _isLoggedIn = false;
+  int? _currentUserId;
+  bool _isAdmin = false;
   late AppLocalizations l10n;
 
   @override
@@ -78,6 +89,40 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
         TextEditingController(text: f.longitude?.toString() ?? '');
     _websiteController = TextEditingController(text: f.website ?? '');
     _logoUrlController = TextEditingController(text: f.logoUrl ?? '');
+    String taglineInit = '';
+    String bannerInit = '';
+    Map<String, String> socialInit = {};
+    try {
+      final d = f as dynamic;
+      try {
+        final t = d.tagline as String?;
+        if (t != null) taglineInit = t;
+      } catch (_) {}
+      try {
+        final b = d.bannerUrl as String?;
+        if (b != null) bannerInit = b;
+        final b2 = d.banner_url as String?;
+        if (bannerInit.isEmpty && b2 != null) bannerInit = b2;
+      } catch (_) {}
+      try {
+        final s = d.socialLinks ?? d.social_links;
+        if (s is Map) {
+          for (final e in s.entries) {
+            socialInit[e.key.toString()] = e.value.toString();
+          }
+        }
+      } catch (_) {}
+    } catch (_) {}
+    if (socialInit['website'] == null && (f.website ?? '').isNotEmpty) {
+      socialInit['website'] = f.website!;
+    }
+    _taglineController = TextEditingController(text: taglineInit);
+    _bannerController = TextEditingController(text: bannerInit);
+    _socialLinks = socialInit;
+    _socialWebsiteController = TextEditingController(text: socialInit['website'] ?? '');
+    _instagramController = TextEditingController(text: socialInit['instagram'] ?? '');
+    _xController = TextEditingController(text: socialInit['x'] ?? socialInit['twitter'] ?? '');
+    _youtubeController = TextEditingController(text: socialInit['youtube'] ?? '');
     _isActive = f.isActive;
     _images = List.from(f.images);
     _checkAuth();
@@ -87,7 +132,14 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
 
   Future<void> _checkAuth() async {
     final loggedIn = await AuthService().isLoggedIn();
-    if (mounted) setState(() => _isLoggedIn = loggedIn);
+    final current = await AuthService().getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = loggedIn;
+        _currentUserId = current?.id;
+        _isAdmin = current?.role == 'admin';
+      });
+    }
   }
 
   /// Ejecuta la acción si hay sesión iniciada; si no, pide al usuario que
@@ -136,6 +188,12 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
     _longitudeController.dispose();
     _websiteController.dispose();
     _logoUrlController.dispose();
+    _taglineController.dispose();
+    _bannerController.dispose();
+    _socialWebsiteController.dispose();
+    _instagramController.dispose();
+    _xController.dispose();
+    _youtubeController.dispose();
     super.dispose();
   }
 
@@ -148,6 +206,11 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final social = <String, String>{};
+      if (_socialWebsiteController.text.trim().isNotEmpty) social['website'] = _socialWebsiteController.text.trim();
+      if (_instagramController.text.trim().isNotEmpty) social['instagram'] = _instagramController.text.trim();
+      if (_xController.text.trim().isNotEmpty) social['x'] = _xController.text.trim();
+      if (_youtubeController.text.trim().isNotEmpty) social['youtube'] = _youtubeController.text.trim();
       await ApiService().updateFestival(fid, {
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.isNotEmpty
@@ -165,6 +228,9 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
         'logo_url': _logoUrlController.text.isNotEmpty
             ? _logoUrlController.text.trim()
             : null,
+        'banner_url': _bannerController.text.trim().isNotEmpty ? _bannerController.text.trim() : null,
+        'tagline': _taglineController.text.trim().isNotEmpty ? _taglineController.text.trim() : null,
+        'social_links': social,
       });
 
       if (mounted) {
@@ -494,30 +560,89 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
 
   Widget _buildReadView(ThemeData theme, ColorScheme colorScheme, bool isWide) {
     final f = _festival;
+    String bannerUrl = _bannerController.text.trim();
+    try {
+      final b = (f as dynamic).bannerUrl as String?;
+      if (b != null && b.isNotEmpty) bannerUrl = b;
+    } catch (_) {}
+    String tagline = _taglineController.text.trim();
+    try {
+      final t = (f as dynamic).tagline as String?;
+      if (t != null && t.isNotEmpty) tagline = t;
+    } catch (_) {}
+    Map<String, String> social = Map.from(_socialLinks);
+    try {
+      final s = (f as dynamic).socialLinks ?? (f as dynamic).social_links;
+      if (s is Map) {
+        for (final e in s.entries) {
+          social[e.key.toString()] = e.value.toString();
+        }
+      }
+    } catch (_) {}
+    if (social['website'] == null && (f.website ?? '').isNotEmpty) social['website'] = f.website!;
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Hero(
-            tag: 'festival_${f.id}',
-            child: ProfileAvatar(
-              imageUrl: f.logoUrl,
-              fallbackText: f.name,
-              radius: isWide ? 80 : 60,
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              fallbackIcon: Icons.festival,
-              semanticLabel: '${l10n.festivalProfile}: ${f.name}',
-            ),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              SizedBox(
+                height: 180,
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: bannerUrl.isNotEmpty
+                      ? Image.network(bannerUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))))
+                      : Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))),
+                ),
+              ),
+              Positioned(
+                bottom: -40,
+                left: 16,
+                child: Container(
+                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: colorScheme.surface, width: 4)),
+                  child: Hero(
+                    tag: 'festival_${f.id}',
+                    child: ProfileAvatar(
+                      imageUrl: f.logoUrl,
+                      fallbackText: f.name,
+                      radius: 40,
+                      backgroundColor: colorScheme.secondaryContainer,
+                      foregroundColor: colorScheme.onSecondaryContainer,
+                      fallbackIcon: Icons.festival,
+                      semanticLabel: '${l10n.festivalProfile}: ${f.name}',
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 48),
           SemanticHeader(
             text: f.name,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
+          ),
+          if (tagline.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(tagline, style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant), textAlign: TextAlign.center),
+          ],
+          const SizedBox(height: 8),
+          _FestivalSocialLinksRow(links: social, onOpen: _openWebsite),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _FestivalStatItem(value: '${_images.length}', label: 'Imágenes'),
+              const SizedBox(width: 24),
+              _FestivalStatItem(value: '${_festivalLocations.length}', label: 'Ubicaciones'),
+              const SizedBox(width: 24),
+              _FestivalStatItem(value: '${_rulebooks.length}', label: 'Bases'),
+            ],
           ),
           const SizedBox(height: 8),
           StatusIndicator(
@@ -527,6 +652,14 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
             useChip: true,
             semanticLabel: f.isActive ? l10n.active : l10n.inactive,
           ),
+          const SizedBox(height: 16),
+          if (f.id != null)
+            ProfileBadges(
+              festivalId: f.id,
+              grantFestivalId: f.id,
+              canManage: _isLoggedIn,
+              isAdmin: _isAdmin,
+            ),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -656,6 +789,14 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
             loading: _rulebooksLoading,
             onOpenList: _openRulebooks,
             onOpenUrl: _openWebsite,
+          ),
+          const SizedBox(height: 24),
+          SemanticHeader(text: 'Publicaciones', style: theme.textTheme.titleSmall?.copyWith(color: colorScheme.primary)),
+          const SizedBox(height: 12),
+          PublicationPanel(
+            scopeFestivalId: f.id,
+            canModerate: _isLoggedIn,
+            currentUserId: _currentUserId,
           ),
           if (_images.isNotEmpty) ...[
             const SizedBox(height: 24),
@@ -859,7 +1000,70 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
             helperText: l10n.optional,
             prefixIcon: const Icon(Icons.image),
             keyboardType: TextInputType.url,
-            textInputAction: TextInputAction.done,
+            textInputAction: TextInputAction.next,
+            maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _bannerController,
+            label: 'Portada URL',
+            semanticLabel: 'Portada URL',
+            helperText: 'Portada URL',
+            prefixIcon: const Icon(Icons.panorama),
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.next,
+            maxLength: 300,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _taglineController,
+            label: 'Tagline',
+            semanticLabel: 'Tagline',
+            helperText: 'Tagline',
+            prefixIcon: const Icon(Icons.short_text),
+            textInputAction: TextInputAction.next,
+            maxLength: 120,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _socialWebsiteController,
+            label: 'Web',
+            semanticLabel: 'Web',
+            helperText: 'Web',
+            prefixIcon: const Icon(Icons.language),
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.next,
+            maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _instagramController,
+            label: 'Instagram',
+            semanticLabel: 'Instagram',
+            helperText: 'Instagram',
+            prefixIcon: const Icon(Icons.camera_alt),
+            textInputAction: TextInputAction.next,
+            maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _xController,
+            label: 'X',
+            semanticLabel: 'X',
+            helperText: 'X',
+            prefixIcon: const Icon(Icons.alternate_email),
+            textInputAction: TextInputAction.next,
+            maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          SemanticTextField(
+            controller: _youtubeController,
+            label: 'YouTube',
+            semanticLabel: 'YouTube',
+            helperText: 'YouTube',
+            prefixIcon: const Icon(Icons.play_circle),
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.next,
             maxLength: 200,
           ),
           const SizedBox(height: 24),
@@ -951,6 +1155,53 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FestivalStatItem extends StatelessWidget {
+  final String value;
+  final String label;
+  const _FestivalStatItem({required this.value, required this.label});
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Text(value, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+        Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+      ],
+    );
+  }
+}
+
+class _FestivalSocialLinksRow extends StatelessWidget {
+  final Map<String, String> links;
+  final Future<void> Function(String url) onOpen;
+  const _FestivalSocialLinksRow({required this.links, required this.onOpen});
+  @override
+  Widget build(BuildContext context) {
+    final entries = links.entries.where((e) => e.value.trim().isNotEmpty).toList();
+    if (entries.isEmpty) return const SizedBox.shrink();
+    IconData iconFor(String key) {
+      switch (key.toLowerCase()) {
+        case 'website':
+          return Icons.language;
+        case 'instagram':
+          return Icons.camera_alt;
+        case 'x':
+        case 'twitter':
+          return Icons.alternate_email;
+        case 'youtube':
+          return Icons.play_circle;
+        default:
+          return Icons.link;
+      }
+    }
+    return Wrap(
+      spacing: 4,
+      alignment: WrapAlignment.center,
+      children: [for (final e in entries) IconButton(tooltip: e.key, icon: Icon(iconFor(e.key), size: 20), onPressed: () => onOpen(e.value))],
     );
   }
 }

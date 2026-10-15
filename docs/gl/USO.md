@@ -41,9 +41,18 @@ Admin inicial (só non-prod): `admin` / `setup` — cambiar ao entrar.
 - **Logs**: uvicorn stdout (tokens DAV xa redactados); erros de API en SnackBar + `debugPrint`.
 - **Límites**: corpos ≤10 MB (413 se maior); rate limit con 429 + reintento.
 
+- **Migración automática**: a app migra soa a DB ao arrancar e sela as DB novas coa revisión actual; `SKIP_AUTO_MIGRATE=1` para omitilo.
 ## Roles de usuario
 
 `admin` (todo) → `organizer` (o seu festival: eventos, formularios, comités) → `attendee`/`juror`/etc. (asignados por organizers; o auto-join só dá `attendee`). Canles: `admin`/`moderator`/`member`; comités con conteo de membros en lista.
+
+## Funcións en desenvolvemento activo
+
+🚧 As seguintes funcións están en desenvolvemento activo e poden cambiar:
+
+- **Perfís sociais**: muros de publicacións (microblogging con Markdown e incrustados de vídeo e pódcast) en perfís de usuario e festival, con fíos de respostas opcionais por publicación e moderación por roles (administradores, xestión do festival, moderadores). Sen reaccións, adhesivos nin GIF por agora.
+- **Personalización de perfís**: portada, tagline e ligazóns sociais en usuarios e festivais.
+- **Insignias**: desactivadas por defecto; só o equipo administrativo pode activalas (`PUT /api/badges/settings`). As insignias de plataforma outórgaas os administradores; as de mérito de festival (veterano, popular, rol, premio especial), a súa xestión. Cada insignia leva unha imaxe (SVG preferido).
 
 ## Ver tamén
 

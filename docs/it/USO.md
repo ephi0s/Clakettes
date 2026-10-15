@@ -41,9 +41,18 @@ Admin iniziale (solo non-prod): `admin` / `setup` — cambiare al primo accesso.
 - **Log**: uvicorn stdout (token DAV già redatti); errori di API in SnackBar + `debugPrint`.
 - **Limiti**: corpi ≤10 MB (413 se maggiore); rate limit con 429 + nuovo tentativo.
 
+- **Migrazione automatica**: l’app migra da sola il DB all’avvio e timbra i nuovi DB con la revisione attuale; `SKIP_AUTO_MIGRATE=1` per ometterla.
 ## Ruoli utente
 
 `admin` (tutto) → `organizer` (il suo festival: eventi, form, comitati) → `attendee`/`juror`/ecc. (assegnati dagli organizer; l'auto-join dà solo `attendee`). Canali: `admin`/`moderator`/`member`; comitati con conteggio membri in lista.
+
+## Funzioni in sviluppo attivo
+
+🚧 Le seguenti funzioni sono in sviluppo attivo e possono cambiare:
+
+- **Profili social**: bacheche di pubblicazioni (microblogging con Markdown ed embed video/podcast) sui profili utente e festival, con thread di risposte opzionali per post e moderazione per ruoli (admin, gestione del festival, moderatori). Per ora niente reazioni, sticker o GIF.
+- **Personalizzazione dei profili**: banner, tagline e link social su utenti e festival.
+- **Badge**: disabilitati per impostazione predefinita; solo il team admin può attivarli (`PUT /api/badges/settings`). I badge di piattaforma sono assegnati dagli admin; quelli di merito del festival (veterano, popolare, ruolo, premio speciale) dalla sua gestione. Ogni badge ha un'immagine (SVG preferito).
 
 ## Vedi anche
 

@@ -27,6 +27,9 @@ class Festival(BaseModel):
     is_active = Column(Boolean, default=True)
     website = Column(String(500), nullable=True)
     logo_url = Column(String(500), nullable=True)
+    banner_url = Column(String(500), nullable=True)
+    tagline = Column(String(200), nullable=True)
+    social_links = Column(JSON, nullable=True)
     allow_alias_display = Column(Boolean, default=False)  # Users may show alias instead of real name
     show_in_calendar = Column(Boolean, default=True)  # Global admin controls agenda inclusion
     images = Column(JSON, nullable=True)  # List of image URLs

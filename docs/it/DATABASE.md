@@ -103,7 +103,7 @@ Campi:
 ### Festival
 - **Tabella:** `festivals`
 - **Classe:** `Festival`
-- **Campi chiave:** name, description, location, latitude, longitude, is_active, website, logo_url, allow_alias_display
+- **Campi chiave:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
 - **Relazioni:** Ha molti ShortFilms, ha molti Users (M2M tramite `user_festival`), ha molti FestivalRoles, ha molti FestivalParticipantTags, ha molti UserRoles, ha molti UserParticipantTags, ha molti RegistrationForms, ha molti FestivalRegistrations, ha molti Events, ha molti Awards
 
 ---
@@ -111,7 +111,7 @@ Campi:
 ### User
 - **Tabella:** `users`
 - **Classe:** `User`
-- **Campi chiave:** username, email, password_hash, full_name, role, bio, avatar_url, is_active,
+- **Campi chiave:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active,
   is_public, is_public_email, is_public_bio, is_public_location (`False` di default), latitude, longitude,
   dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
 - **Relazioni:** Ha molti ShortFilms, ha molti Festivals (M2M tramite `user_festival`), ha molti UserRoles, ha molti UserParticipantTags, ha molti UserAliases, ha molti FestivalRegistrations, ha molti Sessions, ha molti Awards, ha molti Events (creati), ha molti EventAttendees, ha molti EventReservations
@@ -147,6 +147,21 @@ Campi:
 - **Classe:** `Award`
 - **Campi chiave:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
 - **Relazioni:** Appartiene a Festival, appartiene a Event, appartiene a ShortFilm, appartiene a User (destinatario), appartiene a User (verificatore), appartiene a User (creatore)
+
+---
+
+### Badge
+- **Tabella:** `badges`
+- **Classe:** `Badge`
+- **Campi chiave:** name, description, image_url (SVG preferito), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Relazioni:** Appartiene a Festival, ha molti BadgeAssignments
+- **Note:** Funzione in sviluppo attivo e disabilitata per impostazione predefinita (`badges.enabled`); solo il team admin la attiva. I badge del festival sono assegnati dalla gestione del festival o dagli admin.
+
+#### BadgeAssignment
+- **Tabella:** `badge_assignments`
+- **Classe:** `BadgeAssignment`
+- **Campi chiave:** badge_id (FK), target_user_id (FK), target_festival_id (FK), granted_by (FK), grant_festival_id, reason
+- **Relazioni:** Appartiene a Badge, appartiene a User (destinatario), appartiene a Festival (destinatario)
 
 ---
 
@@ -230,6 +245,15 @@ Campi:
 - **Classe:** `FestivalParticipantTag`
 - **Campi chiave:** festival_id (FK), tag_id (FK), is_active, is_required, max_selections, can_submit_films, max_film_submissions, requires_approval, allowed_categories, is_exclusive
 - **Relazioni:** Appartiene a Festival, appartiene a ParticipantTag
+
+---
+
+### Post
+- **Tabella:** `posts`
+- **Classe:** `Post`
+- **Campi chiave:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type (youtube, vimeo, dailymotion, odysee, ivoox, podimo, generic), allow_replies, is_pinned, is_hidden
+- **Relazioni:** Appartiene a User (autore), appartiene a User (bacheca), appartiene a Festival (bacheca), ha molte risposte (Post), appartiene a Post (padre)
+- **Note:** Funzione in sviluppo attivo. I post di primo livello puntano a una bacheca utente o festival; le risposte ereditano l’ambito del padre e richiedono `allow_replies`. La moderazione (fissare, nascondere, bloccare le risposte) spetta agli admin centrali, alla gestione del festival e ai ruoli moderatori del festival.
 
 ---
 
@@ -559,7 +583,7 @@ Questo si usa come dipendenza di FastAPI per l'accesso alla base di dati dagli e
 
 ## Note di migrazione da SQLite a MariaDB
 
-Le modifiche di schema si gestiscono con Alembic (`backend/alembic/versions/`, 18 versioni;
+Le modifiche di schema si gestiscono con Alembic (`backend/alembic/versions/`, 21 versioni;
 `alembic upgrade head`). In produzione solo Alembic, mai `create_all`.
 
 Migrando da SQLite a MariaDB:

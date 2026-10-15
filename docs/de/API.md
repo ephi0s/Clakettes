@@ -29,6 +29,24 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | DELETE | `/api/auth/sessions/{session_id}` | ja |
 | POST | `/api/auth/sessions/revoke-all` | ja |
 
+## `badges` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/api/badges/status` | nein |
+| PUT | `/api/badges/settings` | ja |
+| GET | `/api/badges/` | optional |
+| POST | `/api/badges/` | ja |
+| GET | `/api/badges/{badge_id}` | optional |
+| PUT | `/api/badges/{badge_id}` | ja |
+| DELETE | `/api/badges/{badge_id}` | ja |
+| POST | `/api/badges/{badge_id}/image` | ja |
+| GET | `/api/badges/{badge_id}/eligibility` | optional |
+| POST | `/api/badges/{badge_id}/assign` | ja |
+| DELETE | `/api/badge-assignments/{assignment_id}` | ja |
+| GET | `/api/users/{user_id}/badges/` | optional |
+| GET | `/api/festivals/{festival_id}/badges/` | optional |
+
 ## `calendar` → `/api/calendar`
 
 | Methode | Pfad | Auth |
@@ -315,6 +333,21 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | POST | `/api/payments/{payment_id}/refund` | ja |
 | POST | `/api/payments/webhook/mock` | nein |
 
+## `posts` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/api/users/{user_id}/posts/` | optional |
+| POST | `/api/users/{user_id}/posts/` | ja |
+| GET | `/api/festivals/{festival_id}/posts/` | optional |
+| POST | `/api/festivals/{festival_id}/posts/` | ja |
+| GET | `/api/posts/{post_id}` | optional |
+| PUT | `/api/posts/{post_id}` | ja |
+| DELETE | `/api/posts/{post_id}` | ja |
+| GET | `/api/posts/{post_id}/replies/` | optional |
+| POST | `/api/posts/{post_id}/replies/` | ja |
+| POST | `/api/posts/{post_id}/moderate` | ja |
+
 ## `registration_forms` → `/api`
 
 | Methode | Pfad | Auth |
@@ -480,4 +513,4 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/validation-rule-groups/` | nein |
 | POST | `/api/validation-rule-groups/` | ja |
 
-Gesamt: 310 Endpunkte in 33 Routern.
+Gesamt: 333 Endpunkte in 35 Routern.

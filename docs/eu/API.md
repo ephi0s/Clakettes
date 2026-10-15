@@ -29,6 +29,24 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | DELETE | `/api/auth/sessions/{session_id}` | bai |
 | POST | `/api/auth/sessions/revoke-all` | bai |
 
+## `badges` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| GET | `/api/badges/status` | ez |
+| PUT | `/api/badges/settings` | bai |
+| GET | `/api/badges/` | aukerakoa |
+| POST | `/api/badges/` | bai |
+| GET | `/api/badges/{badge_id}` | aukerakoa |
+| PUT | `/api/badges/{badge_id}` | bai |
+| DELETE | `/api/badges/{badge_id}` | bai |
+| POST | `/api/badges/{badge_id}/image` | bai |
+| GET | `/api/badges/{badge_id}/eligibility` | aukerakoa |
+| POST | `/api/badges/{badge_id}/assign` | bai |
+| DELETE | `/api/badge-assignments/{assignment_id}` | bai |
+| GET | `/api/users/{user_id}/badges/` | aukerakoa |
+| GET | `/api/festivals/{festival_id}/badges/` | aukerakoa |
+
 ## `calendar` → `/api/calendar`
 
 | Metodoa | Ibilbidea | Auth |
@@ -315,6 +333,21 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | POST | `/api/payments/{payment_id}/refund` | bai |
 | POST | `/api/payments/webhook/mock` | ez |
 
+## `posts` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| GET | `/api/users/{user_id}/posts/` | aukerakoa |
+| POST | `/api/users/{user_id}/posts/` | bai |
+| GET | `/api/festivals/{festival_id}/posts/` | aukerakoa |
+| POST | `/api/festivals/{festival_id}/posts/` | bai |
+| GET | `/api/posts/{post_id}` | aukerakoa |
+| PUT | `/api/posts/{post_id}` | bai |
+| DELETE | `/api/posts/{post_id}` | bai |
+| GET | `/api/posts/{post_id}/replies/` | aukerakoa |
+| POST | `/api/posts/{post_id}/replies/` | bai |
+| POST | `/api/posts/{post_id}/moderate` | bai |
+
 ## `registration_forms` → `/api`
 
 | Metodoa | Ibilbidea | Auth |
@@ -480,4 +513,4 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/validation-rule-groups/` | ez |
 | POST | `/api/validation-rule-groups/` | bai |
 
-Guztira: 310 endpoint 33 routerretan.
+Guztira: 333 endpoint 35 routerretan.

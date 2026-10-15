@@ -41,9 +41,18 @@ Admin inicial (només no-prod): `admin` / `setup` — canviar en entrar.
 - **Logs**: uvicorn stdout (tokens DAV ja redactats); errors d'API en SnackBar + `debugPrint`.
 - **Límits**: cossos ≤10 MB (413 si major); rate limit amb 429 + reintent.
 
+- **Migració automàtica**: l’app migra sola la DB en arrencar i segella les DB noves amb la revisió actual; `SKIP_AUTO_MIGRATE=1` per ometre-ho.
 ## Rols d'usuari
 
 `admin` (tot) → `organizer` (el seu festival: esdeveniments, formularis, comitès) → `attendee`/`juror`/etc. (assignats per organizers; l'auto-join només dóna `attendee`). Canals: `admin`/`moderator`/`member`; comitès amb comptatge de membres en llista.
+
+## Funcions en desenvolupament actiu
+
+🚧 Les funcions següents estan en desenvolupament actiu i poden canviar:
+
+- **Perfils socials**: murs de publicacions (microblogging amb Markdown i incrustats de vídeo i pòdcast) en perfils d'usuari i festival, amb fils de respostes opcionals per publicació i moderació per rols (administradors, gestió del festival, moderadors). Sense reaccions, adhesius ni GIF per ara.
+- **Personalització de perfils**: portada, tagline i enllaços socials en usuaris i festivals.
+- **Insígnies**: desactivades per defecte; només l'equip administratiu pot activar-les (`PUT /api/badges/settings`). Les insígnies de plataforma les atorguen els administradors; les de mèrit de festival (veterà, popular, rol, premi especial), la seva gestió. Cada insígnia porta una imatge (SVG preferit).
 
 ## Vegeu també
 

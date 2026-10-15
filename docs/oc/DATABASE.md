@@ -103,7 +103,7 @@ Camps:
 ### Festival
 - **Taula:** `festivals`
 - **Classa:** `Festival`
-- **Camps claus:** name, description, location, latitude, longitude, is_active, website, logo_url, allow_alias_display
+- **Camps claus:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
 - **Relacions:** A fòrça ShortFilms, a fòrça Users (M2M mejançant `user_festival`), a fòrça FestivalRoles, a fòrça FestivalParticipantTags, a fòrça UserRoles, a fòrça UserParticipantTags, a fòrça RegistrationForms, a fòrça FestivalRegistrations, a fòrça Events, a fòrça Awards
 
 ---
@@ -111,7 +111,7 @@ Camps:
 ### User
 - **Taula:** `users`
 - **Classa:** `User`
-- **Camps claus:** username, email, password_hash, full_name, role, bio, avatar_url, is_active,
+- **Camps claus:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active,
   is_public, is_public_email, is_public_bio, is_public_location (`False` per defaut), latitude, longitude,
   dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
 - **Relacions:** A fòrça ShortFilms, a fòrça Festivals (M2M mejançant `user_festival`), a fòrça UserRoles, a fòrça UserParticipantTags, a fòrça UserAliases, a fòrça FestivalRegistrations, a fòrça Sessions, a fòrça Awards, a fòrça Events (creats), a fòrça EventAttendees, a fòrça EventReservations
@@ -147,6 +147,21 @@ Camps:
 - **Classa:** `Award`
 - **Camps claus:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
 - **Relacions:** Aperten a Festival, aperten a Event, aperten a ShortFilm, aperten a User (destinatari), aperten a User (verificador), aperten a User (creador)
+
+---
+
+### Badge
+- **Taula:** `badges`
+- **Classa:** `Badge`
+- **Camps claus:** name, description, image_url (SVG preferit), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Relacions:** Aperten a Festival, a mantas BadgeAssignments
+- **Nòtas:** Foncion en desvolopament actiu e desactivada per defaut (`badges.enabled`); sonque l'equipa admin l'activa. Los badges de festenal son autrejats per la gestion del festenal o los admins.
+
+#### BadgeAssignment
+- **Taula:** `badge_assignments`
+- **Classa:** `BadgeAssignment`
+- **Camps claus:** badge_id (FK), target_user_id (FK), target_festival_id (FK), granted_by (FK), grant_festival_id, reason
+- **Relacions:** Aperten a Badge, aperten a User (destinatari), aperten a Festival (destinatari)
 
 ---
 
@@ -230,6 +245,15 @@ Camps:
 - **Classa:** `FestivalParticipantTag`
 - **Camps claus:** festival_id (FK), tag_id (FK), is_active, is_required, max_selections, can_submit_films, max_film_submissions, requires_approval, allowed_categories, is_exclusive
 - **Relacions:** Aperten a Festival, aperten a ParticipantTag
+
+---
+
+### Post
+- **Taula:** `posts`
+- **Classa:** `Post`
+- **Camps claus:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type (youtube, vimeo, dailymotion, odysee, ivoox, podimo, generic), allow_replies, is_pinned, is_hidden
+- **Relacions:** Aperten a User (autor), aperten a User (mur), aperten a Festival (mur), a mantas responsas (Post), aperten a Post (paire)
+- **Nòtas:** Foncion en desvolopament actiu. Las publicacions de primièr nivèl apuntan a un mur d’utilizaire o de festenal; las responsas eretan l’encastre del paire e exigisson `allow_replies`. La moderacion (penjar, escondre, blocar las responsas) reven als admins centrals, a la gestion del festenal e als ròtles moderators del festenal.
 
 ---
 
@@ -559,7 +583,7 @@ Aquò s'utiliza coma dependéncia de FastAPI per l'accès a la banca de donadas 
 
 ## Nòtas de migracion de SQLite cap a MariaDB
 
-Los cambiaments d'esquèma se gerisson amb Alembic (`backend/alembic/versions/`, 18 versions;
+Los cambiaments d'esquèma se gerisson amb Alembic (`backend/alembic/versions/`, 21 versions;
 `alembic upgrade head`). En produccion sonque Alembic, jamai `create_all`.
 
 En migrant de SQLite cap a MariaDB:

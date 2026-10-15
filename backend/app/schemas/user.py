@@ -10,6 +10,9 @@ class UserBase(BaseModel):
     role: str | None = Field(None, max_length=50)
     bio: str | None = Field(None, max_length=2000)
     avatar_url: str | None = Field(None, max_length=500)
+    banner_url: str | None = Field(None, max_length=500)
+    tagline: str | None = Field(None, max_length=200)
+    social_links: dict[str, str] | None = None
     is_public: bool | None = False
     is_public_email: bool | None = False
     is_public_bio: bool | None = False
@@ -44,6 +47,9 @@ class UserUpdate(BaseModel):
     role: str | None = Field(None, max_length=50)
     bio: str | None = Field(None, max_length=2000)
     avatar_url: str | None = Field(None, max_length=500)
+    banner_url: str | None = Field(None, max_length=500)
+    tagline: str | None = Field(None, max_length=200)
+    social_links: dict[str, str] | None = None
     is_public: bool | None = None
     is_public_email: bool | None = None
     is_public_bio: bool | None = None
@@ -86,6 +92,9 @@ class UserPublicResponse(BaseModel):
     full_name: str | None = None
     role: str | None = None
     avatar_url: str | None = None
+    banner_url: str | None = None
+    tagline: str | None = None
+    social_links: dict[str, str] | None = None
     is_active: bool
     email: str | None = None
     bio: str | None = None

@@ -103,7 +103,7 @@ Eremuak:
 ### Festival
 - **Taula:** `festivals`
 - **Klasea:** `Festival`
-- **Funtsezko eremuak:** name, description, location, latitude, longitude, is_active, website, logo_url, allow_alias_display
+- **Funtsezko eremuak:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
 - **Erlazioak:** ShortFilm asko ditu, User asko ditu (M2M `user_festival` bidez), FestivalRole asko ditu, FestivalParticipantTag asko ditu, UserRole asko ditu, UserParticipantTag asko ditu, RegistrationForm asko ditu, FestivalRegistration asko ditu, Event asko ditu, Award asko ditu
 
 ---
@@ -111,7 +111,7 @@ Eremuak:
 ### User
 - **Taula:** `users`
 - **Klasea:** `User`
-- **Funtsezko eremuak:** username, email, password_hash, full_name, role, bio, avatar_url, is_active,
+- **Funtsezko eremuak:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active,
   is_public, is_public_email, is_public_bio, is_public_location (`False` lehenetsiz), latitude, longitude,
   dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
 - **Erlazioak:** ShortFilm asko ditu, Festival asko ditu (M2M `user_festival` bidez), UserRole asko ditu, UserParticipantTag asko ditu, UserAlias asko ditu, FestivalRegistration asko ditu, Session asko ditu, Award asko ditu, Event asko ditu (sortuak), EventAttendee asko ditu, EventReservation asko ditu
@@ -147,6 +147,21 @@ Eremuak:
 - **Klasea:** `Award`
 - **Funtsezko eremuak:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
 - **Erlazioak:** Festival-ari dagokio, Event-ari dagokio, ShortFilm-ari dagokio, User-ari dagokio (hartzailea), User-ari dagokio (egiaztatzailea), User-ari dagokio (sortzailea)
+
+---
+
+### Badge
+- **Taula:** `badges`
+- **Klasea:** `Badge`
+- **Funtsezko eremuak:** name, description, image_url (SVG hobetsia), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Erlazioak:** Festivali dagokio, BadgeAssignment asko ditu
+- **Oharrak:** Garapen aktiboko funtzioa eta lehenetsiz desaktibatua (`badges.enabled`); administratzaile-taldeak bakarrik aktibatzen du. Festival-intsigniak festival-kudeaketak edo administratzaileek ematen dituzte.
+
+#### BadgeAssignment
+- **Taula:** `badge_assignments`
+- **Klasea:** `BadgeAssignment`
+- **Funtsezko eremuak:** badge_id (FK), target_user_id (FK), target_festival_id (FK), granted_by (FK), grant_festival_id, reason
+- **Erlazioak:** Badge-ari dagokio, User-ari dagokio (hartzailea), Festivali dagokio (hartzailea)
 
 ---
 
@@ -230,6 +245,15 @@ Eremuak:
 - **Klasea:** `FestivalParticipantTag`
 - **Funtsezko eremuak:** festival_id (FK), tag_id (FK), is_active, is_required, max_selections, can_submit_films, max_film_submissions, requires_approval, allowed_categories, is_exclusive
 - **Erlazioak:** Festival-ari dagokio, ParticipantTag-ari dagokio
+
+---
+
+### Post
+- **Taula:** `posts`
+- **Klasea:** `Post`
+- **Funtsezko eremuak:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type (youtube, vimeo, dailymotion, odysee, ivoox, podimo, generic), allow_replies, is_pinned, is_hidden
+- **Erlazioak:** User-ari dagokio (egilea), User-ari dagokio (hormari), Festivali dagokio (hormari), erantzunak ditu (Post), Post-ari dagokio (gurasoa)
+- **Oharrak:** Garapen aktiboko funtzioa. Goi-mailako argitalpenek erabiltzaile- edo festival-horma dute xede; erantzunek gurasoaren esparrua heredatzen dute eta `allow_replies` behar dute. Moderazioa (finkatu, ezkutatu, erantzunak blokeatu) administratzaile zentralei, festival-kudeaketari eta festivaleko moderazio-rolei dagokie.
 
 ---
 
@@ -559,7 +583,7 @@ FastAPI mendekotasun gisa erabiltzen da endpoint-etatik datu-basera sartzeko.
 
 ## SQLite-tik MariaDB-ra migrazio-oharrak
 
-Eskema-aldaketak Alembic-ekin kudeatzen dira (`backend/alembic/versions/`, 18 bertsio;
+Eskema-aldaketak Alembic-ekin kudeatzen dira (`backend/alembic/versions/`, 21 bertsio;
 `alembic upgrade head`). Ekoizpenean Alembic soilik, inoiz ez `create_all`.
 
 SQLite-tik MariaDB-ra migratzean:

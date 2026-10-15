@@ -251,11 +251,13 @@ if %IS_MARIADB%==1 (
     echo [MARIADB] Usando MariaDB: %DATABASE_URL%
 )
 
-:: Migraciones
+:: Migraciones (alembic.exe y no -m alembic: la carpeta backend\alembic
+:: ocultaria al paquete alembic en los imports con cwd=backend)
 if %IS_MIGRATE%==1 (
     echo [MIGRATE] Ejecutando migraciones de base de datos...
     cd /d "%ROOT%backend"
-    call "%BACKEND_PYTHON%" -m alembic upgrade head
+    for %%I in ("%BACKEND_PYTHON%") do set _ALEMBIC=%%~dpIalembic.exe
+    call "%_ALEMBIC%" upgrade head
     if errorlevel 1 (
         echo [MIGRATE] ERROR en migraciones
         pause

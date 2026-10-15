@@ -29,6 +29,8 @@ from app.routers import location_images
 from app.routers import location_relations
 from app.routers import shortfilm_locations
 from app.routers import form_definitions
+from app.routers import posts
+from app.routers import badges
 
 __all__ = [
     "festivals",
@@ -60,4 +62,6 @@ __all__ = [
     "location_relations",
     "shortfilm_locations",
     "form_definitions",
+    "posts",
+    "badges",
 ]

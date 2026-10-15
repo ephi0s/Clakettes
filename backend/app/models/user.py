@@ -1,6 +1,6 @@
 """User model — platform user profile with authentication and geolocation."""
 
-from sqlalchemy import Column, String, Text, Float, Boolean, DateTime
+from sqlalchemy import Column, String, Text, Float, Boolean, DateTime, JSON
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -28,6 +28,9 @@ class User(BaseModel):
     role = Column(String(50), nullable=True)  # Legacy field, kept for backwards compatibility
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(500), nullable=True)
+    banner_url = Column(String(500), nullable=True)
+    tagline = Column(String(200), nullable=True)
+    social_links = Column(JSON, nullable=True)
     is_active = Column(Boolean, default=True)
     is_public = Column(Boolean, default=False)
     is_public_email = Column(Boolean, default=False)

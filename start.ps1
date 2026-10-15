@@ -680,7 +680,8 @@ if ($MariaDB) {
 if ($Migrate) {
     Write-Host "[MIGRATE] Ejecutando migraciones de base de datos..." -ForegroundColor Magenta
     Push-Location $backendDir
-    & $script:BackendPython -m alembic upgrade head 2>&1
+    $alembicExe = Join-Path (Split-Path $script:BackendPython) "alembic.exe"
+    & $alembicExe upgrade head 2>&1
     if ($LASTEXITCODE -ne 0) { Write-Host "[MIGRATE] ERROR en migraciones" -ForegroundColor Red; Pop-Location; exit 1 }
     Pop-Location
 }

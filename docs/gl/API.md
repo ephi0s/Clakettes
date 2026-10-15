@@ -29,6 +29,24 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | DELETE | `/api/auth/sessions/{session_id}` | si |
 | POST | `/api/auth/sessions/revoke-all` | si |
 
+## `badges` → `/api`
+
+| Método | Ruta | Auth |
+|---|---|---|
+| GET | `/api/badges/status` | non |
+| PUT | `/api/badges/settings` | si |
+| GET | `/api/badges/` | opcional |
+| POST | `/api/badges/` | si |
+| GET | `/api/badges/{badge_id}` | opcional |
+| PUT | `/api/badges/{badge_id}` | si |
+| DELETE | `/api/badges/{badge_id}` | si |
+| POST | `/api/badges/{badge_id}/image` | si |
+| GET | `/api/badges/{badge_id}/eligibility` | opcional |
+| POST | `/api/badges/{badge_id}/assign` | si |
+| DELETE | `/api/badge-assignments/{assignment_id}` | si |
+| GET | `/api/users/{user_id}/badges/` | opcional |
+| GET | `/api/festivals/{festival_id}/badges/` | opcional |
+
 ## `calendar` → `/api/calendar`
 
 | Método | Ruta | Auth |
@@ -315,6 +333,21 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | POST | `/api/payments/{payment_id}/refund` | si |
 | POST | `/api/payments/webhook/mock` | non |
 
+## `posts` → `/api`
+
+| Método | Ruta | Auth |
+|---|---|---|
+| GET | `/api/users/{user_id}/posts/` | opcional |
+| POST | `/api/users/{user_id}/posts/` | si |
+| GET | `/api/festivals/{festival_id}/posts/` | opcional |
+| POST | `/api/festivals/{festival_id}/posts/` | si |
+| GET | `/api/posts/{post_id}` | opcional |
+| PUT | `/api/posts/{post_id}` | si |
+| DELETE | `/api/posts/{post_id}` | si |
+| GET | `/api/posts/{post_id}/replies/` | opcional |
+| POST | `/api/posts/{post_id}/replies/` | si |
+| POST | `/api/posts/{post_id}/moderate` | si |
+
 ## `registration_forms` → `/api`
 
 | Método | Ruta | Auth |
@@ -480,4 +513,4 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | si |
 
-Total: 310 endpoints en 33 routers.
+Total: 333 endpoints en 35 routers.

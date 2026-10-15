@@ -33,13 +33,16 @@ class UserAdapter extends TypeAdapter<User> {
       longitude: fields[13] as double?,
       createdAt: fields[14] as DateTime?,
       updatedAt: fields[15] as DateTime?,
+      bannerUrl: fields[16] as String?,
+      tagline: fields[17] as String?,
+      socialLinks: (fields[18] as Map?)?.cast<String, String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, User obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -71,7 +74,13 @@ class UserAdapter extends TypeAdapter<User> {
       ..writeByte(14)
       ..write(obj.createdAt)
       ..writeByte(15)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(16)
+      ..write(obj.bannerUrl)
+      ..writeByte(17)
+      ..write(obj.tagline)
+      ..writeByte(18)
+      ..write(obj.socialLinks);
   }
 
   @override

@@ -893,9 +893,11 @@ if [ "$IS_MARIADB" -eq 1 ]; then
 fi
 
 # ---- Migrate ----
+# (consola alembic y no -m alembic: la carpeta backend/alembic ocultaria
+# al paquete alembic en los imports con cwd=backend)
 if [ "$IS_MIGRATE" -eq 1 ]; then
   echo "[MIGRATE] Ejecutando migraciones de base de datos..."
-  (cd "$BACKEND_DIR" && "$BACKEND_PYTHON" -m alembic upgrade head)
+  (cd "$BACKEND_DIR" && "$(dirname "$BACKEND_PYTHON")/alembic" upgrade head)
 fi
 
 # ---- Tests ----

@@ -50,6 +50,8 @@ from app.routers import (
     calendar,
     dav,
     payments,
+    posts,
+    badges,
 )
 from app.chat_backend import WebSocketChatBackend, chat_backend_registry
 from app.database import engine, SessionLocal
@@ -262,6 +264,89 @@ def _warn_about_dav_transport():
         )
 
 
+def _alembic_api():
+    """Import alembic's command/Config bypassing local shadowing.
+
+    Running from ``backend/`` puts that directory first on ``sys.path``, so
+    plain ``from alembic import ...`` resolves to our local ``alembic/``
+    migrations folder instead of the installed package. Temporarily drop the
+    entries that cause the collision.
+    """
+    import sys
+
+    backend_dir = Path(__file__).resolve().parent.parent
+    saved = list(sys.path)
+
+    def _collides(entry: str) -> bool:
+        if entry in ("", os.getcwd()):
+            return True
+        try:
+            return Path(entry).resolve() == backend_dir
+        except Exception:
+            return False
+
+    sys.path = [p for p in saved if not _collides(p)]
+    try:
+        from alembic import command
+        from alembic.config import Config
+
+        return command, Config
+    finally:
+        sys.path = saved
+
+
+def _run_migrations() -> None:
+    """Bring the database to the latest Alembic revision on every boot.
+
+    Hot-update safe: pulling code with new models never requires a manual
+    database reconfiguration — the app converges the schema itself before
+    serving. Set ``SKIP_AUTO_MIGRATE=1`` to opt out (e.g. externally managed
+    production databases). Always skipped under ``TESTING=true``, where the
+    suite owns the schema via ``create_all``.
+    """
+    if os.getenv("TESTING", "").strip().lower() in ("1", "true", "yes", "on"):
+        return
+    if os.getenv("SKIP_AUTO_MIGRATE", "").strip().lower() in ("1", "true", "yes", "on"):
+        logger.info("SKIP_AUTO_MIGRATE set — skipping automatic Alembic upgrade")
+        return
+    try:
+        command, Config = _alembic_api()
+        backend_dir = Path(__file__).resolve().parent.parent
+        cfg = Config(str(backend_dir / "alembic.ini"))
+        cfg.set_main_option("script_location", str(backend_dir / "alembic"))
+        command.upgrade(cfg, "head")
+        logger.info("Database migrated to latest Alembic revision")
+    except Exception:
+        logger.exception("Automatic Alembic upgrade failed — check `alembic upgrade head` manually")
+
+
+def _ensure_version_stamp() -> None:
+    """Stamp a version-less database with the current Alembic head.
+
+    Databases born from ``create_all`` (dev/test) have no ``alembic_version``
+    row, so a later ``upgrade head`` would replay every migration from the
+    base and collide with existing tables. Stamping them at creation records
+    which code version produced the schema, keeping future upgrades
+    incremental. Only runs outside production: in prod an unknown version
+    means something actually failed and must be investigated, not masked.
+    """
+    if settings.is_production:
+        if get_db_revision() is None:
+            logger.warning("Database has no alembic version — run `alembic upgrade head` manually")
+        return
+    if get_db_revision() is not None:
+        return
+    try:
+        command, Config = _alembic_api()
+        backend_dir = Path(__file__).resolve().parent.parent
+        cfg = Config(str(backend_dir / "alembic.ini"))
+        cfg.set_main_option("script_location", str(backend_dir / "alembic"))
+        command.stamp(cfg, "head")
+        logger.info("Stamped version-less database with current Alembic head")
+    except Exception:
+        logger.exception("Could not stamp Alembic version")
+
+
 def _init_admin_user():
     """Create the default admin user on first startup (development only).
 
@@ -313,16 +398,20 @@ async def lifespan(application: FastAPI):
     """Application lifespan manager.
 
     Startup:
-    1. Create database tables (dev only; prod uses Alembic migrations)
-    2. Create default admin user (dev only)
-    3. Purge revoked/expired login sessions (RGPD art. 5)
-    4. Initialize WebSocket chat backend
+    1. Migrate database to latest Alembic revision (all envs; skippable)
+    2. Create database tables (dev only safety net; prod uses Alembic)
+    3. Create default admin user (dev only)
+    4. Purge revoked/expired login sessions (RGPD art. 5)
+    5. Initialize WebSocket chat backend
 
     Shutdown:
     - Stop chat backend gracefully
     """
+    _run_migrations()
+
     if not settings.is_production:
         Base.metadata.create_all(bind=engine)
+        _ensure_version_stamp()
 
     _warn_about_dav_transport()
 
@@ -460,6 +549,8 @@ app.include_router(form_definitions.router, prefix="/api", tags=["forms"])
 app.include_router(calendar.router, prefix="/api/calendar", tags=["calendar"])
 app.include_router(payments.router, prefix="/api", tags=["payments"])
 app.include_router(dav.router, prefix="/dav", tags=["dav"])
+app.include_router(posts.router, prefix="/api", tags=["posts"])
+app.include_router(badges.router, prefix="/api", tags=["badges"])
 
 
 @app.get("/")
@@ -467,6 +558,24 @@ async def root():
     return {"message": "Clakettes API is running", "version": "0.3.0"}
 
 
+def get_db_revision() -> str | None:
+    """Return the Alembic revision stamped in the database, if any.
+
+    This is the internal marker the backend uses to know whether the schema
+    is up to date: the ``alembic_version`` table holds a single
+    ``version_num`` row. ``None`` means the database has never been migrated.
+    Best-effort — never raises.
+    """
+    try:
+        from sqlalchemy import text
+
+        with engine.connect() as connection:
+            row = connection.execute(text("SELECT version_num FROM alembic_version")).first()
+            return row[0] if row else None
+    except Exception:
+        return None
+
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": "healthy", "db_revision": get_db_revision()}

@@ -103,7 +103,7 @@ Fields:
 ### Festival
 - **Table:** `festivals`
 - **Class:** `Festival`
-- **Key fields:** name, description, location, latitude, longitude, is_active, website, logo_url, allow_alias_display
+- **Key fields:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
 - **Relations:** Has many ShortFilms, has many Users (M2M via `user_festival`), has many FestivalRoles, has many FestivalParticipantTags, has many UserRoles, has many UserParticipantTags, has many RegistrationForms, has many FestivalRegistrations, has many Events, has many Awards
 
 ---
@@ -111,7 +111,7 @@ Fields:
 ### User
 - **Table:** `users`
 - **Class:** `User`
-- **Key fields:** username, email, password_hash, full_name, role, bio, avatar_url, is_active,
+- **Key fields:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active,
   is_public, is_public_email, is_public_bio, is_public_location (`False` by default), latitude, longitude,
   dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
 - **Relations:** Has many ShortFilms, has many Festivals (M2M via `user_festival`), has many UserRoles, has many UserParticipantTags, has many UserAliases, has many FestivalRegistrations, has many Sessions, has many Awards, has many Events (created), has many EventAttendees, has many EventReservations
@@ -147,6 +147,21 @@ Fields:
 - **Class:** `Award`
 - **Key fields:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
 - **Relations:** Belongs to Festival, belongs to Event, belongs to ShortFilm, belongs to User (recipient), belongs to User (verifier), belongs to User (creator)
+
+---
+
+### Badge
+- **Table:** `badges`
+- **Class:** `Badge`
+- **Key fields:** name, description, image_url (SVG preferred), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Relations:** Belongs to Festival, has many BadgeAssignments
+- **Notes:** Feature in active development and disabled by default (`badges.enabled`); only the admin team enables it. Festival badges are granted by the festival management or admins.
+
+#### BadgeAssignment
+- **Table:** `badge_assignments`
+- **Class:** `BadgeAssignment`
+- **Key fields:** badge_id (FK), target_user_id (FK), target_festival_id (FK), granted_by (FK), grant_festival_id, reason
+- **Relations:** Belongs to Badge, belongs to User (recipient), belongs to Festival (recipient)
 
 ---
 
@@ -230,6 +245,15 @@ Fields:
 - **Class:** `FestivalParticipantTag`
 - **Key fields:** festival_id (FK), tag_id (FK), is_active, is_required, max_selections, can_submit_films, max_film_submissions, requires_approval, allowed_categories, is_exclusive
 - **Relations:** Belongs to Festival, belongs to ParticipantTag
+
+---
+
+### Post
+- **Table:** `posts`
+- **Class:** `Post`
+- **Key fields:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type (youtube, vimeo, dailymotion, odysee, ivoox, podimo, generic), allow_replies, is_pinned, is_hidden
+- **Relations:** Belongs to User (author), belongs to User (wall), belongs to Festival (wall), has many replies (Post), belongs to Post (parent)
+- **Notes:** Feature in active development. Top-level posts target a user or festival wall; replies inherit the parent scope and require `allow_replies`. Moderation (pin, hide, lock replies) is for central admins, festival management and festival moderator roles.
 
 ---
 
@@ -559,7 +583,7 @@ This is used as a FastAPI dependency for database access from endpoints.
 
 ## SQLite to MariaDB migration notes
 
-Schema changes are managed with Alembic (`backend/alembic/versions/`, 18 versions;
+Schema changes are managed with Alembic (`backend/alembic/versions/`, 21 versions;
 `alembic upgrade head`). In production Alembic only, never `create_all`.
 
 When migrating from SQLite to MariaDB:

@@ -36,6 +36,7 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 ## Operación
 
 - **Migrar**: `alembic upgrade head` desde `backend/` (Docker: `-Migrate`).
+- **Migración automática**: la app migra sola la DB al arrancar y sella las DB nuevas con la revisión actual; `SKIP_AUTO_MIGRATE=1` para omitirlo (DBs gestionadas externamente).
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volumen `db-data` en Docker).
 - **Logs**: uvicorn stdout (tokens DAV ya redactados); errores de API en SnackBar + `debugPrint`.
@@ -44,6 +45,14 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 ## Roles de usuario
 
 `admin` (todo) → `organizer` (su festival: eventos, formularios, comités) → `attendee`/`juror`/etc. (asignados por organizers; el auto-join solo da `attendee`). Canales: `admin`/`moderator`/`member`; comités con conteo de miembros en lista.
+
+## Funciones en desarrollo activo
+
+🚧 Las siguientes funciones están en desarrollo activo y pueden cambiar:
+
+- **Perfiles sociales**: muros de publicaciones (microblogging con Markdown e incrustados de vídeo y podcast) en perfiles de usuario y festival, con hilos de respuestas opcionales por publicación y moderación por roles (administradores, gestión del festival, moderadores). Sin reacciones, stickers ni GIF por ahora.
+- **Personalización de perfiles**: portada, tagline y enlaces sociales en usuarios y festivales.
+- **Insignias**: desactivadas por defecto; solo el equipo administrativo puede activarlas (`PUT /api/badges/settings`). Las insignias de plataforma las otorgan los administradores; las de mérito de festival (veterano, popular, rol, premio especial), su gestión. Cada insignia lleva una imagen (SVG preferido).
 
 ## Ver también
 

@@ -41,9 +41,18 @@ Hasierako admin-a (ez-prod soilik): `admin` / `setup` — sartzean aldatu.
 - **Log-ak**: uvicorn stdout (DAV token-ak jada redaktatuta); API erroreak SnackBar + `debugPrint`-en.
 - **Mugak**: gorputzak ≤10 MB (413 handiagoa bada); rate limit 429 + saiakera-errepikapenarekin.
 
+- **Migrazio automatikoa**: app-ak DBa migratzen du bakarrik abiatzean eta DB berriak uneko berrikuspenarekin zigilatzen ditu; `SKIP_AUTO_MIGRATE=1` saltatzeko.
 ## Erabiltzaile-rolak
 
 `admin` (dena) → `organizer` (bere jaialdia: ekitaldiak, inprimakiak, batzordeak) → `attendee`/`juror`/etab. (organizer-ek esleituta; auto-join-ek `attendee` soilik ematen du). Kanalak: `admin`/`moderator`/`member`; kide-zenbaketa duten batzordeak zerrendan.
+
+## Garapen aktiboko funtzioak
+
+🚧 Funtzio hauek garapen aktiboan daude eta alda daitezke:
+
+- **Profil sozialak**: argitalpen-hormak (mikroblogging Markdown-ekin eta bideo/podcast txertatuekin) erabiltzaile- eta festival-profiletan, argitalpeneko erantzun-hari aukerakoekin eta rolen araberako moderazioarekin (administratzaileak, festival-kudeaketa, moderatzaileak). Oraingoz ez dago erreakziorik, stickerrik edo GIFik.
+- **Profilen pertsonalizazioa**: portada, tagline eta sare sozialetako estekak erabiltzaile eta festivaletan.
+- **Intsigniak**: lehenetsiz desaktibatuta; administratzaile-taldeak bakarrik aktiba ditzake (`PUT /api/badges/settings`). Plataforma-intsigniak administratzaileek ematen dituzte; festival-merezimenduzkoak (beteranoa, herrikoia, rola, sari berezia), bere kudeaketak. Intsignia bakoitzak irudi bat darama (SVG hobetsia).
 
 ## Ikusi halaber
 

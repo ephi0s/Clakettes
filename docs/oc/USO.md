@@ -41,9 +41,18 @@ Admin iniciau (sonque non-prod): `admin` / `setup` — cambiar en intrar.
 - **Jornaus**: uvicorn stdout (tokens DAV ja redactats); errors d'API en SnackBar + `debugPrint`.
 - **Limits**: còrses ≤10 MB (413 se màger); rate limit amb 429 + tornada d'ensajar.
 
+- **Migracion automatica** : l’app migra sola la DB a l’aviada e sagèla las DB nòvas amb la revision actuala ; `SKIP_AUTO_MIGRATE=1` per l’ometre.
 ## Ròtles d'utilizaire
 
 `admin` (tot) → `organizer` (son festivau: eveniments, formularis, comitats) → `attendee`/`juror`/etc. (assignats per organizers; l'auto-join sonque dona `attendee`). Canaus: `admin`/`moderator`/`member`; comitats amb comptatge de membres en lista.
+
+## Foncions en desvolopament actiu
+
+🚧 Las foncions seguentas son en desvolopament actiu e pòdon cambiar:
+
+- **Profils socials** : murs de publicacions (microblogging amb Markdown e incrustats de vidèo e podcast) suls profils d'utilizaire e de festenal, amb fils de responsas opcionals per publicacion e moderacion per ròtles (admins, gestion del festenal, moderators). Pas de reaccions, pegatinas ni GIF per ara.
+- **Personalizacion dels profils** : portada, tagline e ligams socials suls utilizaires e festenals.
+- **Badges** : desactivats per defaut ; sonque l'equipa admin pòt los activar (`PUT /api/badges/settings`). Los badges de plataforma son autrejats pels admins ; los de merit de festenal (veteran, popular, ròtle, prèmi especial) per sa gestion. Cada badge pòrta una imatge (SVG preferit).
 
 ## Veire tanben
 

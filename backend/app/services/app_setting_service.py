@@ -13,10 +13,12 @@ from app.models.app_setting import AppSetting
 
 #: Well-known setting keys.
 CALENDAR_ENABLED = "calendar.enabled"
+BADGES_ENABLED = "badges.enabled"
 
 #: Defaults applied when a key has no row yet.
 DEFAULTS: dict[str, Any] = {
     CALENDAR_ENABLED: True,
+    BADGES_ENABLED: False,
 }
 
 
@@ -76,3 +78,7 @@ class AppSettingService:
     def is_calendar_enabled(self, db: Session) -> bool:
         """Return True when the global admin has the shared agenda enabled."""
         return bool(self.get_value(db, CALENDAR_ENABLED, True))
+
+    def is_badges_enabled(self, db: Session) -> bool:
+        """Return True when the platform admin team has enabled badges."""
+        return bool(self.get_value(db, BADGES_ENABLED, False))

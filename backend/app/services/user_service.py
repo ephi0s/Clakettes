@@ -51,6 +51,9 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
             "full_name": user.full_name if user.is_public else None,
             "role": user.role,
             "avatar_url": user.avatar_url,
+            "banner_url": getattr(user, "banner_url", None),
+            "tagline": getattr(user, "tagline", None),
+            "social_links": getattr(user, "social_links", None),
             "is_active": user.is_active,
             "created_at": user.created_at,
         }
@@ -71,6 +74,9 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
             "full_name": user.full_name if user.is_public else None,
             "role": user.role,
             "avatar_url": user.avatar_url,
+            "banner_url": getattr(user, "banner_url", None),
+            "tagline": getattr(user, "tagline", None),
+            "social_links": getattr(user, "social_links", None),
             "is_active": user.is_active,
             "created_at": user.created_at,
         }

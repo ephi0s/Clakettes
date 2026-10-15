@@ -55,9 +55,29 @@ extension CatalogApi on ApiService {
     return Award.fromJson(data);
   }
 
+  Future<Award> updateAward(int id, Map<String, dynamic> fields) async {
+    final data = await _put('/awards/$id', fields);
+    return Award.fromJson(data);
+  }
+
   /// Elimina un premio por su id.
   Future<void> deleteAward(int awardId) async {
     await request('DELETE', '/awards/$awardId');
+  }
+
+  Future<Award> verifyAward(int id, bool verified) async {
+    final data = await _put('/awards/$id', {'is_verified': verified});
+    return Award.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<PaginatedResult<Award>> getUserAwards(int userId,
+      {int page = 1, int size = 20}) async {
+    final data = await _get('/users/$userId/awards/', {
+      'page': '$page',
+      'size': '$size',
+    });
+    return _paginated(
+        data, (j) => Award.fromJson(Map<String, dynamic>.from(j as Map)));
   }
 
   /// Obtiene las bases paginadas de un festival, con filtro opcional de categoría.

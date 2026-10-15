@@ -38,6 +38,12 @@ class Festival {
   /// Indica si el admin general incluye los eventos de este festival en la agenda.
   @HiveField(13)
   final bool showInCalendar;
+  @HiveField(14)
+  final String? bannerUrl;
+  @HiveField(15)
+  final String? tagline;
+  @HiveField(16)
+  final Map<String, String>? socialLinks;
 
   Festival({
     this.id,
@@ -54,6 +60,9 @@ class Festival {
     this.images = const [],
     this.allowAliasDisplay = false,
     this.showInCalendar = true,
+    this.bannerUrl,
+    this.tagline,
+    this.socialLinks,
   });
 
   /// Crea un [Festival] a partir de un mapa JSON (claves snake_case del backend).
@@ -73,6 +82,12 @@ class Festival {
       images: json['images'] != null ? List<String>.from(json['images']) : [],
       allowAliasDisplay: json['allow_alias_display'] ?? false,
       showInCalendar: json['show_in_calendar'] ?? true,
+      bannerUrl: json['banner_url'],
+      tagline: json['tagline'],
+      socialLinks: json['social_links'] != null
+          ? Map<String, String>.from(
+              (json['social_links'] as Map).map((k, v) => MapEntry(k.toString(), v.toString())))
+          : null,
      );
   }
 
@@ -91,6 +106,9 @@ class Festival {
       'images': images,
       'allow_alias_display': allowAliasDisplay,
       'show_in_calendar': showInCalendar,
+      'banner_url': bannerUrl,
+      'tagline': tagline,
+      'social_links': socialLinks,
     };
   }
 }

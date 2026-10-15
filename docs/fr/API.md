@@ -29,6 +29,24 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | DELETE | `/api/auth/sessions/{session_id}` | oui |
 | POST | `/api/auth/sessions/revoke-all` | oui |
 
+## `badges` → `/api`
+
+| Méthode | Chemin | Auth |
+|---|---|---|
+| GET | `/api/badges/status` | non |
+| PUT | `/api/badges/settings` | oui |
+| GET | `/api/badges/` | optionnel |
+| POST | `/api/badges/` | oui |
+| GET | `/api/badges/{badge_id}` | optionnel |
+| PUT | `/api/badges/{badge_id}` | oui |
+| DELETE | `/api/badges/{badge_id}` | oui |
+| POST | `/api/badges/{badge_id}/image` | oui |
+| GET | `/api/badges/{badge_id}/eligibility` | optionnel |
+| POST | `/api/badges/{badge_id}/assign` | oui |
+| DELETE | `/api/badge-assignments/{assignment_id}` | oui |
+| GET | `/api/users/{user_id}/badges/` | optionnel |
+| GET | `/api/festivals/{festival_id}/badges/` | optionnel |
+
 ## `calendar` → `/api/calendar`
 
 | Méthode | Chemin | Auth |
@@ -315,6 +333,21 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | POST | `/api/payments/{payment_id}/refund` | oui |
 | POST | `/api/payments/webhook/mock` | non |
 
+## `posts` → `/api`
+
+| Méthode | Chemin | Auth |
+|---|---|---|
+| GET | `/api/users/{user_id}/posts/` | optionnel |
+| POST | `/api/users/{user_id}/posts/` | oui |
+| GET | `/api/festivals/{festival_id}/posts/` | optionnel |
+| POST | `/api/festivals/{festival_id}/posts/` | oui |
+| GET | `/api/posts/{post_id}` | optionnel |
+| PUT | `/api/posts/{post_id}` | oui |
+| DELETE | `/api/posts/{post_id}` | oui |
+| GET | `/api/posts/{post_id}/replies/` | optionnel |
+| POST | `/api/posts/{post_id}/replies/` | oui |
+| POST | `/api/posts/{post_id}/moderate` | oui |
+
 ## `registration_forms` → `/api`
 
 | Méthode | Chemin | Auth |
@@ -480,4 +513,4 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | oui |
 
-Total : 310 endpoints dans 33 routers.
+Total : 333 endpoints dans 35 routers.

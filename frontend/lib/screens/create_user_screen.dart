@@ -42,7 +42,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   late AppLocalizations l10n;
   String? _currentUserRole;
 
-  final List<String> _roles = ['admin', 'organizer', 'user', 'jury'];
+  List<String> _roles = ['admin', 'organizer', 'user', 'jury'];
 
   @override
   void didChangeDependencies() {
@@ -70,6 +70,20 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     if (mounted) {
       setState(() => _currentUserRole = user?.role);
     }
+    try {
+      final data = await ApiService().request('GET', '/roles/');
+      final items = data is List ? data : (data is Map && data['items'] is List ? data['items'] as List : <dynamic>[]);
+      if (items.isNotEmpty && mounted) {
+        setState(() {
+          _roles = items.map((e) {
+            if (e is Map) {
+              return ((e['display_name'] ?? e['displayName'] ?? e['name'])?.toString() ?? 'user');
+            }
+            return e.toString();
+          }).toList();
+        });
+      }
+    } catch (_) {}
   }
 
   /// Valida y crea el usuario, encolando la creación offline en caso de error.
@@ -210,8 +224,15 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                                     child: Text(l10n.getRoleTranslation(role)),
                                   ))
                               .toList(),
-                          onChanged: (value) => setState(() => _selectedRole = value),
+                           onChanged: (value) => setState(() => _selectedRole = value),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Los roles de festival se asignan después desde el perfil',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
                       ),
                       const SizedBox(height: 16),
                       SemanticTextField(

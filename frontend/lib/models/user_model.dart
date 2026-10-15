@@ -39,6 +39,12 @@ class User {
   final DateTime? createdAt;
   @HiveField(15)
   final DateTime? updatedAt;
+  @HiveField(16)
+  final String? bannerUrl;
+  @HiveField(17)
+  final String? tagline;
+  @HiveField(18)
+  final Map<String, String>? socialLinks;
 
   User({
     this.id,
@@ -57,6 +63,9 @@ class User {
     this.longitude,
     this.createdAt,
     this.updatedAt,
+    this.bannerUrl,
+    this.tagline,
+    this.socialLinks,
   });
 
   /// Crea un [User] a partir de un mapa JSON (claves snake_case del backend).
@@ -78,6 +87,12 @@ class User {
       longitude: json['longitude']?.toDouble(),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      bannerUrl: json['banner_url'],
+      tagline: json['tagline'],
+      socialLinks: json['social_links'] != null
+          ? Map<String, String>.from(
+              (json['social_links'] as Map).map((k, v) => MapEntry(k.toString(), v.toString())))
+          : null,
     );
   }
 
@@ -98,6 +113,9 @@ class User {
       'is_public_location': isPublicLocation,
       'latitude': latitude,
       'longitude': longitude,
+      'banner_url': bannerUrl,
+      'tagline': tagline,
+      'social_links': socialLinks,
     };
   }
 
@@ -119,6 +137,9 @@ class User {
     double? longitude,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? bannerUrl,
+    String? tagline,
+    Map<String, String>? socialLinks,
   }) {
     return User(
       id: id ?? this.id,
@@ -137,6 +158,9 @@ class User {
       longitude: longitude ?? this.longitude,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      tagline: tagline ?? this.tagline,
+      socialLinks: socialLinks ?? this.socialLinks,
     );
   }
 }

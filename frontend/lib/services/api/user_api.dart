@@ -96,4 +96,33 @@ extension UserApi on ApiService {
     return await request('GET', '/festivals/$festivalId/users/$userId/profile',
         withAuth: false);
   }
+
+  Future<List<RoleSummary>> getRoles({int size = 100}) async {
+    final data =
+        await _get('/roles/', {'page': '1', 'size': '$size'});
+    final items = (data as Map)['items'] as List? ?? const [];
+    return items
+        .map((j) => RoleSummary.fromJson(Map<String, dynamic>.from(j as Map)))
+        .where((role) => role.isActive)
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getUserRoles(int userId) async {
+    final data = await _get('/users/$userId/roles/', {'page': '1', 'size': '100'});
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    final items = (data as Map)['items'] as List? ?? const [];
+    return items.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  Future<Map<String, dynamic>> assignUserRole(
+      int userId, Map<String, dynamic> payload) async {
+    final data = await create('/users/$userId/roles/', payload);
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<void> removeUserRole(int userId, int userRoleId) async {
+    await request('DELETE', '/users/$userId/roles/$userRoleId');
+  }
 }
