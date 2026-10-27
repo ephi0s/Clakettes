@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
@@ -19,7 +19,7 @@ location_service = LocationService()
 
 
 class ImageUrlRequest(BaseModel):
-    url: str
+    url: HttpUrl
 
 
 @router.get("/", response_model=list[LocationImageResponse])
@@ -49,7 +49,7 @@ async def add_location_image_url(
 ):
     location = get_or_404(db, Location, location_id, "Location")
     require_location_admin(db, current_user, location)
-    return image_service.add_url(db, location_id, body.url, current_user.id)
+    return image_service.add_url(db, location_id, str(body.url), current_user.id)
 
 
 @router.delete("/{image_id}")

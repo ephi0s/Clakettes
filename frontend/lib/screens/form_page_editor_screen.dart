@@ -125,6 +125,7 @@ class _FormPageEditorScreenState extends State<FormPageEditorScreen> {
     if (result == null || field.id == null) return;
     try {
       final updated = await api.updateField(widget.form.id!, field.id!, result);
+      if (!mounted) return;
       setState(() => _fields[index] = updated);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));
@@ -138,6 +139,7 @@ class _FormPageEditorScreenState extends State<FormPageEditorScreen> {
     final confirm = await showConfirmDialog(context, title: l10n.deleteField, message: l10n.translate('deleteFieldMessage'));
     if (confirm == true) {
       await api.deleteField(widget.form.id!, field.id!);
+      if (!mounted) return;
       setState(() => _fields.removeAt(index));
     }
   }

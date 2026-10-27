@@ -63,8 +63,14 @@ from app.config import settings
 # Maximum request body size: 10 MB
 MAX_BODY_SIZE = 10 * 1024 * 1024
 DAV_PREFIX = "/dav"
-# Default insecure key - must be overridden in production via SECRET_KEY env var
-INSECURE_SECRET_KEY = "your-secret-key-change-in-production"
+# Known insecure default keys shipped by templates/scripts - must be overridden in production
+INSECURE_SECRET_KEYS = {
+    "your-secret-key-change-in-production",
+    "cambien-esto-por-una-clave-aleatoria-de-64-caracteres",
+    "dev-secret-change-in-production",
+    "change-me",
+    "secret",
+}
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +81,7 @@ def _validate_secret_key():
     In production (APP_ENV=production), raises RuntimeError if the default
     insecure key is detected. In development, logs a warning only.
     """
-    if settings.SECRET_KEY == INSECURE_SECRET_KEY:
+    if settings.SECRET_KEY in INSECURE_SECRET_KEYS or len(settings.SECRET_KEY) < 32:
         if settings.is_production:
             raise RuntimeError(
                 "SECRET_KEY must be set via environment variables in production "
@@ -160,6 +166,15 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
                     )
             except ValueError:
                 pass
+            return await call_next(request)
+        # No Content-Length (chunked): buffer and enforce limit.
+        body = await request.body()
+        if len(body) > MAX_BODY_SIZE:
+            return Response(
+                content='{"detail":"Request body too large"}',
+                status_code=413,
+                media_type="application/json",
+            )
         return await call_next(request)
 
 

@@ -27,6 +27,20 @@ extension UserApi on ApiService {
     return User.fromJson(data);
   }
 
+  Future<User> getMe() async {
+    final data = await request('GET', '/users/me');
+    return User.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> exportMyData() async {
+    final data = await request('GET', '/users/me/export');
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<void> deleteMyAccount() async {
+    await request('DELETE', '/users/me');
+  }
+
   Future<User> updateUser(int id, Map<String, dynamic> fields) async {
     final data = await _put('/users/$id', fields);
     return User.fromJson(data);

@@ -31,6 +31,7 @@ async def list_shortfilms(
 async def create_shortfilm(
     shortfilm: ShortFilmCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
+    shortfilm = shortfilm.model_copy(update={"user_id": current_user.id})
     return service.create(db, shortfilm)
 
 

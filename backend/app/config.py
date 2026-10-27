@@ -90,7 +90,7 @@ class Settings(BaseSettings):
         Splits on comma+space for readability in .env files.
         """
         if self.CORS_ORIGINS:
-            return [origin.strip() for origin in self.CORS_ORIGINS.split(", ")]
+            return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
         return ["*"]
 
     @property

@@ -391,6 +391,10 @@ class _FormLinksTabState extends State<_FormLinksTab> {
         ),
       ),
     );
+    isUnique.dispose();
+    isPublic.dispose();
+    maxUsesCtl.dispose();
+    assignedUserCtl.dispose();
     if (result == null) return;
     try {
       await api.createFormLink(widget.formId, result);

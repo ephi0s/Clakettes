@@ -69,6 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Inicializa el servicio de chat y se suscribe a los streams de mensajes entrantes.
   Future<void> _initChat() async {
     await _chatService.init();
+    if (!mounted) return;
     _streamSub = _chatService.onMessage.listen(_onIncomingMessage);
     _reconnectingSub = _chatService.onReconnecting.listen((reconnecting) {
       if (mounted) setState(() => _isReconnecting = reconnecting);
@@ -347,6 +348,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final XFile? picked = await _imagePicker.pickImage(source: source, maxWidth: 1200);
       if (picked == null) return;
+      if (!mounted) return;
       setState(() => _isSending = true);
       final url = await _chatService.api.uploadChatImage(picked.path);
       await _doSend(content: '', messageType: 'image', mediaUrl: url);

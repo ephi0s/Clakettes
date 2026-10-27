@@ -20,6 +20,7 @@ class WebSocketChatBackend extends AbstractChatBackend {
 
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _subscription;
+  Timer? _reconnectTimer;
   String? _token;
   int _reconnectAttempts = 0;
   final int _maxReconnectAttempts = 10;
@@ -105,7 +106,8 @@ class WebSocketChatBackend extends AbstractChatBackend {
     debugPrint('[WebSocketChatBackend] reconnecting in ${delay.inSeconds}s '
         '(attempt $_reconnectAttempts/$_maxReconnectAttempts)');
 
-    Timer(delay, () async {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(delay, () async {
       if (!_disposed && !_intentionalClose) {
         _subscription?.cancel();
         _channel?.sink.close();
@@ -170,6 +172,7 @@ class WebSocketChatBackend extends AbstractChatBackend {
   Future<void> disconnect() async {
     _intentionalClose = true;
     _disposed = true;
+    _reconnectTimer?.cancel();
     await _subscription?.cancel();
     await _channel?.sink.close();
     await _controller.close();

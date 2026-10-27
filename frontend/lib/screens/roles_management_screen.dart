@@ -75,9 +75,15 @@ class _RolesManagementScreenState extends State<RolesManagementScreen> {
         ],
       ),
     );
-    if (result == true && nameCtl.text.isNotEmpty && displayCtl.text.isNotEmpty) {
+    final name = nameCtl.text;
+    final display = displayCtl.text;
+    final desc = descCtl.text;
+    nameCtl.dispose();
+    displayCtl.dispose();
+    descCtl.dispose();
+    if (result == true && name.isNotEmpty && display.isNotEmpty) {
       try {
-        await api.createRoleGroup(RoleGroup(name: nameCtl.text, displayName: displayCtl.text, description: descCtl.text));
+        await api.createRoleGroup(RoleGroup(name: name, displayName: display, description: desc));
         _loadData();
       } catch (e) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorFor(e)), behavior: SnackBarBehavior.floating));

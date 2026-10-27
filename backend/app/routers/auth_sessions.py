@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.user_session import (
@@ -15,13 +15,18 @@ from app.auth import (
 )
 from app.models.user import User
 from app.services.auth_session_service import AuthSessionService
+from app.rate_limiter import RateLimiter
 
 router = APIRouter()
 auth_session_service = AuthSessionService()
+_refresh_limiter = RateLimiter()
 
 
 @router.post("/refresh", response_model=TokenRefreshResponse)
-async def refresh_token(body: TokenRefreshRequest, db: Session = Depends(get_db)):
+async def refresh_token(request: Request, body: TokenRefreshRequest, db: Session = Depends(get_db)):
+    ip = request.client.host if request.client else "unknown"
+    if not _refresh_limiter.check(f"refresh:{ip}", 20, 60):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
     refresh_hash = _hash_token(body.refresh_token)
     session = auth_session_service.get_by_refresh_token_hash(db, refresh_hash)
     if not session:

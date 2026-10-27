@@ -158,9 +158,11 @@ class _PublicationPanelState extends State<PublicationPanel> {
         ],
       ),
     );
-    if (saved == true && ctl.text.trim().isNotEmpty) {
+    final newText = ctl.text.trim();
+    ctl.dispose();
+    if (saved == true && newText.isNotEmpty) {
       try {
-        final updated = await _api.updatePost(post.id!, {'content': ctl.text.trim()});
+        final updated = await _api.updatePost(post.id!, {'content': newText});
         if (mounted) {
           setState(() => _posts = _posts.map((p) => p.id == post.id ? updated : p).toList());
         }

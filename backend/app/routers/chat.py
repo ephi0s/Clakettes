@@ -338,6 +338,8 @@ async def chat_websocket(ws: WebSocket, token: str = Query(None), db: Session = 
                 group_id = data.get("group_id")
                 if channel_id:
                     members = channel_service.get_members(db, channel_id)
+                    if not any(m.user_id == user.id for m in members):
+                        continue
                     for m in members:
                         if m.user_id != user.id:
                             await manager.broadcast(
@@ -350,6 +352,8 @@ async def chat_websocket(ws: WebSocket, token: str = Query(None), db: Session = 
                             )
                 elif group_id:
                     members = group_service.get_members(db, group_id)
+                    if not any(m.user_id == user.id for m in members):
+                        continue
                     for m in members:
                         if m.user_id != user.id:
                             await manager.broadcast(

@@ -68,7 +68,16 @@ def _validate_conditions_shape(conditions: dict | None) -> None:
 
 def _check_svg(data: bytes) -> bool:
     head = data[:1024].lstrip().lower()
-    return b"<svg" in head
+    if b"<svg" not in head:
+        return False
+    lowered = data.lower()
+    if b"<script" in lowered or b"javascript:" in lowered:
+        return False
+    import re
+
+    if re.search(rb"\son\w+\s*=", lowered):
+        return False
+    return True
 
 
 def _check_raster(data: bytes, ext: str) -> bool:

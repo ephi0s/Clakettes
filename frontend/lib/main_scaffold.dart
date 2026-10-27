@@ -635,7 +635,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
                       await AuthService().clear();
                       await OfflineCacheService.instance.clear();
                       await SyncQueueService.instance.clear();
-                      setState(() => _currentUser = null);
+                      if (mounted) setState(() => _currentUser = null);
                       _screens.fillRange(0, _screens.length, null);
                       if (mounted) setState(() => _selectedIndex = 0);
                     },

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -442,6 +443,60 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Future<void> _exportMyData() async {
+    try {
+      final data = await ApiService().exportMyData();
+      final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.translate('exportDataTitle')),"
+          content: SizedBox(
+            width: 500,
+            height: 400,
+            child: SingleChildScrollView(child: SelectableText(jsonStr, style: const TextStyle(fontFamily: 'monospace', fontSize: 12))),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: jsonStr));
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.translate('copiedToClipboard')), behavior: SnackBarBehavior.floating));
+              },
+              child: Text(l10n.copy),
+            ),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.close)),
+          ],
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.translate('exportDataFailed')), behavior: SnackBarBehavior.floating));
+      }
+    }
+  }
+
+  Future<void> _deleteMyAccount() async {
+    final confirmed = await showConfirmDialog(context, title: l10n.translate('deleteAccountTitle'), message: l10n.translate('deleteAccountConfirm'));
+    if (!confirmed) return;
+    try {
+      await ApiService().deleteMyAccount();
+      await AuthService().clear();
+      await OfflineCacheService.instance.clear();
+      await SyncQueueService.instance.clear();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainScaffold()), (_) => false);
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.translate('deleteAccountFailed')), behavior: SnackBarBehavior.floating));
+      }
+    }
+  }
+
   Future<void> _loadAliases() async {
     setState(() => _aliasesLoading = true);
     try {
@@ -740,6 +795,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               SessionsCard(l10n: l10n, sessions: _sessions, loading: _sessionsLoading, onRevokeAll: _revokeAllSessions, onRevoke: _revokeSession),
               const SizedBox(height: 24),
               const DavSubscriptionSection(),
+              const SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.translate('privacyAndData'), style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.download),
+                            label: Text(l10n.translate('exportMyData')),
+                            onPressed: _exportMyData,
+                          ),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.delete_forever),
+                            label: Text(l10n.translate('deleteMyAccount')),
+                            onPressed: _deleteMyAccount,
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
             if (user.latitude != null && user.longitude != null) ...[
               const SizedBox(height: 24),

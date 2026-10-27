@@ -108,7 +108,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
             'location_id': location.id,
             'role': 'primary',
           });
-          setState(() {
+          if (mounted) setState(() {
             _filmLocations.add(fl);
             _locationCache[location.id!] = location;
           });
@@ -132,7 +132,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
     if (!confirmed) return;
     try {
       await ApiService().removeFilmLocation(widget.shortFilm.id!, fl.id!);
-      setState(() => _filmLocations.removeWhere((f) => f.id == fl.id));
+      if (mounted) setState(() => _filmLocations.removeWhere((f) => f.id == fl.id));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));

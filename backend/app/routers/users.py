@@ -114,6 +114,8 @@ async def update_user(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
     is_other_user = current_user.id != user_id
+    if not is_admin(current_user):
+        user = user.model_copy(update={"role": target_user.role})
     updated = service.update(db, user_id, user)
     if not updated:
         raise HTTPException(status_code=404, detail="User not found")

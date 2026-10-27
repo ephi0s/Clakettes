@@ -136,10 +136,10 @@ class LocationTagEditor extends StatelessWidget {
   }
 
   /// Muestra un diálogo que solicita el texto de una nueva etiqueta para proponer.
-  void _showProposeDialog(BuildContext context, AppLocalizations l10n) {
+  Future<void> _showProposeDialog(BuildContext context, AppLocalizations l10n) async {
     final controller = TextEditingController();
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.proposeTag),
@@ -174,6 +174,7 @@ class LocationTagEditor extends StatelessWidget {
         ],
       ),
     );
+    controller.dispose();
   }
 }
 
