@@ -17,6 +17,7 @@ import '../widgets/dav_subscription_section.dart';
 import '../widgets/language_picker.dart';
 import '../services/auth_service.dart';
 import '../services/offline_cache_service.dart';
+import '../services/sync_queue_service.dart';
 import '../widgets/open_in_maps_action.dart';
 import '../widgets/publication_panel.dart';
 import '../widgets/badges_row.dart';
@@ -451,7 +452,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text(l10n.translate('exportDataTitle')),"
+          title: Text(l10n.translate('exportDataTitle')),
           content: SizedBox(
             width: 500,
             height: 400,
@@ -464,7 +465,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.translate('copiedToClipboard')), behavior: SnackBarBehavior.floating));
               },
-              child: Text(l10n.copy),
+              child: Text(l10n.translate('copy')),
             ),
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.close)),
           ],

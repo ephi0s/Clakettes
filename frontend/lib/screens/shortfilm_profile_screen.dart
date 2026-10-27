@@ -108,10 +108,12 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
             'location_id': location.id,
             'role': 'primary',
           });
-          if (mounted) setState(() {
-            _filmLocations.add(fl);
-            _locationCache[location.id!] = location;
-          });
+          if (mounted) {
+            setState(() {
+              _filmLocations.add(fl);
+              _locationCache[location.id!] = location;
+            });
+          }
         } catch (e) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
