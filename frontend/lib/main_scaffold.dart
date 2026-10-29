@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../services/notification_polling_service.dart';
 import 'l10n/app_localizations.dart';
 import 'services/offline_cache_service.dart';
 import 'services/sync_queue_service.dart';
@@ -89,7 +90,12 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
       if (changed) {
         _screens.fillRange(0, _screens.length, null);
         setState(() {});
-        if (user != null) _loadUnreadCount();
+        if (user != null) {
+          _loadUnreadCount();
+          NotificationPollingService.instance.start();
+        } else {
+          NotificationPollingService.instance.stop();
+        }
       }
     }
   }
