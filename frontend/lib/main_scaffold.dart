@@ -8,7 +8,7 @@ import 'screens/dashboard_screen.dart';
 import 'screens/festivals_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/shortfilms_screen.dart';
-import 'screens/chat_screen.dart';
+import 'screens/channels_screen.dart';
 import 'screens/locations_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -396,7 +396,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
       1 => const FestivalsScreen(),
       2 => const UsersScreen(),
       3 => const ShortFilmsScreen(),
-      4 => ChatScreen(currentUser: _currentUser),
+      4 => ChannelsScreen(currentUser: _currentUser),
       5 => const LocationsScreen(),
       6 => const AdminScreen(),
        7 => const NotificationsScreen(key: ValueKey('notifications')),

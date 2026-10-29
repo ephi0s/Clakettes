@@ -18,9 +18,11 @@ class Channel(BaseModel):
 
     name = Column(String(100), nullable=False, index=True)
     description = Column(Text, nullable=True)
-    channel_type = Column(String(20), nullable=False, default="community")  # community | private
+    channel_type = Column(String(20), nullable=False, default="community")  # community | private | broadcast
     max_members = Column(Integer, nullable=True, default=20)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    festival_id = Column(Integer, ForeignKey("festivals.id"), nullable=True, index=True)
+    event_id = Column(Integer, ForeignKey("events.id"), nullable=True, index=True)
     is_active = Column(Boolean, default=True)
 
     creator = relationship("User", foreign_keys=[created_by])

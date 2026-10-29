@@ -463,6 +463,8 @@ class _PublicationPanelState extends State<PublicationPanel> {
     final colorScheme = theme.colorScheme;
     final canMod = widget.canModerate;
     final own = _isOwn(post);
+    final replies = _replies[post.id] ?? [];
+    final expanded = post.id != null && _expanded.contains(post.id);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       color: colorScheme.surfaceContainerLow,
@@ -485,6 +487,13 @@ class _PublicationPanelState extends State<PublicationPanel> {
             ),
             const SizedBox(height: 4),
             MarkdownText(data: post.content, style: theme.textTheme.bodyMedium),
+            if (post.allowReplies || post.replyCount > 0 || canMod)
+              TextButton.icon(
+                onPressed: () => _toggleExpanded(post),
+                icon: Icon(expanded ? Icons.expand_less : Icons.expand_more, size: 16),
+                label: Text(post.replyCount > 0 ? 'Respuestas (${post.replyCount})' : 'Responder'),
+              ),
+            if (expanded) _buildReplies(post, theme, replies),
           ],
         ),
       ),

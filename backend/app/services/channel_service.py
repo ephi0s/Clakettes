@@ -22,6 +22,8 @@ class ChannelService(BaseService[Channel, ChannelCreate, ChannelUpdate]):
             channel_type=obj_in.channel_type,
             max_members=obj_in.max_members or (20 if obj_in.channel_type == "private" else None),
             created_by=created_by,
+            festival_id=obj_in.festival_id,
+            event_id=obj_in.event_id,
         )
         db.add(channel)
         db.flush()

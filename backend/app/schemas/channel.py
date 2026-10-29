@@ -11,6 +11,8 @@ class ChannelBase(BaseModel):
     description: str | None = None
     channel_type: str = "community"
     max_members: int | None = None
+    festival_id: int | None = None
+    event_id: int | None = None
 
 
 class ChannelCreate(ChannelBase):

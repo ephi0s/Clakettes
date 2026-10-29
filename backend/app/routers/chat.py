@@ -83,6 +83,13 @@ async def create_message(
 ):
     # Prevent sender_id spoofing — always use the authenticated user's ID
     message.sender_id = current_user.id
+    if message.channel_id is not None:
+        channel = get_or_404(db, Channel, message.channel_id, "Channel")
+        require_channel_member(db, current_user, channel)
+        if getattr(channel, "channel_type", None) == "broadcast":
+            role = channel_service.get_member_role(db, channel.id, current_user.id)
+            if role not in ("admin", "moderator") and not is_admin(current_user):
+                raise HTTPException(status_code=403, detail="Only admins can post in broadcast channels")
     db_msg = service.create(db, message)
     backend = chat_backend_registry.backend
 
