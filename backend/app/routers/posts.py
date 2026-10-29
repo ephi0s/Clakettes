@@ -195,6 +195,8 @@ async def create_reply(
     current_user: User = Depends(get_current_user),
 ):
     parent = get_or_404(db, Post, post_id, "Post")
+    if parent.parent_post_id is not None:
+        raise HTTPException(status_code=400, detail="Cannot reply to a reply")
     if not parent.allow_replies and not _can_moderate_scope(db, current_user, parent):
         raise HTTPException(status_code=403, detail="Replies are disabled for this post")
     created = post_service.create_wall_post(
