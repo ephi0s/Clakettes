@@ -6,11 +6,11 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ## Backend (`backend/`)
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
 - Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
-- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (21 versiones). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
+- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (27 versiones). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
 - Capas: Routers (36 archivos, 33 con APIRouter) → Services (36) → Models (34). Models/Schemas via `app.enums`
 - Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s (SQLite)
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (37 archivos, ~1400 tests)
+- Tests: `pytest tests/ -x -q --tb=short` (45 archivos, ~1480 tests)
 - Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
 
 ## Frontend (`frontend/`)

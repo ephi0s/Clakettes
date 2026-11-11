@@ -9,8 +9,8 @@ Proiektuaren benetako erabilgarritasuna rol bakoitzeko, eusten dion fluxuarekin.
 1. Jaialdia sortzen du (`POST /api/festivals/`) deskribapen, web, egoitza eta logoarekin.
 2. Deialdiak irekitzen ditu: izen-emate inprimakiak sekzio, rol eta etiketekin (`RegistrationForm + Sections + Links`), konturik gabe edonork bete dezakeen esteka publiko bidez azalduak.
 3. Zure deialdiei lotutako laburrak eta errodaje-kokapenak jasotzen ditu.
-4. Programazioa muntatzen du: ekitaldiak (gala, proiekzioa, tailerra, mahaia, networking-a, sariak, festa, masterclass-a, Q&A) sarrera-motak, eserlekuak (erabilgarri/erreserbatua/saldua/esleitua/blokeatua), erreserbak eta asistenten check-in-arekin; asistentak CSV-ra eta ekitaldiak ICS-ra esportatzen ditu.
-5. Kide-dun batzordeak izendatzen ditu eta sariak argitaratzen ditu (egiaztatuak edo ez, publikoak edo ez) jaialdi, labur edo erabiltzaileko.
+4. Programazioa muntatzen du: ekitaldiak (gala, proiekzioa, tailerra, mahaia, networking-a, sariak, festa, masterclass-a, Q&A) sarrera-motak, eserlekuak (erabilgarri/erreserbatua/saldua/esleitua/blokeatua), erreserbak eta asistenten check-in-arekin; asistentak CSV-ra eta ekitaldiak ICS-ra esportatzen ditu. Proiekzioko obra bakoitza cribatzen du: `pending/screened/disqualified` egoera eta arrazoia, eta iragazkiak egoeraren, deskalifikatuen edo parte-hartzailearen etiketaren arabera. Antolakuntzak hautagarritasun-etiketak (bizilaguna, ikaslea) kanpoko metodoekin egiaztatzen ditu, eta parte-hartzaileak egiaztapena eska dezake bizileku-ziurtagiria edo ikasle-txartela erantsita.
+5. Kide-dun batzordeak izendatzen ditu eta sariak argitaratzen ditu (egiaztatuak edo ez, publikoak edo ez) jaialdi, labur edo erabiltzaileko, hautagarritasun-etiketekin eta hartzailearen egiaztapenarekin.
 6. Komunikatzen du: jaialdiaren kanalak (admin/moderator/member), mezuak eta irudiak profilean, rulebook-ak.
 
 Bere jaialdiak soilik editatzen/ezabatzen ditu eta bere erabiltzaileak kudeatzen ditu (`require_festival_admin`). Kideak bakarrik batzen dira `attendee` gisa; gainerako rolak admin batek esleitzen ditu (409 jada kide bada).
@@ -41,4 +41,7 @@ Dena ikusi eta editatzen du (erabiltzaileak, jaialdiak, laburrak, kanalak, inpri
 - Jaialdi-kidea: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Izen-ematea: `draft → submitted → approved / rejected`; bidalketa: `pending / approved / rejected / waitlisted / cancelled`.
 - Ekitaldi-asistentea: `registered / attended / no_show / cancelled`.
+- Proiekzio-cribatzea: `pending / screened / disqualified`.
+- Epaimahai-oharrak eta aktak obrako, anotazioekin: `special_mention / accesit / other`.
+- Parte-hartzailearen etiketa-egiaztapena: `unverified / pending / verified / rejected`.
 - Ekitaldien ikusgarritasun-helmena: `public / festival_members / roles / attendees_only`.

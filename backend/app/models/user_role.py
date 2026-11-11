@@ -1,9 +1,9 @@
 """UserRole model — links users to roles with festival scope and approval workflow."""
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
-from app.enums import UserRoleStatus, UserRoleVisibility
+from app.enums import UserRoleStatus, UserRoleVisibility, TagVerificationStatus
 
 
 class UserRole(BaseModel):
@@ -72,12 +72,20 @@ class UserParticipantTag(BaseModel):
     is_hidden = Column(Boolean, default=False)
     assigned_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     notes = Column(Text, nullable=True)
+    verification_status = Column(String(50), nullable=False, default=TagVerificationStatus.UNVERIFIED.value)
+    verification_method = Column(String(50), nullable=True)
+    verification_notes = Column(Text, nullable=True)
+    verification_document_url = Column(String(500), nullable=True)
+    verification_requested_at = Column(DateTime, nullable=True)
+    verified_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    verified_at = Column(DateTime, nullable=True)
 
     # Relationships
     user = relationship("User", foreign_keys=[user_id], back_populates="user_participant_tags")
     tag = relationship("ParticipantTag", back_populates="user_tags")
     festival = relationship("Festival", back_populates="user_participant_tags")
     assigned_by_user = relationship("User", foreign_keys=[assigned_by], back_populates="assigned_participant_tags")
+    verifier = relationship("User", foreign_keys=[verified_by])
 
     def __repr__(self):
         scope = f"festival={self.festival_id}" if self.festival_id else "global"

@@ -17,6 +17,7 @@ class AwardBase(BaseModel):
     currency: str = "EUR"
     year: int | None = None
     is_public: bool = True
+    eligibility_tags: list[str] = []
 
 
 class AwardCreate(AwardBase):
@@ -37,12 +38,22 @@ class AwardUpdate(BaseModel):
     year: int | None = None
     is_public: bool | None = None
     is_verified: bool | None = None
+    eligibility_tags: list[str] | None = None
+
+
+class AwardRecipientVerification(BaseModel):
+    verified: bool
+    notes: str | None = None
 
 
 class AwardResponse(AwardBase):
     id: int
     is_verified: bool
     verified_by: int | None = None
+    recipient_verified: bool = False
+    recipient_verified_by: int | None = None
+    recipient_verified_at: datetime | None = None
+    recipient_verification_notes: str | None = None
     created_by: int | None = None
     created_at: datetime
     updated_at: datetime

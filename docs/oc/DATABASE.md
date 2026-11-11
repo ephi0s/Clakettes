@@ -583,7 +583,7 @@ Aquò s'utiliza coma dependéncia de FastAPI per l'accès a la banca de donadas 
 
 ## Nòtas de migracion de SQLite cap a MariaDB
 
-Los cambiaments d'esquèma se gerisson amb Alembic (`backend/alembic/versions/`, 21 versions;
+Los cambiaments d'esquèma se gerisson amb Alembic (`backend/alembic/versions/`, 27 versions;
 `alembic upgrade head`). En produccion sonque Alembic, jamai `create_all`.
 
 En migrant de SQLite cap a MariaDB:

@@ -3,11 +3,6 @@
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
 ## Fase 0 — Premios, elegibilidad y cribado (PRIORITARIO)
-- [ ] Ampliar modelo Award con criterios de elegibilidad (residente, estudiante, etc.) y verificación del receptor
-- [ ] Permitir a la organización verificar el acceso a categorías especiales mediante métodos externos (etiquetas en participantes)
-- [ ] Sistema de verificación por el participante en la inscripción (adjuntar certificado de residencia, carnet de estudiante, etc.)
-- [ ] Etiquetas de cribado: "descalificado" y categorías especiales para filtrado por el jurado en el visionado
-- [ ] Notas y actas por obra, y anotaciones (mención especial, accesit)
 - [ ] Soporte en UI y filtrado por elegibilidad/categoría
 
 ## Fase 1 — Cumplimiento RGPD y seguridad federada (CRÍTICO)

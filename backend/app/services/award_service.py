@@ -65,6 +65,8 @@ class AwardService(BaseService[Award, AwardCreate, AwardUpdate]):
         user_id: int | None = None,
         shortfilm_id: int | None = None,
         is_public: bool | None = None,
+        eligibility_tag: str | None = None,
+        recipient_verified: bool | None = None,
     ) -> dict:
         query = db.query(Award).filter(Award.festival_id == festival_id)
         if user_id is not None:
@@ -73,6 +75,10 @@ class AwardService(BaseService[Award, AwardCreate, AwardUpdate]):
             query = query.filter(Award.shortfilm_id == shortfilm_id)
         if is_public is not None:
             query = query.filter(Award.is_public == is_public)
+        if recipient_verified is not None:
+            query = query.filter(Award.recipient_verified == recipient_verified)
+        if eligibility_tag:
+            query = query.filter(Award.eligibility_criteria.contains(eligibility_tag))
         return self.paginate(query.order_by(Award.position, Award.award_name), page, size)
 
     def get_by_user(
@@ -118,3 +124,21 @@ class AwardService(BaseService[Award, AwardCreate, AwardUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
+    def verify_recipient(
+        self,
+        db: Session,
+        award: Award,
+        verified: bool,
+        notes: str | None,
+        verifier_id: int,
+    ) -> Award:
+        from datetime import datetime, timezone
+
+        award.recipient_verified = verified
+        award.recipient_verification_notes = notes
+        award.recipient_verified_by = verifier_id
+        award.recipient_verified_at = datetime.now(timezone.utc) if verified else None
+        db.commit()
+        db.refresh(award)
+        return award

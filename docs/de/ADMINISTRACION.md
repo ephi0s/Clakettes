@@ -25,7 +25,7 @@ In Nicht-Prod (`APP_ENV != production`) legt der Start `admin` / `setup` (`admin
 ## Backups und Migrationen
 
 - SQLite: `*.db` bei gestopptem Dienst kopieren (`-Kill` vorher). MariaDB: `mariadb-dump` (Volume `db-data`).
-- Migrationen: `alembic upgrade head` aus `backend/` (18 Versionen; Prod **nur** Alembic, niemals `create_all`).
+- Migrationen: `alembic upgrade head` aus `backend/` (27 Versionen; Prod **nur** Alembic, niemals `create_all`).
 - Engine-Wechsel: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); Details in [DATABASE.md](DATABASE.md).
 
 ## Fehlerbehebung

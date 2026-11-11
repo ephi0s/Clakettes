@@ -11,6 +11,8 @@ from app.schemas.user_role import (
     UserRoleResponse,
     UserRolesPage,
     UserParticipantTagCreate,
+    UserParticipantTagVerify,
+    UserParticipantTagRequestVerification,
     UserParticipantTagResponse,
     UserParticipantTagsPage,
 )
@@ -19,7 +21,7 @@ from app.services.role_service import RoleService, UserRoleService
 from app.services.user_service import UserService
 from app.services.festival_service import FestivalService
 from app.services.participant_tag_service import ParticipantTagService, UserParticipantTagService
-from app.routers.permissions import is_admin, require_role_scope_admin
+from app.routers.permissions import is_admin, require_role_scope_admin, can_manage_festival
 from app.routers.dependencies import get_or_404
 from app.models.user import User
 from app.models.role import Role
@@ -149,18 +151,103 @@ async def list_user_participant_tags(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     festival_id: int | None = None,
+    verification_status: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     get_or_404(db, User, user_id, "User")
     if user_id != current_user.id and not is_admin(current_user):
-        raise HTTPException(status_code=403, detail="You can only view your own participant tags")
-    result = user_participant_tag_service.get_by_user_paginated(db, user_id, page, size, festival_id)
+        if not festival_id or not can_manage_festival(db, current_user, festival_id):
+            raise HTTPException(status_code=403, detail="You can only view your own participant tags")
+    result = user_participant_tag_service.get_by_user_paginated(
+        db, user_id, page, size, festival_id, verification_status
+    )
     enriched = []
     for upt in result["items"]:
         upt_data = {c.name: getattr(upt, c.name) for c in upt.__table__.columns}
         enriched.append({**upt_data, "tag": upt.tag})
     return {"items": enriched, "total": result["total"], "page": page, "size": size, "pages": result["pages"]}
+
+
+@router.patch("/users/{user_id}/participant-tags/{upt_id}/verify", response_model=UserParticipantTagResponse)
+async def verify_user_participant_tag(
+    user_id: int,
+    upt_id: int,
+    body: UserParticipantTagVerify,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    get_or_404(db, User, user_id, "User")
+    existing = user_participant_tag_service.get(db, upt_id)
+    if not existing or existing.user_id != user_id:
+        raise HTTPException(status_code=404, detail="User tag not found")
+    require_role_scope_admin(db, current_user, existing.festival_id)
+    updated = user_participant_tag_service.set_verification(
+        db,
+        existing,
+        body.status.value,
+        body.method.value if body.method else None,
+        body.notes,
+        current_user.id,
+    )
+    audit_service.log(
+        db,
+        "user.tag.verify",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={
+            "upt_id": upt_id,
+            "tag_id": existing.tag_id,
+            "festival_id": existing.festival_id,
+            "status": body.status.value,
+            "method": body.method.value if body.method else None,
+        },
+        ip_address=request.client.host if request.client else "unknown",
+    )
+    return updated
+
+
+@router.post(
+    "/users/{user_id}/participant-tags/{upt_id}/request-verification",
+    response_model=UserParticipantTagResponse,
+)
+async def request_participant_tag_verification(
+    user_id: int,
+    upt_id: int,
+    body: UserParticipantTagRequestVerification,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    get_or_404(db, User, user_id, "User")
+    existing = user_participant_tag_service.get(db, upt_id)
+    if not existing or existing.user_id != user_id:
+        raise HTTPException(status_code=404, detail="User tag not found")
+    if user_id != current_user.id and not is_admin(current_user):
+        raise HTTPException(status_code=403, detail="You can only request verification of your own tags")
+    from app.enums import TagVerificationStatus
+
+    if existing.verification_status == TagVerificationStatus.VERIFIED.value:
+        raise HTTPException(status_code=400, detail="Tag is already verified")
+    method = body.method.value
+    if method == "document" and not body.document_url:
+        raise HTTPException(status_code=400, detail="A document is required for document verification")
+    updated = user_participant_tag_service.request_verification(db, existing, method, body.document_url, body.notes)
+    audit_service.log(
+        db,
+        "user.tag.request_verification",
+        actor_user_id=current_user.id,
+        target_user_id=user_id,
+        detail={
+            "upt_id": upt_id,
+            "tag_id": existing.tag_id,
+            "festival_id": existing.festival_id,
+            "method": method,
+        },
+        ip_address=request.client.host if request.client else "unknown",
+    )
+    return updated
 
 
 @router.post("/users/{user_id}/participant-tags/", response_model=UserParticipantTagResponse, status_code=201)

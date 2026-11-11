@@ -29,7 +29,12 @@ from app.schemas.event import (
     EventAttendeeUpdate,
     EventAttendeeResponse,
     EventAttendeePage,
+    ScreeningItem,
+    EventScreeningsResponse,
+    ScreeningStatusUpdate,
+    ScreeningNotesUpdate,
 )
+from app.enums import ScreeningStatus
 from app.services.event_service import (
     EventService,
     EventTicketTypeService,
@@ -59,7 +64,7 @@ from app.models.event import (
 from app.models.festival import Festival
 from app.models.user import User
 from app.models.user_role import UserRoleStatus
-from app.schemas.award import AwardCreate, AwardUpdate, AwardResponse, AwardPage
+from app.schemas.award import AwardCreate, AwardUpdate, AwardResponse, AwardPage, AwardRecipientVerification
 
 router = APIRouter()
 event_service = EventService()
@@ -250,29 +255,121 @@ async def check_conflict(
     return {"conflict": conflict.id if conflict else None, "venue": venue}
 
 
-@router.get("/events/{event_id}/screenings")
-async def list_screenings(event_id: int, db: Session = Depends(get_db)):
-    from app.models.event_screening import EventScreening
-
+@router.get("/events/{event_id}/screenings", response_model=EventScreeningsResponse)
+async def list_screenings(
+    event_id: int,
+    status: ScreeningStatus | None = None,
+    include_disqualified: bool = True,
+    participant_tag_id: int | None = None,
+    participant_tag_category: str | None = None,
+    participant_tag_verified_only: bool = False,
+    db: Session = Depends(get_db),
+):
     get_or_404(db, Event, event_id, "Event")
-    rows = (
-        db.query(EventScreening).filter(EventScreening.event_id == event_id).order_by(EventScreening.sort_order).all()
-    )
+    all_rows = event_service.get_screenings(db, event_id)
+    rows = all_rows
+    if status:
+        rows = [r for r in rows if r.status == status.value]
+    if not include_disqualified:
+        rows = [r for r in rows if r.status != ScreeningStatus.DISQUALIFIED.value]
+    if participant_tag_id or participant_tag_category:
+        from app.models.participant_tag import ParticipantTag
+        from app.models.user_role import UserParticipantTag
+        from app.enums import TagVerificationStatus
+
+        author_ids = {r.shortfilm.user_id for r in rows if r.shortfilm}
+        query = db.query(UserParticipantTag).filter(UserParticipantTag.user_id.in_(author_ids))
+        if participant_tag_id:
+            query = query.filter(UserParticipantTag.tag_id == participant_tag_id)
+        if participant_tag_category:
+            query = query.join(ParticipantTag, ParticipantTag.id == UserParticipantTag.tag_id).filter(
+                ParticipantTag.category == participant_tag_category
+            )
+        if participant_tag_verified_only:
+            query = query.filter(UserParticipantTag.verification_status == TagVerificationStatus.VERIFIED.value)
+        tagged_author_ids = {ut.user_id for ut in query.all()}
+        rows = [r for r in rows if r.shortfilm and r.shortfilm.user_id in tagged_author_ids]
     items = [
-        {
-            "shortfilm_id": r.shortfilm_id,
-            "sort_order": r.sort_order or 0,
-            "title": r.shortfilm.title if r.shortfilm else None,
-            "duration": r.shortfilm.duration if r.shortfilm else None,
-        }
+        ScreeningItem(
+            shortfilm_id=r.shortfilm_id,
+            sort_order=r.sort_order or 0,
+            title=r.shortfilm.title if r.shortfilm else None,
+            duration=r.shortfilm.duration if r.shortfilm else None,
+            status=r.status or ScreeningStatus.PENDING.value,
+            status_reason=r.status_reason,
+            is_disqualified=r.is_disqualified,
+            jury_notes=r.jury_notes,
+            minutes=r.minutes,
+            annotation=r.annotation,
+            annotated_by=r.annotated_by,
+            annotated_at=r.annotated_at,
+        )
         for r in rows
     ]
-    total = sum(i["duration"] for i in items if i["duration"])
+    counts: dict[str, int] = {s.value: 0 for s in ScreeningStatus}
+    for row in all_rows:
+        key = row.status or ScreeningStatus.PENDING.value
+        counts[key] = counts.get(key, 0) + 1
+    return EventScreeningsResponse(
+        event_id=event_id,
+        shortfilm_ids=[i.shortfilm_id for i in items],
+        items=items,
+        total_duration=sum(i.duration for i in items if i.duration),
+        counts_by_status=counts,
+    )
+
+
+@router.patch("/events/{event_id}/screenings/{shortfilm_id}")
+async def set_screening_status(
+    event_id: int,
+    shortfilm_id: int,
+    body: ScreeningStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = get_or_404(db, Event, event_id, "Event")
+    require_festival_admin(db, current_user, event.festival_id)
+    row = event_service.set_screening_status(db, event_id, shortfilm_id, body.status.value, body.status_reason)
+    if not row:
+        raise HTTPException(status_code=404, detail="Screening not found")
     return {
         "event_id": event_id,
-        "shortfilm_ids": [i["shortfilm_id"] for i in items],
-        "items": items,
-        "total_duration": total,
+        "shortfilm_id": shortfilm_id,
+        "status": row.status,
+        "status_reason": row.status_reason,
+        "is_disqualified": row.is_disqualified,
+    }
+
+
+@router.put("/events/{event_id}/screenings/{shortfilm_id}/notes")
+async def set_screening_notes(
+    event_id: int,
+    shortfilm_id: int,
+    body: ScreeningNotesUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    event = get_or_404(db, Event, event_id, "Event")
+    require_festival_admin(db, current_user, event.festival_id)
+    row = event_service.set_screening_notes(
+        db,
+        event_id,
+        shortfilm_id,
+        body.jury_notes,
+        body.minutes,
+        body.annotation.value if body.annotation else None,
+        current_user.id,
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Screening not found")
+    return {
+        "event_id": event_id,
+        "shortfilm_id": shortfilm_id,
+        "jury_notes": row.jury_notes,
+        "minutes": row.minutes,
+        "annotation": row.annotation,
+        "annotated_by": row.annotated_by,
+        "annotated_at": row.annotated_at,
     }
 
 
@@ -710,10 +807,22 @@ async def list_festival_awards(
     user_id: int | None = None,
     shortfilm_id: int | None = None,
     is_public: bool | None = None,
+    eligibility_tag: str | None = None,
+    recipient_verified: bool | None = None,
     db: Session = Depends(get_db),
 ):
     get_or_404(db, Festival, festival_id, "Festival")
-    return award_service.get_by_festival_paginated(db, festival_id, page, size, user_id, shortfilm_id, is_public)
+    return award_service.get_by_festival_paginated(
+        db,
+        festival_id,
+        page,
+        size,
+        user_id,
+        shortfilm_id,
+        is_public,
+        eligibility_tag,
+        recipient_verified,
+    )
 
 
 @router.post("/festivals/{festival_id}/awards/", response_model=AwardResponse, status_code=201)
@@ -755,6 +864,18 @@ async def delete_award(
     if not result:
         raise HTTPException(status_code=404, detail="Award not found")
     return {"message": "Award deleted"}
+
+
+@router.patch("/awards/{award_id}/recipient-verification", response_model=AwardResponse)
+async def verify_award_recipient(
+    award_id: int,
+    body: AwardRecipientVerification,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = get_or_404(db, Award, award_id, "Award")
+    require_festival_admin(db, current_user, existing.festival_id)
+    return award_service.verify_recipient(db, existing, body.verified, body.notes, current_user.id)
 
 
 @router.get("/users/{user_id}/awards/", response_model=AwardPage)

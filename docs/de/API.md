@@ -163,6 +163,8 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/festivals/{festival_id}/events/programacion` | nein |
 | GET | `/api/festivals/{festival_id}/events/check-conflict` | ja |
 | GET | `/api/events/{event_id}/screenings` | nein |
+| PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | ja |
+| PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | ja |
 | PUT | `/api/events/{event_id}/screenings` | ja |
 | GET | `/api/events/{event_id}/occupancy` | nein |
 | GET | `/api/events/{event_id}/ticket-types/` | nein |
@@ -197,6 +199,7 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | POST | `/api/festivals/{festival_id}/awards/` | ja |
 | PUT | `/api/awards/{award_id}` | ja |
 | DELETE | `/api/awards/{award_id}` | ja |
+| PATCH | `/api/awards/{award_id}/recipient-verification` | ja |
 | GET | `/api/users/{user_id}/awards/` | nein |
 | GET | `/api/public/profile/{token}` | nein |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | nein |
@@ -454,6 +457,7 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | POST | `/api/uploads/avatar` | ja |
 | POST | `/api/uploads/thumbnail` | ja |
 | POST | `/api/uploads/video` | ja |
+| POST | `/api/uploads/document` | ja |
 | POST | `/api/uploads/chat-image` | ja |
 
 ## `user_aliases` → `/api`
@@ -483,6 +487,8 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | ja |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | ja |
 | GET | `/api/users/{user_id}/participant-tags/` | ja |
+| PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | ja |
+| POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | ja |
 | POST | `/api/users/{user_id}/participant-tags/` | ja |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | ja |
 
@@ -513,4 +519,4 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/validation-rule-groups/` | nein |
 | POST | `/api/validation-rule-groups/` | ja |
 
-Gesamt: 333 Endpunkte in 35 Routern.
+Gesamt: 339 Endpunkte in 35 Routern.

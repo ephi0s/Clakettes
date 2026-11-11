@@ -9,8 +9,8 @@ Utilitat reala del projècte per ròtle, amb lo flux que la sosten. Detalh opera
 1. Crea lo festivau (`POST /api/festivals/`) amb descripcion, web, sèti e lògo.
 2. Dubrís convocatòrias: formularis d'inscripcion amb seccions, ròtles e etiquetes (`RegistrationForm + Sections + Links`), expausats per ligam public que qual que siá pòt emplenar sens compte.
 3. Recep corts ligats a tas convocatòrias e localizacions de rodatge.
-4. Mònta la programacion: eveniments (gala, projeccion, talhièr, taula, networking, prèmis, fèsta, masterclass, Q&A) amb tipes de bilhet, sèts (disponible/reservada/venduda/assignada/blocada), resèrvas e check-in d'assistents; expòrta assistents cap a CSV e eveniments cap a ICS.
-5. Nòmma comitats amb membres e publica prèmis (verificats o non, publics o non) per festivau, cort o utilizaire.
+4. Mònta la programacion: eveniments (gala, projeccion, talhièr, taula, networking, prèmis, fèsta, masterclass, Q&A) amb tipes de bilhet, sèts (disponible/reservada/venduda/assignada/blocada), resèrvas e check-in d'assistents; expòrta assistents cap a CSV e eveniments cap a ICS. Cribla cada òbra de la projeccion amb estat `pending/screened/disqualified` e motiu, e filtra per estat, desqualificadas o etiqueta de participant. L'organizacion verifica las etiquetas d'elegibilitat (resident, estudiant) amb de metòdes extèrnes, e lo participant pòt demandar la verificacion en juntant un certificat de residéncia o una carta d'estudiant.
+5. Nòmma comitats amb membres e publica prèmis (verificats o non, publics o non) per festivau, cort o utilizaire, amb etiquetas d'elegibilitat e verificacion del receptor.
 6. Comunica: canaus del festivau (admin/moderator/member), messatges e imatges dins lo perfil, rulebooks.
 
 Sonque edita/escafa sos festivals e gerís sos utilizaires (`require_festival_admin`). Los membres se jóntan sols coma `attendee`; la rèsta de ròtles los assigna un admin (409 se ja es membre).
@@ -41,4 +41,7 @@ O vei e o edita tot (utilizaires, festivals, corts, canaus, formularis). Operati
 - Membre de festivau: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Inscripcion: `draft → submitted → approved / rejected`; mandadís: `pending / approved / rejected / waitlisted / cancelled`.
 - Assistent a eveniment: `registered / attended / no_show / cancelled`.
+- Criblatge en projeccion: `pending / screened / disqualified`.
+- Nòtas del jurat e actas per òbra, amb anotacion: `special_mention / accesit / other`.
+- Verificacion d'etiqueta de participant: `unverified / pending / verified / rejected`.
 - Portada de visibilitat d'eveniments: `public / festival_members / roles / attendees_only`.

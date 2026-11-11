@@ -9,8 +9,8 @@ Real project value by role, with the flow behind it. Operating details in [USO.m
 1. Create the festival (`POST /api/festivals/`) with description, website, venue and logo.
 2. Open calls: registration forms with sections, roles and tags (`RegistrationForm + Sections + Links`), exposed via a public link anyone can fill in without an account.
 3. Receive short films linked to your calls and shooting locations.
-4. Build the programme: events (gala, screening, workshop, panel, networking, awards, party, masterclass, Q&A) with ticket types, seats (available/reserved/sold/assigned/blocked), reservations and attendee check-in; export attendees to CSV and events to ICS.
-5. Appoint committees with members and publish awards (verified or not, public or not) by festival, short film or user.
+4. Build the programme: events (gala, screening, workshop, panel, networking, awards, party, masterclass, Q&A) with ticket types, seats (available/reserved/sold/assigned/blocked), reservations and attendee check-in; export attendees to CSV and events to ICS. Screens each film in a showing with a `pending/screened/disqualified` status and reason, and filters by status, disqualified films or participant tag. Organizers verify eligibility tags (resident, student) through external methods, and participants can request verification by uploading a residence certificate or student card.
+5. Appoint committees with members and publish awards (verified or not, public or not) by festival, short film or user, with eligibility tags and recipient verification.
 6. Communicate: festival channels (admin/moderator/member), messages and images on the profile, rulebooks.
 
 They can only edit/delete their festivals and manage their users (`require_festival_admin`). Members join on their own as `attendee`; remaining roles are assigned by an admin (409 if already a member).
@@ -41,4 +41,7 @@ Sees and edits everything (users, festivals, short films, channels, forms). Oper
 - Festival member: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Registration: `draft → submitted → approved / rejected`; submission: `pending / approved / rejected / waitlisted / cancelled`.
 - Event attendee: `registered / attended / no_show / cancelled`.
+- Screening status: `pending / screened / disqualified`.
+- Jury notes and minutes per film, with annotation: `special_mention / accesit / other`.
+- Participant tag verification: `unverified / pending / verified / rejected`.
 - Event visibility scope: `public / festival_members / roles / attendees_only`.

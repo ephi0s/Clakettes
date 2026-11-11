@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 from .common import PageBase
+from app.enums import ScreeningStatus, ScreeningAnnotation
 
 
 class EventBase(BaseModel):
@@ -274,6 +275,42 @@ class EventReservationPage(PageBase):
 
 class EventAttendeePage(PageBase):
     items: list[EventAttendeeResponse]
+
+
+class ScreeningItem(BaseModel):
+    shortfilm_id: int
+    sort_order: int = 0
+    title: str | None = None
+    duration: int | None = None
+    status: str = ScreeningStatus.PENDING.value
+    status_reason: str | None = None
+    is_disqualified: bool = False
+    jury_notes: str | None = None
+    minutes: str | None = None
+    annotation: str | None = None
+    annotated_by: int | None = None
+    annotated_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ScreeningStatusUpdate(BaseModel):
+    status: ScreeningStatus
+    status_reason: str | None = None
+
+
+class ScreeningNotesUpdate(BaseModel):
+    jury_notes: str | None = None
+    minutes: str | None = None
+    annotation: ScreeningAnnotation | None = None
+
+
+class EventScreeningsResponse(BaseModel):
+    event_id: int
+    shortfilm_ids: list[int] = []
+    items: list[ScreeningItem] = []
+    total_duration: int = 0
+    counts_by_status: dict[str, int] = {}
 
 
 # Forward references

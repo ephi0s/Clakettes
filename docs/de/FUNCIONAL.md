@@ -9,8 +9,8 @@ Realer Projektnutzen pro Rolle, mit dem Ablauf, der ihn trägt. Operative Detail
 1. Erstellt das Festival (`POST /api/festivals/`) mit Beschreibung, Web, Sitz und Logo.
 2. Öffnet Ausschreibungen: Anmeldeformulare mit Sektionen, Rollen und Tags (`RegistrationForm + Sections + Links`), über öffentlichen Link exponiert, den jeder ohne Konto ausfüllen kann.
 3. Empfängt Kurzfilme zu seinen Ausschreibungen und Drehorte.
-4. Baut das Programm: Events (Gala, Screening, Workshop, Panel, Networking, Preise, Feier, Masterclass, Q&A) mit Tickettypen, Sitzen (verfügbar/reserviert/verkauft/zugewiesen/blockiert), Reservierungen und Check-in von Teilnehmenden; exportiert Teilnehmende nach CSV und Events nach ICS.
-5. Ernennt Komitees mit Mitgliedern und publiziert Preise (verifiziert oder nicht, öffentlich oder nicht) pro Festival, Kurzfilm oder Nutzer.
+4. Baut das Programm: Events (Gala, Screening, Workshop, Panel, Networking, Preise, Feier, Masterclass, Q&A) mit Tickettypen, Sitzen (verfügbar/reserviert/verkauft/zugewiesen/blockiert), Reservierungen und Check-in von Teilnehmenden; exportiert Teilnehmende nach CSV und Events nach ICS. Jeder Film der Vorführung wird gesichtet: Status `pending/screened/disqualified` mit Begründung sowie Filter nach Status, disqualifizierten Filmen oder Teilnehmenden-Tag. Die Organisation prüft Eligibility-Tags (ansässig, studierend) über externe Methoden; Teilnehmende können die Verifikation mit Meldebescheinigung oder Studierendenausweis beantragen.
+5. Ernennt Komitees mit Mitgliedern und publiziert Preise (verifiziert oder nicht, öffentlich oder nicht) pro Festival, Kurzfilm oder Nutzer, mit Eligibility-Tags und Empfängerverifikation.
 6. Kommuniziert: Festival-Kanäle (admin/moderator/member), Nachrichten und Bilder im Profil, Rulebooks.
 
 Bearbeitet/löscht nur seine Festivals und verwaltet seine Nutzer (`require_festival_admin`). Mitglieder treten allein als `attendee` bei; restliche Rollen vergibt ein Admin (409 wenn bereits Mitglied).
@@ -41,4 +41,7 @@ Sieht und bearbeitet alles (Nutzer, Festivals, Kurzfilme, Kanäle, Formulare). O
 - Festival-Mitglied: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Anmeldung: `draft → submitted → approved / rejected`; Einreichung: `pending / approved / rejected / waitlisted / cancelled`.
 - Event-Teilnehmer: `registered / attended / no_show / cancelled`.
+- Screening-Status: `pending / screened / disqualified`.
+- Jury-Notizen und Protokolle pro Werk, mit Anmerkung: `special_mention / accesit / other`.
+- Verifikation von Teilnehmenden-Tags: `unverified / pending / verified / rejected`.
 - Event-Sichtbarkeitsreichweite: `public / festival_members / roles / attendees_only`.

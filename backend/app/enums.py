@@ -187,6 +187,40 @@ class AttendeeStatus(enum.Enum):
     CANCELLED = "cancelled"
 
 
+class ScreeningStatus(enum.Enum):
+    """Cribado de una obra dentro del visionado de una proyección."""
+
+    PENDING = "pending"
+    SCREENED = "screened"
+    DISQUALIFIED = "disqualified"
+
+
+class TagVerificationStatus(enum.Enum):
+    """Verificación de una etiqueta de participante para acceso a categorías especiales."""
+
+    UNVERIFIED = "unverified"
+    PENDING = "pending"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+
+class TagVerificationMethod(enum.Enum):
+    """Cómo se comprobó la elegibilidad: el propio participante, un documento o un canal externo."""
+
+    SELF_DECLARED = "self_declared"
+    DOCUMENT = "document"
+    EXTERNAL = "external"
+    OTHER = "other"
+
+
+class ScreeningAnnotation(enum.Enum):
+    """Anotación del jurado sobre una obra proyectada."""
+
+    SPECIAL_MENTION = "special_mention"
+    ACCESIT = "accesit"
+    OTHER = "other"
+
+
 class LocationBadge(enum.Enum):
     SUGGESTED = "suggested"
     MANDATORY = "mandatory"

@@ -1,6 +1,8 @@
 """Award model — tracks prizes and awards won by users/films in festivals."""
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, Float
+import json
+
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, Float, DateTime
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -35,13 +37,36 @@ class Award(BaseModel):
     is_verified = Column(Boolean, default=False)  # Confirmed by festival organizers
     verified_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    eligibility_criteria = Column(Text, nullable=True)  # JSON list of required participant tags
+    recipient_verified = Column(Boolean, default=False, nullable=False)
+    recipient_verified_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    recipient_verified_at = Column(DateTime, nullable=True)
+    recipient_verification_notes = Column(Text, nullable=True)
 
     festival = relationship("Festival", back_populates="awards")
     event = relationship("Event", back_populates="awards")
     shortfilm = relationship("ShortFilm", back_populates="awards")
     user = relationship("User", foreign_keys=[user_id], back_populates="awards")
     verifier = relationship("User", foreign_keys=[verified_by])
+    recipient_verifier = relationship("User", foreign_keys=[recipient_verified_by])
     creator = relationship("User", foreign_keys=[created_by])
+
+    @property
+    def eligibility_tags(self) -> list[str]:
+        raw = self.eligibility_criteria
+        if not raw:
+            return []
+        try:
+            data = json.loads(raw)
+        except (TypeError, ValueError):
+            return [part.strip() for part in raw.split(",") if part.strip()]
+        if isinstance(data, list):
+            return [str(item) for item in data]
+        return [str(data)]
+
+    @eligibility_tags.setter
+    def eligibility_tags(self, value) -> None:
+        self.eligibility_criteria = json.dumps(list(value or []), ensure_ascii=False)
 
     def __repr__(self):
         return f"<Award(id={self.id}, name='{self.award_name}', festival_id={self.festival_id})>"

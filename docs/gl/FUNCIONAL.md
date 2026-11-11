@@ -9,8 +9,8 @@ Utilidade real do proxecto por rol, co fluxo que a sostén. Detalle operativo en
 1. Crea o festival (`POST /api/festivals/`) con descrición, web, sede e logo.
 2. Abre convocatorias: formularios de inscrición con seccións, roles e etiquetas (`RegistrationForm + Sections + Links`), expostos por ligazón pública que calquera pode cubrir sen conta.
 3. Recibe curtas vinculadas ás túas convocatorias e localizacións de rodaxe.
-4. Monta a programación: eventos (gala, proxección, taller, mesa, networking, premios, festa, masterclass, Q&A) con tipos de entrada, asentos (dispoñible/reservada/vendida/asignada/bloqueada), reservas e check-in de asistentes; exporta asistentes a CSV e eventos a ICS.
-5. Nomea comités con membros e publica premios (verificados ou non, públicos ou non) por festival, curta ou usuario.
+4. Monta a programación: eventos (gala, proxección, taller, mesa, networking, premios, festa, masterclass, Q&A) con tipos de entrada, asentos (dispoñible/reservada/vendida/asignada/bloqueada), reservas e check-in de asistentes; exporta asistentes a CSV e eventos a ICS. Criba cada obra da proxección con estado `pending/screened/disqualified` e motivo, e filtra por estado, descalificadas ou etiqueta de participante. A organización verifica as etiquetas de elixibilidade (residente, estudante) con métodos externos, e o participante pode solicitar a verificación achegando certificado de residencia ou carné de estudante.
+5. Nomea comités con membros e publica premios (verificados ou non, públicos ou non) por festival, curta ou usuario, con etiquetas de elixibilidade e verificación do receptor.
 6. Comunica: canles do festival (admin/moderator/member), mensaxes e imaxes no perfil, rulebooks.
 
 Só edita/borra os seus festivais e xestiona os seus usuarios (`require_festival_admin`). Os membros únense sós como `attendee`; o resto de roles asígnaos un admin (409 se xa é membro).
@@ -41,4 +41,7 @@ Veo e edítao todo (usuarios, festivais, curtas, canles, formularios). Operativa
 - Membro de festival: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Inscrición: `draft → submitted → approved / rejected`; envío: `pending / approved / rejected / waitlisted / cancelled`.
 - Asistente a evento: `registered / attended / no_show / cancelled`.
+- Cribado en proxección: `pending / screened / disqualified`.
+- Notas do xurado e actas por obra, con anotación: `special_mention / accesit / other`.
+- Verificación de etiqueta de participante: `unverified / pending / verified / rejected`.
 - Alcance de visibilidade de eventos: `public / festival_members / roles / attendees_only`.

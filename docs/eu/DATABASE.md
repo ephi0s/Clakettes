@@ -583,7 +583,7 @@ FastAPI mendekotasun gisa erabiltzen da endpoint-etatik datu-basera sartzeko.
 
 ## SQLite-tik MariaDB-ra migrazio-oharrak
 
-Eskema-aldaketak Alembic-ekin kudeatzen dira (`backend/alembic/versions/`, 21 bertsio;
+Eskema-aldaketak Alembic-ekin kudeatzen dira (`backend/alembic/versions/`, 27 bertsio;
 `alembic upgrade head`). Ekoizpenean Alembic soilik, inoiz ez `create_all`.
 
 SQLite-tik MariaDB-ra migratzean:

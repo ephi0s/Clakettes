@@ -163,6 +163,8 @@ Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 | GET | `/api/festivals/{festival_id}/events/programacion` | no |
 | GET | `/api/festivals/{festival_id}/events/check-conflict` | yes |
 | GET | `/api/events/{event_id}/screenings` | no |
+| PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | yes |
+| PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | yes |
 | PUT | `/api/events/{event_id}/screenings` | yes |
 | GET | `/api/events/{event_id}/occupancy` | no |
 | GET | `/api/events/{event_id}/ticket-types/` | no |
@@ -197,6 +199,7 @@ Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 | POST | `/api/festivals/{festival_id}/awards/` | yes |
 | PUT | `/api/awards/{award_id}` | yes |
 | DELETE | `/api/awards/{award_id}` | yes |
+| PATCH | `/api/awards/{award_id}/recipient-verification` | yes |
 | GET | `/api/users/{user_id}/awards/` | no |
 | GET | `/api/public/profile/{token}` | no |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | no |
@@ -454,6 +457,7 @@ Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 | POST | `/api/uploads/avatar` | yes |
 | POST | `/api/uploads/thumbnail` | yes |
 | POST | `/api/uploads/video` | yes |
+| POST | `/api/uploads/document` | yes |
 | POST | `/api/uploads/chat-image` | yes |
 
 ## `user_aliases` → `/api`
@@ -483,6 +487,8 @@ Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | yes |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | yes |
 | GET | `/api/users/{user_id}/participant-tags/` | yes |
+| PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | yes |
+| POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | yes |
 | POST | `/api/users/{user_id}/participant-tags/` | yes |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | yes |
 
@@ -513,4 +519,4 @@ Interactive detail: `/docs` (Swagger) and `/redoc` with the backend running.
 | GET | `/api/validation-rule-groups/` | no |
 | POST | `/api/validation-rule-groups/` | yes |
 
-Total: 333 endpoints in 35 routers.
+Total: 339 endpoints in 35 routers.

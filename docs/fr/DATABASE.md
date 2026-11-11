@@ -583,7 +583,7 @@ Ceci est utilisé comme dépendance FastAPI pour l'accès à la base de données
 
 ## Notes de migration de SQLite vers MariaDB
 
-Les changements de schéma sont gérés avec Alembic (`backend/alembic/versions/`, 21 versions ;
+Les changements de schéma sont gérés avec Alembic (`backend/alembic/versions/`, 27 versions ;
 `alembic upgrade head`). En production uniquement Alembic, jamais `create_all`.
 
 En migrant de SQLite vers MariaDB :

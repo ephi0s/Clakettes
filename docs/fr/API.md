@@ -163,6 +163,8 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/festivals/{festival_id}/events/programacion` | non |
 | GET | `/api/festivals/{festival_id}/events/check-conflict` | oui |
 | GET | `/api/events/{event_id}/screenings` | non |
+| PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | oui |
+| PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | oui |
 | PUT | `/api/events/{event_id}/screenings` | oui |
 | GET | `/api/events/{event_id}/occupancy` | non |
 | GET | `/api/events/{event_id}/ticket-types/` | non |
@@ -197,6 +199,7 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | POST | `/api/festivals/{festival_id}/awards/` | oui |
 | PUT | `/api/awards/{award_id}` | oui |
 | DELETE | `/api/awards/{award_id}` | oui |
+| PATCH | `/api/awards/{award_id}/recipient-verification` | oui |
 | GET | `/api/users/{user_id}/awards/` | non |
 | GET | `/api/public/profile/{token}` | non |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | non |
@@ -454,6 +457,7 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | POST | `/api/uploads/avatar` | oui |
 | POST | `/api/uploads/thumbnail` | oui |
 | POST | `/api/uploads/video` | oui |
+| POST | `/api/uploads/document` | oui |
 | POST | `/api/uploads/chat-image` | oui |
 
 ## `user_aliases` → `/api`
@@ -483,6 +487,8 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | oui |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | oui |
 | GET | `/api/users/{user_id}/participant-tags/` | oui |
+| PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | oui |
+| POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | oui |
 | POST | `/api/users/{user_id}/participant-tags/` | oui |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | oui |
 
@@ -513,4 +519,4 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | oui |
 
-Total : 333 endpoints dans 35 routers.
+Total : 339 endpoints dans 35 routers.

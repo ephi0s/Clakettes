@@ -91,11 +91,57 @@ class UserParticipantTagService(BaseService[UserParticipantTag, UserParticipantT
         page: int,
         size: int,
         festival_id: int | None = None,
+        verification_status: str | None = None,
     ) -> dict:
         query = db.query(UserParticipantTag).filter(UserParticipantTag.user_id == user_id)
         if festival_id:
             query = query.filter(UserParticipantTag.festival_id == festival_id)
+        if verification_status:
+            query = query.filter(UserParticipantTag.verification_status == verification_status)
         return self.paginate(query.options(joinedload(UserParticipantTag.tag)), page, size)
+
+    def set_verification(
+        self,
+        db: Session,
+        upt: UserParticipantTag,
+        status: str,
+        method: str | None = None,
+        notes: str | None = None,
+        verified_by: int | None = None,
+    ) -> UserParticipantTag:
+        from datetime import datetime, timezone
+        from app.enums import TagVerificationStatus
+
+        upt.verification_status = status
+        upt.verification_method = method
+        upt.verification_notes = notes
+        upt.verified_by = verified_by
+        upt.verified_at = datetime.now(timezone.utc) if status == TagVerificationStatus.VERIFIED.value else None
+        db.commit()
+        db.refresh(upt)
+        return upt
+
+    def request_verification(
+        self,
+        db: Session,
+        upt: UserParticipantTag,
+        method: str,
+        document_url: str | None,
+        notes: str | None,
+    ) -> UserParticipantTag:
+        from datetime import datetime, timezone
+        from app.enums import TagVerificationStatus
+
+        upt.verification_status = TagVerificationStatus.PENDING.value
+        upt.verification_method = method
+        upt.verification_document_url = document_url
+        upt.verification_notes = notes
+        upt.verification_requested_at = datetime.now(timezone.utc)
+        upt.verified_by = None
+        upt.verified_at = None
+        db.commit()
+        db.refresh(upt)
+        return upt
 
     def get_by_user_and_tag(self, db: Session, user_id: int, tag_id: int, festival_id: int | None = None):
         return (

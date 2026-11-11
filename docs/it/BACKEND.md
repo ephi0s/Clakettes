@@ -474,9 +474,9 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate limiter
 │   ├── enums.py             # Shared enums
 │   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (18 versions)
+├── alembic/                 # Migrations (27 versions)
 ├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (37 files)
+├── tests/                   # pytest tests (45 files)
 ├── uploads/                 # Static file uploads
 ├── .env.example             # Config template
 ├── requirements.txt         # Production deps

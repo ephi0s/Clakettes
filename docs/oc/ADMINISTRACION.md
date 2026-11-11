@@ -25,7 +25,7 @@ En non-prod (`APP_ENV != production`) l'aviada crea `admin` / `setup` (`admin@cl
 ## Salvagardas e migracions
 
 - SQLite: copiar `*.db` a caud aturat (`-Kill` abans). MariaDB: `mariadb-dump` (volum `db-data`).
-- Migracions: `alembic upgrade head` dempuèi `backend/` (18 versions; prod **sonque** Alembic, jamai `create_all`).
+- Migracions: `alembic upgrade head` dempuèi `backend/` (27 versions; prod **sonque** Alembic, jamai `create_all`).
 - Cambiament de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalh en [DATABASE.md](DATABASE.md).
 
 ## Depanagatge

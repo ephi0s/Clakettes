@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 from .common import PageBase
-from app.enums import UserRoleStatus, UserRoleVisibility
+from app.enums import UserRoleStatus, UserRoleVisibility, TagVerificationStatus, TagVerificationMethod
 
 
 class UserRoleBase(BaseModel):
@@ -72,10 +72,29 @@ class UserParticipantTagUpdate(BaseModel):
     is_hidden: bool | None = None
 
 
+class UserParticipantTagVerify(BaseModel):
+    status: TagVerificationStatus
+    method: TagVerificationMethod | None = None
+    notes: str | None = None
+
+
+class UserParticipantTagRequestVerification(BaseModel):
+    method: TagVerificationMethod = TagVerificationMethod.DOCUMENT
+    document_url: str | None = None
+    notes: str | None = None
+
+
 class UserParticipantTagResponse(UserParticipantTagBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    verification_status: str = TagVerificationStatus.UNVERIFIED.value
+    verification_method: str | None = None
+    verification_notes: str | None = None
+    verification_document_url: str | None = None
+    verification_requested_at: datetime | None = None
+    verified_by: int | None = None
+    verified_at: datetime | None = None
     tag: Optional["ParticipantTagResponse"] = None
     festival: Optional["FestivalResponse"] = None
 

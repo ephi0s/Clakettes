@@ -163,6 +163,8 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/festivals/{festival_id}/events/programacion` | non |
 | GET | `/api/festivals/{festival_id}/events/check-conflict` | òc |
 | GET | `/api/events/{event_id}/screenings` | non |
+| PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | òc |
+| PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | òc |
 | PUT | `/api/events/{event_id}/screenings` | òc |
 | GET | `/api/events/{event_id}/occupancy` | non |
 | GET | `/api/events/{event_id}/ticket-types/` | non |
@@ -197,6 +199,7 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | POST | `/api/festivals/{festival_id}/awards/` | òc |
 | PUT | `/api/awards/{award_id}` | òc |
 | DELETE | `/api/awards/{award_id}` | òc |
+| PATCH | `/api/awards/{award_id}/recipient-verification` | òc |
 | GET | `/api/users/{user_id}/awards/` | non |
 | GET | `/api/public/profile/{token}` | non |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | non |
@@ -454,6 +457,7 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | POST | `/api/uploads/avatar` | òc |
 | POST | `/api/uploads/thumbnail` | òc |
 | POST | `/api/uploads/video` | òc |
+| POST | `/api/uploads/document` | òc |
 | POST | `/api/uploads/chat-image` | òc |
 
 ## `user_aliases` → `/api`
@@ -483,6 +487,8 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | òc |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | òc |
 | GET | `/api/users/{user_id}/participant-tags/` | òc |
+| PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | òc |
+| POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | òc |
 | POST | `/api/users/{user_id}/participant-tags/` | òc |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | òc |
 
@@ -513,4 +519,4 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | òc |
 
-Total: 333 endpoints en 35 routers.
+Total: 339 endpoints en 35 routers.

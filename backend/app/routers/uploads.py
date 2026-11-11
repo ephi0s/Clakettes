@@ -120,6 +120,14 @@ async def upload_video(
     return {"url": url}
 
 
+@router.post("/document")
+async def upload_document(
+    file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    url = await _save_file(file, "documents", ALLOWED_DOC_TYPES, MAX_DOC_SIZE)
+    return {"url": url}
+
+
 @router.post("/chat-image")
 async def upload_chat_image(
     file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)

@@ -163,6 +163,8 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/festivals/{festival_id}/events/programacion` | ez |
 | GET | `/api/festivals/{festival_id}/events/check-conflict` | bai |
 | GET | `/api/events/{event_id}/screenings` | ez |
+| PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | bai |
+| PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | bai |
 | PUT | `/api/events/{event_id}/screenings` | bai |
 | GET | `/api/events/{event_id}/occupancy` | ez |
 | GET | `/api/events/{event_id}/ticket-types/` | ez |
@@ -197,6 +199,7 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | POST | `/api/festivals/{festival_id}/awards/` | bai |
 | PUT | `/api/awards/{award_id}` | bai |
 | DELETE | `/api/awards/{award_id}` | bai |
+| PATCH | `/api/awards/{award_id}/recipient-verification` | bai |
 | GET | `/api/users/{user_id}/awards/` | ez |
 | GET | `/api/public/profile/{token}` | ez |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | ez |
@@ -454,6 +457,7 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | POST | `/api/uploads/avatar` | bai |
 | POST | `/api/uploads/thumbnail` | bai |
 | POST | `/api/uploads/video` | bai |
+| POST | `/api/uploads/document` | bai |
 | POST | `/api/uploads/chat-image` | bai |
 
 ## `user_aliases` → `/api`
@@ -483,6 +487,8 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | bai |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | bai |
 | GET | `/api/users/{user_id}/participant-tags/` | bai |
+| PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | bai |
+| POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | bai |
 | POST | `/api/users/{user_id}/participant-tags/` | bai |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | bai |
 
@@ -513,4 +519,4 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/validation-rule-groups/` | ez |
 | POST | `/api/validation-rule-groups/` | bai |
 
-Guztira: 333 endpoint 35 routerretan.
+Guztira: 339 endpoint 35 routerretan.

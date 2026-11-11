@@ -25,7 +25,7 @@ Ez-prod ingurunean (`APP_ENV != production`) abiaraztean `admin` / `setup` (`adm
 ## Backup-ak eta migrazioak
 
 - SQLite: kopiatu `*.db` bero geldituta (`-Kill` aurretik). MariaDB: `mariadb-dump` (`db-data` bolumena).
-- Migrazioak: `alembic upgrade head` `backend/`-tik (18 bertsio; prod-ean **Alembic soilik**, inoiz ez `create_all`).
+- Migrazioak: `alembic upgrade head` `backend/`-tik (27 bertsio; prod-ean **Alembic soilik**, inoiz ez `create_all`).
 - Motor-aldaketa: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); xehetasuna [DATABASE.md](DATABASE.md)-n.
 
 ## Arazoen konponbidea

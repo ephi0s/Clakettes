@@ -77,17 +77,104 @@ class EventService(BaseService[Event, EventCreate, EventUpdate]):
     def set_screenings(self, db: Session, event: Event, shortfilm_ids: list[int]) -> Event:
         from app.models.event_screening import EventScreening
         from app.models.shortfilm import ShortFilm
+        from app.enums import ScreeningStatus
 
         wanted = list(dict.fromkeys(shortfilm_ids))
         if wanted:
             found = {s.id for s in db.query(ShortFilm).filter(ShortFilm.id.in_(wanted)).all()}
             wanted = [i for i in wanted if i in found]
+        previous = {
+            row.shortfilm_id: {
+                "status": row.status,
+                "status_reason": row.status_reason,
+                "jury_notes": row.jury_notes,
+                "minutes": row.minutes,
+                "annotation": row.annotation,
+                "annotated_by": row.annotated_by,
+                "annotated_at": row.annotated_at,
+            }
+            for row in db.query(EventScreening).filter(EventScreening.event_id == event.id).all()
+        }
         db.query(EventScreening).filter(EventScreening.event_id == event.id).delete()
         for pos, sid in enumerate(wanted):
-            db.add(EventScreening(event_id=event.id, shortfilm_id=sid, sort_order=pos))
+            prev = previous.get(sid) or {}
+            db.add(
+                EventScreening(
+                    event_id=event.id,
+                    shortfilm_id=sid,
+                    sort_order=pos,
+                    status=prev.get("status") or ScreeningStatus.PENDING.value,
+                    status_reason=prev.get("status_reason"),
+                    jury_notes=prev.get("jury_notes"),
+                    minutes=prev.get("minutes"),
+                    annotation=prev.get("annotation"),
+                    annotated_by=prev.get("annotated_by"),
+                    annotated_at=prev.get("annotated_at"),
+                )
+            )
         db.commit()
         db.refresh(event)
         return event
+
+    def get_screenings(self, db: Session, event_id: int, status: str | None = None) -> list:
+        from app.models.event_screening import EventScreening
+
+        query = db.query(EventScreening).filter(EventScreening.event_id == event_id)
+        if status:
+            query = query.filter(EventScreening.status == status)
+        return query.order_by(EventScreening.sort_order).all()
+
+    def set_screening_status(
+        self,
+        db: Session,
+        event_id: int,
+        shortfilm_id: int,
+        status: str,
+        status_reason: str | None = None,
+    ):
+        from app.models.event_screening import EventScreening
+        from app.enums import ScreeningStatus
+
+        row = (
+            db.query(EventScreening)
+            .filter(EventScreening.event_id == event_id, EventScreening.shortfilm_id == shortfilm_id)
+            .first()
+        )
+        if not row:
+            return None
+        row.status = status
+        row.status_reason = status_reason if status == ScreeningStatus.DISQUALIFIED.value else None
+        db.commit()
+        db.refresh(row)
+        return row
+
+    def set_screening_notes(
+        self,
+        db: Session,
+        event_id: int,
+        shortfilm_id: int,
+        jury_notes: str | None,
+        minutes: str | None,
+        annotation: str | None,
+        annotated_by: int,
+    ):
+        from app.models.event_screening import EventScreening
+
+        row = (
+            db.query(EventScreening)
+            .filter(EventScreening.event_id == event_id, EventScreening.shortfilm_id == shortfilm_id)
+            .first()
+        )
+        if not row:
+            return None
+        row.jury_notes = jury_notes
+        row.minutes = minutes
+        row.annotation = annotation
+        row.annotated_by = annotated_by
+        row.annotated_at = datetime.now(timezone.utc) if (jury_notes or minutes or annotation) else None
+        db.commit()
+        db.refresh(row)
+        return row
 
     def occupancy(self, db: Session, event: Event) -> dict:
         registered = (

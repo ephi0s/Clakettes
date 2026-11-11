@@ -9,8 +9,8 @@ Utilité réelle du projet par rôle, avec le flux qui la soutient. Détail opé
 1. Crée le festival (`POST /api/festivals/`) avec description, web, siège et logo.
 2. Ouvre des appels : formulaires d'inscription avec sections, rôles et étiquettes (`RegistrationForm + Sections + Links`), exposés par lien public que quiconque peut remplir sans compte.
 3. Reçoit des courts liés à tes appels et localisations de tournage.
-4. Monte la programmation : événements (gala, projection, atelier, table, networking, prix, fête, masterclass, Q&A) avec types d'entrée, sièges (disponible/réservée/vendue/assignée/bloquée), réservations et check-in des participants ; exporte participants en CSV et événements en ICS.
-5. Nomme des comités avec membres et publie des prix (vérifiés ou non, publics ou non) par festival, court ou utilisateur.
+4. Monte la programmation : événements (gala, projection, atelier, table, networking, prix, fête, masterclass, Q&A) avec types d'entrée, sièges (disponible/réservée/vendue/assignée/bloquée), réservations et check-in des participants ; exporte participants en CSV et événements en ICS. Criblage de chaque film de la projection : statut `pending/screened/disqualified` avec motif, et filtres par statut, films disqualifiés ou étiquette de participant. L'organisation vérifie les étiquettes d'éligibilité (résident, étudiant) par des méthodes externes, et le participant peut demander la vérification en joignant un certificat de résidence ou une carte d'étudiant.
+5. Nomme des comités avec membres et publie des prix (vérifiés ou non, publics ou non) par festival, court ou utilisateur, avec étiquettes d'éligibilité et vérification du bénéficiaire.
 6. Communique : canaux du festival (admin/moderator/member), messages et images dans le profil, rulebooks.
 
 Édite/supprime uniquement ses festivals et gère ses utilisateurs (`require_festival_admin`). Les membres se joignent seuls comme `attendee` ; le reste des rôles est assigné par un admin (409 si déjà membre).
@@ -41,4 +41,7 @@ Voit et édite tout (utilisateurs, festivals, courts, canaux, formulaires). Opé
 - Membre de festival : `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Inscription : `draft → submitted → approved / rejected` ; envoi : `pending / approved / rejected / waitlisted / cancelled`.
 - Participant à événement : `registered / attended / no_show / cancelled`.
+- Criblage en projection : `pending / screened / disqualified`.
+- Notes du jury et procès-verbaux par œuvre, avec annotation : `special_mention / accesit / other`.
+- Vérification d'étiquette de participant : `unverified / pending / verified / rejected`.
 - Portée de visibilité d'événements : `public / festival_members / roles / attendees_only`.
