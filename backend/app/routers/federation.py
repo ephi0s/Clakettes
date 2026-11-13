@@ -40,3 +40,8 @@ async def set_node_policy(
     _require_admin(current_user)
     p = service.set_policy(db, body.node_domain, body.allowed, body.reason)
     return {"id": p.id, "node_domain": p.node_domain, "allowed": p.allowed, "reason": p.reason}
+
+
+@router.get("/manifest")
+async def federation_manifest():
+    return {"schema_version": "1", "node": "primary", "capabilities": ["festivals", "users", "chat"]}
