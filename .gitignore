@@ -95,3 +95,6 @@ lcov.info
 
 # Graphify nested bug (regenerar con: graphify .)
 graphify-out/graphify-out/
+
+# Graphify output (knowledge graph, regenerate locally)
+graphify-out/
