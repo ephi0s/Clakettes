@@ -14,6 +14,8 @@ import '../models/role_transition_model.dart';
 import '../models/registration_form_model.dart';
 import '../models/event_model.dart';
 import '../models/award_model.dart';
+import '../models/screening_model.dart';
+import '../models/participant_tag_model.dart';
 import '../models/user_alias_model.dart';
 import '../models/session_model.dart';
 import '../models/location_model.dart';
@@ -41,6 +43,7 @@ part 'api/event_api.dart';
 part 'api/location_api.dart';
 part 'api/post_api.dart';
 part 'api/badge_api.dart';
+part 'api/participant_tag_api.dart';
 
 /// Envoltorio de respuesta paginada que coincide con el envelope del backend.
 class PaginatedResult<T> {
@@ -255,6 +258,11 @@ class ApiService {
           case 'PUT':
             response = await client
                 .put(uri, headers: headers, body: body)
+                .timeout(const Duration(seconds: 10));
+            break;
+          case 'PATCH':
+            response = await client
+                .patch(uri, headers: headers, body: body)
                 .timeout(const Duration(seconds: 10));
             break;
           case 'DELETE':

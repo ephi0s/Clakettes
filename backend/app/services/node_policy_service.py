@@ -9,15 +9,31 @@ class NodePolicyService(BaseService[NodePolicy, NodePolicy, NodePolicy]):
     def __init__(self):
         super().__init__(NodePolicy)
 
-    def set_policy(self, db: Session, node_domain: str, allowed: bool, reason: str | None = None) -> NodePolicy:
+    def set_policy(
+        self,
+        db: Session,
+        node_domain: str,
+        allowed: bool,
+        consent_required: bool = True,
+        minimize_data: bool = True,
+        reason: str | None = None,
+    ) -> NodePolicy:
         existing = db.query(NodePolicy).filter(NodePolicy.node_domain == node_domain).first()
         if existing:
             existing.allowed = allowed
+            existing.consent_required = consent_required
+            existing.minimize_data = minimize_data
             existing.reason = reason
             db.commit()
             db.refresh(existing)
             return existing
-        obj = NodePolicy(node_domain=node_domain, allowed=allowed, reason=reason)
+        obj = NodePolicy(
+            node_domain=node_domain,
+            allowed=allowed,
+            consent_required=consent_required,
+            minimize_data=minimize_data,
+            reason=reason,
+        )
         db.add(obj)
         db.commit()
         db.refresh(obj)

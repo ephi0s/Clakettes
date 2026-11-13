@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -8,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/session_model.dart';
 import '../models/user_alias_model.dart';
+import '../models/participant_tag_model.dart';
 import '../services/api_service.dart';
 import '../services/locale_service.dart';
 import '../widgets/reusable_widgets.dart';
@@ -62,6 +64,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   User? _fetchedCurrentUser;
   List<dynamic> _userRoles = [];
   List<dynamic> _palmares = [];
+  List<UserParticipantTag> _participantTags = [];
+  bool _participantTagsLoading = false;
   List<String> _availableRoles = ['admin', 'organizer', 'user', 'jury'];
 
   bool get _isOwnProfile => (_fetchedCurrentUser ?? widget.currentUser)?.id == _user.id;
@@ -89,6 +93,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return false;
   }
   bool get _isAdmin => (_fetchedCurrentUser ?? widget.currentUser)?.role == 'admin';
+  bool get _canManageTags {
+    final cu = _fetchedCurrentUser ?? widget.currentUser;
+    if (cu == null) return false;
+    return cu.role == 'admin' || cu.role == 'organizer';
+  }
 
   String get _bannerUrl {
     try {
@@ -256,6 +265,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     await _loadAvailableRoles();
     await _loadUserRoles();
     await _loadPalmares();
+    await _loadParticipantTags();
   }
 
   Future<void> _loadAvailableRoles() async {
@@ -299,6 +309,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       final items = data is List ? data : (data is Map && data['items'] is List ? data['items'] as List : <dynamic>[]);
       if (mounted) setState(() => _palmares = items);
     } catch (_) {}
+  }
+
+  Future<void> _loadParticipantTags() async {
+    final id = _user.id;
+    if (id == null) return;
+    setState(() => _participantTagsLoading = true);
+    try {
+      final result = await ApiService().getUserParticipantTags(id, size: 100);
+      if (mounted) {
+        setState(() {
+          _participantTags = result.items;
+          _participantTagsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _participantTagsLoading = false);
+    }
   }
 
   String _roleLabel(dynamic r) {
@@ -647,12 +674,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       body: _isEditing
           ? SingleChildScrollView(padding: const EdgeInsets.all(24), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: _buildEditForm())))
           : DefaultTabController(
-              length: 4,
+              length: 5,
               child: NestedScrollView(
                 headerSliverBuilder: (ctx, inner) => [SliverToBoxAdapter(child: _buildCoverHeader(user, theme, colorScheme))],
                 body: Column(
                   children: [
-                    TabBar(tabs: [Tab(text: l10n.bio), const Tab(text: 'Palmarés'), const Tab(text: 'Roles'), const Tab(text: 'Publicaciones')]),
+                    TabBar(tabs: [Tab(text: l10n.bio), const Tab(text: 'Palmarés'), const Tab(text: 'Roles'), const Tab(text: 'Publicaciones'), Tab(text: l10n.participantTags)]),
                     Expanded(
                       child: TabBarView(
                         children: [
@@ -666,6 +693,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               canModerate: _canModerateWall,
                               currentUserId: (_fetchedCurrentUser ?? widget.currentUser)?.id,
                             ),
+                          ),
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.all(24),
+                            child: _buildParticipantTagsTab(theme, colorScheme),
                           ),
                         ],
                       ),
@@ -947,6 +978,351 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ],
       ],
     );
+  }
+
+  Widget _buildParticipantTagsTab(ThemeData theme, ColorScheme colorScheme) {
+    if (_participantTagsLoading) return const Center(child: CircularProgressIndicator());
+    if (_participantTags.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.noParticipantTags,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              if (_canManageTags && _user.id != null) ...[
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.assignTag),
+                  onPressed: () => _showAssignTagDialog(),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final t in _participantTags)
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: Icon(
+                t.isVerified
+                    ? Icons.verified_rounded
+                    : t.isPending
+                        ? Icons.pending_rounded
+                        : t.isRejected
+                            ? Icons.cancel_rounded
+                            : Icons.label_outline_rounded,
+                color: t.isVerified
+                    ? colorScheme.primary
+                    : t.isRejected
+                        ? colorScheme.error
+                        : colorScheme.onSurfaceVariant,
+              ),
+              title: Text(t.label,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(t.verificationStatus == 'verified'
+                      ? l10n.verified
+                      : t.verificationStatus == 'pending'
+                          ? l10n.verificationPending
+                          : t.verificationStatus == 'rejected'
+                              ? l10n.verificationRejected
+                              : l10n.unverified),
+                  if (t.verificationNotes != null &&
+                      t.verificationNotes!.isNotEmpty)
+                    Text(t.verificationNotes!,
+                        style: theme.textTheme.bodySmall),
+                  if (t.verificationDocumentUrl != null)
+                    Text(l10n.documentUrl,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.primary)),
+                  if (t.verifiedBy != null)
+                    Text('${l10n.verifiedBy}: ${t.verifiedBy}',
+                        style: theme.textTheme.bodySmall),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isOwnProfile && !t.isVerified)
+                    IconButton(
+                      icon: const Icon(Icons.upload_file_outlined, size: 20),
+                      tooltip: l10n.requestVerification,
+                      onPressed: () => _showRequestVerificationDialog(t),
+                    ),
+                  if (_canManageTags) ...[
+                    IconButton(
+                      icon: const Icon(Icons.verified_outlined, size: 20),
+                      tooltip: l10n.verify,
+                      onPressed: () => _showVerifyTagDialog(t),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      tooltip: l10n.removeTag,
+                      onPressed: () => _removeParticipantTag(t),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        if (_canManageTags && _user.id != null) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.add),
+            label: Text(l10n.assignTag),
+            onPressed: () => _showAssignTagDialog(),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _showRequestVerificationDialog(UserParticipantTag tag) async {
+    if (tag.id == null || _user.id == null) return;
+    String method = 'document';
+    final notesCtl = TextEditingController();
+    String? documentPath;
+    String? documentUrl;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text(l10n.requestVerification),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: method,
+                decoration: InputDecoration(labelText: l10n.verificationMethod),
+                items: [
+                  DropdownMenuItem(value: 'self_declared', child: Text(l10n.methodSelfDeclared)),
+                  DropdownMenuItem(value: 'document', child: Text(l10n.methodDocument)),
+                  DropdownMenuItem(value: 'external', child: Text(l10n.methodExternal)),
+                  DropdownMenuItem(value: 'other', child: Text(l10n.methodOther)),
+                ],
+                onChanged: (v) => setDialog(() => method = v ?? 'document'),
+              ),
+              const SizedBox(height: 8),
+              SemanticTextField(
+                controller: notesCtl,
+                label: l10n.verificationNotesLabel,
+                semanticLabel: l10n.verificationNotesLabel,
+                maxLines: 2,
+              ),
+              if (method == 'document') ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.upload_file_outlined),
+                  label: Text(documentPath != null
+                      ? l10n.uploadDocument
+                      : l10n.uploadDocument),
+                  onPressed: () async {
+                    final files = await FilePicker.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf'],
+                    );
+                    if (files.isNotEmpty && files.single.path != null) {
+                      setDialog(() => documentPath = files.single.path);
+                    }
+                  },
+                ),
+                if (documentPath != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(documentPath!,
+                        style: Theme.of(ctx).textTheme.bodySmall),
+                  ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel)),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.save)),
+          ],
+        ),
+      ),
+    );
+    if (saved != true) return;
+    try {
+      if (method == 'document' && documentPath != null) {
+        documentUrl = await ApiService().uploadDocument(documentPath!);
+      }
+      await ApiService().requestTagVerification(
+        _user.id!,
+        tag.id!,
+        method,
+        documentUrl: documentUrl,
+        notes: notesCtl.text.trim().isEmpty ? null : notesCtl.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.requestSent),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+      await _loadParticipantTags();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
+  Future<void> _showVerifyTagDialog(UserParticipantTag tag) async {
+    if (tag.id == null || _user.id == null) return;
+    String status = 'verified';
+    final notesCtl = TextEditingController(text: tag.verificationNotes ?? '');
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text(l10n.tagVerificationTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: status,
+                decoration: InputDecoration(labelText: l10n.status),
+                items: [
+                  DropdownMenuItem(value: 'verified', child: Text(l10n.verified)),
+                  DropdownMenuItem(value: 'rejected', child: Text(l10n.verificationRejected)),
+                  DropdownMenuItem(value: 'pending', child: Text(l10n.verificationPending)),
+                ],
+                onChanged: (v) => setDialog(() => status = v ?? 'verified'),
+              ),
+              const SizedBox(height: 8),
+              SemanticTextField(
+                controller: notesCtl,
+                label: l10n.verificationNotesLabel,
+                semanticLabel: l10n.verificationNotesLabel,
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel)),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.save)),
+          ],
+        ),
+      ),
+    );
+    if (saved != true) return;
+    try {
+      await ApiService().verifyParticipantTag(
+        _user.id!,
+        tag.id!,
+        status,
+        notes: notesCtl.text.trim().isEmpty ? null : notesCtl.text.trim(),
+      );
+      await _loadParticipantTags();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
+  Future<void> _showAssignTagDialog() async {
+    if (_user.id == null) return;
+    int? selectedTagId;
+    try {
+      final result = await ApiService().getParticipantTags(size: 100);
+      if (!mounted) return;
+      final tags = result.items;
+      if (tags.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(l10n.noTagsAvailable),
+                behavior: SnackBarBehavior.floating),
+          );
+        }
+        return;
+      }
+      selectedTagId = tags.first.id;
+      final saved = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setDialog) => AlertDialog(
+            title: Text(l10n.assignTag),
+            content: DropdownButtonFormField<int>(
+              initialValue: selectedTagId,
+              decoration: InputDecoration(labelText: l10n.participantTags),
+              items: [
+                for (final t in tags)
+                  DropdownMenuItem(value: t.id, child: Text(t.displayName)),
+              ],
+              onChanged: (v) => setDialog(() => selectedTagId = v),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(l10n.cancel)),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(l10n.assignTag)),
+            ],
+          ),
+        ),
+      );
+      if (saved != true || selectedTagId == null) return;
+      await ApiService().assignParticipantTag(_user.id!, selectedTagId!,
+          festivalId: null, isPrimary: false);
+      await _loadParticipantTags();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeParticipantTag(UserParticipantTag tag) async {
+    if (tag.id == null || _user.id == null) return;
+    try {
+      await ApiService().removeParticipantTag(_user.id!, tag.id!);
+      await _loadParticipantTags();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
   }
 
   Widget _buildEditForm() {

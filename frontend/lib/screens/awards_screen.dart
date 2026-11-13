@@ -25,6 +25,8 @@ class _AwardsScreenState extends State<AwardsScreen> {
   bool _showOnlyWinners = false;
   String _search = '';
   int? _selectedYear;
+  String? _eligibilityTagFilter;
+  bool? _recipientVerifiedFilter;
   bool _initialized = false;
   late AppLocalizations l10n;
 
@@ -70,13 +72,30 @@ class _AwardsScreenState extends State<AwardsScreen> {
     return list;
   }
 
+  List<String> get _allEligibilityTags {
+    final set = <String>{};
+    for (final a in _awards) {
+      set.addAll(a.eligibilityTags);
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
   List<Award> get _filtered {
     final q = _search.trim().toLowerCase();
     return _awards.where((a) {
       if (_showOnlyWinners && !a.isWinner) return false;
       if (_selectedYear != null && a.year != _selectedYear) return false;
+      if (_eligibilityTagFilter != null &&
+          !a.eligibilityTags.contains(_eligibilityTagFilter)) {
+        return false;
+      }
+      if (_recipientVerifiedFilter != null &&
+          a.recipientVerified != _recipientVerifiedFilter) {
+        return false;
+      }
       if (q.isEmpty) return true;
-      final hay = '${a.awardName} ${a.awardCategory ?? ''} ${a.description ?? ''}'.toLowerCase();
+      final hay = '${a.awardName} ${a.awardCategory ?? ''} ${a.description ?? ''} ${a.eligibilityTags.join(' ')}'.toLowerCase();
       return hay.contains(q);
     }).toList();
   }
@@ -106,6 +125,8 @@ class _AwardsScreenState extends State<AwardsScreen> {
     final posCtl = TextEditingController(text: existing?.position?.toString() ?? '');
     final prizeCtl = TextEditingController(text: existing?.prizeAmount ?? '');
     final descCtl = TextEditingController(text: existing?.description ?? '');
+    final tagsCtl = TextEditingController(
+        text: existing?.eligibilityTags.join(', ') ?? '');
     final shortCtl = TextEditingController(text: existing?.shortfilmId?.toString() ?? '');
     final userCtl = TextEditingController(text: existing?.userId?.toString() ?? '');
     final eventCtl = TextEditingController(text: existing?.eventId?.toString() ?? '');
@@ -165,6 +186,8 @@ class _AwardsScreenState extends State<AwardsScreen> {
                     const SizedBox(height: 8),
                     SemanticTextField(controller: descCtl, label: l10n.description, semanticLabel: l10n.description, helperText: l10n.optional, maxLines: 3),
                     const SizedBox(height: 8),
+                    SemanticTextField(controller: tagsCtl, label: l10n.eligibilityTags, semanticLabel: l10n.eligibilityTags, helperText: l10n.eligibilityTagsHint, textInputAction: TextInputAction.next),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -207,6 +230,11 @@ class _AwardsScreenState extends State<AwardsScreen> {
                 final shortId = int.tryParse(shortCtl.text.trim());
                 final userId = int.tryParse(userCtl.text.trim());
                 final eventId = int.tryParse(eventCtl.text.trim());
+                final tags = tagsCtl.text
+                    .split(',')
+                    .map((t) => t.trim())
+                    .where((t) => t.isNotEmpty)
+                    .toList();
                 try {
                   if (existing == null || existing.id == null) {
                     await api.createAward(
@@ -225,6 +253,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
                         eventId: eventId,
                         isPublic: isPublic,
                         isVerified: isVerified,
+                        eligibilityTags: tags,
                       ),
                     );
                   } else {
@@ -241,6 +270,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
                       'event_id': eventId,
                       'is_public': isPublic,
                       'is_verified': isVerified,
+                      'eligibility_tags': tags,
                     });
                   }
                   if (ctx.mounted) Navigator.pop(ctx, true);
@@ -261,6 +291,52 @@ class _AwardsScreenState extends State<AwardsScreen> {
     if (a.id == null) return;
     try {
       await api.updateAward(a.id!, {'is_verified': !a.isVerified});
+      _loadData();
+    } catch (e) {
+      if (mounted) showAppSnack(context, l10n.errorFor(e));
+    }
+  }
+
+  /// Verifica o desmarca al receptor de un premio con notas opcionales.
+  Future<void> _verifyRecipient(Award a) async {
+    if (a.id == null) return;
+    final notesCtl =
+        TextEditingController(text: a.recipientVerificationNotes ?? '');
+    final verified = !a.recipientVerified;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.recipientVerificationTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(verified
+                ? l10n.recipientVerified
+                : l10n.recipientNotVerified),
+            const SizedBox(height: 8),
+            SemanticTextField(
+              controller: notesCtl,
+              label: l10n.recipientVerificationNotes,
+              semanticLabel: l10n.recipientVerificationNotes,
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.save)),
+        ],
+      ),
+    );
+    if (saved != true) return;
+    try {
+      await api.verifyAwardRecipient(a.id!, verified,
+          notes: notesCtl.text.trim().isEmpty ? null : notesCtl.text.trim());
       _loadData();
     } catch (e) {
       if (mounted) showAppSnack(context, l10n.errorFor(e));
@@ -374,6 +450,24 @@ class _AwardsScreenState extends State<AwardsScreen> {
                                   ],
                                   onChanged: (v) => setState(() => _selectedYear = v),
                                 ),
+                                if (_allEligibilityTags.isNotEmpty)
+                                  DropdownButton<String?>(
+                                    value: _eligibilityTagFilter,
+                                    hint: Text(l10n.eligibilityTags),
+                                    items: [
+                                      DropdownMenuItem<String?>(value: null, child: Text(l10n.all)),
+                                      for (final t in _allEligibilityTags)
+                                        DropdownMenuItem<String?>(value: t, child: Text(t)),
+                                    ],
+                                    onChanged: (v) =>
+                                        setState(() => _eligibilityTagFilter = v),
+                                  ),
+                                FilterChip(
+                                  label: Text(l10n.recipientVerified),
+                                  selected: _recipientVerifiedFilter == true,
+                                  onSelected: (v) => setState(
+                                      () => _recipientVerifiedFilter = v ? true : null),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -418,11 +512,47 @@ class _AwardsScreenState extends State<AwardsScreen> {
                                             inactiveLabel: l10n.unverified,
                                             useChip: true,
                                           ),
+                                          const SizedBox(height: 4),
+                                          StatusIndicator(
+                                            isActive: a.recipientVerified,
+                                            activeLabel: l10n.recipientVerified,
+                                            inactiveLabel: l10n.recipientNotVerified,
+                                            useChip: true,
+                                          ),
+                                          if (a.eligibilityTags.isNotEmpty) ...[
+                                            const SizedBox(height: 4),
+                                            Wrap(
+                                              spacing: 4,
+                                              runSpacing: 4,
+                                              children: [
+                                                for (final tag in a.eligibilityTags)
+                                                  Chip(
+                                                    label: Text(tag,
+                                                        style: theme.textTheme.bodySmall),
+                                                    visualDensity: VisualDensity.compact,
+                                                    materialTapTargetSize:
+                                                        MaterialTapTargetSize.shrinkWrap,
+                                                  ),
+                                              ],
+                                            ),
+                                          ],
                                         ],
                                       ),
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
+                                          Semantics(
+                                            label: '${l10n.verifyRecipient} ${a.awardName}',
+                                            child: IconButton(
+                                              icon: Icon(a.recipientVerified
+                                                  ? Icons.how_to_reg_rounded
+                                                  : Icons.how_to_reg_outlined,
+                                                  size: 20),
+                                              tooltip: l10n.verifyRecipient,
+                                              color: a.recipientVerified ? cs.primary : null,
+                                              onPressed: () => _verifyRecipient(a),
+                                            ),
+                                          ),
                                           Semantics(
                                             label: 'Verificar ${a.awardName}',
                                             child: IconButton(

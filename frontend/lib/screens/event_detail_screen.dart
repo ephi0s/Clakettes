@@ -3,6 +3,9 @@ import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../services/file_downloader.dart';
 import '../models/event_model.dart';
+import '../models/screening_model.dart';
+import '../models/participant_tag_model.dart';
+import '../widgets/reusable_widgets.dart';
 import '../widgets/seat_map_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/loading_skeleton.dart';
@@ -32,6 +35,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
   bool _isLoading = true;
   bool _hasError = false;
   bool _isExporting = false;
+  EventScreenings? _screenings;
+  bool _isLoadingScreenings = false;
+  String? _screeningStatusFilter;
+  bool _hideDisqualified = false;
+  String? _screeningTagCategory;
+  List<ParticipantTag> _screeningTags = [];
   late TabController _tabController;
   late AppLocalizations l10n;
 
@@ -40,6 +49,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
+  }
+
+  /// Ajusta el número de pestañas según si el evento es una proyección.
+  void _syncTabController(int length) {
+    if (_tabController.length == length) return;
+    _tabController.dispose();
+    _tabController = TabController(length: length, vsync: this);
   }
 
   @override
@@ -59,13 +75,22 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
         api.getMyReservation(widget.eventId),
       ]);
       if (mounted) {
+        final event = results[0] as FestivalEvent;
+        final isScreening = event.eventType == 'screening' &&
+            event.screeningShortfilmIds.isNotEmpty;
+        _syncTabController(isScreening ? 3 : 2);
         setState(() {
-          _event = results[0] as FestivalEvent;
+          _event = event;
           _ticketTypes = results[1] as List<EventTicketType>;
           _seats = (results[2] as PaginatedResult<EventSeat>).items;
           _myReservation = results[3] as EventReservation?;
           _isLoading = false;
         });
+        if (isScreening) {
+          await _loadScreenings();
+        } else if (mounted) {
+          setState(() => _screenings = null);
+        }
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -206,6 +231,337 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
     }
   }
 
+  /// Carga el bloque de cribado del evento aplicando los filtros actuales.
+  Future<void> _loadScreenings() async {
+    setState(() => _isLoadingScreenings = true);
+    try {
+      final tags =
+          _screeningTags.isEmpty ? await api.getParticipantTags(size: 100) : null;
+      final screenings = await api.getEventScreenings(
+        widget.eventId,
+        status: _screeningStatusFilter,
+        includeDisqualified: !_hideDisqualified,
+        participantTagCategory: _screeningTagCategory,
+      );
+      if (!mounted) return;
+      setState(() {
+        _screenings = screenings;
+        _screeningTags = tags?.items ?? _screeningTags;
+        _isLoadingScreenings = false;
+      });
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (!mounted) return;
+      setState(() => _isLoadingScreenings = false);
+    }
+  }
+
+  /// Cambia el estado de cribado de una obra; pide motivo si se descalifica.
+  Future<void> _setScreeningStatus(ScreeningItem item, String status) async {
+    String? reason;
+    if (status == 'disqualified') {
+      reason = await _promptScreeningReason(item);
+      if (reason == null) return;
+    }
+    try {
+      await api.setScreeningStatus(widget.eventId, item.shortfilmId, status,
+          reason: reason);
+      await _loadScreenings();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
+  /// Pide el motivo de descalificación de una obra.
+  Future<String?> _promptScreeningReason(ScreeningItem item) {
+    final reasonCtl = TextEditingController(text: item.statusReason ?? '');
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.disqualify),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(item.title ?? '${item.shortfilmId}'),
+            const SizedBox(height: 8),
+            SemanticTextField(
+              controller: reasonCtl,
+              label: l10n.statusReason,
+              semanticLabel: l10n.statusReason,
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, reasonCtl.text.trim()),
+              child: Text(l10n.disqualify)),
+        ],
+      ),
+    );
+  }
+
+  /// Guarda las notas y la anotación del jurado para una obra.
+  Future<void> _editScreeningNotes(ScreeningItem item) async {
+    final notesCtl = TextEditingController(text: item.juryNotes ?? '');
+    final minutesCtl = TextEditingController(text: item.minutes ?? '');
+    String? annotation = item.annotation;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text(l10n.screeningNotesTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(item.title ?? '${item.shortfilmId}'),
+              const SizedBox(height: 8),
+              SemanticTextField(
+                controller: notesCtl,
+                label: l10n.juryNotes,
+                semanticLabel: l10n.juryNotes,
+                maxLines: 3,
+              ),
+              const SizedBox(height: 8),
+              SemanticTextField(
+                controller: minutesCtl,
+                label: l10n.minutes,
+                semanticLabel: l10n.minutes,
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String?>(
+                initialValue: annotation,
+                decoration: InputDecoration(labelText: l10n.annotation),
+                items: [
+                  const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                  DropdownMenuItem<String?>(
+                      value: 'special_mention', child: Text(l10n.specialMention)),
+                  DropdownMenuItem<String?>(
+                      value: 'accesit', child: Text(l10n.accesit)),
+                  DropdownMenuItem<String?>(
+                      value: 'other', child: Text(l10n.other)),
+                ],
+                onChanged: (v) => setDialog(() => annotation = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel)),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.save)),
+          ],
+        ),
+      ),
+    );
+    if (saved != true) return;
+    try {
+      await api.setScreeningNotes(
+        widget.eventId,
+        item.shortfilmId,
+        juryNotes: notesCtl.text.trim().isEmpty ? null : notesCtl.text.trim(),
+        minutes: minutesCtl.text.trim().isEmpty ? null : minutesCtl.text.trim(),
+        annotation: annotation,
+      );
+      await _loadScreenings();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(l10n.errorFor(e)),
+              behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
+  String _screeningStatusLabel(ScreeningItem item) {
+    switch (item.status) {
+      case 'screened':
+        return l10n.screened;
+      case 'disqualified':
+        return l10n.disqualified;
+      default:
+        return l10n.pending;
+    }
+  }
+
+  Widget _buildScreeningTab(ColorScheme cs) {
+    if (_isLoadingScreenings && _screenings == null) return const ListSkeleton();
+    final screenings = _screenings;
+    if (screenings == null || screenings.items.isEmpty) {
+      return EmptyStateWidget(
+          icon: Icons.movie_filter_outlined,
+          title: l10n.noScreenings,
+          subtitle: '');
+    }
+    final categories = _screeningTags.map((t) => t.category).toSet().toList()
+      ..sort();
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              FilterChip(
+                label: Text(l10n.all),
+                selected: _screeningStatusFilter == null && !_hideDisqualified,
+                onSelected: (_) {
+                  setState(() {
+                    _screeningStatusFilter = null;
+                    _hideDisqualified = false;
+                  });
+                  _loadScreenings();
+                },
+              ),
+              FilterChip(
+                label: Text(l10n.pending),
+                selected: _screeningStatusFilter == 'pending',
+                onSelected: (_) {
+                  setState(() => _screeningStatusFilter = 'pending');
+                  _loadScreenings();
+                },
+              ),
+              FilterChip(
+                label: Text(l10n.screened),
+                selected: _screeningStatusFilter == 'screened',
+                onSelected: (_) {
+                  setState(() => _screeningStatusFilter = 'screened');
+                  _loadScreenings();
+                },
+              ),
+              FilterChip(
+                label: Text(l10n.disqualified),
+                selected: _screeningStatusFilter == 'disqualified',
+                onSelected: (_) {
+                  setState(() => _screeningStatusFilter = 'disqualified');
+                  _loadScreenings();
+                },
+              ),
+              FilterChip(
+                label: Text(l10n.hideDisqualified),
+                selected: _hideDisqualified,
+                onSelected: (v) {
+                  setState(() => _hideDisqualified = v);
+                  _loadScreenings();
+                },
+              ),
+              if (categories.isNotEmpty)
+                DropdownButton<String?>(
+                  value: _screeningTagCategory,
+                  hint: Text(l10n.eligibilityTags),
+                  items: [
+                    DropdownMenuItem<String?>(
+                        value: null, child: Text(l10n.all)),
+                    for (final c in categories)
+                      DropdownMenuItem<String?>(value: c, child: Text(c)),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _screeningTagCategory = v);
+                    _loadScreenings();
+                  },
+                ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: screenings.items.length,
+            itemBuilder: (ctx, i) {
+              final item = screenings.items[i];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    radius: 14,
+                    child: Text('${item.sortOrder + 1}',
+                        style: const TextStyle(fontSize: 12)),
+                  ),
+                  title: Text(item.title ?? '${item.shortfilmId}',
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          StatusIndicator(
+                            isActive: item.isDisqualifiedStatus,
+                            activeLabel: l10n.disqualified,
+                            inactiveLabel: _screeningStatusLabel(item),
+                            useChip: true,
+                          ),
+                          if (item.duration != null) ...[
+                            const SizedBox(width: 8),
+                            Text('${item.duration} ${l10n.minutes}'),
+                          ],
+                        ],
+                      ),
+                      if (item.statusReason != null &&
+                          item.statusReason!.isNotEmpty)
+                        Text('${l10n.statusReason}: ${item.statusReason}',
+                            style: Theme.of(ctx).textTheme.bodySmall),
+                      if (item.annotation != null)
+                        Text(
+                          '${l10n.annotation}: ${item.annotation == 'special_mention' ? l10n.specialMention : item.annotation == 'accesit' ? l10n.accesit : l10n.other}',
+                          style: Theme.of(ctx).textTheme.bodySmall,
+                        ),
+                      if (item.juryNotes != null && item.juryNotes!.isNotEmpty)
+                        Text(item.juryNotes!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(ctx).textTheme.bodySmall),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_note_outlined, size: 20),
+                        tooltip: l10n.screeningNotesTitle,
+                        onPressed: () => _editScreeningNotes(item),
+                      ),
+                      PopupMenuButton<String>(
+                        tooltip: l10n.status,
+                        icon: const Icon(Icons.flag_outlined, size: 20),
+                        onSelected: (v) => _setScreeningStatus(item, v),
+                        itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                              value: 'screened', child: Text(l10n.markScreened)),
+                          PopupMenuItem(
+                              value: 'disqualified',
+                              child: Text(l10n.disqualify)),
+                          PopupMenuItem(
+                              value: 'pending', child: Text(l10n.restorePending)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Descarga el CSV de asistentes del evento y notifica el resultado.
   Future<void> _exportAttendees() async {
     if (_isExporting) return;
@@ -247,6 +603,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
                 tabs: [
                   Tab(text: l10n.details),
                   Tab(text: '${l10n.seats} (${_seats.length})'),
+                  if (_event!.eventType == 'screening')
+                    Tab(text: l10n.screening),
                 ],
               )
             : null,
@@ -269,6 +627,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
                   children: [
                     _buildInfoTab(cs),
                     _buildSeatsTab(cs),
+                    if (_event?.eventType == 'screening') _buildScreeningTab(cs),
                   ],
                 ),
     );
@@ -308,37 +667,41 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
               ),
             ),
           ),
-          if (e.eventType == 'screening' && e.screeningShortfilmIds.isNotEmpty)
-            FutureBuilder<Map<String, dynamic>>(
-              future: api.getEventScreeningBlock(widget.eventId),
-              builder: (ctx, snap) {
-                if (!snap.hasData) return const SizedBox.shrink();
-                final items = List<Map<String, dynamic>>.from(snap.data!['items'] as List? ?? []);
-                final total = snap.data!['total_duration'];
-                if (items.isEmpty) return const SizedBox.shrink();
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Bloque (${items.length})${total != null && (total as int) > 0 ? ' · $total min' : ''}',
-                            style: const TextStyle(fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 4),
-                        for (var i = 0; i < items.length; i++)
-                          ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            leading: CircleAvatar(radius: 12, child: Text('${i + 1}', style: const TextStyle(fontSize: 12))),
-                            title: Text('${items[i]['title'] ?? 'Corto ${items[i]['shortfilm_id']}'}',
-                                style: const TextStyle(fontSize: 13)),
-                            trailing: items[i]['duration'] != null ? Text('${items[i]['duration']} min') : null,
-                          ),
-                      ],
+          if (e.eventType == 'screening' &&
+              _screenings != null &&
+              _screenings!.items.isNotEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${l10n.screening} (${_screenings!.items.length})${_screenings!.totalDuration > 0 ? ' · ${_screenings!.totalDuration} ${l10n.minutes}' : ''}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
-                  ),
-                );
-              },
+                    const SizedBox(height: 4),
+                    for (var i = 0; i < _screenings!.items.length; i++)
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                            radius: 12,
+                            child: Text('${i + 1}',
+                                style: const TextStyle(fontSize: 12))),
+                        title: Text(
+                          _screenings!.items[i].title ??
+                              'Corto ${_screenings!.items[i].shortfilmId}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        trailing: Text(
+                          _screeningStatusLabel(_screenings!.items[i]),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           const SizedBox(height: 12),
           FutureBuilder<Map<String, dynamic>>(

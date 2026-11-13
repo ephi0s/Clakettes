@@ -41,10 +41,19 @@ extension CatalogApi on ApiService {
 
   /// Obtiene los premios paginados de un festival, con filtros opcionales.
   Future<PaginatedResult<Award>> getAwards(int festivalId,
-      {int page = 1, int size = 20, int? userId, int? shortfilmId}) async {
+      {int page = 1,
+      int size = 20,
+      int? userId,
+      int? shortfilmId,
+      String? eligibilityTag,
+      bool? recipientVerified}) async {
     final params = <String, String>{'page': '$page', 'size': '$size'};
     if (userId != null) params['user_id'] = '$userId';
     if (shortfilmId != null) params['shortfilm_id'] = '$shortfilmId';
+    if (eligibilityTag != null) params['eligibility_tag'] = eligibilityTag;
+    if (recipientVerified != null) {
+      params['recipient_verified'] = '$recipientVerified';
+    }
     final data = await _get('/festivals/$festivalId/awards/', params);
     return _paginated(data, Award.fromJson);
   }
@@ -67,6 +76,13 @@ extension CatalogApi on ApiService {
 
   Future<Award> verifyAward(int id, bool verified) async {
     final data = await _put('/awards/$id', {'is_verified': verified});
+    return Award.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  /// Verifica o desmarca al receptor de un premio.
+  Future<Award> verifyAwardRecipient(int id, bool verified, {String? notes}) async {
+    final data = await request('PATCH', '/awards/$id/recipient-verification',
+        body: json.encode({'verified': verified, 'notes': notes}));
     return Award.fromJson(Map<String, dynamic>.from(data as Map));
   }
 

@@ -39,6 +39,18 @@ class Award {
   final bool isVerified;
   @HiveField(13)
   final int? year;
+  /// Etiquetas de elegibilidad requeridas para optar al premio.
+  @HiveField(14)
+  final List<String> eligibilityTags;
+  /// Indica si el receptor del premio fue verificado por la organización.
+  @HiveField(15)
+  final bool recipientVerified;
+  @HiveField(16)
+  final int? recipientVerifiedBy;
+  @HiveField(17)
+  final DateTime? recipientVerifiedAt;
+  @HiveField(18)
+  final String? recipientVerificationNotes;
 
   Award({
     this.id,
@@ -55,6 +67,11 @@ class Award {
     this.isPublic = true,
     this.isVerified = false,
     this.year,
+    this.eligibilityTags = const [],
+    this.recipientVerified = false,
+    this.recipientVerifiedBy,
+    this.recipientVerifiedAt,
+    this.recipientVerificationNotes,
   });
 
   /// Crea un [Award] a partir de un mapa JSON (claves snake_case del backend).
@@ -69,11 +86,20 @@ class Award {
       userId: json['user_id'],
       position: json['position'],
       isWinner: json['is_winner'] ?? false,
-      prizeAmount: json['prize_amount'],
+      prizeAmount: json['prize_amount']?.toString(),
       description: json['description'],
       isPublic: json['is_public'] ?? true,
       isVerified: json['is_verified'] ?? false,
       year: json['year'],
+      eligibilityTags: json['eligibility_tags'] != null
+          ? List<String>.from(json['eligibility_tags'] as List)
+          : const [],
+      recipientVerified: json['recipient_verified'] ?? false,
+      recipientVerifiedBy: json['recipient_verified_by'],
+      recipientVerifiedAt: json['recipient_verified_at'] != null
+          ? DateTime.parse(json['recipient_verified_at'])
+          : null,
+      recipientVerificationNotes: json['recipient_verification_notes'],
     );
   }
 
@@ -92,5 +118,8 @@ class Award {
     'is_public': isPublic,
     'is_verified': isVerified,
     'year': year,
+    'eligibility_tags': eligibilityTags,
+    'recipient_verified': recipientVerified,
+    'recipient_verification_notes': recipientVerificationNotes,
   };
 }

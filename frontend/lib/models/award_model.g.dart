@@ -31,13 +31,20 @@ class AwardAdapter extends TypeAdapter<Award> {
       isPublic: fields[11] as bool,
       isVerified: fields[12] as bool,
       year: fields[13] as int?,
+      eligibilityTags: fields[14] != null
+          ? List<String>.from(fields[14] as List)
+          : const [],
+      recipientVerified: fields[15] as bool? ?? false,
+      recipientVerifiedBy: fields[16] as int?,
+      recipientVerifiedAt: fields[17] as DateTime?,
+      recipientVerificationNotes: fields[18] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Award obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -65,7 +72,17 @@ class AwardAdapter extends TypeAdapter<Award> {
       ..writeByte(12)
       ..write(obj.isVerified)
       ..writeByte(13)
-      ..write(obj.year);
+      ..write(obj.year)
+      ..writeByte(14)
+      ..write(obj.eligibilityTags)
+      ..writeByte(15)
+      ..write(obj.recipientVerified)
+      ..writeByte(16)
+      ..write(obj.recipientVerifiedBy)
+      ..writeByte(17)
+      ..write(obj.recipientVerifiedAt)
+      ..writeByte(18)
+      ..write(obj.recipientVerificationNotes);
   }
 
   @override

@@ -66,9 +66,49 @@ extension EventApi on ApiService {
             as Map);
   }
 
-  Future<Map<String, dynamic>> getEventScreeningBlock(int eventId) async {
-    return Map<String, dynamic>.from(
-        await request('GET', '/events/$eventId/screenings') as Map);
+  /// Obtiene el bloque de cribado de un evento, con filtros opcionales.
+  Future<EventScreenings> getEventScreenings(int eventId,
+      {String? status,
+      bool includeDisqualified = true,
+      int? participantTagId,
+      String? participantTagCategory,
+      bool participantTagVerifiedOnly = false}) async {
+    final params = <String, String>{};
+    if (status != null) params['status'] = status;
+    if (!includeDisqualified) params['include_disqualified'] = 'false';
+    if (participantTagId != null) {
+      params['participant_tag_id'] = '$participantTagId';
+    }
+    if (participantTagCategory != null) {
+      params['participant_tag_category'] = participantTagCategory;
+    }
+    if (participantTagVerifiedOnly) {
+      params['participant_tag_verified_only'] = 'true';
+    }
+    final query = params.entries
+        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+    final data = await request(
+        'GET', '/events/$eventId/screenings${query.isEmpty ? '' : '?$query'}');
+    return EventScreenings.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  /// Cambia el estado de cribado de una obra proyectada.
+  Future<void> setScreeningStatus(int eventId, int shortfilmId, String status,
+      {String? reason}) async {
+    await request('PATCH', '/events/$eventId/screenings/$shortfilmId',
+        body: json.encode({'status': status, 'status_reason': reason}));
+  }
+
+  /// Guarda las notas y la anotación del jurado para una obra proyectada.
+  Future<void> setScreeningNotes(int eventId, int shortfilmId,
+      {String? juryNotes, String? minutes, String? annotation}) async {
+    await request('PUT', '/events/$eventId/screenings/$shortfilmId/notes',
+        body: json.encode({
+          'jury_notes': juryNotes,
+          'minutes': minutes,
+          'annotation': annotation,
+        }));
   }
 
   Future<List<int>> setEventScreenings(
