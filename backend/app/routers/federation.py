@@ -1,15 +1,32 @@
 """Federation endpoints (node policies: allowlist/blocklist)."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.auth import get_current_user
 from app.models.user import User
+from app.rate_limiter import RateLimiter
 from app.services.node_policy_service import NodePolicyService
 
-router = APIRouter(prefix="/federation", tags=["federation"])
+_federation_limiter = RateLimiter()
+
+
+def _check_federation_rate_limit(request: Request):
+    if os.environ.get("TESTING", "").lower() in ("true", "1"):
+        return
+    ip = request.client.host if request.client else "unknown"
+    if not _federation_limiter.check(f"federation:{ip}", 60, 60):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many federation requests. Try again later.",
+        )
+
+
+router = APIRouter(prefix="/federation", tags=["federation"], dependencies=[Depends(_check_federation_rate_limit)])
 service = NodePolicyService()
 
 

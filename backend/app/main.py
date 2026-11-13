@@ -17,7 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.routers import (
-    federation,    festival_rulebooks,
+    federation,
+    festival_rulebooks,
     festivals,
     users,
     shortfilms,

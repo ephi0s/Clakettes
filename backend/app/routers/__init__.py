@@ -15,6 +15,7 @@ from app.routers import roles
 from app.routers import participant_tags
 from app.routers import user_roles
 from app.routers import user_aliases
+from app.routers import user_blocks
 from app.routers import validation_rules
 from app.routers import registration_forms
 from app.routers import role_groups
@@ -48,6 +49,7 @@ __all__ = [
     "participant_tags",
     "user_roles",
     "user_aliases",
+    "user_blocks",
     "validation_rules",
     "registration_forms",
     "role_groups",
