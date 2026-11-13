@@ -2,7 +2,7 @@
 
 [ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](../gl/BACKEND.md) · [OC](../oc/BACKEND.md)
 
-FastAPI-Backend für die Filmfestival-Management-Plattform Clakettes.
+FastAPI-Backend für die Clakettes Filmfestival-Verwaltungsplattform.
 
 ## Schnellstart
 
@@ -21,29 +21,29 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Architektur
 
-### Schichtenstruktur
+### Ebenenstruktur
 
 ```
 Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
 ```
 
-| Capa | Ubicación | Responsabilidad |
-|-------|----------|----------------|
-| **Routers** | `app/routers/` | HTTP endpoints, request/response validation, pagination |
-| **Services** | `app/services/` | Business logic, CRUD operations, cross-cutting concerns |
-| **Models** | `app/models/` | SQLAlchemy ORM models, DB schema |
-| **Schemas** | `app/schemas/` | Pydantic models for request/response |
-| **Auth** | `app/auth.py` | JWT, sessions, password hashing |
-| **Config** | `app/config.py` | Pydantic Settings from `.env` |
-| **Database** | `app/database.py` | Engine, session factory, `get_db()` dependency |
+| Ebene | Ort | Verantwortung |
+|-------|-----|---------------|
+| **Routers** | `app/routers/` | HTTP-Endpunkte, Anfrage/Antwort-Validierung, Paginierung |
+| **Services** | `app/services/` | Business-Logik, CRUD-Operationen, querbezogene Anliegen |
+| **Models** | `app/models/` | SQLAlchemy ORM-Modelle, DB-Schema |
+| **Schemas** | `app/schemas/` | Pydantic-Modelle für Anfrage/Antwort |
+| **Auth** | `app/auth.py` | JWT, Sessions, Passwort-Hashing |
+| **Config** | `app/config.py` | Pydantic Settings aus `.env` |
+| **Database** | `app/database.py` | Engine, Session-Factory, `get_db()`-Dependency |
 
 ### Zentrale Designprinzipien
 
-1. **Schlanke Router** — delegieren an die Services
-2. **Zustandslose Services** — erhalten `db: Session` per Dependency Injection
-3. **Models erben von `BaseModel`** — `id`, `created_at`, `updated_at` in allen Entitäten
-4. **Zentralisierte Enums** — `app/enums.py` gemeinsam für Models und Schemas
-5. **Generisches CRUD-Basismodul** — `BaseService` in `app/services/base_service.py`
+1. **Leichte Router** — delegieren an Services
+2. **Zustandslose Services** — erhalten `db: Session` via Dependency Injection
+3. **Modelle erben `BaseModel`** — `id`, `created_at`, `updated_at` auf allen Entitäten
+4. **Zentrale Enums** — `app/enums.py` geteilt zwischen Modellen und Schemas
+5. **Generische Basis-CRUD** — `BaseService` in `app/services/base_service.py`
 
 ---
 
@@ -51,17 +51,17 @@ Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
 
 Die gesamte Konfiguration erfolgt über `backend/.env` (geladen von `pydantic-settings`):
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `sqlite:///./clakettes.db` | SQLAlchemy connection string |
-| `SECRET_KEY` | (required, no default) | JWT signing key |
-| `JWT_ISSUER` | `clakettes` | JWT issuer claim |
-| `JWT_AUDIENCE` | `clakettes-api` | JWT audience claim |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
-| `CORS_ORIGINS` | `None` (→ `["*"]`) | Comma-separated allowed origins |
-| `PORT_BACKEND` | `8000` | Server port (used by Docker/start scripts) |
+| Variable | Standard | Beschreibung |
+|----------|----------|--------------|
+| `DATABASE_URL` | `sqlite:///./clakettes.db` | SQLAlchemy-Verbindungsstring |
+| `SECRET_KEY` | (erforderlich, kein Standard) | JWT-Signierungsschlüssel |
+| `JWT_ISSUER` | `clakettes` | JWT-Issuer-Claim |
+| `JWT_AUDIENCE` | `clakettes-api` | JWT-Audience-Claim |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access-Token-TTL |
+| `CORS_ORIGINS` | `None` (→ `["*"]`) | Kommagetrennte erlaubte Ursprünge |
+| `PORT_BACKEND` | `8000` | Server-Port (verwendet von Docker/Start-Skripten) |
 
-**Beispiel-`.env` in Produktion:**
+**Beispiel `.env` für Produktion:**
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
@@ -72,7 +72,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 CORS_ORIGINS=https://app.example.com,https://admin.example.com
 ```
 
-Einen robusten `SECRET_KEY` erzeugen:
+Erzeugen Sie einen robusten `SECRET_KEY`:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(64))"
@@ -82,12 +82,12 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 
 ## Datenbank
 
-### Zwei-Datenbank-Kompatibilität
+### Duale Datenbank-Kompatibilität
 
-| Environment | Database | Connection String |
-|-------------|----------|-------------------|
-| Development | SQLite | `sqlite:///./data/clakettes.db` |
-| Production | MariaDB | `mariadb+pymysql://user:pass@host:3306/db` |
+| Umgebung | Datenbank | Verbindungsstring |
+|----------|-----------|-------------------|
+| Entwicklung | SQLite | `sqlite:///./data/clakettes.db` |
+| Produktion | MariaDB | `mariadb+pymysql://user:pass@host:3306/db` |
 
 ### Basismodell
 
@@ -106,76 +106,39 @@ class BaseModel(Base):
 ```bash
 cd backend
 
-# Create new migration after model changes
+# Neue Migration nach Modelländerungen erstellen
 alembic revision --autogenerate -m "description"
 
-# Apply migrations
+# Migrationen anwenden
 alembic upgrade head
 
 # Rollback
 alembic downgrade -1
 
-# Current revision
+# Aktuelle Revision
 alembic current
 ```
 
 **Migrationshinweise (SQLite ↔ MariaDB):**
 - SQLite `INTEGER PRIMARY KEY` → MariaDB `INT AUTO_INCREMENT`
 - SQLite `TEXT` → MariaDB `TEXT`/`VARCHAR`
-- SQLite `DATETIME` (stored as TEXT) → MariaDB native `DATETIME`
-- Die Export-/Import-Skripte in `backend/tools/` behandeln die Typkonvertierungen
+- SQLite `DATETIME` (als Text gespeichert) → MariaDB nativer `DATETIME`
+- Die Export-/Import-Skripte in `backend/tools/` übernehmen die Typkonvertierungen automatisch
 
-### Modellübersicht (31 Modelle)
-
-| Modelo | Tabla | Relaciones clave |
-|-------|-------|-------------------|
-| `Festival` | `festivals` | ShortFilms, Users (M2M), Roles, Events, Awards, Committees, Locations |
-| `User` | `users` | ShortFilms, Festivals (M2M), Sessions, Keys, Aliases, Roles, Tags |
-| `ShortFilm` | `shortfilms` | Festival (FK), User (FK), Awards, Locations |
-| `Message` | `messages` | Sender/Receiver (User), Channel (FK) |
-| `UserFestival` | `user_festival` | M2M User↔Festival with role |
-| `Award` | `awards` | Festival, Event, ShortFilm, User (recipient/verifier/creator) |
-| `Channel` | `channels` | Creator (User), Members, Messages |
-| `Committee` | `committees` | Festival, Role, Members |
-| `Event` | `events` | Festival, Creator, TicketTypes, Seats, Reservations, Attendees |
-| `Notification` | `notifications` | User (recipient), related_user |
-| `ParticipantTag` | `participant_tags` | Global tags, festival-specific config |
-| `RegistrationForm` | `registration_forms` | Festival, Sections, Links, Registrations |
-| `Role` | `roles` | Hierarchy, groups, permissions, festival roles |
-| `UserAlias` | `user_aliases` | User, per-context display names |
-| `UserKey` | `user_keys` | User (1:1), X25519 public key for E2EE |
-| `UserRole` | `user_roles` | User, Role, Festival, status, visibility |
-| `UserSession` | `user_sessions` | User, token hashes, device info, expiry |
-| `ValidationRule` | `validation_rules` | Field validation rules with groups |
-| `FestivalRole` | `festival_roles` | Festival-specific role config |
-| `RoleDependency` | `role_dependencies` | Role prerequisites |
-| `RoleConflict` | `role_conflicts` | Mutually exclusive roles |
-| `RoleGroup` | `role_groups` | Grouping of roles |
-| `RoleGroupMembership` | `role_group_memberships` | Role ↔ Group links |
-| `RoleDelegation` | `role_delegations` | User-to-user role delegation |
-| `RoleTransition` | `role_transitions` | Role change history |
-| `UserParticipantTag` | `user_participant_tags` | User ↔ Tag assignments |
-| `FestivalParticipantTag` | `festival_participant_tags` | Festival-specific tag config |
-| `ValidationRuleGroup` | `validation_rule_groups` | Groups of validation rules |
-| `RegistrationFormSection` | `registration_form_sections` | Form sections with roles/tags |
-| `RegistrationFormLink` | `registration_form_links` | Public/unique registration links |
-| `EventTicketType` | `event_ticket_types` | Event ticket categories |
-| `EventSeat` | `event_seats` | Seat map with positions |
-
-Siehe [DATABASE.md](DATABASE.md) für die vollständige Schema-Dokumentation mit ER-Diagrammen.
+Siehe [DATABASE.md](DATABASE.md) für die vollständige Schemadokumentation mit ER-Diagrammen.
 
 ---
 
 ## Authentifizierung
 
-### JWT + Sitzungsverfolgung
+### JWT + Session-Tracking
 
-| Token Type | Format | TTL | Storage |
-|------------|--------|-----|---------|
-| **Access Token** | JWT (HS256) | 30 min (configurable) | Client memory |
-| **Refresh Token** | Opaque (SHA-256 hash in DB) | 30 days | `UserSession.refresh_token_hash` |
+| Token-Typ | Format | TTL | Speicher |
+|-----------|--------|-----|----------|
+| **Access Token** | JWT (HS256) | 30 Min (konfigurierbar) | Client-Speicher |
+| **Refresh Token** | Opaque (SHA-256-Hash in DB) | 30 Tage | `UserSession.refresh_token_hash` |
 
-### Login-Ablauf
+### Login-Flow
 
 ```
 POST /api/users/login
@@ -183,38 +146,38 @@ POST /api/users/login
 → 200 {access_token, refresh_token, token_type: "bearer", user: {...}}
 ```
 
-### Token-Verwendung
+### Token-Nutzung
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
-### Erneuerungsablauf
+### Refresh-Flow
 
 ```
-POST /api/users/refresh
+POST /api/auth/refresh
   {refresh_token}
 → 200 {access_token, refresh_token, token_type: "bearer"}
 ```
 
-### Sitzungsverwaltung
+### Session-Management
 
-- `GET /api/auth/sessions` — Aktive Sitzungen auflisten
-- `DELETE /api/auth/sessions/{session_id}` — Sitzung widerrufen
-- Die Sitzung wird beim Login mit Geräteinfo erstellt (IP, UA, Name)
-- Tokens werden bei Erneuerung rotiert; alte Tokens werden ungültig
+- `GET /api/auth/sessions` — Aktive Sessions auflisten
+- `DELETE /api/auth/sessions/{session_id}` — Session widerrufen
+- Die Session wird beim Login mit Geräteinformationen (IP, UA, Name) erstellt
+- Tokens werden beim Refresh rotiert; alte Tokens werden ungültig
 
 ### Passwort-Hashing
 
 - **bcrypt** via `passlib` (rounds=12)
 - Hash gespeichert in `User.password_hash`
-- Verifikation via `pwd_context.verify(plain, hash)`
+- Verifiziert via `pwd_context.verify(plain, hash)`
 
-### Request-Limit
+### Ratenlimit
 
-- **100 requests / 60 seconds** pro IP (mit SQLite-Backend)
-- Angewandt via `RateLimitMiddleware` in `main.py`
-- Deaktiviert wenn die Env-Variable `TESTING=true` gesetzt ist
+- **100 Anfragen / 60 Sekunden** pro IP (SQLite-gesichert)
+- Angewandt über `RateLimitMiddleware` in `main.py`
+- Deaktiviert wenn `TESTING=true` Umgebungsvariable gesetzt ist
 
 ---
 
@@ -222,49 +185,59 @@ POST /api/users/refresh
 
 ### Router-Registrierung (`app/main.py`)
 
-| Router | Prefix | Tags | Description |
-|--------|--------|------|-------------|
-| `festivals` | `/api/festivals` | festivals | CRUD, search, members |
-| `users` | `/api/users` | users | CRUD, profile, avatar upload |
-| `auth` | `/api/users` | auth | Login, refresh, register |
-| `auth_sessions` | `/api/auth` | auth | Session list/revoke |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, festival linkage |
-| `chat` | `/api/chat` | chat | Messages, WS endpoint |
-| `user_festival` | `/api/festivals` | user-festival | Join/leave, members |
-| `uploads` | `/api/uploads` | uploads | Avatar upload |
-| `search` | `/api/search` | search | Global search |
-| `admin` | `/api/admin` | admin | Stats, tables, audit-log, reset |
-| `notifications` | `/api/notifications` | notifications | CRUD, unread count |
-| `roles` | `/api` | roles | Roles, groups, deps, conflicts |
-| `participant_tags` | `/api` | participant-tags | Tags, festival config |
-| `user_roles` | `/api` | user-roles | Role assignments |
-| `user_aliases` | `/api` | user-aliases | Display name aliases |
-| `validation_rules` | `/api` | validation-rules | Dynamic form validation |
-| `registration_forms` | `/api` | registration-forms | Festival registration flows |
-| `role_groups` | `/api` | role-groups | Role grouping |
-| `committees` | `/api` | committees | Festival committees |
-| `delegations` | `/api` | delegations | Role delegations |
-| `events` | `/api` | events | Events, tickets, seats, reservations |
-| `channels` | `/api/channels` | channels | Chat channels |
-| `keys` | `/api/users` | e2ee | E2EE public key mgmt |
-| `locations` | `/api/locations` | locations | Geolocation, maps |
-| `location_tags` | `/api/locations/{location_id}/tags` | location-tags | Location tags |
-| `location_images` | `/api/locations/{location_id}/images` | location-images | Location images |
-| `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Location relations |
-| `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Shortfilm locations |
-| `form_definitions` | `/api` | forms | Form builder |
+| Router | Präfix | Tags | Beschreibung |
+|--------|--------|------|--------------|
+| `festivals` | `/api/festivals` | festivals | CRUD, Suche, Mitglieder |
+| `users` | `/api/users` | users | CRUD, Profil, Avatar-Upload |
+| `auth` | `/api/users` | auth | Login, Refresh, Registrierung |
+| `auth_sessions` | `/api/auth` | auth | Session-Liste/Widerruf |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, Festival-Verknüpfung |
+| `chat` | `/api/chat` | chat | Nachrichten, WS-Endpunkt |
+| `user_festival` | `/api/festivals` | user-festival | Beitreten/Verlassen, Mitglieder |
+| `uploads` | `/api/uploads` | uploads | Avatar-Upload |
+| `search` | `/api/search` | search | Globale Suche |
+| `admin` | `/api/admin` | admin | Stats, Tabellen, Audit-Log, Reset |
+| `notifications` | `/api/notifications` | notifications | CRUD, ungelesen-Anzahl |
+| `roles` | `/api` | roles | Rollen, Gruppen, Abhängigkeiten, Konflikte |
+| `participant_tags` | `/api` | participant-tags | Tags, Festival-Konfiguration |
+| `user_roles` | `/api` | user-roles | Rollenzuweisungen |
+| `user_aliases` | `/api` | user-aliases | Anzeigenamen-Aliase |
+| `validation_rules` | `/api` | validation-rules | Dynamische Formularvalidierung |
+| `registration_forms` | `/api` | registration-forms | Festival-Registrierungsflows |
+| `role_groups` | `/api` | role-groups | Rollen-Gruppierung |
+| `committees` | `/api` | committees | Festival-Komitees |
+| `delegations` | `/api` | delegations | Rollendelegationen |
+| `events` | `/api` | events | Events, Tickets, Sitze, Reservierungen |
+| `channels` | `/api/channels` | channels | Chat-Kanäle |
+| `keys` | `/api/users` | e2ee | E2EE-Öffentlichkeitschlüssel-Verwaltung |
+| `locations` | `/api/locations` | locations | Geolokalisierung, Karten |
+| `location_tags` | `/api/locations/{location_id}/tags` | location-tags | Standort-Tags |
+| `location_images` | `/api/locations/{location_id}/images` | location-images | Standortbilder |
+| `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Standortbeziehungen |
+| `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Kurzfilm-Standorte |
+| `form_definitions` | `/api` | forms | Formular-Builder |
+| `federation` | `/api/federation` | federation | Manifest, Verzeichnis, Knoten, Berichte, WebFinger |
+| `jury_votes` | `/api` | jury-votes | Juryabstimmung (Phase 5) |
+| `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, Einstellungen |
+| `badges` | `/api` | badges | Badges, Zuweisungen, Berechtigung |
+| `posts` | `/api` | posts | Social-Posts, Antworten, Moderation |
+| `payments` | `/api` | payments | Checkout, Bestätigung, Rückerstattung, Webhook |
+| `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Festival-Regelwerke |
+| `user_blocks` | `/api` | user-blocks | Benutzerblockierung |
+| `moderation_reports` | `/api` | moderation-reports | Moderationsberichte |
+| `node_policies` | `/api` | node-policies | Föderations-Knotenrichtlinien |
 
-Total: 33 routers
+Gesamt: 38 Router mit `APIRouter` (40 Router-Dateien, 2 Helfer ohne Router).
 
 ### Paginierung und Filterung
 
-Standard-Query-Parameter in Listen-Endpunkten:
+Standard-Abfrageparameter auf List-Endpunkten:
 
 ```
 GET /api/festivals/?page=1&size=20&search=cannes&is_active=true
 ```
 
-Antwort-Hülle:
+Antwort-Umschlag:
 
 ```json
 {
@@ -280,22 +253,22 @@ Antwort-Hülle:
 
 ## Echtzeit-Chat
 
-### WebSocket-Backend (`app/chat_backend/`)
+### Backend-WebSocket (`app/chat_backend/`)
 
-| Component | Description |
-|-----------|-------------|
-| `WebSocketChatBackend` | Default implementation (in-memory connections) |
-| `chat_backend_registry` | Singleton registry for backend swapping |
-| `ConnectionManager` | Manages user↔WebSocket mappings |
+| Komponente | Beschreibung |
+|------------|--------------|
+| `WebSocketChatBackend` | Standardimplementierung (In-Memory-Verbindungen) |
+| `chat_backend_registry` | Singleton-Registry für Backend-Austausch |
+| `ConnectionManager` | Verwaltet Nutzer↔WebSocket-Mappings |
 
 ### Endpunkte
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/api/chat/ws` | WebSocket connection (auth via query `token`) |
-| `POST` | `/api/chat/messages` | Send message (REST fallback) |
-| `GET` | `/api/chat/messages` | Paginated history |
-| `PATCH` | `/api/chat/messages/{id}/read` | Mark read |
+| Methode | Route | Beschreibung |
+|---------|-------|--------------|
+| `GET` | `/api/chat/ws` | WebSocket-Verbindung (Auth via Query `token`) |
+| `POST` | `/api/chat/messages` | Nachricht senden (REST-Fallback) |
+| `GET` | `/api/chat/messages` | Paginierter Verlauf |
+| `PATCH` | `/api/chat/messages/{id}/read` | Als gelesen markieren |
 
 ### Nachrichtentypen
 
@@ -314,12 +287,12 @@ class MessageType(str, Enum):
 ### E2EE
 
 - X25519-Schlüsselaustausch via `/api/users/{id}/keys`
-- Öffentliche Schlüssel in `UserKey` gespeichert (einer aktiv pro Nutzer)
-- Ver-/Entschlüsselung im Frontend (`e2ee_service.dart`)
+- Öffentliche Schlüssel gespeichert in `UserKey` (ein aktiver Schlüssel pro Nutzer)
+- Verschlüsselung/Entschlüsselung im Frontend (`e2ee_service.dart`)
 
 ---
 
-## Datei-Upload
+## Datei-Uploads
 
 ### Avatar-Upload
 
@@ -331,21 +304,22 @@ Authorization: Bearer <token>
 file: <image/*>
 ```
 
-- Gespeichert in `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
+- Gespeichert unter `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Statisch serviert unter `/uploads/avatars/...`
-- Max-Größe: 10 MB (angewandt durch `RequestSizeLimitMiddleware`)
+- Max. Größe: 10 MB (angewendet durch `RequestSizeLimitMiddleware`)
 
 ---
 
-## Administrations-Endpunkte
+## Admin-Endpunkte
 
 Erfordert `role=admin` (geprüft in `admin_service.py`):
 
-| Endpoint | Descripción |
-|----------|-------------|
-| `GET /api/admin/stats` | Platform statistics |
-| `GET /api/admin/tables` | Row counts per table |
-| `GET /api/admin/audit-log` | Audit trail (filtros `action`, `actor_user_id`) |
+| Endpunkt | Beschreibung |
+|----------|--------------|
+| `GET /api/admin/stats` | Plattformstatistiken |
+| `GET /api/admin/tables` | Zeilenanzahl pro Tabelle |
+| `GET /api/admin/audit-log` | Audit-Spur (Filter `action`, `actor_user_id`) |
+| `POST /api/admin/reset` | `drop_all + create_all` (nur Nicht-Produktion) |
 
 ---
 
@@ -354,20 +328,20 @@ Erfordert `role=admin` (geprüft in `admin_service.py`):
 ```bash
 cd backend
 
-# Run all tests
+# Alle Tests ausführen
 python -m pytest tests/ -x -q --tb=short
 
-# Run with coverage
+# Mit Coverage ausführen
 python -m pytest tests/ --cov=app --cov-report=term-missing
 
-# Specific test file
+# Spezifische Testdatei
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Testkonfiguration** (`pyproject.toml` / `pytest.ini`):
+**Test-Konfiguration** (`pyproject.toml` / `pytest.ini`):
 
 ```ini
-[pytest]
+[tool.pytest.ini_options]
 asyncio_mode = auto
 testpaths = tests
 python_files = test_*.py
@@ -375,24 +349,22 @@ python_functions = test_*
 ```
 
 **Fixtures** (`tests/conftest.py`):
-- `db_session` — SQLite-In-Memory-Sitzung
+- `db_session` — In-Memory-SQLite-Session
 - `client` — `AsyncClient` (httpx) gegen die Test-App
-- `auth_headers` — bereits authentifizierte Header
-
-**Hinweis**: Es gibt ein doppeltes `conftest.py` in `tests/services/` — sie sollten vereinheitlicht werden.
+- `auth_headers` — Vorauthentifizierte Header
 
 ---
 
-## Lint und Format
+## Lint und Formatierung
 
 ```bash
-# Check
+# Prüfen
 ruff check .
 
-# Fix auto-fixable
+# Auto-fixbare beheben
 ruff check . --fix
 
-# Format
+# Formatieren
 ruff format .
 ```
 
@@ -408,7 +380,7 @@ ignore = ["E501", "SIM102", "SIM103"]
 
 ---
 
-## Entwicklungsablauf
+## Entwicklungsworkflow
 
 ### Lokale Entwicklung
 
@@ -417,7 +389,7 @@ ignore = ["E501", "SIM102", "SIM103"]
 cd backend
 python -m uvicorn app.main:app --reload
 
-# Terminal 2: Frontend (if needed)
+# Terminal 2: Frontend (falls benötigt)
 cd frontend
 flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=http://localhost:8000/api
 ```
@@ -425,33 +397,31 @@ flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=http://local
 ### Entwicklung mit Docker
 
 ```bash
-# From project root
+# Vom Projektstamm aus
 docker compose up        # Backend:8000, Frontend:3000
 docker compose --profile db up  # + MariaDB:3306
 ```
 
-### Initiale Datenbankbefüllung
+### Erstes Datenbank-Laden
 
-Kein Seed-Skript: in Entwicklung erstellt die App den initialen Admin (`admin` /
-`setup`, Passwort nach dem Login ändern) und die Tabellen via `create_all`. In Produktion kommen die
-Daten über die API und das Schema nur via Alembic.
+Kein Seed-Skript: in Entwicklung erstellt die App den ersten Admin (`admin` / `setup`, Passwort beim ersten Login ändern) und Tabellen via `create_all`. In Produktion kommen Daten über die API und das Schema nur über Alembic.
 
-### Übliche Befehle
+### Häufige Befehle
 
 ```bash
-# Generate Hive adapters (frontend)
+# Hive-Adapter generieren (frontend)
 cd frontend && flutter pub run build_runner build --delete-conflicting-outputs
 
-# Run migrations
+# Migrationen ausführen
 cd backend && alembic upgrade head
 
-# Create migration
+# Migration erstellen
 cd backend && alembic revision --autogenerate -m "add column x"
 
-# Export SQLite → MariaDB
+# SQLite → MariaDB exportieren
 cd backend && python tools/export_sqlite_to_mariadb.py
 
-# Import MariaDB → SQLite
+# MariaDB → SQLite importieren
 cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 
@@ -462,53 +432,53 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 backend/
 ├── app/
-│   ├── models/              # 34 SQLAlchemy models
-│   ├── schemas/             # 33 Pydantic schemas
-│   ├── services/            # 36 business logic services
-│   ├── routers/             # 36 API routers (33 con APIRouter)
-│   ├── chat_backend/        # WebSocket chat implementation
-│   ├── auth.py              # JWT + session auth
-│   ├── config.py            # Pydantic Settings
+│   ├── models/              # 40 SQLAlchemy-Modelle (+ base.py)
+│   ├── schemas/             # 37 Pydantic-Schemas
+│   ├── services/            # 43 Business-Logik-Dienste
+│   ├── routers/             # 40 API-Router (38 mit APIRouter)
+│   ├── chat_backend/        # WebSocket-Chat-Implementierung
+│   ├── auth.py              # JWT + Session-Auth
+│   ├── config.py            # Pydantic-Settings
 │   ├── database.py          # Engine, SessionLocal, get_db()
-│   ├── main.py              # FastAPI app, middleware, routers
-│   ├── rate_limiter.py      # SQLite rate limiter
-│   ├── enums.py             # Shared enums
-│   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (27 versions)
-├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (45 files)
-├── uploads/                 # Static file uploads
-├── .env.example             # Config template
-├── requirements.txt         # Production deps
-├── requirements-dev.txt     # Dev deps (pytest, ruff)
-├── pyproject.toml           # Ruff, pytest config
-└── pytest.ini               # Pytest config
+│   ├── main.py              # FastAPI-App, Middleware, Router
+│   ├── rate_limiter.py      # SQLite-Ratenlimit
+│   ├── enums.py             # Gemeinsame Enums
+│   └── scripts/             # Seed-/Migration-Skripte
+├── alembic/                 # Migrationen (36 Versionen)
+├── tools/                   # Export-/Import-Skripte
+├── tests/                   # pytest-Tests (47 Dateien, 1439 Testfunktionen)
+├── uploads/                 # Statische Datei-Uploads
+├── .env.example             # Konfigurationsvorlage
+├── requirements.txt         # Produktions-Abhängigkeiten
+├── requirements-dev.txt     # Dev-Abhängigkeiten (pytest, ruff)
+├── pyproject.toml           # Ruff, pytest-Konfiguration
+└── pytest.ini               # pytest-Konfiguration
 ```
 
 Docs in `docs/de/BACKEND.md` (diese Datei) und `docs/de/DATABASE.md`.
 
 ---
 
-## Deployment
+## Bereitstellung
 
 ### Docker (Produktion)
 
 ```yaml
-# docker-compose.yml uses --profile prod
+# docker-compose.yml verwendet --profile prod
 docker compose --profile prod up -d
 ```
 
 Dienste:
-- `backend-prod` — FastAPI (Uvicorn-Worker) auf :8000
-- `frontend-prod` — Nginx + Flutter-Web auf :80
-- `db` — MariaDB 11 (Healthcheck)
+- `backend-prod` — FastAPI (Uvicorn-Workers) auf :8000
+- `frontend-prod` — Nginx + Flutter Web auf :80
+- `db` — MariaDB 11 (Health-Check)
 
 Verfügbare Profile:
-- `dev` (Standard): Backend- und Frontend-Dev-Server
+- `dev` (Standard): Backend- und Frontend-Entwicklungsserver
 - `db`: fügt den MariaDB-Container hinzu
-- `prod`: Produktions-Stack mit Nginx
+- `prod`: Produktionsstapel mit Nginx
 
-### Umgebungsvariablen (Produktion)
+### Produktions-Umgebungsvariablen
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
@@ -516,7 +486,7 @@ SECRET_KEY=<64-char-urlsafe>
 CORS_ORIGINS=https://app.example.com
 ```
 
-### Gesundheitsprüfung
+### Health-Check
 
 ```bash
 curl http://localhost:8000/health
@@ -528,13 +498,13 @@ curl http://localhost:8000/health
 ## Sicherheits-Checkliste
 
 - [ ] `SECRET_KEY` in Produktion ändern
-- [ ] `CORS_ORIGINS` auf spezifische Domains setzen
-- [ ] MariaDB (nicht SQLite) in Produktion nutzen
-- [ ] HTTPS aktivieren (Reverse-Proxy: nginx/Traefik)
+- [ ] `CORS_ORIGINS` auf bestimmte Domains setzen
+- [ ] MariaDB (nicht SQLite) in Produktion verwenden
+- [ ] HTTPS aktivieren (Reverse-Proxy: Nginx/Traefik)
 - [ ] Erlaubte Hosts in `TrustedHostMiddleware` konfigurieren
 - [ ] JWT-Schlüssel regelmäßig rotieren
-- [ ] Logs des Request-Limiters überwachen
-- [ ] Admin-Passwort nach dem ersten Login prüfen
+- [ ] Ratenlimit-Logs überwachen
+- [ ] Admin-Benutzerpasswort nach erstem Login prüfen
 
 ---
 
@@ -549,10 +519,10 @@ curl http://localhost:8000/health
 5. **Migration** — `alembic revision --autogenerate -m "add new_resource"`
 6. **Tests** — `tests/test_new_resource.py`
 
-### Benutzerdefinierten Endpunkt zu bestehendem Router hinzufügen
+### Benutzerdefinierten Endpunkt zu einem bestehenden Router hinzufügen
 
 ```python
-# In router file
+# In der Router-Datei
 @router.post("/{festival_id}/custom-action", response_model=CustomResponse)
 async def custom_action(
     festival_id: int,
@@ -567,15 +537,15 @@ async def custom_action(
 
 ## Fehlerbehebung
 
-| Issue | Solution |
-|-------|----------|
-| `ModuleNotFoundError: app` | Run from `backend/` dir or `PYTHONPATH=backend` |
-| `sqlite3.OperationalError: database is locked` | Single writer; ensure no stale processes |
-| `alembic: Can't locate revision` | Delete `alembic/versions/`, run `alembic revision --autogenerate -m "init"` |
-| `JWTError: Signature verification failed` | `SECRET_KEY` mismatch between env and running process |
-| `429 Too Many Requests` | Rate limit hit; wait 60s or set `TESTING=true` |
-| WebSocket 403 | Token expired; use valid access token in `?token=` query |
-| CORS error | Check `CORS_ORIGINS` in `.env` matches frontend origin |
+| Problem | Lösung |
+|---------|--------|
+| `ModuleNotFoundError: app` | Aus dem Verzeichnis `backend/` ausführen oder `PYTHONPATH=backend` |
+| `sqlite3.OperationalError: database is locked` | Einzelner Schreiber; keine veralteten Prozesse sicherstellen |
+| `alembic: Can't locate revision` | `alembic/versions/` löschen, `alembic revision --autogenerate -m "init"` ausführen |
+| `JWTError: Signature verification failed` | `SECRET_KEY`-Unterschied zwischen Umgebung und laufendem Prozess |
+| `429 Too Many Requests` | Ratenlimit erreicht; 60s warten oder `TESTING=true` setzen |
+| WebSocket 403 | Token abgelaufen; gültigen Access-Token in `?token=` verwenden |
+| CORS-Fehler | Prüfen, ob `CORS_ORIGINS` in `.env` zum Frontend-Ursprung passt |
 
 ---
 

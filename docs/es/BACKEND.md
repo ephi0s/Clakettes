@@ -125,43 +125,6 @@ alembic current
 - SQLite `DATETIME` (stored as TEXT) → MariaDB native `DATETIME`
 - Los scripts de exportación/importación en `backend/tools/` gestionan las conversiones de tipos
 
-### Resumen de modelos (31 modelos)
-
-| Modelo | Tabla | Relaciones clave |
-|-------|-------|-------------------|
-| `Festival` | `festivals` | ShortFilms, Users (M2M), Roles, Events, Awards, Committees, Locations |
-| `User` | `users` | ShortFilms, Festivals (M2M), Sessions, Keys, Aliases, Roles, Tags |
-| `ShortFilm` | `shortfilms` | Festival (FK), User (FK), Awards, Locations |
-| `Message` | `messages` | Sender/Receiver (User), Channel (FK) |
-| `UserFestival` | `user_festival` | M2M User↔Festival with role |
-| `Award` | `awards` | Festival, Event, ShortFilm, User (recipient/verifier/creator) |
-| `Channel` | `channels` | Creator (User), Members, Messages |
-| `Committee` | `committees` | Festival, Role, Members |
-| `Event` | `events` | Festival, Creator, TicketTypes, Seats, Reservations, Attendees |
-| `Notification` | `notifications` | User (recipient), related_user |
-| `ParticipantTag` | `participant_tags` | Global tags, festival-specific config |
-| `RegistrationForm` | `registration_forms` | Festival, Sections, Links, Registrations |
-| `Role` | `roles` | Hierarchy, groups, permissions, festival roles |
-| `UserAlias` | `user_aliases` | User, per-context display names |
-| `UserKey` | `user_keys` | User (1:1), X25519 public key for E2EE |
-| `UserRole` | `user_roles` | User, Role, Festival, status, visibility |
-| `UserSession` | `user_sessions` | User, token hashes, device info, expiry |
-| `ValidationRule` | `validation_rules` | Field validation rules with groups |
-| `FestivalRole` | `festival_roles` | Festival-specific role config |
-| `RoleDependency` | `role_dependencies` | Role prerequisites |
-| `RoleConflict` | `role_conflicts` | Mutually exclusive roles |
-| `RoleGroup` | `role_groups` | Grouping of roles |
-| `RoleGroupMembership` | `role_group_memberships` | Role ↔ Group links |
-| `RoleDelegation` | `role_delegations` | User-to-user role delegation |
-| `RoleTransition` | `role_transitions` | Role change history |
-| `UserParticipantTag` | `user_participant_tags` | User ↔ Tag assignments |
-| `FestivalParticipantTag` | `festival_participant_tags` | Festival-specific tag config |
-| `ValidationRuleGroup` | `validation_rule_groups` | Groups of validation rules |
-| `RegistrationFormSection` | `registration_form_sections` | Form sections with roles/tags |
-| `RegistrationFormLink` | `registration_form_links` | Public/unique registration links |
-| `EventTicketType` | `event_ticket_types` | Event ticket categories |
-| `EventSeat` | `event_seats` | Seat map with positions |
-
 Consulten [DATABASE.md](DATABASE.md) para la documentación completa del esquema con diagramas ER.
 
 ---
@@ -192,7 +155,7 @@ Authorization: Bearer <access_token>
 ### Flujo de renovación
 
 ```
-POST /api/users/refresh
+POST /api/auth/refresh
   {refresh_token}
 → 200 {access_token, refresh_token, token_type: "bearer"}
 ```
@@ -253,8 +216,18 @@ POST /api/users/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Location relations |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Shortfilm locations |
 | `form_definitions` | `/api` | forms | Form builder |
+| `federation` | `/api/federation` | federation | manifest, directory, nodes, reports, webfinger |
+| `jury_votes` | `/api` | jury-votes | Jury voting (fase 5) |
+| `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, settings |
+| `badges` | `/api` | badges | Badges, assignments, eligibility |
+| `posts` | `/api` | posts | Social posts, replies, moderation |
+| `payments` | `/api` | payments | Checkout, confirm, refund, webhook |
+| `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Festival rulebooks |
+| `user_blocks` | `/api` | user-blocks | User blocking |
+| `moderation_reports` | `/api` | moderation-reports | Moderation reports |
+| `node_policies` | `/api` | node-policies | Federation node policies |
 
-Total: 33 routers
+Total: 38 routers con `APIRouter` (40 archivos de router, 2 helpers sin router).
 
 ### Paginación y filtrado
 
@@ -346,6 +319,7 @@ Requiere `role=admin` (comprobado en `admin_service.py`):
 | `GET /api/admin/stats` | Platform statistics |
 | `GET /api/admin/tables` | Row counts per table |
 | `GET /api/admin/audit-log` | Audit trail (filtros `action`, `actor_user_id`) |
+| `POST /api/admin/reset` | `drop_all + create_all` (solo no-prod) |
 
 ---
 
@@ -367,7 +341,7 @@ python -m pytest tests/test_festivals.py -v
 **Configuración de pruebas** (`pyproject.toml` / `pytest.ini`):
 
 ```ini
-[pytest]
+[tool.pytest.ini_options]
 asyncio_mode = auto
 testpaths = tests
 python_files = test_*.py
@@ -378,8 +352,6 @@ python_functions = test_*
 - `db_session` — sesión SQLite en memoria
 - `client` — `AsyncClient` (httpx) contra la app de pruebas
 - `auth_headers` — cabeceras ya autenticadas
-
-**Nota**: Hay un `conftest.py` duplicado en `tests/services/` — deberían unificarlo.
 
 ---
 
@@ -462,10 +434,10 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 backend/
 ├── app/
-│   ├── models/              # 34 SQLAlchemy models
-│   ├── schemas/             # 33 Pydantic schemas
-│   ├── services/            # 36 business logic services
-│   ├── routers/             # 36 API routers (33 con APIRouter)
+│   ├── models/              # 40 SQLAlchemy models (+ base.py)
+│   ├── schemas/             # 37 Pydantic schemas
+│   ├── services/            # 43 business logic services
+│   ├── routers/             # 40 API routers (38 con APIRouter)
 │   ├── chat_backend/        # WebSocket chat implementation
 │   ├── auth.py              # JWT + session auth
 │   ├── config.py            # Pydantic Settings
@@ -474,9 +446,9 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate limiter
 │   ├── enums.py             # Shared enums
 │   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (27 versions)
+├── alembic/                 # Migrations (36 versions)
 ├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (45 files)
+├── tests/                   # pytest tests (47 files, 1439 test functions)
 ├── uploads/                 # Static file uploads
 ├── .env.example             # Config template
 ├── requirements.txt         # Production deps

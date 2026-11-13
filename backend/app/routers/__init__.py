@@ -32,6 +32,7 @@ from app.routers import shortfilm_locations
 from app.routers import form_definitions
 from app.routers import posts
 from app.routers import badges
+from app.routers import jury_votes
 
 __all__ = [
     "festivals",
@@ -66,4 +67,5 @@ __all__ = [
     "form_definitions",
     "posts",
     "badges",
+    "jury_votes",
 ]

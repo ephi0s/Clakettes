@@ -53,6 +53,7 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 - **Perfiles sociales**: muros de publicaciones (microblogging con Markdown e incrustados de vídeo y podcast) en perfiles de usuario y festival, con hilos de respuestas opcionales por publicación y moderación por roles (administradores, gestión del festival, moderadores). Sin reacciones, stickers ni GIF por ahora.
 - **Personalización de perfiles**: portada, tagline y enlaces sociales en usuarios y festivales.
 - **Insignias**: desactivadas por defecto; solo el equipo administrativo puede activarlas (`PUT /api/badges/settings`). Las insignias de plataforma las otorgan los administradores; las de mérito de festival (veterano, popular, rol, premio especial), su gestión. Cada insignia lleva una imagen (SVG preferido).
+- **Votación del jurado**: puntuación por obra, agregación y anonimato opcional (fase 5 del roadmap).
 
 ## Ver también
 

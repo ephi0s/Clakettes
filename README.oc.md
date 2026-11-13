@@ -100,14 +100,14 @@ L'aviada automatica del projècte ja configura aquò quand s'utiliza `start.*`.
 
 ## Estat del projècte
 
-🚧 **En desvolopament actiu** — Festivals, corts, chat amb E2EE, mapas, mòde offline e 9 lengas que foncionan; amb tèsts en backend (~1400) e frontend (69 fichièrs).
+🚧 **En desvolopament actiu** — Festivals, corts, chat amb E2EE, mapas, mòde offline e 9 lengas que foncionan; amb tèsts en backend (~1400) e frontend (75 fichièrs de tèsts).
 
 **Roadmap pròche:**
 
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/oc/API.md` regenerado)
+- [ ] Notificacions push (Firebase/APNs)
+- [ ] AppImage Linux firmat
+- [ ] Windows MSI instalador
+- [x] Documentacion API OpenAPI exportable (`/openapi.json` sens operationIds duplicats + `docs/oc/API.md` regenerat)
 
 ## Documentacion del projècte
 
@@ -115,13 +115,17 @@ Lo mapa de documentacion es en [docs/oc/README.md](docs/oc/README.md). Es la mel
 
 - [docs/oc/USO.md](docs/oc/USO.md): aviada, operacion, environa e usatge vidant
 - [docs/oc/ADMINISTRACION.md](docs/oc/ADMINISTRACION.md): administracion, comptes e desplegament
-- [docs/oc/INFRAESTRUCTURA.md](docs/oc/INFRAESTRUCTURA.md): Docker, pòrts, CI e infra
+- [docs/oc/INFRAESTRUCTURA.md](docs/oc/INFRAESTRUCTURA.md): Docker, pòrts, CI e infraestrutura
 - [docs/oc/SEGURIDAD.md](docs/oc/SEGURIDAD.md): tokens, politicas e checklist de produccion
 - [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md): arquitectura backend/frontend e fluxes claus
 - [docs/oc/API.md](docs/oc/API.md): referéncia d'endpoints
 - [docs/oc/DESARROLLO.md](docs/oc/DESARROLLO.md): cossí apondre endpoints o ecrans
-- [docs/oc/BACKEND.md](docs/oc/BACKEND.md): guida del backend (capas, config, auth, tèsts)
+- [docs/oc/BACKEND.md](docs/oc/BACKEND.md): guida del backend (capas, configuracion, auth, tèsts)
 - [docs/oc/DATABASE.md](docs/oc/DATABASE.md): esquèma e migracions
+- [docs/oc/FEDERATION_PROTOCOL.md](docs/oc/FEDERATION_PROTOCOL.md): protocolo de federacion (fasa 4)
+- [docs/oc/FEDERATION_SCHEMA.md](docs/oc/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/oc/FEDERATION_SECURITY.md](docs/oc/FEDERATION_SECURITY.md): model de confianza federat
+- [docs/oc/PUSH.md](docs/oc/PUSH.md): decisio de notificacion push
 
 En mai, lo punt de partença per desvolopament e convencion de projècte es [AGENTS.md](AGENTS.md).
 
@@ -142,7 +146,7 @@ En mai, lo punt de partença per desvolopament e convencion de projècte es [AGE
 
 > Detalh complet en [`AGENTS.md`](AGENTS.md) (arquitectura, comandas e convencions) e en l'indici de [`docs/`](docs/oc/README.md) (guidas per ròtle: foncionau, usatge, administracion, infraestructura, seguretat, arquitectura, API).
 
-**D'un uèlh**: backend FastAPI en capas (routers → servicis → modèls SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
+**D'un uèlh**: backend FastAPI en capas (routers → servicis → modèls SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets reutilizables).
 
 ```bash
 # Tests
@@ -204,9 +208,9 @@ Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linu
 ## Contribuir
 
 1. Haz un fork del repositorio.
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`).
+2. Crea una rama (`git checkout -b feature/nov-funcionalitat`).
 3. Haz commit con mensajes claros y descriptivos (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empuja la rama (`git push origin feature/nueva-funcionalidad`).
+4. Empuja la rama (`git push origin feature/nov-funcionalitat`).
 5. Abre un Pull Request con contexto, cambios y validación.
 
 **Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` devon passar abans de fusionar.

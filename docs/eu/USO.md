@@ -1,62 +1,62 @@
-# Erabilera — Clakettes
+# Erabilitza — Clakettes
 
 [ES](../es/USO.md) · [EN](../en/USO.md) · [FR](../fr/USO.md) · [DE](../de/USO.md) · [IT](../it/USO.md) · [CA](../ca/USO.md) · [EU](USO.md) · [GL](../gl/USO.md) · [OC](../oc/USO.md)
 
-## Abiarazte azkarra
+## Hasi ziurtuta
 
-| Quiero | Comando |
-|---|---|
-| Todo en local | `.\start.ps1` o `./start.sh` (Docker si hay, local si no) |
-| Solo backend / frontend | `-NoFrontend` / `-NoBackend` |
-| Probar en navegador | `-Web` (modo local) |
-| Producción local | `-Final` (build web + serve) |
-| Tests | `-TestBackend` / `-TestFrontend` |
-| Migraciones / con MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |
-| Parar todo | `-Kill` |
-| Instalar dependencias que falten | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: gestor del SO + git clone) |
-| Revisar el entorno sin arrancar | `-Check` (doctor: Docker, Python, Flutter, .venv, puertos; sale 1 si falta algo) |
-| Builds distribuibles | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
+| Nirek | K |
+|-------|---|
+| Baina local | `.\start.ps1` edo `./start.sh` (Docker badago, local bestela) |
+| Backend bakarra / frontend bakarra | `-NoFrontend` / `-NoBackend` |
+| Web-ko navigatoren barruan prove | `-Web` (modu local) |
+| Production-eko local | `-Final` (web-build + serve) |
+| Proba | `-TestBackend` / `-TestFrontend` |
+| Migratzeko / MariaDB-ekin | `-Migrate` / `-MariaDB` / `-TestMigration` |
+| Baina hautatu | `-Kill` |
+| Herriarendu installer | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: OS-ko instaloratzaile + git clone) |
+| Baina hautatu hasi gabe | `-Check` (doctor: Docker, Python, Flutter, .venv, portuak; 1-ken emaitza aukerakortakoak) |
+| Konprezentatutako erasoak | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
 
-Docker gabe, abiarazleak tokiko bare-metal ingurune bat sortzen du: Python 3.12+ eta Flutter detektatzen ditu, zure SO-aren arabera nola instalatu erakusten du eta `-InstallMissing`-ekin instalatzea eskaintzen du (aurretik galdetzen du flag-arekin zoazenean izan ezik).
+Docker-rik ez badago, hainbat java eduki hasi izango dugu zerbitzari barretatik. Python 3.12+ eta Flutter detektatzen dugu, SO-n arabera instalatze-gida erakusten dugu, eta `-InstallMissing` flag-kin aukeratu nahi badugu (aurkezten baduzu, hurrengo aipamenan) instalatzea eskaintzen dugu.
 
-Dev URL-ak: backend `http://localhost:8000` (Swagger `/docs`-en), frontend `http://localhost:3000`.
-Portua okupatuta badago bakarrik biresleitzen da (begiratu `[PUERTO]` irteeran).
-Hasierako admin-a (ez-prod soilik): `admin` / `setup` — sartzean aldatu.
+Dev URLak: backend `http://localhost:8000` (Swagger `/docs`-en), frontend `http://localhost:3000`.
+Port batean baimenduta baduzu, automatikoki berriz salgatzen da (`[PUERTO]` izenekin). Admin hasiera (ez-produkzio zizkean): `admin` / `setup` — aldatu hasiera klikuan.
 
 ## Konfigurazioa
 
-| Variable / flag | Dónde | Efecto |
-|---|---|---|
-| `BACKEND_URL` | `--dart-define` o pantalla de backend en la app | URL del API (persiste en SharedPreferences) |
-| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; en Docker `./data/clakettes.db`) o `mariadb+pymysql://…?ssl_ca=…` (prod, TLS obligatorio) |
-| `SECRET_KEY` | env (obligatoria en `APP_ENV=production`) | Firma JWT; default inseguro bloquea el arranque en prod |
-| `CORS_ORIGINS` | env | Orígenes explícitos en prod (`*` prohibido con credenciales) |
-| `APP_ENV` | env | `development` crea admin + `create_all`; `production` exige Alembic |
+| Aldagaia / flag | Non | Emaitza |
+|-----------------|-----|---------|
+| `BACKEND_URL` | `--dart-define` edo frontend-ko pantalla | API-ren url-a (SharedPreferences-eko konexioa) |
+| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (local; Docker-n `./data/clakettes.db`) edo `mariadb+pymysql://…?ssl_ca=…` (produkzioan, TLS beharrezkoa) |
+| `SECRET_KEY` | env (produkzioan beharrezkoa `APP_ENV=production`) | JWT-aren finkatu; inseguru default-a blokeatzen du produktu hasieratzean |
+| `CORS_ORIGINS` | env | Origen eskalatuta produktu batean (`*` ez da baimenduta credentials-arekin) |
+| `APP_ENV` | env | `development` admin-a + `create_all` sortzen du; `production` alembic behar du |
 
-## Operazioa
+## Etapak
 
-- **Migratu**: `alembic upgrade head` `backend/`-tik (Docker: `-Migrate`).
-- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; itzulera `import_mariadb_to_sqlite.py`-rekin (xehetasuna [DATABASE.md](DATABASE.md)-n).
-- **Backup-ak**: SQLite = `*.db` kopiatu; MariaDB = `mariadb-dump` (`db-data` bolumena Docker-en).
-- **Log-ak**: uvicorn stdout (DAV token-ak jada redaktatuta); API erroreak SnackBar + `debugPrint`-en.
-- **Mugak**: gorputzak ≤10 MB (413 handiagoa bada); rate limit 429 + saiakera-errepikapenarekin.
+- **Migrate**: `alembic upgrade head` `backend/` no (Docker: `-Migrate`).
+- **Automatikoa**: aplikazioa berein DB-ak hasieran migrate egiten du eta zizketek honetan deskriptatzen da; `SKIP_AUTO_MIGRATE=1` hau ez gezetze (DB-k iniheritate anyagak).
+- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; atzera `import_mariadb_to_sqlite.py` (datuak [DATABASE.md](DATABASE.md)-en).
+- **Backups**: SQLite = `*.db` kopiatu; MariaDB = `mariadb-dump` (docker-ko `db-data`).
+- **Logak**: uvicorn stdout (token DAV redacted); API-ko erroreak SnackBar-ko + `debugPrint`.
+- **Limiteak**: eraskaria <=10 MB (413 badago); rate-limit 429 + saiatu berriro.
 
-- **Migrazio automatikoa**: app-ak DBa migratzen du bakarrik abiatzean eta DB berriak uneko berrikuspenarekin zigilatzen ditu; `SKIP_AUTO_MIGRATE=1` saltatzeko.
 ## Erabiltzaile-rolak
 
-`admin` (dena) → `organizer` (bere jaialdia: ekitaldiak, inprimakiak, batzordeak) → `attendee`/`juror`/etab. (organizer-ek esleituta; auto-join-ek `attendee` soilik ematen du). Kanalak: `admin`/`moderator`/`member`; kide-zenbaketa duten batzordeak zerrendan.
+`admin` (dena) → `organizer` (bere festival-a: txarpinak, formulariok, komitetak) → `attendee`/`juror`/etc. (kideak berritzen dituzte; auto-join `attendee` duzu). Txapelketa: `admin`/`moderator`/`member`; komiteetan kide-ken kopurua zerrendatik.
 
-## Garapen aktiboko funtzioak
+## Prozesuak barru egin daitezkeenak
 
-🚧 Funtzio hauek garapen aktiboan daude eta alda daitezke:
+🚧 Hurrengo prozesuak barru egiten direnak eta aldatu daitezkeenak:
 
-- **Profil sozialak**: argitalpen-hormak (mikroblogging Markdown-ekin eta bideo/podcast txertatuekin) erabiltzaile- eta festival-profiletan, argitalpeneko erantzun-hari aukerakoekin eta rolen araberako moderazioarekin (administratzaileak, festival-kudeaketa, moderatzaileak). Oraingoz ez dago erreakziorik, stickerrik edo GIFik.
-- **Profilen pertsonalizazioa**: portada, tagline eta sare sozialetako estekak erabiltzaile eta festivaletan.
-- **Intsigniak**: lehenetsiz desaktibatuta; administratzaile-taldeak bakarrik aktiba ditzake (`PUT /api/badges/settings`). Plataforma-intsigniak administratzaileek ematen dituzte; festival-merezimenduzkoak (beteranoa, herrikoia, rola, sari berezia), bere kudeaketak. Intsignia bakoitzak irudi bat darama (SVG hobetsia).
+- **Perfil sozialak**: publikatuko murek (Markdown-arekin eta video/podcast-ekoाग embedded-ak) erabiltzailea eta festival-eko profilen barruan, publikatuko bati erantzun batiskarachak (administratzaileak, festival-ko kudeatzaileak, moderatzaileek). Reakzioak, stikerrak edo GIF-ak ez badute oraindik.
+- **Perfil-petsatutakoak**: kofratua, tagline eta social-eko linkak erabiltzaile eta festival-koak.
+- **Insignak**: ez badago oraindik bateratze; admin-taldeak aukeratu ditzakete (`PUT /api/badges/settings`). Plataforma-ko insignak administratzaileek ematen dituzte; festival-ko merit-ko insignak (vetikoa, populara, pertsona, premio especial), erantzat. Insignak bakoitzak irudia du (SVG-preferiza).
+- **Jurado-ko bota**: puntuaketa obra-aren arabera, agregazioa automatiqueki eta anonimatza aukeratu (roadmap-eko 5. fasea).
 
-## Ikusi halaber
+## Aukerak
 
-- [README.md](../../README.eu.md): proiektuaren deskribapen orokorra eta sarbide azkarra
-- [HERRAMIENTAS.md](HERRAMIENTAS.md): exekuzio script-ak eta komandoak
-- [ADMINISTRACION.md](ADMINISTRACION.md): hedapenaren administrazioa eta sekretuen errotazioa
-- [SEGURIDAD.md](SEGURIDAD.md): ekoizpeneko checklist-a eta jardunbide egokiak
+- [README.md](../../README.eu.md): proiektuaren oharra eta aukeratutako kidea
+- [HERRAMIENTAS.md](HERRAMIENTAS.md): erausiak eta klikatutako komandoak
+- [ADMINISTRACION.md](ADMINISTRACION.md): deploiamentuaren eta sekretu-rotailaren kudeaketa
+- [SEGURIDAD.md](SEGURIDAD.md): emaitza-oharra eta hornitzeko besteak

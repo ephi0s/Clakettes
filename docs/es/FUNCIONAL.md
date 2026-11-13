@@ -36,6 +36,12 @@ Descubre festivales (`GET /api/festivals/` paginado y público), sigue cortos y 
 
 Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tablas, reset, backups, secretos).
 
+## Jurado (juror)
+
+- Consulta las obras asignadas a su festival y emite votos por corto (`POST /api/jury-votes/`).
+- Puntuación por obra con agregación automática; anonimato opcional.
+- Consulta resultados agregados para organizadores.
+
 ## Estados que debes conocer
 
 - Miembro de festival: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
@@ -45,3 +51,9 @@ Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Oper
 - Notas del jurado y actas por obra, con anotación: `special_mention / accesit / other`.
 - Verificación de etiqueta de participante: `unverified / pending / verified / rejected`.
 - Alcance de visibilidad de eventos: `public / festival_members / roles / attendees_only`.
+
+## Ver también
+
+- [USO.md](USO.md): arranque y operación del sistema
+- [API.md](API.md): referencia de endpoints
+- [ADMINISTRACION.md](ADMINISTRACION.md): administración del despliegue

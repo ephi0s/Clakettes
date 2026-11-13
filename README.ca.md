@@ -100,14 +100,14 @@ L'arrencada automàtica del projecte ja configura això quan s'utilitza `start.*
 
 ## Estat del projecte
 
-🚧 **En desenvolupament actiu** — Festivals, curts, xat amb E2EE, mapes, mode offline i 9 idiomes funcionant; amb tests en backend (~1400) i frontend (69 fitxers).
+🚧 **En desenvolupament actiu** — Festivals, curts, xat amb E2EE, mapes, mode offline i 9 idiomes funcionant; amb tests en backend (~1400) i frontend (75 fitxers de proves).
 
 **Roadmap proper:**
 
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/ca/API.md` regenerado)
+- [ ] Notificacions push (Firebase/APNs)
+- [ ] AppImage Linux signat
+- [ ] Instal·lador Windows MSI
+- [x] Documentació OpenAPI exportable (`/openapi.json` sense operationIds duplicats + `docs/ca/API.md` regenerat)
 
 ## Documentació del projecte
 
@@ -115,13 +115,17 @@ El mapa de documentació és a [docs/ca/README.md](docs/ca/README.md). És la mi
 
 - [docs/ca/USO.md](docs/ca/USO.md): arrencada, operació, entorn i ús diari
 - [docs/ca/ADMINISTRACION.md](docs/ca/ADMINISTRACION.md): administració, comptes i desplegament
-- [docs/ca/INFRAESTRUCTURA.md](docs/ca/INFRAESTRUCTURA.md): Docker, ports, CI i infra
+- [docs/ca/INFRAESTRUCTURA.md](docs/ca/INFRAESTRUCTURA.md): Docker, ports, CI i infraestructura
 - [docs/ca/SEGURIDAD.md](docs/ca/SEGURIDAD.md): tokens, polítiques i checklist de producció
 - [docs/ca/ARQUITECTURA.md](docs/ca/ARQUITECTURA.md): arquitectura backend/frontend i fluxos clau
 - [docs/ca/API.md](docs/ca/API.md): referència d'endpoints
 - [docs/ca/DESARROLLO.md](docs/ca/DESARROLLO.md): com afegir endpoints o pantalles
-- [docs/ca/BACKEND.md](docs/ca/BACKEND.md): guia del backend (capes, config, auth, tests)
+- [docs/ca/BACKEND.md](docs/ca/BACKEND.md): guia del backend (capes, configuració, auth, proves)
 - [docs/ca/DATABASE.md](docs/ca/DATABASE.md): esquema i migracions
+- [docs/ca/FEDERATION_PROTOCOL.md](docs/ca/FEDERATION_PROTOCOL.md): protocolo de federació (fase 4)
+- [docs/ca/FEDERATION_SCHEMA.md](docs/ca/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/ca/FEDERATION_SECURITY.md](docs/ca/FEDERATION_SECURITY.md): model de confiança federat
+- [docs/ca/PUSH.md](docs/ca/PUSH.md): decisió de notificació push
 
 A més, el punt de partida per a desenvolupament i convenció de projecte és [AGENTS.md](AGENTS.md).
 
@@ -142,7 +146,7 @@ A més, el punt de partida per a desenvolupament i convenció de projecte és [A
 
 > Detall complet a [`AGENTS.md`](AGENTS.md) (arquitectura, ordres i convencions) i a l'índex de [`docs/`](docs/ca/README.md) (guies per rol: funcional, ús, administració, infraestructura, seguretat, arquitectura, API).
 
-**D'una ullada**: backend FastAPI en capes (routers → serveis → models SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilitzables).
+**D'una ullada**: backend FastAPI en capes (routers → serveis → models SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets reutilitzables).
 
 ```bash
 # Tests
@@ -204,9 +208,9 @@ Backend + frontend (nginx) + MariaDB. Els builds distribuïts (web, Windows, Lin
 ## Contribuir
 
 1. Fes un fork del repositori.
-2. Crea una branca (`git checkout -b feature/nueva-funcionalidad`).
+2. Crea una branca (`git checkout -b feature/nova-funcionalitat`).
 3. Fes commit amb missatges clars i descriptius (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empeny la branca (`git push origin feature/nueva-funcionalidad`).
+4. Empeny la branca (`git push origin feature/nova-funcionalitat`).
 5. Obre un Pull Request amb context, canvis i validació.
 
 **Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` i `flutter test` han de passar abans de fusionar.

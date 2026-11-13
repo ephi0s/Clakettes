@@ -105,6 +105,9 @@ class ApiService {
     client = http.Client();
   }
 
+  /// Devuelve `true` si hay una sesión de usuario iniciada (token JWT almacenado).
+  Future<bool> get isAuthenticated async => _auth.isLoggedIn();
+
   /// Actualiza la URL base en runtime (p. ej., desde la pantalla de configuración del backend).
   void setBaseUrl(String url) {
     _rootUrl = url;

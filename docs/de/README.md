@@ -1,51 +1,56 @@
 # Dokumentation — Clakettes
 
-Die gesamte Dokumentation gibt es in den 9 Sprachen der Plattform. Spanisch ist kanonisch:
+Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er ist so aufgebaut, dass Nutzer, Administratoren und Entwickler die richtige Anleitung finden, ohne Dateien wahllos zu lesen.
+
+## Sprachen
+
+Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (kanarisch) ist kanonisch:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
-Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er soll Nutzer, Administrator oder Entwickler zur richtigen Anleitung führen, ohne Dateien zufällig zu lesen.
+## Navigation in der Dokumentation
 
-## Wie man durch die Dokumentation navigiert
+- **Ich möchte die App nutzen** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
+- **Ich verwalte eine Bereitstellung** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
+- **Entwicklung** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **KI / Agent** → [ARQUITECTURA.md](ARQUITECTURA.md) und das Aufgaben-Dokument; die verpflichtenden Befehle und Konventionen stehen in [../AGENTS.md](../../AGENTS.md)
 
-- **Ich will die App nutzen** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
-- **Ich administriere ein Deployment** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Entwicklung** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](../es/API.md) + [DATABASE.md](DATABASE.md)
-- **KI / Agent** → [ARQUITECTURA.md](ARQUITECTURA.md) und das Aufgabendokument; Pflichtbefehle und -konventionen stehen in [../AGENTS.md](../../AGENTS.md)
+## Grundsätze der Dokumentation
 
-## Dokumentationsprinzipien
+- **Ein einziges kanonisches Dokument pro Thema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) und [API.md](API.md) sind die offizielle Referenz für ihren Bereich.
+- **Zielgruppenbezogene Dokumentation**: jede Anleitung ist für einen Lesertyp geschrieben, nicht für einen einzelnen Befehlssatz.
+- **Direkte Links**: von hier aus ist der relevante Inhalt in weniger als einem Klick erreichbar.
+- **Keine unnötige Duplizierung**: sekundäre Dokumente verlinken auf das kanonische Dokument, anstatt es zu wiederholen.
 
-- **Ein einziges kanonisches Dokument pro Thema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) und [API.md](../es/API.md) sind die offizielle Referenz ihres Bereichs.
-- **Dokumentation pro Zielgruppe**: jede Anleitung ist für einen Lesertyp geschrieben, nicht für eine einzige Befehlsmenge.
-- **Direkte Links**: von hier erreicht man relevante Inhalte in weniger als einem Klick.
-- **Keine unnötige Duplizierung**: sekundäre Dokumente verlinken aufs Kanonische statt es zu wiederholen.
+## Dokumentenindex
 
-## Index pro Dokument
-
-| Documento | Qué cubre | Audiencia |
+| Dokument | Deckt ab | Zielgruppe |
 |---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Utilidad real por rol y flujos (festival, inscripción, comités, premios, chat/E2EE) | usuario, admin, IA |
-| [USO.md](USO.md) | Arranque, variables, migración SQLite↔MariaDB, backups, roles y operación | usuario, admin |
-| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, cuenta inicial, rotación de secretos, límites, troubleshooting | admin |
-| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfiles Docker, puertos, volúmenes, Nginx, health, CI (GitHub + GitLab) | admin, dev |
-| [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriz `require_*`, perímetro, checklist producción | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa sistema + reglas backend/frontend + flujos clave | dev, IA |
-| [API.md](../es/API.md) | Referencia de endpoints (regenerable con `tools/gen_api.py`) | dev, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Convención para añadir endpoint/pantalla + puertas CI | dev, IA |
-| [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuibles, Docker, fixes CI | dev |
-| [PUSH.md](PUSH.md) | Decisión de notificaciones sin Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev, IA |
-| [BACKEND.md](BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
-| [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
+| [FUNCIONAL.md](FUNCIONAL.md) | Realer Wert nach Rolle und Flows (Festival, Anmeldung, Komitees, Auszeichnungen, Chat/E2EE, Juryabstimmung) | Nutzer, Admin, KI |
+| [USO.md](USO.md) | Start, Variablen, Migration SQLite↔MariaDB, Backups, Rollen, Betrieb | Nutzer, Admin |
+| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpunkte `/api/admin`, erstes Konto, Schlüsselrotation, Limits, Fehlerbehebung | Admin |
+| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker-Profile, Ports, Volumes, Nginx, Health, CI (GitHub + GitLab) | Admin, Dev |
+| [SEGURIDAD.md](SEGURIDAD.md) | Tokens, `require_*`-Matrix, Perimeter, Produktions-Checkliste | Admin, Dev |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Systemkarte + Backend/Frontend-Regeln + zentrale Flows | Dev, KI |
+| [API.md](API.md) | Endpunkt-Referenz (neu generierbar mit `tools/gen_api.py`) | Dev, KI |
+| [DESARROLLO.md](DESARROLLO.md) | Konvention zum Hinzufügen von Endpoint/Bildschirm + CI-Tore | Dev, KI |
+| [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*`-Skripte, verteilbare Builds, Docker, CI-Fixes | Dev |
+| [PUSH.md](PUSH.md) | Entscheidung zu Benachrichtigungen ohne Firebase | Dev |
+| [DATABASE.md](DATABASE.md) | Duales SQLite/MariaDB-Schema, pro-Modell-Karten, ER | Dev, KI |
+| [BACKEND.md](BACKEND.md) | Backend-Anleitung (Ebenen, Konfiguration, Auth, Tests) | Dev |
+| [AUDITORIA.md](AUDITORIA.md) | Audit-Bericht (Rev. 10/10/2026) | Referenz |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Föderationsprotokoll zwischen Knoten (Phase 4) | Dev, KI |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federierte Entitäten) | Dev, KI |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Föderiertes Vertrauensmodell, mTLS, Zertifikatsrotation | Dev, KI |
 
-## Empfohlener Pfad pro Profil
+## Empfohlener Pfad nach Profil
 
-### Endnutzer
+### Endanwender
 
 1. [USO.md](USO.md)
 2. [FUNCIONAL.md](FUNCIONAL.md)
-3. [SEGURIDAD.md](SEGURIDAD.md) solo si necesitan revisar permisos o entorno productivo
+3. [SEGURIDAD.md](SEGURIDAD.md) nur falls Berechtigungen oder Produktionsumgebung geprüft werden müssen
 
-### Deployment-Administrator
+### Bereitstellungsadministrator
 
 1. [ADMINISTRACION.md](ADMINISTRACION.md)
 2. [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md)
@@ -57,30 +62,32 @@ Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er soll Nutzer, 
 1. [../AGENTS.md](../../AGENTS.md)
 2. [ARQUITECTURA.md](ARQUITECTURA.md)
 3. [DESARROLLO.md](DESARROLLO.md)
-4. [API.md](../es/API.md)
+4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
+6. [BACKEND.md](BACKEND.md)
 
-## Konventionen zur Pflege der Dokumentation
+## Konventionen zur Dokumentationspflege
 
 - Aktualisiere das kanonische Dokument vor jeder Zusammenfassung oder jedem Index.
 - Wenn du einen Startablauf änderst, synchronisiere [README.de.md](../../README.de.md), [USO.md](USO.md) und [HERRAMIENTAS.md](HERRAMIENTAS.md).
-- Wenn du eine öffentliche API änderst, aktualisiere [API.md](../es/API.md) und ggf. [DESARROLLO.md](DESARROLLO.md).
-- Wenn du Schema oder Persistenz änderst, prüfe [DATABASE.md](DATABASE.md) und die Migrationen.
+- Wenn du eine öffentliche API änderst, aktualisiere [API.md](API.md) und, falls zutreffend, [DESARROLLO.md](DESARROLLO.md).
+- Wenn du das Schema oder die Persistenz änderst, überprüfe [DATABASE.md](DATABASE.md) und die Migrationen.
+- Wenn du ein Dokument in `docs/es/` bearbeitest, repliziere die Änderung an die 8 Schwestern (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
-## Kurzes FAQ
+## Kurze FAQ
 
-- **Wo fange ich an?** Lies [USO.md](USO.md) wenn du die App betreiben wirst; lies [ARQUITECTURA.md](ARQUITECTURA.md) wenn du entwickeln wirst.
-- **Was ist kanonisch und was nicht?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](../es/API.md) und [DATABASE.md](DATABASE.md) sind die offizielle Referenz für diese Themen.
-- **Wo finde ich einen Befehl oder ein Skript?** Siehe [HERRAMIENTAS.md](HERRAMIENTAS.md) und [../README.de.md](../../README.de.md).
-- **Woran erkenne ich, ob eine Änderung Dokumentation braucht?** Wenn sie Start, Berechtigungen, Infrastruktur, API oder Datenmodell betrifft, muss sie sich in der einschlägigen Dokumentation widerspiegeln.
+- **Wo fange ich an?** Lies [USO.md](USO.md) wenn du die App betreibst; lies [ARQUITECTURA.md](ARQUITECTURA.md) wenn du entwickelst.
+- **Was ist kanonisch und was nicht?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) und [DATABASE.md](DATABASE.md) sind die offizielle Referenz für diese Themen.
+- **Wo finde ich einen Befehl oder ein Skript?** Prüfe [HERRAMIENTAS.md](HERRAMIENTAS.md) und [../README.md](../../README.de.md).
+- **Wie weiß ich, ob eine Änderung Dokumentation benötigt?** Wenn sie Start, Berechtigungen, Infrastruktur, API oder Datenmodell betrifft, muss sie in der relevanten Dokumentation reflektiert werden.
 
 ## Siehe auch
 
 - [../README.de.md](../../README.de.md): Projektübersicht
-- [USO.md](USO.md): Betrieb und lokale Konfiguration
-- [ADMINISTRACION.md](ADMINISTRACION.md): Deployment- und Administrationsbereich
+- [USO.md](USO.md): lokaler Betrieb und Konfiguration
+- [ADMINISTRACION.md](ADMINISTRACION.md): Bereitstellungs- und Verwaltungsbereich
 - [ARQUITECTURA.md](ARQUITECTURA.md): technische Systemkarte
-- [API.md](../es/API.md): Endpunktreferenz
+- [API.md](API.md): Endpunkt-Referenz
 
 ## Empfohlener Start
 
@@ -97,4 +104,4 @@ Oder mit den Projektskripten:
 start.bat --dev
 ```
 
-Die vollständige Befehls- und Profilreferenz des Projekts steht in [HERRAMIENTAS.md](HERRAMIENTAS.md) und in [../README.de.md](../../README.de.md).
+Die vollständige Befehls- und Profilreferenz steht in [HERRAMIENTAS.md](HERRAMIENTAS.md) und in [../README.md](../../README.de.md).

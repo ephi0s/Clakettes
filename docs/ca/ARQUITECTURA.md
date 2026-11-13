@@ -5,7 +5,7 @@
 ## Mapa
 
 ```
-Flutter (web/escritorio/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
+Flutter (web/ordinador/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
   offline-first (Hive)                    JWT 30 min + refresh 30 d
                                           rate limit 100/60s (?page=&size=)
 ```
@@ -14,39 +14,60 @@ Ports (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `33
 
 ## Backend (`backend/`, detall a [BACKEND.md](BACKEND.md) i [DATABASE.md](DATABASE.md))
 
-Capes: Routers (36) → Services (36) → Models (34), tipus via `app.enums`.
+Capes: Routers → Services → Models, tipus via `app.enums`.
 
-| Pieza | Dónde | Regla |
-|---|---|---|
-| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Los routers no consultan; los servicios no lanzan 404 (salvo 3 heredados) |
-| 404 uniforme | `routers/dependencies.py:get_or_404` | fetch → 404 en una línea |
-| Auth | `app/auth.py:validate_access_token` | Firma + `type=access` + sesión activa/no revocada/no expirada; `last_used_at` lazy (5 min) |
-| Auth opcional | `routers/dependencies.py:get_current_user_optional` | Endpoints públicos sin 401 |
+| Peu | On | Regla |
+|-----|----|-------|
+| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Els routers no consulten; els serveis no llançen 404 (salvo 3 heretats) |
+| 404 uniform | `routers/dependencies.py:get_or_404` | fetch → 404 en una línia |
+| Autenticació | `app/auth.py:validate_access_token` | Signatura + `type=access` + sessió activa/no revocada/no expirada; `last_used_at` lazy (5 min) |
+| Autenticació opcional | `routers/dependencies.py:get_current_user_optional` | Endpoints públics sense 401 |
 | Permisos | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
-| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, buckets `middleware:`/`dav:`; instancias en `main`/`admin`/`auth`) | Desactivado con `TESTING=true` |
-| Chat realtime | `app/chat_backend/` (WebSocket) + REST en `routers/chat.py` | WS valida sesión vía `validate_access_token` |
-| CalDAV | `app/dav/` + `routers/dav.py` (prefijo `/dav`, bucket propio 600/60s) | Token bearer en URL; TLS obligatorio en prod |
-| Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import perezoso |
-| Migraciones | `alembic/` (18) | Prod solo Alembic; dev además `create_all` |
+| Límit de peticions | `RateLimitMiddleware` + `RateLimiter` (SQLite, cubets `middleware:`/`dav:`; instàncies a `main`/`admin`/`auth`) | Desactivat amb `TESTING=true` |
+| Xat en temps real | `app/chat_backend/` (WebSocket) + REST a `routers/chat.py` | WS valida sessió via `validate_access_token` |
+| CalDAV | `app/dav/` + `routers/dav.py` (prefix `/dav`, cubet propi 600/60s) | Token bearer a l'URL; TLS obligatori a prod |
+| Export | `services/export_service.py` | CSV/ICS en stdlib; PDF amb reportlab en import perezos |
+| Migracions | `alembic/` (36 versions) | Prod només Alembic; dev també `create_all` |
+| Federació | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directori, nodes, informes, webfinger, ref usuaris |
+
+Comptes reals (verificats al disc):
+
+| Component | Fitxers | Nota |
+|-----------|---------|------|
+| Routers | 40 (38 amb `APIRouter`) | `dependencies.py` i `permissions.py` són helpers sense router |
+| Serveis | 43 | + `__init__.py` |
+| Models d'entitat | 40 | + `base.py` i `__init__.py` |
+| Esquemes | 37 | |
+| Migracions Alembic | 36 | + `__init__.py` |
+| Fitxers de prova | 47 | `test_*.py` |
+| Linies `def test_` | 1439 | |
 
 ## Frontend (`frontend/`)
 
-Serveis singleton + `setState()` + Streams (sense Provider). Arrencada a `main()`:
+Serveis singleton + `setState()` + Streams (sense Provider). Arrancada a `main()`:
 `DatabaseService` → `OfflineCache` → `SyncQueue` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
 
-| Pieza | Dónde | Regla |
-|---|---|---|
-| API | `services/api_service.dart` (núcleo) + `services/api/` (9 dominios) | Base `BACKEND_URL` (guardada > dart-define > default por plataforma; Android emulador `10.0.2.2`) |
-| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-reenvío) | Al reconectar, sync con confirmación |
-| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en vivo, REST para historial; E2EE ECDH P-256 + AES-GCM en isolates |
-| Avisos | `notification_service.dart` | Escritorio: plugin SO; web: Notification API; móvil: no-op (ver [PUSH.md](PUSH.md)) |
-| Navegación | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer siempre; 10 pantallas cacheadas |
-| i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` es fallback; 0 claves ausentes (verificado con script) |
-| Permisos SO | `AndroidManifest.xml` / `Info.plist` | Red, ubicación, cámara, fototeca, alarmas exactas |
+| Peu | On | Regla |
+|-----|----|-------|
+| API | `services/api_service.dart` (núcleo) + `services/api/` (9 dominis) | Base `BACKEND_URL` (desada > dart-define > default per plataforma; emulador Android `10.0.2.2`) |
+| Fóra de línia | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-rereig) | A la reconnexió, sincronització amb confirmació |
+| Xat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en viu, REST per historial; E2EE ECDH P-256 + AES-GCM en isolats |
+| Notificacions | `notification_service.dart` | Escriptori: plugin SO; web: Notification API; mòbil: no-op (veure [PUSH.md](PUSH.md)) |
+| Navegació | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer sempre; 10 pantalles emmagatzemades |
+| i18n | `l10n/` + `assets/l10n/` (9 locals) | `en.arb` és el fallback; 0 claus absents (verificat amb script) |
+| Permisos SO | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubicació, càmera, fototeca, alarmes exaetes |
+
+Comptes reals (verificats al disc):
+
+| Component | Fitxers | Nota |
+|-----------|---------|------|
+| Widgets reutilitzables | 32 | a `lib/widgets/` |
+| Pantalles | 36 | a `lib/screens/` |
+| Fitxers de prova | 75 | `*_test.dart` a `test/` i subcarpetes |
 
 ## Fluxos clau
 
-1. **Reserva**: festival → esdeveniment → seients bulk (1 commit) → reserva → ocupació (pin a `tests/integration/test_flows.py`).
-2. **Missatge**: canal → membre → DM → lectura → esborrat (només emissor/admin).
-3. **Delegació**: crear → llistar actives → revocar (només delegador/admin).
-4. **Registre públic**: enllaç amb token → formulari sense auth → aprovació.
+1. **Reserva**: festival → esdeveniment → seies bulk (1 commit) → reserva → ocupació (pin a `tests/integration/test_flows.py`).
+2. **Missatge**: canal → membre → DM → lectura → esborrat (només l'emprestor/admin).
+3. **Delegació**: crear → llistar actives → revocar (només el delegat/admin).
+4. **Registre públic**: enllaç amb token → formulari sense autenticació → aprovat.

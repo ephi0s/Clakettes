@@ -100,28 +100,32 @@ Proiektuaren abiarazte automatikoak hau jada konfiguratzen du `start.*` erabiltz
 
 ## Proiektuaren egoera
 
-🚧 **Garapen aktiboan** — Jaialdiak, laburrak, E2EE-dun txata, mapak, offline modua eta 9 hizkuntza funtzionatzen; test-ekin backend-ean (~1400) eta frontend-ean (69 fitxategi).
+🚧 **Garapen aktiboan** — Jaialdiak, laburrak, E2EE-dun txata, mapak, offline modua eta 9 hizkuntza funtzionatzen; test-ekin backend-ean (~1400) eta frontend-ean (75 fitxategi provingatuan).
 
 **Hurrengo roadmap-a:**
 
 - [ ] Push jakinarazpenak (Firebase/APNs)
 - [ ] Sinatutako Linux AppImage
-- [ ] Windows MSI installer
-- [x] Dokumentazio API OpenAPI esportagarria (`/openapi.json` operationId bikoiztu gabe + `docs/eu/API.md` birsortua)
+- [ ] Windows MSI instalagailua
+- [x] Dokumentazioa API OpenAPI esportagarria (`/openapi.json` operationId bikoiztu gabe + `docs/eu/API.md` birsortua)
 
 ## Proiektuaren dokumentazioa
 
 Dokumentazio-mapa [docs/eu/README.md](docs/eu/README.md)-n dago. Sarrera onena da erabiltzaile-mota bakoitzerako:
 
 - [docs/eu/USO.md](docs/eu/USO.md): abiaraztea, operazioa, ingurunea eta eguneroko erabilera
-- [docs/eu/ADMINISTRACION.md](docs/eu/ADMINISTRACION.md): administrazioa, kontuak eta hedapena
+- [docs/eu/ADMINISTRACION.md](docs/eu/ADMINISTRACION.md): Kontak, kontuak eta hedapena
 - [docs/eu/INFRAESTRUCTURA.md](docs/eu/INFRAESTRUCTURA.md): Docker, portuak, CI eta azpiegitura
-- [docs/eu/SEGURIDAD.md](docs/eu/SEGURIDAD.md): token-ak, politikak eta ekoizpen-checklist-a
-- [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md): backend/frontend arkitektura eta funtsezko fluxuak
+- [docs/eu/SEGURIDAD.md](docs/eu/SEGURIDAD.md): Token-ak, politika eskakunak eta produktuen zerrenda
+- [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md): backend/frontend arkitekturna eta fluxoak
 - [docs/eu/API.md](docs/eu/API.md): endpoint-en erreferentzia
 - [docs/eu/DESARROLLO.md](docs/eu/DESARROLLO.md): endpoint-ak edo pantailak nola gehitu
-- [docs/eu/BACKEND.md](docs/eu/BACKEND.md): backend-aren gida (geruzak, config, auth, test-ak)
-- [docs/eu/DATABASE.md](docs/eu/DATABASE.md): eskema eta migrazioak
+- [docs/eu/BACKEND.md](docs/eu/BACKEND.md): Backend gida (neurmak, konfigurazioa, auth, proveek)
+- [docs/eu/DATABASE.md](docs/eu/DATABASE.md): Eskema eta migrazioak
+- [docs/eu/FEDERATION_PROTOCOL.md](docs/eu/FEDERATION_PROTOCOL.md): Federazio-protokoloa (fasa 4)
+- [docs/eu/FEDERATION_SCHEMA.md](docs/eu/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/eu/FEDERATION_SECURITY.md](docs/eu/FEDERATION_SECURITY.md): Ezpezatutako konfiantza-modeloa
+- [docs/eu/PUSH.md](docs/eu/PUSH.md): Push-notifikazioaren eskaintza
 
 Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.md) da.
 
@@ -142,7 +146,7 @@ Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.
 
 > Xehetasun osoa [`AGENTS.md`](AGENTS.md)-n (arkitektura, komandoak eta konbentzioak) eta [`docs/`](docs/eu/README.md)-ko indizean (rol-gidak: funtzionala, erabilera, administrazioa, azpiegitura, segurtasuna, arkitektura, API).
 
-**Begirada batean**: FastAPI backend-a geruzatan (router-ak → zerbitzuak → SQLAlchemy modeloak, SQLite dev-ean / MariaDB prod-ean, JWT + refresh, 18 Alembic migrazio); Flutter frontend-a Material 3 dark mode-arekin (singleton-ak + `setState()` + stream-ak, Hive offline, 24 widget berrerabilgarri).
+**Begirada batean**: FastAPI backend-a geruzatan (router-ak → zerbitzuak → SQLAlchemy modeloak, SQLite dev-ean / MariaDB prod-ean, JWT + refresh, 36 Alembic migrazio); Flutter frontend-a Material 3 dark mode-arekin (singleton-ak + `setState()` + stream-ak, Hive offline, 32 widget berrerabilgarri).
 
 ```bash
 # Tests
@@ -204,9 +208,9 @@ Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Andro
 ## Laguntzea
 
 1. Egin fork errepositorioan.
-2. Sortu adar bat (`git checkout -b feature/nueva-funcionalidad`).
+2. Sortu adar bat (`git checkout -b feature/berri-bat`).
 3. Egin commit mezu argi eta deskribatzaileekin (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Bultzatu adarra (`git push origin feature/nueva-funcionalidad`).
+4. Bultzatu adarra (`git push origin feature/berri-bat`).
 5. Ireki Pull Request testuinguru, aldaketa eta balidazioarekin.
 
 **Kalitate-konbentzioak:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` eta `flutter test` fusionatu aurretik pasa behar dute.

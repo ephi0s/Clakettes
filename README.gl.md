@@ -100,14 +100,14 @@ O arranque automático do proxecto xa configura isto cando se usa `start.*`.
 
 ## Estado do proxecto
 
-🚧 **En desenvolvemento activo** — Festivais, curtas, chat con E2EE, mapas, modo offline e 9 idiomas funcionando; con tests en backend (~1400) e frontend (69 arquivos).
+🚧 **En desenvolvemento activo** — Festivais, curtas, chateo con E2EE, mapas, modo sen liña e 9 idiomas funcionando; con probas en backend (~1400) e frontend (75 archivos de probas).
 
-**Roadmap próximo:**
+**Roadmap seguinte:**
 
-- [ ] Notificaciones push (Firebase/APNs)
+- [ ] Notificacións push (Firebase/APNs)
 - [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/gl/API.md` regenerado)
+- [ ] Instalador Windows MSI
+- [x] Documentación API OpenAPI exportable (`/openapi.json` sen operationIds duplicados + `docs/gl/API.md` regenerado)
 
 ## Documentación do proxecto
 
@@ -115,13 +115,17 @@ O mapa de documentación está en [docs/gl/README.md](docs/gl/README.md). É a m
 
 - [docs/gl/USO.md](docs/gl/USO.md): arranque, operación, entorno e uso diario
 - [docs/gl/ADMINISTRACION.md](docs/gl/ADMINISTRACION.md): administración, contas e despregamento
-- [docs/gl/INFRAESTRUCTURA.md](docs/gl/INFRAESTRUCTURA.md): Docker, portos, CI e infra
+- [docs/gl/INFRAESTRUCTURA.md](docs/gl/INFRAESTRUCTURA.md): Docker, portos, CI e infraestrutura
 - [docs/gl/SEGURIDAD.md](docs/gl/SEGURIDAD.md): tokens, políticas e checklist de produción
 - [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md): arquitectura backend/frontend e fluxos clave
 - [docs/gl/API.md](docs/gl/API.md): referencia de endpoints
 - [docs/gl/DESARROLLO.md](docs/gl/DESARROLLO.md): como engadir endpoints ou pantallas
-- [docs/gl/BACKEND.md](docs/gl/BACKEND.md): guía do backend (capas, config, auth, tests)
+- [docs/gl/BACKEND.md](docs/gl/BACKEND.md): guía do backend (capas, configuración, auth, tests)
 - [docs/gl/DATABASE.md](docs/gl/DATABASE.md): esquema e migracións
+- [docs/gl/FEDERATION_PROTOCOL.md](docs/gl/FEDERATION_PROTOCOL.md): protocolo de federación (fase 4)
+- [docs/gl/FEDERATION_SCHEMA.md](docs/gl/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/gl/FEDERATION_SECURITY.md](docs/gl/FEDERATION_SECURITY.md): modelo de confianza federado
+- [docs/gl/PUSH.md](docs/gl/PUSH.md): decisión de notificación push
 
 Ademais, o punto de partida para desenvolvemento e convención de proxecto é [AGENTS.md](AGENTS.md).
 
@@ -142,7 +146,7 @@ Ademais, o punto de partida para desenvolvemento e convención de proxecto é [A
 
 > Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos e convencións) e no índice de [`docs/`](docs/gl/README.md) (guías por rol: funcional, uso, administración, infraestrutura, seguridade, arquitectura, API).
 
-**Dunha ollada**: backend FastAPI en capas (routers → servizos → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migracións Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
+**Dunha ollada**: backend FastAPI en capas (routers → servizos → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migracións Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets reutilizables).
 
 ```bash
 # Tests
@@ -204,9 +208,9 @@ Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Lin
 ## Contribuír
 
 1. Fai un fork do repositorio.
-2. Crea unha rama (`git checkout -b feature/nueva-funcionalidad`).
+2. Crea unha rama (`git checkout -b feature/nova-funcionalidade`).
 3. Fai commit con mensaxes claras e descritivas (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empuxa a rama (`git push origin feature/nueva-funcionalidad`).
+4. Empuxa a rama (`git push origin feature/nova-funcionalidade`).
 5. Abre un Pull Request con contexto, cambios e validación.
 
 **Convencións de calidade:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` deben pasar antes de fusionar.

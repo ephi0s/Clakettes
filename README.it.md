@@ -100,28 +100,32 @@ L'avvio automatico del progetto già configura questo quando si usa `start.*`.
 
 ## Stato del progetto
 
-🚧 **In sviluppo attivo** — Festival, corti, chat con E2EE, mappe, modalità offline e 9 lingue funzionanti; con test nel backend (~1400) e frontend (69 file).
+🚧 **In sviluppo attivo** — Festival, corti, chat con E2EE, mappe, modalità offline e 9 lingue funzionanti; con test backend (~1400) e frontend (75 file di test).
 
-**Roadmap prossima:**
+**Roadmap successiva:**
 
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/it/API.md` regenerado)
+- [ ] Notifiche push (Firebase/APNs)
+- [ ] AppImage Linux firmato
+- [ ] Installaer Windows MSI
+- [x] Documentazione OpenAPI esportabile (`/openapi.json` senza operationIds duplicati + `docs/it/API.md` rigenerato)
 
 ## Documentazione del progetto
 
 La mappa della documentazione è in [docs/it/README.md](docs/it/README.md). È il miglior ingresso per ogni tipo di utente:
 
-- [docs/it/USO.md](docs/it/USO.md): avvio, gestione, ambiente e uso quotidiano
+- [docs/it/USO.md](docs/it/USO.md): avvio, operazione, ambiente e uso quotidiano
 - [docs/it/ADMINISTRACION.md](docs/it/ADMINISTRACION.md): amministrazione, account e deployment
-- [docs/it/INFRAESTRUCTURA.md](docs/it/INFRAESTRUCTURA.md): Docker, porte, CI e infra
-- [docs/it/SEGURIDAD.md](docs/it/SEGURIDAD.md): token, policy e checklist di produzione
+- [docs/it/INFRAESTRUCTURA.md](docs/it/INFRAESTRUCTURA.md): Docker, porte, CI e infrastruttura
+- [docs/it/SEGURIDAD.md](docs/it/SEGURIDAD.md): token, politiche e checklist di produzione
 - [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md): architettura backend/frontend e flussi chiave
 - [docs/it/API.md](docs/it/API.md): riferimento degli endpoint
 - [docs/it/DESARROLLO.md](docs/it/DESARROLLO.md): come aggiungere endpoint o schermate
-- [docs/it/BACKEND.md](docs/it/BACKEND.md): guida del backend (livelli, config, auth, test)
+- [docs/it/BACKEND.md](docs/it/BACKEND.md): guida del backend (livelli, configurazione, auth, test)
 - [docs/it/DATABASE.md](docs/it/DATABASE.md): schema e migrazioni
+- [docs/it/FEDERATION_PROTOCOL.md](docs/it/FEDERATION_PROTOCOL.md): protocollo di federazione (fase 4)
+- [docs/it/FEDERATION_SCHEMA.md](docs/it/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/it/FEDERATION_SECURITY.md](docs/it/FEDERATION_SECURITY.md): modello di fiducia federato
+- [docs/it/PUSH.md](docs/it/PUSH.md): decisione notifiche push
 
 Inoltre, il punto di partenza per sviluppo e convenzione di progetto è [AGENTS.md](AGENTS.md).
 
@@ -133,16 +137,16 @@ Inoltre, il punto di partenza per sviluppo e convenzione di progetto è [AGENTS.
 
 ### FAQ rapida
 
-- **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
-- **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
-- **¿Qué documento debo leer primero?** Si eres usuario, [docs/it/USO.md](docs/it/USO.md); si eres desarrollador, [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
-- **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
+- **Ho bisogno di Docker per iniziare?** No. L'avvio locale con `start.*` funziona senza Docker; Docker serve per ambiente di produzione e build riproducibili.
+- **Cosa faccio se l'API non risponde?** Verifica che il backend sia in esecuzione su `http://localhost:8000` e che `/docs` risponda.
+- **Quale documento devo leggere per primo?** Se sei un utente, [docs/it/USO.md](docs/it/USO.md); se sei uno sviluppatore, [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
+- **Come faccio a sapere se un cambio richiede aggiornamento documentazione?** Se cambiano avvio, API, ruoli, permessi, variabili d'ambiente o schema, aggiorna anche la documentazione corrispondente.
 
 ## Per sviluppatori
 
 > Dettaglio completo in [`AGENTS.md`](AGENTS.md) (architettura, comandi e convenzioni) e nell'indice di [`docs/`](docs/it/README.md) (guide per ruolo: funzionale, uso, amministrazione, infrastruttura, sicurezza, architettura, API).
 
-**A colpo d'occhio**: backend FastAPI a livelli (router → servizi → modelli SQLAlchemy, SQLite in dev / MariaDB in prod, JWT + refresh, 18 migrazioni Alembic); frontend Flutter Material 3 con dark mode (singleton + `setState()` + streams, Hive offline, 24 widget riutilizzabili).
+**A colpo d'occhio**: backend FastAPI a livelli (router → servizi → modelli SQLAlchemy, SQLite in dev / MariaDB in prod, JWT + refresh, 36 migrazioni Alembic); frontend Flutter Material 3 con dark mode (singleton + `setState()` + streams, Hive offline, 32 widget riutilizzabili).
 
 ```bash
 # Tests
@@ -181,35 +185,35 @@ Backend + frontend (nginx) + MariaDB. Le build distribuite (web, Windows, Linux,
 
 ### Il backend non si avvia
 
-- Verifica che Python 3.12+ esté instalado.
-- Comprueba que `backend/.env` existe y es válido.
-- Ejecuta `cd backend && python -m uvicorn app.main:app --reload` para ver el error real.
+- Verifica che Python 3.12+ sia installato.
+- Controlla che `backend/.env` esista e sia valido.
+- Esegui `cd backend && python -m uvicorn app.main:app --reload` per vedere l'errore reale.
 
 ### L'app non si connette all'API
 
-- Asegúrate de que el backend está en `http://localhost:8000`.
-- Revisa si `BACKEND_URL` se está pasando con `--dart-define`.
-- Comprueba que la API responde en `/docs`.
+- Assicurati che il backend sia su `http://localhost:8000`.
+- Controlla se `BACKEND_URL` viene passato con `--dart-define`.
+- Verifica che l'API risponda su `/docs`.
 
 ### Problemi con database o migrazioni
 
 - Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/it/USO.md](docs/it/USO.md) y [docs/it/DATABASE.md](docs/it/DATABASE.md).
+- Se passi da SQLite a MariaDB, controlla [docs/it/USO.md](docs/it/USO.md) e [docs/it/DATABASE.md](docs/it/DATABASE.md).
 
 ### Frontend con errori di Flutter
 
-- Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
+- Esegui `cd frontend && flutter pub get`.
+- Se ci sono problemi di generazione del codice, segui la documentazione di Hive e build_runner in [docs/it/ARQUITECTURA.md](docs/it/ARQUITECTURA.md).
 
 ## Contribuire
 
-1. Haz un fork del repositorio.
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`).
-3. Haz commit con mensajes claros y descriptivos (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empuja la rama (`git push origin feature/nueva-funcionalidad`).
-5. Abre un Pull Request con contexto, cambios y validación.
+1. Fai un fork del repository.
+2. Crea un ramo (`git checkout -b feature/nuova-funzionalità`).
+3. Fai commit con messaggi chiari e descrittivi (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+4. Spingi il ramo (`git push origin feature/nuova-funzionalità`).
+5. Apri una Pull Request con contesto, modifiche e validazione.
 
-**Convenciones de calidad:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` y `flutter test` deben pasar antes de fusionar.
+**Convenzioni di qualità:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` devono passare prima del merge.
 
 ## Licenza
 

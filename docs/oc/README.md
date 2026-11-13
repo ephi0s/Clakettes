@@ -1,100 +1,107 @@
 # Documentacion — Clakettes
 
-Tota la documentacion existís dins las 9 lengas de la plataforma. L'espanhòl es canonic:
+Aqueste index es l'entrada prenchipala de la documentacion del projècte. Es pensat per que un usagi, un administrador o un desenvolverdorr trova la guia correcha sens llegir fitxiers al azar.
+
+## Lengas
+
+Tota la documentacion existe nei 9 lengas de la plataforma. L'espaiòl (canario) es canonico:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](README.md)
 
-Aqueste indici es l'intrada principala de la documentacion del projècte. Es pensat per qu'un utilizaire, un administrator o un desvolopaire trobe la guida corrècta sens legir fichièrs a l'azard.
+## Navegar la documentacion
 
-## Cossí navegar per la documentacion
-
-- **Vòli utilizar l'app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
-- **Administri un desplegament** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Desvolopament** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.oc.md](API.md) + [DATABASE.md](DATABASE.md)
-- **IA / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) e lo document de la prètzfach; las comandas e convencions obligatòrias son en [../AGENTS.md](../../AGENTS.md)
+- **Voglì utiar l'app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
+- **Administro un desplegament** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
+- **Desenvolviment** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **IA / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) e lo document de la tasca; las comandas e convencons obligatòrias son en [../AGENTS.md](../../AGENTS.md)
 
 ## Principis de la documentacion
 
-- **Un sol document canonic per tèma**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) e [API.oc.md](API.md) son la referéncia oficiala de son domeni.
-- **Documentacion per audiéncia**: cada guida es escricha per un tipe de legeire, non per un sol ensems de comandas.
-- **Ligams dirèctes**: dempuèi aicí se pòt arribar al contengut pertinent en mens d'un clic.
-- **Sens duplicacion inutila**: los documents secondaris ligan cap al canonic en luòc de repetir.
+- **Un sol document canonico per tema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) e [API.md](API.md) son la referenzia oficial per lo so ambit.
+- **Documentacion per audiencia**: cada guia es escrìta per un type de lectore, non per un sol conjon de comandas.
+- **Enlaces directes**: desde aquì se pot arribar al contén pertinent en men d'un clic.
+- **Sensa duplicacion innecesaria**: los documents secundaris enlacen al canonico en vez de repitir-lo.
 
-## Indici per document
+## Index per document
 
-| Documento | Qué cubre | Audiencia |
-|---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Utilidad real por rol y flujos (festival, inscripción, comités, premios, chat/E2EE) | usuario, admin, IA |
-| [USO.md](USO.md) | Arranque, variables, migración SQLite↔MariaDB, backups, roles y operación | usuario, admin |
-| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, cuenta inicial, rotación de secretos, límites, troubleshooting | admin |
-| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfiles Docker, puertos, volúmenes, Nginx, health, CI (GitHub + GitLab) | admin, dev |
-| [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriz `require_*`, perímetro, checklist producción | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa sistema + reglas backend/frontend + flujos clave | dev, IA |
-| [API.oc.md](API.md) | Referencia de endpoints (regenerable con `tools/gen_api.py`) | dev, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Convención para añadir endpoint/pantalla + puertas CI | dev, IA |
-| [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuibles, Docker, fixes CI | dev |
-| [PUSH.md](PUSH.md) | Decisión de notificaciones sin Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev, IA |
-| [BACKEND.md](BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
-| [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
+| Documento | Que cover | Audiencia |
+|-----------|-----------|-----------|
+| [FUNCIONAL.md](FUNCIONAL.md) | Valor real per rol e fluxos (festival, inscripcion, comitots, premis, chate/E2EE, votaciu del jurat) | usagi, admin, IA |
+| [USO.md](USO.md) | Arrancada, variables, migracion SQLite↔MariaDB, backup, ròls e operacion | usagi, admin |
+| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, compte initial, rotacion de secrets, limites, solucion de problemas | admin |
+| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfils Docker, ports, volumens, Nginx, sanitat, CI (GitHub + GitLab) | admin, dev |
+| [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriza `require_*`, perimetre, checklist de produccion | admin, dev |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa del sistema + regras backend/frontend + fluxos claus | dev, IA |
+| [API.md](API.md) | Referenca d'endpoints (regenerable con `tools/gen_api.py`) | dev, IA |
+| [DESARROLLO.md](DESARROLLO.md) | Convencon per afegir endpoint/pantalla + portas CI | dev, IA |
+| [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuibles, Docker, fiças CI | dev |
+| [PUSH.md](PUSH.md) | Decisio de notificacions sens Firebase | dev |
+| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas per model, ER | dev, IA |
+| [BACKEND.md](BACKEND.md) | Guia del backend (capas, config, auth, tests) | dev |
+| [AUDITORIA.md](AUDITORIA.md) | Raport d'auditoria (rev. 10/10/2026) | referenzia |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federacion entre nods (fasa 4) | dev, IA |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats minimas federades) | dev, IA |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confianza federat, mTLS, rotacion de certificats | dev, IA |
 
-## Ruta recomandada per perfil
+## Ruta recomendada per profil
 
-### Utilizaire finau
+### Usagi final
 
 1. [USO.md](USO.md)
 2. [FUNCIONAL.md](FUNCIONAL.md)
-3. [SEGURIDAD.md](SEGURIDAD.md) sonque se an besonh de revisar permissions o environa productiva
+3. [SEGURIDAD.md](SEGURIDAD.md) solo si avèi necesià de revisar los permisos o l'entorn de produccion
 
-### Administrator de desplegament
+### Administrador de desplegament
 
 1. [ADMINISTRACION.md](ADMINISTRACION.md)
 2. [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md)
 3. [SEGURIDAD.md](SEGURIDAD.md)
 4. [USO.md](USO.md)
 
-### Desvolopaire
+### Desenvolverdorr
 
 1. [../AGENTS.md](../../AGENTS.md)
 2. [ARQUITECTURA.md](ARQUITECTURA.md)
 3. [DESARROLLO.md](DESARROLLO.md)
-4. [API.oc.md](API.md)
+4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
+6. [BACKEND.md](BACKEND.md)
 
-## Convencions per manténer la documentacion
+## Convencons per maintenir la documentacion
 
-- Actualiza lo document canonic abans que qual que siá resumit o indici.
-- Se cambias un flux d'aviada, sincroniza [README.oc.md](../../README.oc.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
-- Se cambias una API publica, actualiza [API.oc.md](API.md) e, s'escaire, [DESARROLLO.md](DESARROLLO.md).
-- Se cambias l'esquèma o la persisténcia, revisa [DATABASE.md](DATABASE.md) e las migracions.
+- Actualiza lo document canonico abans de cualquier resum o index.
+- Si mudatz un flux d'arrancada, sincronizatz [README.oc.md](../../README.oc.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
+- Si mudatz una API publica, actualizatz [API.md](API.md) e, se cal, [DESARROLLO.md](DESARROLLO.md).
+- Si mudatz l'esquema o la persistencia, revisatz [DATABASE.md](DATABASE.md) e las migracions.
+- Cada cotz que editez un document en `docs/es/`, replicatz lo canvi a las 8 germanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
-## FAQ rapida
+## FAQ rapide
 
-- **Per ont comenci?** Legís [USO.md](USO.md) se vas operar l'app; legís [ARQUITECTURA.md](ARQUITECTURA.md) se vas desvolopar.
-- **Qu'es canonic e qu'es pas?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.oc.md](API.md) e [DATABASE.md](DATABASE.md) son la referéncia oficiala per aquelses tèmas.
-- **Ont trobi una comanda o script?** Revisa [HERRAMIENTAS.md](HERRAMIENTAS.md) e [../README.oc.md](../../README.oc.md).
-- **Cossí sai se un cambi requerís documentacion?** S'afècta aviada, permissions, infraestructura, API, o modèl de donadas, deu se rebatre dins la documentacion pertinenta.
+- **On comensatz?** Lengatz [USO.md](USO.md) si operatz l'app; lengatz [ARQUITECTURA.md](ARQUITECTURA.md) si developatz.
+- **Qu'es canonico e qu'es pas?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) e [DATABASE.md](DATABASE.md) son la referenzia oficial per a esos temas.
+- **On troba una comanda o un script?** Revisatz [HERRAMIENTAS.md](HERRAMIENTAS.md) e [../README.oc.md](../../README.oc.md).
+- **Com sabetz se un canvi requeri documentacion?** Se afecte l'arrancada, los permisos, l'infraestrutura, l'API o lo model de donats, deu reflectirse en la documentacion pertinenta.
 
-## Veire tanben
+## Veire ancaus
 
-- [../README.oc.md](../../README.oc.md): vista generala del projècte
+- [../README.oc.md](../../README.oc.md): vista general del projècte
 - [USO.md](USO.md): operacion e configuracion locala
-- [ADMINISTRACION.md](ADMINISTRACION.md): domeni de desplegament e administracion
-- [ARQUITECTURA.md](ARQUITECTURA.md): mapa tecnica del sistèma
-- [API.oc.md](API.md): referéncia d'endpoints
+- [ADMINISTRACION.md](ADMINISTRACION.md): ambit de desplegament e administratzia
+- [ARQUITECTURA.md](ARQUITECTURA.md): mapa tecnico del sistema
+- [API.md](API.md): referenca d'endpoints
 
-## Aviada recomandada
+## Inici recomendat
 
-Per començar en un environa locau:
+Per comensar en entorn local:
 
 ```bash
 cd backend && python -m uvicorn app.main:app --reload
 cd frontend && flutter run
 ```
 
-O, en utilizant los scripts del projècte:
+O, usanz los scripts del projècte:
 
 ```bat
 start.bat --dev
 ```
 
-La referéncia completa de comandas e perfils del projècte es en [HERRAMIENTAS.md](HERRAMIENTAS.md) e en [../README.oc.md](../../README.oc.md).
+La referenca completa de comandas e perfilhs esta en [HERRAMIENTAS.md](HERRAMIENTAS.md) e en [../README.oc.md](../../README.oc.md).

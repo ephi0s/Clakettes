@@ -2,61 +2,62 @@
 
 [ES](../es/USO.md) · [EN](../en/USO.md) · [FR](../fr/USO.md) · [DE](USO.md) · [IT](../it/USO.md) · [CA](../ca/USO.md) · [EU](../eu/USO.md) · [GL](../gl/USO.md) · [OC](../oc/USO.md)
 
-## Schnellstart
+## Schneller Start
 
-| Quiero | Comando |
+| Ich möchte | Befehl |
 |---|---|
-| Todo en local | `.\start.ps1` o `./start.sh` (Docker si hay, local si no) |
-| Solo backend / frontend | `-NoFrontend` / `-NoBackend` |
-| Probar en navegador | `-Web` (modo local) |
-| Producción local | `-Final` (build web + serve) |
+| Alles lokal | `.\start.ps1` oder `./start.sh` (Docker wenn verfügbar, lokal wenn nicht) |
+| Nur Backend / Frontend | `-NoFrontend` / `-NoBackend` |
+| Im Browser testen | `-Web` (lokaler Modus) |
+| Lokale Produktion | `-Final` (Web-Build + Serve) |
 | Tests | `-TestBackend` / `-TestFrontend` |
-| Migraciones / con MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |
-| Parar todo | `-Kill` |
-| Instalar dependencias que falten | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: gestor del SO + git clone) |
-| Revisar el entorno sin arrancar | `-Check` (doctor: Docker, Python, Flutter, .venv, puertos; sale 1 si falta algo) |
-| Builds distribuibles | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
+| Migrationen / mit MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |
+| Alles stoppen | `-Kill` |
+| Fehlende Abhängigkeiten installieren | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: OS-Paketmanager + git clone) |
+| Umgebung prüfen ohne Start | `-Check` (Doctor: Docker, Python, Flutter, .venv, Ports; endet mit 1 wenn etwas fehlt) |
+| Verteilbare Builds | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
 
-Ohne Docker erstellt der Launcher eine lokale Bare-Metal-Umgebung: erkennt Python 3.12+ und Flutter, zeigt die installweise je nach OS und bietet Installation mit `-InstallMissing` an (fragt vorher, außer mit dem Flag).
+Ohne Docker erstellt der Launcher eine bare-metal lokale Umgebung: erkennt Python 3.12+ und Flutter, zeigt die Installation gemäß Ihrem Betriebssystem an und bietet Installation mit `-InstallMissing` (fragt vorher, außer Sie übergeben das Flag).
 
 Dev-URLs: Backend `http://localhost:8000` (Swagger unter `/docs`), Frontend `http://localhost:3000`.
-Wenn der Port belegt ist, wird er automatisch neu zugewiesen (siehe `[PUERTO]` in der Ausgabe).
-Initialer Admin (nur Nicht-Prod): `admin` / `setup` — nach dem Login ändern.
+Wenn der Port besetzt ist, wird er automatisch neu zugewiesen (siehe `[PUERTO]` in der Ausgabe).
+Erstadmin (nur Nicht-Produktion): `admin` / `setup` — beim ersten Login ändern.
 
 ## Konfiguration
 
-| Variable / flag | Dónde | Efecto |
+| Variable / Flag | Wo | Wirkung |
 |---|---|---|
-| `BACKEND_URL` | `--dart-define` o pantalla de backend en la app | URL del API (persiste en SharedPreferences) |
-| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; en Docker `./data/clakettes.db`) o `mariadb+pymysql://…?ssl_ca=…` (prod, TLS obligatorio) |
-| `SECRET_KEY` | env (obligatoria en `APP_ENV=production`) | Firma JWT; default inseguro bloquea el arranque en prod |
-| `CORS_ORIGINS` | env | Orígenes explícitos en prod (`*` prohibido con credenciales) |
-| `APP_ENV` | env | `development` crea admin + `create_all`; `production` exige Alembic |
+| `BACKEND_URL` | `--dart-define` oder Backend-Bildschirm in der App | API-URL (persistiert in SharedPreferences) |
+| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; in Docker `./data/clakettes.db`) oder `mariadb+pymysql://…?ssl_ca=…` (Prod, TLS obligatorisch) |
+| `SECRET_KEY` | env (obligatorisch in `APP_ENV=production`) | Signiert JWT; unsicherer Standard blockiert den Start in Prod |
+| `CORS_ORIGINS` | env | Explizite Ursprünge in Prod (`*` mit Credentials verboten) |
+| `APP_ENV` | env | `development` erstellt Admin + `create_all`; `production` erfordert Alembic |
 
 ## Betrieb
 
-- **Migrieren**: `alembic upgrade head` aus `backend/` (Docker: `-Migrate`).
-- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; zurück mit `import_mariadb_to_sqlite.py` (Details in [DATABASE.md](DATABASE.md)).
+- **Migrieren**: `alembic upgrade head` von `backend/` (Docker: `-Migrate`).
+- **Automatische Migration**: Die App migriert die DB selbst beim Start und versiegelt neue DBs mit der aktuellen Revision; `SKIP_AUTO_MIGRATE=1` zum Übersetzen (extern verwaltete DBs).
+- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; zurück mit `import_mariadb_to_sqlite.py` (Detail in [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = `*.db` kopieren; MariaDB = `mariadb-dump` (Volume `db-data` in Docker).
-- **Logs**: Uvicorn-Stdout (DAV-Tokens bereits redigiert); API-Fehler in SnackBar + `debugPrint`.
-- **Limits**: Bodys ≤10 MB (413 wenn größer); Rate-Limit mit 429 + Retry.
+- **Logs**: uvicorn stdout (DAV-Tokens redacted); API-Fehler in SnackBar + `debugPrint`.
+- **Limits**: Körper ≤10 MB (413 wenn größer); Rate-Limit mit 429 + Wiederholung.
 
-- **Auto-Migration**: Die App migriert die DB beim Start selbst und stempelt neue DBs mit der aktuellen Revision; `SKIP_AUTO_MIGRATE=1` zum Überspringen.
-## Nutzerrollen
+## Benutzerrollen
 
-`admin` (alles) → `organizer` (sein Festival: Events, Formulare, Komitees) → `attendee`/`juror`/etc. (von Organizern vergeben; Auto-Join gibt nur `attendee`). Kanäle: `admin`/`moderator`/`member`; Komitees mit Mitgliederzählung in der Liste.
+`admin` (alles) → `organizer` (sein Festival: Events, Formulare, Komitees) → `attendee`/`juror`/etc. (von Organizer zugewiesen; Auto-Join gibt nur `attendee`). Kanäle: `admin`/`moderator`/`member`; Komitees mit Mitgliederzahl in der Liste.
 
 ## Funktionen in aktiver Entwicklung
 
 🚧 Die folgenden Funktionen befinden sich in aktiver Entwicklung und können sich ändern:
 
-- **Soziale Profile**: Publikationswände (Microblogging mit Markdown und Video-/Podcast-Einbettungen) in Benutzer- und Festivalprofilen, mit optionalen Antwortsträngen pro Beitrag und rollenbasierter Moderation (Admins, Festivalleitung, Moderatoren). Vorerst keine Reaktionen, Sticker oder GIFs.
-- **Profilanpassung**: Banner, Tagline und Social Links bei Benutzern und Festivals.
-- **Abzeichen**: standardmäßig deaktiviert; nur das Admin-Team kann sie aktivieren (`PUT /api/badges/settings`). Plattform-Abzeichen vergeben Admins; Festival-Verdienstabzeichen (Veteran, beliebt, Rolle, Sonderpreis) die Festivalleitung. Jedes Abzeichen trägt ein Bild (SVG bevorzugt).
+- **Social Profiles**: Veröffentlichungswände (Microblogging mit Markdown und Video/Podcast-Einbettungen) auf Benutzer- und Festivalprofilen, mit optionalen Antwort-Threads pro Veröffentlichung und Moderation durch Rollen (Administratoren, Festivalverwaltung, Moderatoren). Keine Reaktionen, Sticker oder GIFs fürs Erste.
+- **Profilpersonalisierung**: Cover, Tagline und Social Links auf Benutzern und Festivals.
+- **Badges**: standardmäßig deaktiviert; nur das Admin-Team kann sie aktivieren (`PUT /api/badges/settings`). Plattform-Badges werden von Administratoren vergeben; Festival-Verdienst-Badges (Veteran, Beliebt, Rolle, Sonderpreis), ihre Verwaltung. Jedes Badge trägt ein Bild (SVG bevorzugt).
+- **Juryabstimmung**: Bewertung pro Werk, Aggregation und optionale Anonymität (Phase 5 der Roadmap).
 
 ## Siehe auch
 
-- [README.de.md](../../README.de.md): allgemeine Projektbeschreibung und Schnellzugriff
+- [README.md](../../README.de.md): allgemeine Projektbeschreibung und schneller Zugriff
 - [HERRAMIENTAS.md](HERRAMIENTAS.md): Skripte und Ausführungsbefehle
-- [ADMINISTRACION.md](ADMINISTRACION.md): Deployment-Verwaltung und Secret-Rotation
-- [SEGURIDAD.md](SEGURIDAD.md): Checkliste und Produktions-Best-Practices
+- [ADMINISTRACION.md](ADMINISTRACION.md): Bereitstellungsverwaltung und Schlüsselrotation
+- [SEGURIDAD.md](SEGURIDAD.md): Checkliste und Produktions-Best Practices

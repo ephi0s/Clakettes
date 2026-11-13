@@ -2,48 +2,49 @@
 
 [ES](../es/ADMINISTRACION.md) · [EN](../en/ADMINISTRACION.md) · [FR](../fr/ADMINISTRACION.md) · [DE](../de/ADMINISTRACION.md) · [IT](../it/ADMINISTRACION.md) · [CA](ADMINISTRACION.md) · [EU](../eu/ADMINISTRACION.md) · [GL](../gl/ADMINISTRACION.md) · [OC](../oc/ADMINISTRACION.md)
 
-Guia per a qui opera un desplegament. Infraestructura a [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md), checklist de producció a [SEGURIDAD.md](SEGURIDAD.md).
+Guia per a qui opera un desplegament. Infraestructura en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md), llista de comprovacio de producció a [SEGURIDAD.md](SEGURIDAD.md).
 
 ## Compte inicial
 
-En no-prod (`APP_ENV != production`) l'arrencada crea `admin` / `setup` (`admin@clakettes.com`, rol admin) si no existeix; en prod **no es crea**. Canvia la contrasenya en entrar. L'alta utilitza `POST /api/users/login` (JWT 30 min + refresh 30 d, llista i revoca sessions a `/api/auth/sessions`).
+A no-produccio (`APP_ENV != production`) l'arrancada crea `admin` / `setup` (`admin@clakettes.com`, rol admin) si no existeix; a producció **no es crea**. Canvia la contrasenya a l'entrar. L'alta usa `POST /api/users/login` (JWT 30 min + refresh 30 d, llista i revoca sessions a `/api/auth/sessions`).
 
-## Endpoints `/api/admin` (solo rol admin, 403 en otro caso)
+## Endpoints `/api/admin` (sol rol admin, 403 en altre cas)
 
-| Método y ruta | Efecto |
-|---|---|
-| `GET /api/admin/stats` | Contadores: usuarios, festivales, cortos, mensajes, activos |
-| `GET /api/admin/tables` | Tablas (menos `alembic_version`) con nº de filas |
-| `POST /api/admin/reset` `{"confirm":"yes","password":"<actual>"}` | `drop_all + create_all`. 400 si `confirm` no es `yes`, 403 si la contraseña no verifica; rate-limit propio 3/300s (429, bypass con `TESTING=true`) |
+| Metode i ruta | Efecte |
+|---------------|--------|
+| `GET /api/admin/stats` | Comptadors: usuaris, festivals, curts, missatges, actius |
+| `GET /api/admin/tables` | Taules (excepte `alembic_version`) amb numero de files |
+| `GET /api/admin/audit-log` | Traccia d'auditoria (filtres `action`, `actor_user_id`) |
+| `POST /api/admin/reset` `{"confirm":"yes","password":"<actual>"}` | `drop_all + create_all`. 400 si `confirm` no es `yes`, 403 si la contrasenya no verifica; limit propi 3/300s (429, omissio amb `TESTING=true`) |
 
-## Secrets i rotació
+## Secrets i rotacio
 
-- `SECRET_KEY`: obligatòria en prod (l'arrencada falla amb la d'exemple i indica `secrets.token_urlsafe(64)`). Rotar-la invalida tots els JWT i refresh tokens: fes-ho en finestra de manteniment i avisa (tots refan login).
-- `CORS_ORIGINS`: orígens explícits en prod; `*` + credencials està prohibit i bloqueja l'arrencada.
-- Darrere de proxy: `uvicorn --proxy-headers` + `FORWARDED_ALLOW_IPS` + TLS frontal.
+- `SECRET_KEY`: obligatori a prod (l'arrancada falla amb l'exemple i indica `secrets.token_urlsafe(64)`). Rotarla invalida tots els JWT i refresh tokens: fes-ho en una finestra de manteniment i avisa (tots tornen a fer login).
+- `CORS_ORIGINS`: origens explicitos a prod; `*` + credencials esta prohibit i bloqueja l'arrancada.
+- Detras de proxy: `uvicorn --proxy-headers` + `FORWARDED_ALLOW_IPS` + TLS frontal.
 
-## Backups i migracions
+## Copies de seguretat i migracions
 
 - SQLite: copiar `*.db` en calent aturat (`-Kill` abans). MariaDB: `mariadb-dump` (volum `db-data`).
-- Migracions: `alembic upgrade head` des de `backend/` (27 versions; prod **només** Alembic, mai `create_all`).
+- Migracions: `alembic upgrade head` des de `backend/` (36 versions; prod **sol** Alembic, mai `create_all`).
 - Canvi de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detall a [DATABASE.md](DATABASE.md).
 
-## Troubleshooting
+## Solucio de problemes
 
-| Síntoma | Causa probable | Acción |
-|---|---|---|
-| Arranque aborta por `SECRET_KEY` / CORS | default inseguro o `*` en prod | Define `SECRET_KEY` y `CORS_ORIGINS` explícitos |
-| `401` en endpoints públicos de formularios | enlace mal generado | Revisa el token del link; el acceso anónimo no da 401 por sí solo |
-| `403` gestionando festival/canal/comité | caller sin rol | Verifica membresía y rol (`GET …/members`); el auto-join solo da `attendee` |
-| `409` al unirse | ya es miembro | Usa `leave` o gestiona desde miembros |
-| `413` subiendo | supera 10 MB cuerpo / 5 MB imagen / 100 MB vídeo / 10 MB pdf | Comprime o parte el archivo |
-| `429` generalizado | rate limit 100/60s por IP (o 3/300s en reset) | Espera y reintenta; revisa `TESTING=true` residual |
-| WS no conecta | JWT sin `type=access` o sesión revocada/expirada | Re-login; revisa `/api/auth/sessions` |
-| App offline no sincroniza | cola con fallos agotados (`failed`, 3 intentos + backoff) | Revisa errores en el prompt de sync; `clear()` tras confirmar en logout |
+| Sintoma | Causa probable | Accio |
+|---------|----------------|-------|
+| Arrancada aborta per `SECRET_KEY` / CORS | default insegur o `*` a prod | Defineix `SECRET_KEY` i `CORS_ORIGINS` explicit |
+| `401` en endpoints public de formularis | enllaç mal generat | Revisa el token del linç; l'accés anonima no dona 401 per si sol |
+| `403` gestionant festival/canal/comitat | cridor sense rol | Verifica membresia i rol (`GET …/members`); l'auto-join només dona `attendee` |
+| `409` al unir-se | ja es membre | Usa `leave` o gestiona des de membres |
+| `413` pujant | supera 10 MB cos / 5 MB imatge / 100 MB video / 10 MB pdf | Comprimeix o divideix l'arxiu |
+| `429` generalitzat | rate limit 100/60s per IP (o 3/300s al reset) | Espera i reintenta; revisa `TESTING=true` residual |
+| WS no connecta | JWT sense `type=access` o sessio revocada/expirada | Torna a fer login; revisa `/api/auth/sessions` |
+| App fora de linia no sincronitza | cua amb fallos agotats (`failed`, 3 intents + backoff) | Revisa errors al prompt de sinc; `clear()` despres de confirmar al logout |
 
-## Vegeu també
+## Veure també
 
-- [USO.md](USO.md): arrencada i operació del sistema
+- [USO.md](USO.md): arrancada i operacio del sistema
 - [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md): desplegament, ports i CI
-- [SEGURIDAD.md](SEGURIDAD.md): checklist d'enduriment i polítiques
+- [SEGURIDAD.md](SEGURIDAD.md): llista d'enduriment i politiques
 - [../README.ca.md](../../README.ca.md): context global del projecte

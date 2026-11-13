@@ -12,18 +12,11 @@ Sin Firebase ni proveedores externos. Estrategia por plataforma:
 
 ## Detalles de implementación
 
-- `lib/services/notification_platform.dart`: export condicional
-  (`notification_web.dart` si `dart.library.js_interop`, si no
-  `notification_stub.dart`) — mismo patrón que `file_downloader.dart`.
-- `NotificationService._supported`: true en escritorio/web, false en móvil;
-  `resetForTesting` lo fuerza a true para no romper los tests (la plataforma
-  de `flutter_test` es Android).
-- Web: `scheduleWebNotification` reprograma por id, ignora horas pasadas y
-  limpia al cancelar; al cerrar la pestaña los pendientes se pierden
-  (sin Service Worker a propósito: requeriría servidor push).
+- `lib/services/notification_platform.dart`: export condicional (`notification_web.dart` si `dart.library.js_interop`, si no `notification_stub.dart`) — mismo patrón que `file_downloader.dart`.
+- `NotificationService._supported`: true en escritorio/web, false en móvil; `resetForTesting` lo fuerza a true para no romper los tests (la plataforma de `flutter_test` es Android).
+- Web: `scheduleWebNotification` reprograma por id, ignora horas pasadas y limpia al cancelar; al cerrar la pestaña los pendientes se pierden (sin Service Worker a propósito: requeriría servidor push).
 - `flutter build web` verificado (58 s, sin errores de `js_interop`).
 
 ## Si algún día se quiere fondo real en web/móvil
 
-Requiere servidor push propio (VAPID + Service Worker) o proveedor externo;
-ver historial de este documento para el roadmap Firebase descartado.
+Requiere servidor push propio (VAPID + Service Worker) o proveedor externo; ver historial de este documento para el roadmap Firebase descartado.

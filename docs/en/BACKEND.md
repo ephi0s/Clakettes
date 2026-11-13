@@ -1,4 +1,4 @@
-# Clakettes Backend — Technical documentation
+# Clakettes Backend — Technical Documentation
 
 [ES](../es/BACKEND.md) · [EN](BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](../gl/BACKEND.md) · [OC](../oc/BACKEND.md)
 
@@ -21,7 +21,7 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Architecture
 
-### Layered structure
+### Layer structure
 
 ```
 Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
@@ -39,11 +39,11 @@ Routers (FastAPI) → Services (Business Logic) → Models (SQLAlchemy)
 
 ### Key design principles
 
-1. **Thin routers** — they delegate to services
-2. **Stateless services** — they receive `db: Session` via dependency injection
-3. **Models inherit `BaseModel`** — `id`, `created_at`, `updated_at` on every entity
+1. **Light routers** — delegate to services
+2. **Stateless services** — receive `db: Session` via dependency injection
+3. **Models inherit `BaseModel`** — `id`, `created_at`, `updated_at` on all entities
 4. **Centralized enums** — `app/enums.py` shared between models and schemas
-5. **Generic CRUD base** — `BaseService` in `app/services/base_service.py`
+5. **Generic base CRUD** — `BaseService` in `app/services/base_service.py`
 
 ---
 
@@ -61,7 +61,7 @@ All configuration is done via `backend/.env` (loaded by `pydantic-settings`):
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Comma-separated allowed origins |
 | `PORT_BACKEND` | `8000` | Server port (used by Docker/start scripts) |
 
-**Production `.env` example:**
+**Example `.env` for production:**
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
@@ -72,7 +72,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 CORS_ORIGINS=https://app.example.com,https://admin.example.com
 ```
 
-Generate a strong `SECRET_KEY`:
+Generate a robust `SECRET_KEY`:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(64))"
@@ -82,7 +82,7 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 
 ## Database
 
-### Two-database compatibility
+### Dual database compatibility
 
 | Environment | Database | Connection String |
 |-------------|----------|-------------------|
@@ -123,46 +123,9 @@ alembic current
 - SQLite `INTEGER PRIMARY KEY` → MariaDB `INT AUTO_INCREMENT`
 - SQLite `TEXT` → MariaDB `TEXT`/`VARCHAR`
 - SQLite `DATETIME` (stored as TEXT) → MariaDB native `DATETIME`
-- The export/import scripts in `backend/tools/` handle type conversions
+- The export/import scripts in `backend/tools/` handle type conversions automatically
 
-### Model summary (31 models)
-
-| Model | Table | Key relations |
-|-------|-------|-------------------|
-| `Festival` | `festivals` | ShortFilms, Users (M2M), Roles, Events, Awards, Committees, Locations |
-| `User` | `users` | ShortFilms, Festivals (M2M), Sessions, Keys, Aliases, Roles, Tags |
-| `ShortFilm` | `shortfilms` | Festival (FK), User (FK), Awards, Locations |
-| `Message` | `messages` | Sender/Receiver (User), Channel (FK) |
-| `UserFestival` | `user_festival` | M2M User↔Festival with role |
-| `Award` | `awards` | Festival, Event, ShortFilm, User (recipient/verifier/creator) |
-| `Channel` | `channels` | Creator (User), Members, Messages |
-| `Committee` | `committees` | Festival, Role, Members |
-| `Event` | `events` | Festival, Creator, TicketTypes, Seats, Reservations, Attendees |
-| `Notification` | `notifications` | User (recipient), related_user |
-| `ParticipantTag` | `participant_tags` | Global tags, festival-specific config |
-| `RegistrationForm` | `registration_forms` | Festival, Sections, Links, Registrations |
-| `Role` | `roles` | Hierarchy, groups, permissions, festival roles |
-| `UserAlias` | `user_aliases` | User, per-context display names |
-| `UserKey` | `user_keys` | User (1:1), X25519 public key for E2EE |
-| `UserRole` | `user_roles` | User, Role, Festival, status, visibility |
-| `UserSession` | `user_sessions` | User, token hashes, device info, expiry |
-| `ValidationRule` | `validation_rules` | Field validation rules with groups |
-| `FestivalRole` | `festival_roles` | Festival-specific role config |
-| `RoleDependency` | `role_dependencies` | Role prerequisites |
-| `RoleConflict` | `role_conflicts` | Mutually exclusive roles |
-| `RoleGroup` | `role_groups` | Grouping of roles |
-| `RoleGroupMembership` | `role_group_memberships` | Role ↔ Group links |
-| `RoleDelegation` | `role_delegations` | User-to-user role delegation |
-| `RoleTransition` | `role_transitions` | Role change history |
-| `UserParticipantTag` | `user_participant_tags` | User ↔ Tag assignments |
-| `FestivalParticipantTag` | `festival_participant_tags` | Festival-specific tag config |
-| `ValidationRuleGroup` | `validation_rule_groups` | Groups of validation rules |
-| `RegistrationFormSection` | `registration_form_sections` | Form sections with roles/tags |
-| `RegistrationFormLink` | `registration_form_links` | Public/unique registration links |
-| `EventTicketType` | `event_ticket_types` | Event ticket categories |
-| `EventSeat` | `event_seats` | Seat map with positions |
-
-See [DATABASE.md](DATABASE.md) for the full schema documentation with ER diagrams.
+See [DATABASE.md](DATABASE.md) for the complete schema documentation with ER diagrams.
 
 ---
 
@@ -175,7 +138,7 @@ See [DATABASE.md](DATABASE.md) for the full schema documentation with ER diagram
 | **Access Token** | JWT (HS256) | 30 min (configurable) | Client memory |
 | **Refresh Token** | Opaque (SHA-256 hash in DB) | 30 days | `UserSession.refresh_token_hash` |
 
-### Sign-in flow
+### Login flow
 
 ```
 POST /api/users/login
@@ -192,7 +155,7 @@ Authorization: Bearer <access_token>
 ### Refresh flow
 
 ```
-POST /api/users/refresh
+POST /api/auth/refresh
   {refresh_token}
 → 200 {access_token, refresh_token, token_type: "bearer"}
 ```
@@ -201,26 +164,26 @@ POST /api/users/refresh
 
 - `GET /api/auth/sessions` — List active sessions
 - `DELETE /api/auth/sessions/{session_id}` — Revoke session
-- The session is created at sign-in with device info (IP, UA, name)
-- Tokens rotate on refresh; old tokens are invalidated
+- Session is created at login with device info (IP, UA, name)
+- Tokens are rotated on refresh; old tokens are invalidated
 
 ### Password hashing
 
 - **bcrypt** via `passlib` (rounds=12)
 - Hash stored in `User.password_hash`
-- Verified with `pwd_context.verify(plain, hash)`
+- Verified via `pwd_context.verify(plain, hash)`
 
-### Rate limiting
+### Rate limit
 
 - **100 requests / 60 seconds** per IP (SQLite-backed)
 - Applied via `RateLimitMiddleware` in `main.py`
-- Disabled when the `TESTING=true` environment variable is set
+- Disabled when `TESTING=true` environment variable is set
 
 ---
 
 ## API endpoints
 
-### Router registry (`app/main.py`)
+### Router registration (`app/main.py`)
 
 | Router | Prefix | Tags | Description |
 |--------|--------|------|-------------|
@@ -253,12 +216,22 @@ POST /api/users/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Location relations |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Shortfilm locations |
 | `form_definitions` | `/api` | forms | Form builder |
+| `federation` | `/api/federation` | federation | manifest, directory, nodes, reports, webfinger |
+| `jury_votes` | `/api` | jury-votes | Jury voting (phase 5) |
+| `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, settings |
+| `badges` | `/api` | badges | Badges, assignments, eligibility |
+| `posts` | `/api` | posts | Social posts, replies, moderation |
+| `payments` | `/api` | payments | Checkout, confirm, refund, webhook |
+| `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Festival rulebooks |
+| `user_blocks` | `/api` | user-blocks | User blocking |
+| `moderation_reports` | `/api` | moderation-reports | Moderation reports |
+| `node_policies` | `/api` | node-policies | Federation node policies |
 
-Total: 33 routers
+Total: 38 routers with `APIRouter` (40 router files, 2 helpers without router).
 
 ### Pagination and filtering
 
-Standard query params on list endpoints:
+Standard query parameters on list endpoints:
 
 ```
 GET /api/festivals/?page=1&size=20&search=cannes&is_active=true
@@ -280,7 +253,7 @@ Response envelope:
 
 ## Realtime chat
 
-### WebSocket backend (`app/chat_backend/`)
+### Backend WebSocket (`app/chat_backend/`)
 
 | Component | Description |
 |-----------|-------------|
@@ -290,8 +263,8 @@ Response envelope:
 
 ### Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
+| Method | Route | Description |
+|--------|-------|-------------|
 | `GET` | `/api/chat/ws` | WebSocket connection (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Send message (REST fallback) |
 | `GET` | `/api/chat/messages` | Paginated history |
@@ -319,7 +292,7 @@ class MessageType(str, Enum):
 
 ---
 
-## File upload
+## File uploads
 
 ### Avatar upload
 
@@ -331,13 +304,13 @@ Authorization: Bearer <token>
 file: <image/*>
 ```
 
-- Saved in `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
+- Saved to `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Served statically at `/uploads/avatars/...`
-- Max size: 10 MB (enforced by `RequestSizeLimitMiddleware`)
+- Max size: 10 MB (applied by `RequestSizeLimitMiddleware`)
 
 ---
 
-## Administration endpoints
+## Admin endpoints
 
 Requires `role=admin` (checked in `admin_service.py`):
 
@@ -345,7 +318,8 @@ Requires `role=admin` (checked in `admin_service.py`):
 |----------|-------------|
 | `GET /api/admin/stats` | Platform statistics |
 | `GET /api/admin/tables` | Row counts per table |
-| `GET /api/admin/audit-log` | Audit trail (`action`, `actor_user_id` filters) |
+| `GET /api/admin/audit-log` | Audit trail (filters `action`, `actor_user_id`) |
+| `POST /api/admin/reset` | `drop_all + create_all` (non-prod only) |
 
 ---
 
@@ -367,7 +341,7 @@ python -m pytest tests/test_festivals.py -v
 **Test configuration** (`pyproject.toml` / `pytest.ini`):
 
 ```ini
-[pytest]
+[tool.pytest.ini_options]
 asyncio_mode = auto
 testpaths = tests
 python_files = test_*.py
@@ -379,11 +353,9 @@ python_functions = test_*
 - `client` — `AsyncClient` (httpx) against the test app
 - `auth_headers` — pre-authenticated headers
 
-**Note**: There is a duplicate `conftest.py` in `tests/services/` — they should be unified.
-
 ---
 
-## Lint and format
+## Lint and formatting
 
 ```bash
 # Check
@@ -422,7 +394,7 @@ cd frontend
 flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=http://localhost:8000/api
 ```
 
-### Docker development
+### Development with Docker
 
 ```bash
 # From project root
@@ -432,8 +404,8 @@ docker compose --profile db up  # + MariaDB:3306
 
 ### Initial database load
 
-There is no seed script: in development the app creates the initial admin (`admin` /
-`setup`, change the password on sign-in) and tables via `create_all`. In production
+No seed script: in development the app creates the initial admin (`admin` /
+`setup`, change the password on first login) and tables via `create_all`. In production
 data arrives via the API and the schema only via Alembic.
 
 ### Common commands
@@ -462,10 +434,10 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 backend/
 ├── app/
-│   ├── models/              # 34 SQLAlchemy models
-│   ├── schemas/             # 33 Pydantic schemas
-│   ├── services/            # 36 business logic services
-│   ├── routers/             # 36 API routers (33 con APIRouter)
+│   ├── models/              # 40 SQLAlchemy models (+ base.py)
+│   ├── schemas/             # 37 Pydantic schemas
+│   ├── services/            # 43 business logic services
+│   ├── routers/             # 40 API routers (38 con APIRouter)
 │   ├── chat_backend/        # WebSocket chat implementation
 │   ├── auth.py              # JWT + session auth
 │   ├── config.py            # Pydantic Settings
@@ -474,9 +446,9 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate limiter
 │   ├── enums.py             # Shared enums
 │   └── scripts/             # Seed/migration scripts
-├── alembic/                 # Migrations (27 versions)
+├── alembic/                 # Migrations (36 versions)
 ├── tools/                   # Export/import scripts
-├── tests/                   # pytest tests (45 files)
+├── tests/                   # pytest tests (47 files, 1439 test functions)
 ├── uploads/                 # Static file uploads
 ├── .env.example             # Config template
 ├── requirements.txt         # Production deps
@@ -501,14 +473,14 @@ docker compose --profile prod up -d
 Services:
 - `backend-prod` — FastAPI (Uvicorn workers) on :8000
 - `frontend-prod` — Nginx + Flutter web on :80
-- `db` — MariaDB 11 (healthcheck)
+- `db` — MariaDB 11 (health check)
 
 Available profiles:
-- `dev` (default): backend and frontend development servers
+- `dev` (default): backend and frontend dev servers
 - `db`: adds the MariaDB container
 - `prod`: production stack with nginx
 
-### Environment variables (Production)
+### Production environment variables
 
 ```env
 DATABASE_URL=mariadb+pymysql://user:pass@db:3306/clakettes_db
@@ -533,14 +505,14 @@ curl http://localhost:8000/health
 - [ ] Enable HTTPS (reverse proxy: nginx/Traefik)
 - [ ] Configure allowed hosts in `TrustedHostMiddleware`
 - [ ] Rotate JWT keys periodically
-- [ ] Watch rate limiter logs
-- [ ] Review the admin user password after first sign-in
+- [ ] Monitor rate limiter logs
+- [ ] Review admin user password after first login
 
 ---
 
 ## Extending the API
 
-### Adding a new resource
+### Add a new resource
 
 1. **Model** — `app/models/new_resource.py` (inherits `BaseModel`)
 2. **Schema** — `app/schemas/new_resource.py` (Pydantic)
@@ -549,7 +521,7 @@ curl http://localhost:8000/health
 5. **Migration** — `alembic revision --autogenerate -m "add new_resource"`
 6. **Tests** — `tests/test_new_resource.py`
 
-### Adding a custom endpoint to an existing router
+### Add a custom endpoint to an existing router
 
 ```python
 # In router file

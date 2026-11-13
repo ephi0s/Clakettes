@@ -11,7 +11,7 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 
 - **Quiero usar la app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Administro un despliegue** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md)
+- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
 - **IA / agente** → [ARQUITECTURA.md](ARQUITECTURA.md) y el documento de la tarea; los comandos y convenciones obligatorias están en [../AGENTS.md](../../AGENTS.md)
 
 ## Principios de la documentación
@@ -25,7 +25,7 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 
 | Documento | Qué cubre | Audiencia |
 |---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Utilidad real por rol y flujos (festival, inscripción, comités, premios, chat/E2EE) | usuario, admin, IA |
+| [FUNCIONAL.md](FUNCIONAL.md) | Utilidad real por rol y flujos (festival, inscripción, comités, premios, chat/E2EE, votación jurado) | usuario, admin, IA |
 | [USO.md](USO.md) | Arranque, variables, migración SQLite↔MariaDB, backups, roles y operación | usuario, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, cuenta inicial, rotación de secretos, límites, troubleshooting | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfiles Docker, puertos, volúmenes, Nginx, health, CI (GitHub + GitLab) | admin, dev |
@@ -38,6 +38,9 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 | [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev, IA |
 | [BACKEND.md](BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fase 4) | dev, IA |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entidades mínimas federadas) | dev, IA |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, rotación de certificados | dev, IA |
 
 ## Ruta recomendada por perfil
 
@@ -61,6 +64,7 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 3. [DESARROLLO.md](DESARROLLO.md)
 4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
+6. [BACKEND.md](BACKEND.md)
 
 ## Convenciones para mantener la documentación
 
@@ -68,6 +72,7 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 - Si cambias un flujo de arranque, sincroniza [README.md](../../README.md), [USO.md](USO.md) y [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Si cambias una API pública, actualiza [API.md](API.md) y, si procede, [DESARROLLO.md](DESARROLLO.md).
 - Si cambias el esquema o la persistencia, revisa [DATABASE.md](DATABASE.md) y las migraciones.
+- Siempre que edites un documento en `docs/es/`, replica el cambio a las 8 hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## FAQ rápida
 

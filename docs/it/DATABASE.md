@@ -1,87 +1,71 @@
-# Documentazione della base di dati
+# Documentazione del database
 
 [ES](../es/DATABASE.md) · [EN](../en/DATABASE.md) · [FR](../fr/DATABASE.md) · [DE](../de/DATABASE.md) · [IT](DATABASE.md) · [CA](../ca/DATABASE.md) · [EU](../eu/DATABASE.md) · [GL](../gl/DATABASE.md) · [OC](../oc/DATABASE.md)
 
-## Descrizione generale
+## Panoramica
 
-Clakettes usa una configurazione con due basi di dati:
-- **Sviluppo**: SQLite (`clakettes.db`) — di default, senza configurazione
-- **Produzione**: MariaDB — si configura tramite `DATABASE_URL` in `backend/.env`
+Clakettes utilizza una configurazione a doppio database:
+- **Sviluppo**: SQLite (`clakettes.db`) — default, nessuna configurazione richiesta
+- **Produzione**: MariaDB — configurato tramite `DATABASE_URL` in `backend/.env`
 
-Ci sono strumenti di migrazione disponibili per sincronizzare tra ambienti:
-- `python export_sqlite_to_mariadb.py` — Da sviluppo a produzione
-- `python import_mariadb_to_sqlite.py` — Da produzione a sviluppo
+Sono disponibili strumenti di migrazione per sincronizzare tra ambienti:
+- `python export_sqlite_to_mariadb.py` — Sviluppo → Produzione
+- `python import_mariadb_to_sqlite.py` — Produzione → Sviluppo
 
-## Riepilogo dei modelli (62 costrutti: 60 entità + 2 tabelle di associazione)
+## Riepilogo modelli
 
-| # | Modelo | Tabla | Tipo |
-|---|-------|-------|------|
-| 1 | Festival | festivals | Entidad |
-| 2 | User | users | Entidad |
-| 3 | ShortFilm | shortfilms | Entidad |
-| 4 | Message | messages | Entidad |
-| 5 | UserFestival | user_festival | Asociación (Tabla) |
-| 6 | Award | awards | Entidad |
-| 7 | Channel | channels | Entidad |
-| 8 | ChannelMember | channel_members | Entidad |
-| 9 | Committee | committees | Entidad |
-| 10 | CommitteeMember | committee_members | Entidad |
-| 11 | Event | events | Entidad |
-| 12 | EventTicketType | event_ticket_types | Entidad |
-| 13 | EventSeat | event_seats | Entidad |
-| 14 | EventReservation | event_reservations | Entidad |
-| 15 | EventAttendee | event_attendees | Entidad |
-| 16 | Notification | notifications | Entidad |
-| 17 | ParticipantTag | participant_tags | Entidad |
-| 18 | FestivalParticipantTag | festival_participant_tags | Entidad |
-| 19 | RegistrationForm | registration_forms | Entidad |
-| 20 | RegistrationFormSection | registration_form_sections | Entidad |
-| 21 | RegistrationFormSectionRole | registration_form_section_roles | Entidad |
-| 22 | RegistrationFormSectionTag | registration_form_section_tags | Entidad |
-| 23 | RegistrationFormLink | registration_form_links | Entidad |
-| 24 | FestivalRegistration | festival_registrations | Entidad |
-| 25 | RegistrationSectionSelection | registration_section_selections | Entidad |
-| 26 | Role | roles | Entidad |
-| 27 | FestivalRole | festival_roles | Entidad |
-| 28 | RoleDependency | role_dependencies | Entidad |
-| 29 | RoleConflict | role_conflicts | Entidad |
-| 30 | RoleGroup | role_groups | Entidad |
-| 31 | RoleGroupMembership | role_group_memberships | Entidad |
-| 32 | RoleDelegation | role_delegations | Entidad |
-| 33 | RoleTransition | role_transitions | Entidad |
-| 34 | UserAlias | user_aliases | Entidad |
-| 35 | UserKey | user_keys | Entidad |
-| 36 | UserRole | user_roles | Entidad |
-| 37 | UserParticipantTag | user_participant_tags | Entidad |
-| 38 | UserSession | user_sessions | Entidad |
-| 39 | ValidationRule | validation_rules | Entidad |
-| 40 | ValidationRuleGroup | validation_rule_groups | Entidad |
-| 41 | ValidationRuleGroupRules | validation_rule_group_rules | Asociación (Tabla) |
-| 42 | Group | groups | Entidad |
-| 42 | GroupMember | group_members | Entidad |
-| 43 | Location | locations | Entidad |
-| 44 | LocationTag | location_tags | Entidad |
-| 45 | ShortFilmLocation | shortfilm_locations | Entidad |
-| 46 | LocationImage | location_images | Entidad |
-| 47 | LocationRelation | location_relations | Entidad |
-| 48 | FestivalLocation | festival_locations | Entidad |
-| 49 | FormDefinition | form_definitions | Entidad |
-| 50 | FormPage | form_pages | Entidad |
-| 51 | FormField | form_fields | Entidad |
-| 52 | FormFieldOption | form_field_options | Entidad |
-| 53 | FormResponse | form_responses | Entidad |
-| 54 | FormFieldResponse | form_field_responses | Entidad |
-| 55 | FormAccessRule | form_access_rules | Entidad |
-| 56 | FormLink | form_links | Entidad |
-| 57 | Payment | payments | Entidad |
-| 58 | EventScreening | event_screenings | Entidad |
-| 59 | FestivalRulebook | festival_rulebooks | Entidad |
-| 60 | AppSetting | app_settings | Entidad |
-| 61 | AuditLog | audit_logs | Entidad |
+| Modello | Tabella | Tipo |
+|---------|---------|------|
+| `AppSetting` | `app_settings` | Entità |
+| `AuditLog` | `audit_logs` | Entità |
+| `Award` | `awards` | Entità |
+| `Badge` | `badges` | Entità |
+| `Calendar` | `calendars` | Entità |
+| `Channel` | `channels` | Entità |
+| `Committee` | `committees` | Entità |
+| `Event` | `events` | Entità |
+| `EventScreening` | `event_screenings` | Entità |
+| `Festival` | `festivals` | Entità |
+| `FestivalLocation` | `festival_locations` | Entità |
+| `FestivalRulebook` | `festival_rulebooks` | Entità |
+| `FormDefinition` | `form_definitions` | Entità |
+| `Group` | `groups` | Entità |
+| `JuryVote` | `jury_votes` | Entità |
+| `Location` | `locations` | Entità |
+| `LocationImage` | `location_images` | Entità |
+| `LocationRelation` | `location_relations` | Entità |
+| `LocationTag` | `location_tags` | Entità |
+| `Message` | `messages` | Entità |
+| `ModerationReport` | `moderation_reports` | Entità |
+| `NodePolicy` | `node_policies` | Entità |
+| `Notification` | `notifications` | Entità |
+| `ParticipantTag` | `participant_tags` | Entità |
+| `Payment` | `payments` | Entità |
+| `Post` | `posts` | Entità |
+| `Registration` | `registration_forms` | Entità |
+| `Role` | `roles` | Entità |
+| `RoleDelegation` | `role_delegations` | Entità |
+| `RoleGroup` | `role_groups` | Entità |
+| `RoleTransition` | `role_transitions` | Entità |
+| `ShortFilm` | `shortfilms` | Entità |
+| `ShortFilmLocation` | `shortfilm_locations` | Entità |
+| `User` | `users` | Entità |
+| `UserAlias` | `user_aliases` | Entità |
+| `UserBlock` | `user_blocks` | Entità |
+| `UserFestival` | `user_festival` | Associazione (Tabella) |
+| `UserKey` | `user_keys` | Entità |
+| `UserRole` | `user_roles` | Entità |
+| `UserSession` | `user_sessions` | Entità |
+| `ValidationRule` | `validation_rules` | Entità |
+| `ValidationRuleGroup` | `validation_rule_groups` | Entità |
 
-Totale: 60 modelli di entità + 2 tabelle di associazione = 62 costrutti di SQLAlchemy
+Tabelle di associazione:
+- `user_festival` — M2M tra `User` e `Festival`
+- `validation_rule_group_rules` — M2M tra `ValidationRuleGroup` e `ValidationRule`
 
-## Modello di base
+Totale: 40 modelli di entità + 2 tabelle di associazione = 42 costruiti SQLAlchemy.
+
+## Modello base
 
 Tutti i modelli ereditano da `BaseModel` definito in `app/models/base.py`:
 
@@ -94,481 +78,241 @@ class BaseModel(Base):
 ```
 
 Campi:
-- `id`: Chiave primaria, intero autoincrementale
+- `id`: Chiave primaria, intero auto-incrementale
 - `created_at`: Marca temporale assegnata alla creazione
 - `updated_at`: Marca temporale aggiornata a ogni modifica
 
-## Modelli
+## Modelli principali
 
 ### Festival
-- **Tabella:** `festivals`
-- **Classe:** `Festival`
-- **Campi chiave:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
-- **Relazioni:** Ha molti ShortFilms, ha molti Users (M2M tramite `user_festival`), ha molti FestivalRoles, ha molti FestivalParticipantTags, ha molti UserRoles, ha molti UserParticipantTags, ha molti RegistrationForms, ha molti FestivalRegistrations, ha molti Events, ha molti Awards
+- **Tabella**: `festivals`
+- **Classe**: `Festival`
+- **Campi chiave**: name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
+- **Relazioni**: Ha molti ShortFilms, Utenti (M2M tramite `user_festival`), FestivalRoles, FestivalParticipantTags, UserRoles, UserParticipantTags, RegistrationForms, FestivalRegistrations, Events, Awards
 
----
+### Utente
+- **Tabella**: `users`
+- **Classe**: `User`
+- **Campi chiave**: username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active, is_public, is_public_email, is_public_bio, is_public_location, latitude, longitude, dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
+- **Relazioni**: Ha molti ShortFilms, Festivals (M2M), UserRoles, UserParticipantTags, UserAliases, FestivalRegistrations, Sessions, Awards, Events (creati), EventAttendees, EventReservations
 
-### User
-- **Tabella:** `users`
-- **Classe:** `User`
-- **Campi chiave:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active,
-  is_public, is_public_email, is_public_bio, is_public_location (`False` di default), latitude, longitude,
-  dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
-- **Relazioni:** Ha molti ShortFilms, ha molti Festivals (M2M tramite `user_festival`), ha molti UserRoles, ha molti UserParticipantTags, ha molti UserAliases, ha molti FestivalRegistrations, ha molti Sessions, ha molti Awards, ha molti Events (creati), ha molti EventAttendees, ha molti EventReservations
+### Cortometraggio
+- **Tabella**: `shortfilms`
+- **Classe**: `ShortFilm`
+- **Campi chiave**: title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
+- **Relazioni**: Appartiene a Festival, appartiene a Utente, ha molti Awards, ha molti ShortFilmLocations
 
----
+### Messaggio
+- **Tabella**: `messages`
+- **Classe**: `Message`
+- **Campi chiave**: content, sender_id (FK), receiver_id (FK), group_id, channel_id (FK), is_read, message_type, media_url, latitude, longitude, vcard_data, ical_data
+- **Relazioni**: Appartiene a Utente (mittente), appartiene a Utente (destinatario), appartiene a Channel
 
-### ShortFilm
-- **Tabella:** `shortfilms`
-- **Classe:** `ShortFilm`
-- **Campi chiave:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Relazioni:** Appartiene a Festival, appartiene a User, ha molti Awards
+### Associazione Utente-Festival
+- **Tabella**: `user_festival`
+- **Classe**: None (Tabella SQLAlchemy)
+- **Campi chiave**: user_id (FK, PK), festival_id (FK, PK), role, joined_at
+- **Relazioni**: Ponte M2M tra Utente e Festival; PK composita su (user_id, festival_id)
 
----
-
-### Message
-- **Tabella:** `messages`
-- **Classe:** `Message`
-- **Campi chiave:** content, sender_id (FK), receiver_id (FK), group_id, channel_id (FK), is_read, message_type, media_url, latitude, longitude, vcard_data, ical_data
-- **Relazioni:** Appartiene a User (mittente), appartiene a User (destinatario), appartiene a Channel
-
----
-
-### User-Festival Association
-- **Tabella:** `user_festival`
-- **Classe:** None (SQLAlchemy Table)
-- **Campi chiave:** user_id (FK, PK), festival_id (FK, PK), role, joined_at
-- **Relazioni:** Ponte M2M tra User e Festival; PK composta in (user_id, festival_id)
-
----
-
-### Award
-- **Tabella:** `awards`
-- **Classe:** `Award`
-- **Campi chiave:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
-- **Relazioni:** Appartiene a Festival, appartiene a Event, appartiene a ShortFilm, appartiene a User (destinatario), appartiene a User (verificatore), appartiene a User (creatore)
-
----
+### Premio
+- **Tabella**: `awards`
+- **Classe**: `Award`
+- **Campi chiave**: festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
+- **Relazioni**: Appartiene a Festival, appartiene a Event, appartiene a ShortFilm, appartiene a Utente (destinatario), appartiene a Utente (verificatore), appartiene a Utente (creatore)
 
 ### Badge
-- **Tabella:** `badges`
-- **Classe:** `Badge`
-- **Campi chiave:** name, description, image_url (SVG preferito), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
-- **Relazioni:** Appartiene a Festival, ha molti BadgeAssignments
-- **Note:** Funzione in sviluppo attivo e disabilitata per impostazione predefinita (`badges.enabled`); solo il team admin la attiva. I badge del festival sono assegnati dalla gestione del festival o dagli admin.
+- **Tabella**: `badges`
+- **Classe**: `Badge`
+- **Campi chiave**: name, description, image_url (SVG preferito), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Relazioni**: Appartiene a Festival, ha molti BadgeAssignments
+- **Note**: Funzione in sviluppo attivo e disattivata per default (`badges.enabled`); solo il team amministrativo la attiva.
 
-#### BadgeAssignment
-- **Tabella:** `badge_assignments`
-- **Classe:** `BadgeAssignment`
-- **Campi chiave:** badge_id (FK), target_user_id (FK), target_festival_id (FK), granted_by (FK), grant_festival_id, reason
-- **Relazioni:** Appartiene a Badge, appartiene a User (destinatario), appartiene a Festival (destinatario)
+### Canale
+- **Tabella**: `channels`
+- **Classe**: `Channel`
+- **Campi chiave**: name, description, channel_type, max_members, created_by (FK), is_active
+- **Relazioni**: Appartiene a Utente (creatore), ha molti ChannelMembers, ha molti Messages
 
----
+### Comitato
+- **Tabella**: `committees`
+- **Classe**: `Committee`
+- **Campi chiave**: festival_id (FK), name, description, role_id (FK), is_active, max_members, external_visible
+- **Relazioni**: Appartiene a Festival, appartiene a Role, ha molti CommitteeMembers
 
-### Channel
-- **Tabella:** `channels`
-- **Classe:** `Channel`
-- **Campi chiave:** name, description, channel_type, max_members, created_by (FK), is_active
-- **Relazioni:** Appartiene a User (creatore), ha molti ChannelMembers, ha molti Messages
+### Evento
+- **Tabella**: `events`
+- **Classe**: `Event`
+- **Campi chiave**: festival_id (FK), title, description, short_description, event_type, start_date, end_date, location, venue, venue_latitude, venue_longitude, has_external_page, external_url, internal_page_enabled, capacity, show_seat_map, is_public, is_active, image_url, color, created_by (FK), sort_order
+- **Relazioni**: Appartiene a Festival, appartiene a Utente (creatore), ha molti EventTicketTypes, EventSeats, EventReservations, EventAttendees, Awards, EventScreenings
 
-#### ChannelMember
-- **Tabella:** `channel_members`
-- **Classe:** `ChannelMember`
-- **Campi chiave:** channel_id (FK), user_id (FK), role, joined_at, is_active
-- **Relazioni:** Appartiene a Channel, appartiene a User
-- **Note:** Role limitato a admin, moderator, member
+### Notifica
+- **Tabella**: `notifications`
+- **Classe**: `Notification`
+- **Campi chiave**: user_id (FK), title, message, notification_type, is_read, related_user_id (FK)
+- **Relazioni**: Appartiene a Utente (destinatario), appartiene a Utente (relazionato)
 
----
-
-### Committee
-- **Tabella:** `committees`
-- **Classe:** `Committee`
-- **Campi chiave:** festival_id (FK), name, description, role_id (FK), is_active, max_members, external_visible
-- **Relazioni:** Appartiene a Festival, appartiene a Role, ha molti CommitteeMembers
-
-#### CommitteeMember
-- **Tabella:** `committee_members`
-- **Classe:** `CommitteeMember`
-- **Campi chiave:** committee_id (FK), user_id (FK), role_in_committee, assigned_by (FK), is_active, joined_at, notes
-- **Relazioni:** Appartiene a Committee, appartiene a User, appartiene a User (assegnatore)
-
----
-
-### Event
-- **Tabella:** `events`
-- **Classe:** `Event`
-- **Campi chiave:** festival_id (FK), title, description, short_description, event_type, start_date, end_date, location, venue, venue_latitude, venue_longitude, has_external_page, external_url, internal_page_enabled, capacity, show_seat_map, is_public, is_active, image_url, color, created_by (FK), sort_order
-- **Relazioni:** Appartiene a Festival, appartiene a User (creatore), ha molti EventTicketTypes, ha molti EventSeats, ha molti EventReservations, ha molti EventAttendees, ha molti Awards
-
-#### EventTicketType
-- **Tabella:** `event_ticket_types`
-- **Classe:** `EventTicketType`
-- **Campi chiave:** event_id (FK), name, description, price, currency, capacity, sold_count, reserved_count, assigned_count, is_active, is_hidden, sort_order, color
-- **Relazioni:** Appartiene a Event, ha molti EventAttendees, ha molti EventSeats
-
-#### EventSeat
-- **Tabella:** `event_seats`
-- **Classe:** `EventSeat`
-- **Campi chiave:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
-- **Relazioni:** Appartiene a Event, appartiene a EventTicketType, ha un EventAttendee
-
-#### EventReservation
-- **Tabella:** `event_reservations`
-- **Classe:** `EventReservation`
-- **Campi chiave:** event_id (FK), user_id (FK), status, total_quantity, notes, created_by (FK), is_hidden, confirmed_at, cancelled_at
-- **Relazioni:** Appartiene a Event, appartiene a User (prenotante), appartiene a User (creatore), ha molti EventAttendees
-
-#### EventAttendee
-- **Tabella:** `event_attendees`
-- **Classe:** `EventAttendee`
-- **Campi chiave:** event_id (FK), reservation_id (FK), user_id (FK), seat_id (FK), ticket_type_id (FK), status, invited_by (FK), is_guest, is_hidden, guest_name, guest_email, guest_phone, checked_in_at, notes
-- **Relazioni:** Appartiene a Event, appartiene a EventReservation, appartiene a User, appartiene a EventSeat, appartiene a EventTicketType, appartiene a User (invitante)
-
----
-
-### Notification
-- **Tabella:** `notifications`
-- **Classe:** `Notification`
-- **Campi chiave:** user_id (FK), title, message, notification_type, is_read, related_user_id (FK)
-- **Relazioni:** Appartiene a User (destinatario), appartiene a User (correlato)
-
----
-
-### ParticipantTag
-- **Tabella:** `participant_tags`
-- **Classe:** `ParticipantTag`
-- **Campi chiave:** name, display_name, description, category, is_global, is_active, sort_order
-- **Relazioni:** Ha molti UserParticipantTags, ha molti FestivalParticipantTags
-
-#### FestivalParticipantTag
-- **Tabella:** `festival_participant_tags`
-- **Classe:** `FestivalParticipantTag`
-- **Campi chiave:** festival_id (FK), tag_id (FK), is_active, is_required, max_selections, can_submit_films, max_film_submissions, requires_approval, allowed_categories, is_exclusive
-- **Relazioni:** Appartiene a Festival, appartiene a ParticipantTag
-
----
+### Tag partecipante
+- **Tabella**: `participant_tags`
+- **Classe**: `ParticipantTag`
+- **Campi chiave**: name, display_name, description, category, is_global, is_active, sort_order
+- **Relazioni**: Ha molti UserParticipantTags, ha molti FestivalParticipantTags
 
 ### Post
-- **Tabella:** `posts`
-- **Classe:** `Post`
-- **Campi chiave:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type (youtube, vimeo, dailymotion, odysee, ivoox, podimo, generic), allow_replies, is_pinned, is_hidden
-- **Relazioni:** Appartiene a User (autore), appartiene a User (bacheca), appartiene a Festival (bacheca), ha molte risposte (Post), appartiene a Post (padre)
-- **Note:** Funzione in sviluppo attivo. I post di primo livello puntano a una bacheca utente o festival; le risposte ereditano l’ambito del padre e richiedono `allow_replies`. La moderazione (fissare, nascondere, bloccare le risposte) spetta agli admin centrali, alla gestione del festival e ai ruoli moderatori del festival.
+- **Tabella**: `posts`
+- **Classe**: `Post`
+- **Campi chiave**: author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type, allow_replies, is_pinned, is_hidden
+- **Relazioni**: Appartiene a Utente (autore), appartiene a Utente (bacheca), appartiene a Festival (bacheca), ha molte risposte (Post), appartiene a Post (genitore)
+- **Note**: Funzione in sviluppo attivo.
 
----
+### Registrazione
+- **Tabella**: `registration_forms`
+- **Classe**: `RegistrationForm`
+- **Campi chiave**: festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations, require_existing_account, allow_role_selection, allow_tag_selection, created_by (FK)
+- **Relazioni**: Appartiene a Festival, ha molti RegistrationFormSections, RegistrationFormLinks, FestivalRegistrations
 
-### Registration
-- **Tabella:** `registration_forms`
-- **Classe:** `RegistrationForm`
-- **Campi chiave:** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations, require_existing_account, allow_role_selection, allow_tag_selection, created_by (FK)
-- **Relazioni:** Appartiene a Festival, ha molti RegistrationFormSections, ha molti RegistrationFormLinks, ha molti FestivalRegistrations
+### Ruolo
+- **Tabella**: `roles`
+- **Classe**: `Role`
+- **Campi chiave**: name, display_name, description, scope, hierarchy_level, parent_role_id (FK), group_id (FK), is_assignable_by_admin, requires_approval, is_active, permissions
+- **Relazioni**: Appartiene a Role (genitore), appartiene a RoleGroup, ha molti UserRoles, FestivalRoles, RoleGroupMemberships, RoleDependencies, RoleConflicts
 
-#### RegistrationFormSection
-- **Tabella:** `registration_form_sections`
-- **Classe:** `RegistrationFormSection`
-- **Campi chiave:** form_id (FK), title, description, sort_order, allow_multiple_roles, max_selections, is_required
-- **Relazioni:** Appartiene a RegistrationForm, ha molti RegistrationFormSectionRoles, ha molti RegistrationFormSectionTags, ha molti RegistrationSectionSelections
+### Alias utente
+- **Tabella**: `user_aliases`
+- **Classe**: `UserAlias`
+- **Campi chiave**: user_id (FK), alias, context, context_id, is_primary, is_public, show_awards, profile_token, visibility_scope, notes
+- **Relazioni**: Appartiene a Utente
+- **Note**: Permette nomi visibili per contesto (global, festival, shortfilm, chat, public_profile, credits) con controllo di visibilità
 
-#### RegistrationFormSectionRole
-- **Tabella:** `registration_form_section_roles`
-- **Classe:** `RegistrationFormSectionRole`
-- **Campi chiave:** section_id (FK), role_id (FK), max_assignees, requires_approval, sort_order
-- **Relazioni:** Appartiene a RegistrationFormSection, appartiene a Role
+### Chiave utente
+- **Tabella**: `user_keys`
+- **Classe**: `UserKey`
+- **Campi chiave**: user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
+- **Relazioni**: Appartiene a Utente
+- **Note**: Memorizza la chiave pubblica X25519 per E2EE; una chiave attiva per utente
 
-#### RegistrationFormSectionTag
-- **Tabella:** `registration_form_section_tags`
-- **Classe:** `RegistrationFormSectionTag`
-- **Campi chiave:** section_id (FK), tag_id (FK), is_required, max_selections, sort_order
-- **Relazioni:** Appartiene a RegistrationFormSection, appartiene a ParticipantTag
+### Sessione utente
+- **Tabella**: `user_sessions`
+- **Classe**: `UserSession`
+- **Campi chiave**: user_id (FK), token_hash, refresh_token_hash, device_name, ip_address, user_agent, last_used_at, expires_at, revoked_at, is_active
+- **Relazioni**: Appartiene a Utente
 
-#### RegistrationFormLink
-- **Tabella:** `registration_form_links`
-- **Classe:** `RegistrationFormLink`
-- **Campi chiave:** form_id (FK), token, is_unique, is_public, is_active, expires_at, max_uses, use_count, assigned_user_id (FK), notes
-- **Relazioni:** Appartiene a RegistrationForm, appartiene a User (assegnato), ha molti FestivalRegistrations
+### Regola di validazione
+- **Tabella**: `validation_rules`
+- **Classe**: `ValidationRule`
+- **Campi chiave**: name, description, scope, scope_id, field_name, field_label, field_type, is_required, is_visible, is_editable_by_user, min_length, max_length, regex_pattern, allowed_values (JSON), default_value, help_text, display_order, depends_on_field, depends_on_value, error_message
+- **Relazioni**: M2M con ValidationRuleGroup tramite `validation_rule_group_rules`
 
-#### FestivalRegistration
-- **Tabella:** `festival_registrations`
-- **Classe:** `FestivalRegistration`
-- **Campi chiave:** user_id (FK), festival_id (FK), form_id (FK), link_id (FK), status, assigned_by (FK), approved_by (FK), approved_at, notes, is_hidden
-- **Relazioni:** Appartiene a User, appartiene a Festival, appartiene a RegistrationForm, appartiene a RegistrationFormLink, appartiene a User (assegnatore), appartiene a User (approvatore), ha molti RegistrationSectionSelections
+### Pagamento
+- **Tabella**: `payments`
+- **Classe**: `Payment`
+- **Campi chiave**: amount, currency, provider_ref, status, provider, registration_id (FK)
+- **Relazioni**: Appartiene a Registration
 
-#### RegistrationSectionSelection
-- **Tabella:** `registration_section_selections`
-- **Classe:** `RegistrationSectionSelection`
-- **Campi chiave:** registration_id (FK), section_id (FK), role_id (FK), additional_tags (JSON), notes
-- **Relazioni:** Appartiene a FestivalRegistration, appartiene a RegistrationFormSection, appartiene a Role
+### Voto giuria
+- **Tabella**: `jury_votes`
+- **Classe**: `JuryVote`
+- **Campi chiave**: festival_id (FK), shortfilm_id (FK), user_id (FK), score, is_anonymous, comment
+- **Relazioni**: Appartiene a Festival, appartiene a ShortFilm, appartiene a Utente (giurato)
 
----
+### Politica nodo
+- **Tabella**: `node_policies`
+- **Classe**: `NodePolicy`
+- **Campi chiave**: node_id, allowlist, blocklist, rate_limit, minimize_data, consent_required, import_only
+- **Relazioni**: Entità federazione
 
-### Role
-- **Tabella:** `roles`
-- **Classe:** `Role`
-- **Campi chiave:** name, display_name, description, scope, hierarchy_level, parent_role_id (FK), group_id (FK), is_assignable_by_admin, requires_approval, is_active, permissions
-- **Relazioni:** Appartiene a Role (padre), appartiene a RoleGroup, ha molti UserRoles, ha molti FestivalRoles, ha molti RoleGroupMemberships, ha molti RoleDependencies, ha molti RoleConflicts
+### Rapporto moderazione
+- **Tabella**: `moderation_reports`
+- **Classe**: `ModerationReport`
+- **Campi chiave**: reporter_node, target_node, target_user_ref, reason, status
+- **Relazioni**: Entità federazione
 
-#### FestivalRole
-- **Tabella:** `festival_roles`
-- **Classe:** `FestivalRole`
-- **Campi chiave:** festival_id (FK), role_id (FK), is_active, custom_permissions, max_assignees
-- **Relazioni:** Appartiene a Festival, appartiene a Role
+### Località
+- **Tabella**: `locations`
+- **Classe**: `Location`
+- **Campi chiave**: name, description, latitude, longitude, address, is_active
+- **Relazioni**: Appartiene a Festival (M2M), ha molti LocationImages, LocationTags, LocationRelations
 
-#### RoleDependency
-- **Tabella:** `role_dependencies`
-- **Classe:** `RoleDependency`
-- **Campi chiave:** role_id (FK), depends_on_role_id (FK), dependency_type, festival_id (FK), notes
-- **Relazioni:** Appartiene a Role (dipendente), appartiene a Role (requisito), appartiene a Festival
+### Proiezione evento
+- **Tabella**: `event_screenings`
+- **Classe**: `EventScreening`
+- **Campi chiave**: event_id (FK), shortfilm_id (FK), start_date, end_date, venue, notes, status
+- **Relazioni**: Appartiene a Event, appartiene a ShortFilm
 
-#### RoleConflict
-- **Tabella:** `role_conflicts`
-- **Classe:** `RoleConflict`
-- **Campi chiave:** role_id (FK), conflicts_with_role_id (FK), conflict_type, festival_id (FK), notes
-- **Relazioni:** Appartiene a Role, appartiene a Role (in conflitto), appartiene a Festival
+### Regolamento festival
+- **Tabella**: `festival_rulebooks`
+- **Classe**: `FestivalRulebook`
+- **Campi chiave**: festival_id (FK), title, content, file_url, is_active
+- **Relazioni**: Appartiene a Festival
 
----
+### Definizione form
+- **Tabella**: `form_definitions`
+- **Classe**: `FormDefinition`
+- **Campi chiave**: festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations
+- **Relazioni**: Appartiene a Festival, ha molti FormPages, FormLinks, FormResponses
 
-### RoleDelegation
-- **Tabella:** `role_delegations`
-- **Classe:** `RoleDelegation`
-- **Campi chiave:** delegator_id (FK), delegate_id (FK), role_id (FK), festival_id (FK), status, starts_at, expires_at, reason, scope_limitations, revoked_by (FK), revoked_at, revoked_reason
-- **Relazioni:** Appartiene a User (delegante), appartiene a User (delegato), appartiene a Role, appartiene a Festival, appartiene a User (revocatore)
+### Gruppo
+- **Tabella**: `groups`
+- **Classe**: `Group`
+- **Campi chiave**: name, display_name, description, sort_order, is_active
+- **Relazioni**: Ha molti RoleGroupMemberships, Roles
 
----
+### Impostazione app
+- **Tabella**: `app_settings`
+- **Classe**: `AppSetting`
+- **Campi chiave**: key, value, description, is_public
+- **Relazioni**: Entità configurazione
 
-### RoleGroup
-- **Tabella:** `role_groups`
-- **Classe:** `RoleGroup`
-- **Campi chiave:** name, display_name, description, sort_order, is_active
-- **Relazioni:** Ha molti RoleGroupMemberships, ha molti Roles
+### Log audit
+- **Tabella**: `audit_logs`
+- **Classe**: `AuditLog`
+- **Campi chiave**: actor_id (FK), action, target, ip, created_at
+- **Relazioni**: Appartiene a Utente (attore), append-only
 
-#### RoleGroupMembership
-- **Tabella:** `role_group_memberships`
-- **Classe:** `RoleGroupMembership`
-- **Campi chiave:** group_id (FK), role_id (FK), level, is_leader, is_active
-- **Relazioni:** Appartiene a RoleGroup, appartiene a Role
+### Blocco utente
+- **Tabella**: `user_blocks`
+- **Classe**: `UserBlock`
+- **Campi chiave**: blocker_id (FK), blocked_id (FK), reason, starts_at, expires_at
+- **Relazioni**: Appartiene a Utente (bloccante), appartiene a Utente (bloccato)
 
----
+### Delegazione ruolo
+- **Tabella**: `role_delegations`
+- **Classe**: `RoleDelegation`
+- **Campi chiave**: delegator_id (FK), delegate_id (FK), role_id (FK), festival_id (FK), status, starts_at, expires_at, reason, scope_limitations, revoked_by (FK), revoked_at, revoked_reason
+- **Relazioni**: Appartiene a Utente (delegante), appartiene a Utente (delegato), appartiene a Role, appartiene a Festival, appartiene a Utente (revocatore)
 
-### RoleTransition
-- **Tabella:** `role_transitions`
-- **Classe:** `RoleTransition`
-- **Campi chiave:** user_id (FK), from_role_id (FK), to_role_id (FK), from_festival_id (FK), to_festival_id (FK), transition_type, changed_by (FK), reason, transitioned_at
-- **Relazioni:** Appartiene a User, appartiene a Role (origine), appartiene a Role (destinazione), appartiene a Festival (origine), appartiene a Festival (destinazione), appartiene a User (responsabile della modifica)
+### Transizione ruolo
+- **Tabella**: `role_transitions`
+- **Classe**: `RoleTransition`
+- **Campi chiave**: user_id (FK), from_role_id (FK), to_role_id (FK), from_festival_id (FK), to_festival_id (FK), transition_type, changed_by (FK), reason, transitioned_at
+- **Relazioni**: Appartiene a Utente, appartiene a Role (origine), appartiene a Role (destinazione), appartiene a Festival (origine), appartiene a Festival (destinazione), appartiene a Utente (responsabile del cambiamento)
 
----
+### Tipo biglietto evento
+- **Tabella**: `event_ticket_types`
+- **Classe**: `EventTicketType`
+- **Campi chiave**: event_id (FK), name, description, price, currency, capacity, sold_count, reserved_count, assigned_count, is_active, is_hidden, sort_order, color
+- **Relazioni**: Appartiene a Event
 
-### UserAlias
-- **Tabella:** `user_aliases`
-- **Classe:** `UserAlias`
-- **Campi chiave:** user_id (FK), alias, context, context_id, is_primary, is_public, show_awards, profile_token, visibility_scope, notes
-- **Relazioni:** Appartiene a User
-- **Note:** Ammette nomi visibili per contesto (global, festival, shortfilm, chat, public_profile, credits) con controllo di visibilità
+### Posto evento
+- **Tabella**: `event_seats`
+- **Classe**: `EventSeat`
+- **Campi chiave**: event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
+- **Relazioni**: Appartiene a Event, appartiene a EventTicketType
 
----
+### Prenotazione evento
+- **Tabella**: `event_reservations`
+- **Classe**: `EventReservation`
+- **Campi chiave**: event_id (FK), user_id (FK), status, total_quantity, notes, created_by (FK), is_hidden, confirmed_at, cancelled_at
+- **Relazioni**: Appartiene a Event, appartiene a Utente (prenotatore), appartiene a Utente (creatore)
 
-### UserKey
-- **Tabella:** `user_keys`
-- **Classe:** `UserKey`
-- **Campi chiave:** user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
-- **Relazioni:** Appartiene a User
-- **Note:** Memorizza la chiave pubblica X25519 per E2EE; una chiave attiva per utente
+### Partecipante evento
+- **Tabella**: `event_attendees`
+- **Classe**: `EventAttendee`
+- **Campi chiave**: event_id (FK), reservation_id (FK), user_id (FK), seat_id (FK), ticket_type_id (FK), status, invited_by (FK), is_guest, is_hidden, guest_name, guest_email, guest_phone, checked_in_at, notes
+- **Relazioni**: Appartiene a Event, appartiene a EventReservation, appartiene a Utente, appartiene a EventSeat, appartiene a EventTicketType, appartiene a Utente (invitante)
 
----
+## Sessioni di database
 
-### UserRole
-- **Tabella:** `user_roles`
-- **Classe:** `UserRole`
-- **Campi chiave:** user_id (FK), role_id (FK), festival_id (FK), status, visibility, is_primary, is_hidden, assigned_by (FK), approved_by (FK), approved_at, start_date, expires_at, invitation_note, notes
-- **Relazioni:** Appartiene a User, appartiene a Role, appartiene a Festival, appartiene a User (assegnatore), appartiene a User (approvatore)
-
-#### UserParticipantTag
-- **Tabella:** `user_participant_tags`
-- **Classe:** `UserParticipantTag`
-- **Campi chiave:** user_id (FK), tag_id (FK), festival_id (FK), is_primary, is_hidden, assigned_by (FK), notes
-- **Relazioni:** Appartiene a User, appartiene a ParticipantTag, appartiene a Festival, appartiene a User (assegnatore)
-
----
-
-### UserSession
-- **Tabella:** `user_sessions`
-- **Classe:** `UserSession`
-- **Campi chiave:** user_id (FK), token_hash, refresh_token_hash, device_name, ip_address, user_agent, last_used_at, expires_at, revoked_at, is_active
-- **Relazioni:** Appartiene a User
-
----
-
-### ValidationRule
-- **Tabella:** `validation_rules`
-- **Classe:** `ValidationRule`
-- **Campi chiave:** name, description, scope, scope_id, field_name, field_label, field_type, is_required, is_visible, is_editable_by_user, min_length, max_length, regex_pattern, allowed_values (JSON), default_value, help_text, display_order, depends_on_field, depends_on_value, error_message
-- **Relazioni:** M2M con ValidationRuleGroup tramite `validation_rule_group_rules`
-
-#### ValidationRuleGroup
-- **Tabella:** `validation_rule_groups`
-- **Classe:** `ValidationRuleGroup`
-- **Campi chiave:** name, description, scope, scope_id, is_active
-- **Relazioni:** M2M con ValidationRule tramite `validation_rule_group_rules`
-
-#### ValidationRuleGroupRules (association)
-- **Tabella:** `validation_rule_group_rules`
-- **Classe:** None (SQLAlchemy Table)
-- **Campi chiave:** group_id (FK, PK), rule_id (FK, PK)
-- **Relazioni:** Ponte M2M tra ValidationRuleGroup e ValidationRule
-
----
-
-## Diagramma delle relazioni tra entità (semplificato)
-
-```
-+---------------------------+       +------------------+       +----------------------+
-|         Users            |       |  user_festival    |       |      Festivals       |
-+---------------------------+       +------------------+       +----------------------+
-| id (PK)                  |<----->| user_id (FK)      |<----->| id (PK)              |
-| username                 |       | festival_id (FK)  |       | name                 |
-| email                    |       | role              |       | location             |
-| password_hash            |       | joined_at         |       | latitude, longitude  |
-| full_name, bio           |       +------------------+       | is_active            |
-| avatar_url               |                                  | website, logo_url    |
-| role, is_active          |                                  | allow_alias_display  |
-| is_public* (4 flags)     |                                  +----------------------+
-| latitude, longitude      |                                        |    |    |
-+---------------------------+                                        |    |    |
-    |    |    |    |       |                                         |    |    |
-    |    |    |    |       |     +-----------------------+          |    |    |
-    |    |    |    |       |     |    UserRoles          |<---------+    |    |
-    |    |    |    |       +---->|    UserParticipantTags|               |    |
-    |    |    |    |             +-----------------------+               |    |
-    |    |    |    |                                                     |    |
-    |    |    |    +---------->+-----------------------+                 |    |
-    |    |    |                |    UserAliases        |                 |    |
-    |    |    |                +-----------------------+                 |    |
-    |    |    |                                                          |    |
-    |    |    +---------->+----------------------+     +-----------------+    |
-    |    |                |    UserSessions      |     |                      |
-    |    |                +----------------------+     v                      |
-    |    |                                          +----------------------+  |
-    |    +---------->+----------------------+       |      Events          |  |
-    |                 |   UserKeys (E2EE)   |       +----------------------+  |
-    |                 +----------------------+       | id (PK)              |  |
-    |                                                | festival_id (FK)    +--+
-    |    +---------->+----------------------+       | title, event_type   |
-    |    |           |   ShortFilms         |       | start_date, end_date|
-    |    |           +----------------------+       | location, venue     |
-    |    |           | id (PK)              |       | capacity, is_public |
-    v    v           | user_id (FK)         |       | image_url, color    |
-+-----------+       | festival_id (FK)     |       +----------------------+
-| Messages  |       | title, duration      |            |    |    |    |
-+-----------+       | video_url, thumbnail |            |    |    |    |
-| id (PK)   |       | is_public, tags      |            v    v    v    v
-| sender_id |       +----------------------+       +--+  +--+  +--+  +---+
-| receiver  |               |                      |E.TicketType|Seat|Resv|
-| group_id  |               v                      +--+  +--+  +--+  +---+
-| channel   |       +----------------------+       |   |  |   |  |
-| content   |       |      Awards          |       v   v  v   v  v
-| msg_type  |       +----------------------+    +----------------------+
-| media_url |       | festival_id (FK)     |    |   EventAttendees     |
-| vcard/ical|       | event_id (FK)        |    +----------------------+
-+-----------+       | shortfilm_id (FK)    |
-                    | user_id (FK)         |
-                    | award_name, category |
-                    | position, is_winner  |
-                    | prize_amount, year   |
-                    +----------------------+
-
-+----------------------+      +----------------------+
-|     Committees       |      |      Channels        |
-+----------------------+      +----------------------+
-| id (PK)              |      | id (PK)              |
-| festival_id (FK)     |      | name, description    |
-| name, description    |      | channel_type          |
-| role_id (FK)         |      | max_members           |
-| is_active            |      | created_by (FK)       |
-+----------------------+      +----------------------+
-         |                            |
-         v                            v
-+----------------------+      +----------------------+
-|  CommitteeMembers    |      |   ChannelMembers     |
-+----------------------+      +----------------------+
-
-+----------------------+      +----------------------+
-|  ParticipantTags     |      | FestivalParticipant  |
-+----------------------+      | Tags                 |
-| id (PK)              |      +----------------------+
-| name, display_name   |<-----| festival_id (FK)     |
-| category, is_global  |      | tag_id (FK)          |
-| sort_order           |      +----------------------+
-+----------------------+
-         |
-         v
-+----------------------+      +----------------------+
-|UserParticipantTags   |      |   Notifications      |
-+----------------------+      +----------------------+
-| user_id (FK)         |      | user_id (FK)         |
-| tag_id (FK)          |      | title, message       |
-| festival_id (FK)     |      | notification_type    |
-+----------------------+      | related_user_id (FK) |
-                               +----------------------+
-
-+------------------------------+     +------------------------------+
-|        Roles                 |     |     RoleGroups               |
-+------------------------------+     +------------------------------+
-| id (PK)                      |     | id (PK)                      |
-| name, display_name           |<----| group_id (FK)                |
-| scope (global|festival)      |     | name, display_name           |
-| hierarchy_level              |     +------------------------------+
-| parent_role_id (FK)          |              |
-| group_id (FK)                |              v
-| permissions                  |     +------------------------------+
-+------------------------------+     | RoleGroupMemberships         |
-    |         |         |            | group_id (FK)                |
-    |         |         |            | role_id (FK)                 |
-    v         v         v            | level, is_leader             |
-+----------+ +-------+ +----------+  +------------------------------+
-|Festival  | |Role   | |Role      |
-|Roles     | |Deps   | |Conflicts |
-+----------+ +-------+ +----------+
-
-+------------------------------+     +------------------------------+
-|     RegistrationForms        |     |    RoleDelegations           |
-+------------------------------+     +------------------------------+
-| id (PK)                      |     | delegator_id (FK)            |
-| festival_id (FK)             |     | delegate_id (FK)             |
-| title, is_active             |     | role_id (FK)                 |
-| starts_at, ends_at           |     | festival_id (FK)             |
-+------------------------------+     | status, reason               |
-    |         |         |            | scope_limitations            |
-    v         v         v            | expires_at                   |
-+----------+ +-------+ +----------+  +------------------------------+
-|Sections  | |Links  | |Registrat |
-+----------+ +-------+ |ions      |
-|id (PK)   | |token  | +----------+  +------------------------------+
-|form_id   | |unique | |user_id   |  |   RoleTransitions           |
-|title     | |public | |festival  |  +------------------------------+
-+----------+ |expires| |status    |  | user_id (FK)                 |
-    |        +-------+ |assigned  |  | from_role_id (FK)            |
-    v                  |approved  |  | to_role_id (FK)              |
-+----------+           +----------+  | transition_type              |
-|SecRoles  |                |        | changed_by (FK)              |
-|SecTags   |                v        +------------------------------+
-|Selections|        +---------------+
-+----------+        |SectionSelect  |
-                     +---------------+
-
-+------------------------------+
-|   ValidationRules            |
-+------------------------------+       +------------------------------+
-| id (PK)                      |       |   ValidationRuleGroups      |
-| name, scope, scope_id        |       +------------------------------+
-| field_name, field_label      |<----->| id (PK)                      |
-| field_type, is_required      |       | name, scope, scope_id        |
-| regex, allowed_values (JSON) |       | is_active                    |
-| min/max_length, depends_on   |       +------------------------------+
-+------------------------------+
-```
-
-## Sessioni di base di dati
-
-Le sessioni di base di dati si gestiscono tramite `get_db()` in `app/database.py`:
+Le sessioni di database sono gestite tramite `get_db()` in `app/database.py`:
 
 ```python
 def get_db():
@@ -579,15 +323,14 @@ def get_db():
         db.close()
 ```
 
-Questo si usa come dipendenza di FastAPI per l'accesso alla base di dati dagli endpoint.
+Questo è usato come dipendenza di FastAPI per l'accesso al database dagli endpoint.
 
 ## Note di migrazione da SQLite a MariaDB
 
-Le modifiche di schema si gestiscono con Alembic (`backend/alembic/versions/`, 27 versioni;
-`alembic upgrade head`). In produzione solo Alembic, mai `create_all`.
+Le modifiche allo schema sono gestite con Alembic (`backend/alembic/versions/`, 36 versioni; `alembic upgrade head`). In produzione solo Alembic, mai `create_all`.
 
-Migrando da SQLite a MariaDB:
+Durante la migrazione da SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corrisponde a MariaDB `INT AUTO_INCREMENT`
 - SQLite `TEXT` corrisponde a MariaDB `TEXT` o `VARCHAR`
-- SQLite `DATETIME` si memorizza come testo; MariaDB usa `DATETIME` nativo
+- SQLite `DATETIME` è memorizzato come testo; MariaDB usa `DATETIME` nativo
 - Gli script di migrazione in `export_sqlite_to_mariadb.py` e `import_mariadb_to_sqlite.py` gestiscono le conversioni di tipo automaticamente

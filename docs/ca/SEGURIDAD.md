@@ -1,66 +1,60 @@
-# Seguretat — model i checklist
+# Seguretat — model i llista de comprovacio
 
 [ES](../es/SEGURIDAD.md) · [EN](../en/SEGURIDAD.md) · [FR](../fr/SEGURIDAD.md) · [DE](../de/SEGURIDAD.md) · [IT](../it/SEGURIDAD.md) · [CA](SEGURIDAD.md) · [EU](../eu/SEGURIDAD.md) · [GL](../gl/SEGURIDAD.md) · [OC](../oc/SEGURIDAD.md)
 
 ## Tokens i sessions
 
-- Access JWT (HS256, 30 min, `type=access`, `jti` únic) + refresh opac (SHA-256 en BD,
-  30 d, rotació en utilitzar). Sessió (`UserSession`) amb IP, dispositiu,
-  expiració i revocació; `last_used_at` lazy cada 5 min.
-- Purga en arrencada: s'eliminen sessions revocades o caducades fa >30 d.
-- Tota validació passa per `validate_access_token` (firma + tipus + sessió
-  activa); el WS del xat també. Revocar sessió tanca el WS.
-- Passwords amb bcrypt; CalDAV utilitza bearer en URL (redactat en logs).
-  Els tokens DAV caduquen als 180 dies (`dav_token_expires_at`, regenerables).
+- Access JWT (HS256, 30 min, `type=access`, `jti` unic) + refresh opac (SHA-256 a la BD, 30 d, rotacio al usar). Sessio (`UserSession`) amb IP, dispositiu, expiracio i revocacio; `last_used_at` lazy cada 5 min.
+- Purgat a l'arrancada: s'eliminen sessions revocades o caducades fa >30 d.
+- Tota validacio passa per `validate_access_token` (signatura + tipus + sessio activa); el WS del xat també. Revocar una sessio tanca el WS.
+- Contrasenyes amb bcrypt; CalDAV utilitza bearer a l'URL (redactat als logs). Els tokens DAV caduquen als 180 dies (`dav_token_expires_at`, regenerables).
 
 ## RGPD
 
-- Privacitat per defecte: `is_public*` en `False` (perfil, email, bio, ubicació).
-- Consentiment: `privacy_policy_version` + `privacy_accepted_at` en crear compte.
-- Oblit: `DELETE /api/users/me` (i `DELETE /api/users/{id}` admin/organizer)
-  anonimitza el compte, esborra sessions/claus/àlies/notificacions/inscripcions
-  i desvincula referències; bloqueja esborrar l'últim admin actiu.
-- Portabilitat: `GET /api/users/me/export` (JSON amb perfil, rols, inscripcions,
-  missatges, sessions, etc.).
-- Auditoria (art. 5.2): `audit_logs` append-only amb actor, acció, objectiu i IP
-  en esborrats, exportacions, rols/tags i tokens DAV; lectura a
-  `GET /api/admin/audit-log` (només admin).
-- Pujades: tot fitxer passa per `_save_file` (tipus i màgia validats) i se li
-  eliminen metadades identificatives abans de desar: EXIF/XMP en imatges
-  (Pillow), tags en MP4/MOV (`ffmpeg -map_metadata -1`, mutagen si no hi ha
-  ffmpeg), `/Info` en PDF (pypdf). WebM sense ffmpeg es rebutja (422).
+- Privacitat per defecte: `is_public*` en `False` (perfil, correu, bio, ubicacio).
+- Consentiment: `privacy_policy_version` + `privacy_accepted_at` al crear el compte.
+- Oblit: `DELETE /api/users/me` (i `DELETE /api/users/{id}` admin/organizer) anonimatza el compte, esborra sessions/claus/alias/notificacions/inscripcions i desvincula referencies; bloqueja esborrar el darrer admin actiu.
+- Portabilitat: `GET /api/users/me/export` (JSON amb perfil, rols, inscripcions, missatges, sessions, etc.).
+- Auditoria (art. 5.2): `audit_logs` append-only amb actor, accio, objectiu i IP en esborrades, exportacions, rols/etiquetes i tokens DAV; lectura en `GET /api/admin/audit-log` (només admin).
+- Pujades: tot fitxer passa per `_save_file` (tipus i magia validats) i s'eliminen metadades identificatives abans de desar: EXIF/XMP a imatges (Pillow), etiquetes a MP4/MOV (`ffmpeg -map_metadata -1`, mutagen si no hi ha ffmpeg), `/Info` a PDF (pypdf). WebM sense ffmpeg es rebutja (422).
 
-## Autorització
+## Autoritzacio
 
-| Ámbito | Regla |
-|---|---|
+| Ambit | Regla |
+|-------|-------|
 | Festival | `require_festival_admin` (admin global u organizer del festival) |
-| Canal | `require_channel_admin` (creador/admin) para gestionar; `require_channel_member` para leer privados |
-| Grupo de chat | rol `admin` del grupo para borrar; miembro para leer |
-| Formulario | `require_form_admin` (creador/admin/organizer) |
-| Delegación | delegador o admin para editar/revocar |
-| Roles globales | `is_admin`; auto-join solo con rol `attendee` |
-| Roles de canal | `Literal[admin,moderator,member]` (422 fuera de lista) |
-| Pagos | dueño vía inscripción, admin de festival o global; webhook mock con `MOCK_WEBHOOK_SECRET` |
+| Canal | `require_channel_admin` (creador/admin) per gestionar; `require_channel_member` per llegir privats |
+| Grup de xat | rol `admin` del grup per esborrar; membre per llegir |
+| Formulari | `require_form_admin` (creador/admin/organizer) |
+| Delegacio | delegant o admin per editar/revocar |
+| Rols globals | `is_admin`; auto-join només amb rol `attendee` |
+| Rols de canal | `Literal[admin,moderator,member]` (422 fora de la llista) |
+| Pagaments | propietari via inscripcio, admin de festival o global; webhook mock amb `MOCK_WEBHOOK_SECRET` |
 
 ## Pagaments
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sense PAN/IBAN en BD: només import, moneda, `provider_ref` i estat.
-- Stripe: SDK peresós + verificació de firma (`STRIPE_WEBHOOK_SECRET`).
-- Redsys: firma HMAC_SHA256_V1 sense SDK; Bizum amb `pay_methods="z"` (alta prèvia al comerç). Validar contra el sandbox abans de prod.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sense PAN/IBAN a la BD: solament import, moneda, `provider_ref` i estat.
+- Stripe: SDK perezos + verificacio de signatura (`STRIPE_WEBHOOK_SECRET`).
+- Redsys: signatura HMAC_SHA256_V1 sense SDK; Bizum amb `pay_methods="z"` (alta prealable al comerç). Validar contra el sandbox abans de prod.
 
-## Perímetre
+## Perimetre
 
-- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` l'apaga.
-- Capçaleres: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`,
-  `Content-Security-Policy` estricta a l'API (relaxada només a `/docs`),
-  `HSTS` només en producció.
-- Cossos ≤10 MB (413). CORS amb credencials i orígens explícits.
-- MariaDB en producció exigeix TLS (`?ssl_ca=…` a `DATABASE_URL`).
+- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` el desactiva.
+- Capçaleres: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` estricta a l'API (relajada només a `/docs`), `HSTS` solament a produccio.
+- Cosos <=10 MB (413). CORS amb credencials i orígens explicitos.
+- MariaDB a produccio exigeix TLS (`?ssl_ca=…` a `DATABASE_URL`).
 
-## Checklist producció
+• Llista de comprovacio de producció
 
-1. `APP_ENV=production`, `SECRET_KEY` de 64 bytes per env (sense ella no arrenca).
-2. `CORS_ORIGINS` amb dominis explícits; `DATABASE_URL` MariaDB + `alembic upgrade head`.
-3. TLS amb proxy + `FORWARDED_ALLOW_IPS`; sense admin `setup` (només es crea fora de prod).
-4. Canviar `appUserModelId`/GUID de notificacions Windows si es reanomena l'app.
+1. `APP_ENV=production`, `SECRET_KEY` de 64 bytes per env (sense ella no arranca).
+2. `CORS_ORIGINS` amb dominis explicitos; `DATABASE_URL` MariaDB + `alembic upgrade head`.
+3. TLS amb proxy + `FORWARDED_ALLOW_IPS`; sense admin `setup` (nomes es crea fora de prod).
+4. Canvia el `appUserModelId`/GUID de notificacions Windows si es renombra l'aplicacio.
+
+## Federacio (fase 2)
+
+- Identitat de node = domini + certificat TLS.
+- Peering mutue via mTLS amb certificats de domini (CA publica o privada).
+- TLS obligatori entre nodes; validacio estricta (sense self-signed a prod).
+- La rotacio/revocacio es gestiona per renovacio del certificat. Un node compromes es revoca invalidant el seu certificat i la seva entrada al directori.
+- `allowlist`/`blocklist` per node (`node_policies`). Rate limiting i anti-inundada al marge de federacio. Propagacio d'informes de moderacio entre nodes.

@@ -14,6 +14,7 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 |---|---|
 | `GET /api/admin/stats` | Contadores: usuarios, festivales, cortos, mensajes, activos |
 | `GET /api/admin/tables` | Tablas (menos `alembic_version`) con nº de filas |
+| `GET /api/admin/audit-log` | Traza de auditoría (filtros `action`, `actor_user_id`) |
 | `POST /api/admin/reset` `{"confirm":"yes","password":"<actual>"}` | `drop_all + create_all`. 400 si `confirm` no es `yes`, 403 si la contraseña no verifica; rate-limit propio 3/300s (429, bypass con `TESTING=true`) |
 
 ## Secretos y rotación
@@ -25,7 +26,7 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 ## Backups y migraciones
 
 - SQLite: copiar `*.db` en caliente parado (`-Kill` antes). MariaDB: `mariadb-dump` (volumen `db-data`).
-- Migraciones: `alembic upgrade head` desde `backend/` (27 versiones; prod **solo** Alembic, nunca `create_all`).
+- Migraciones: `alembic upgrade head` desde `backend/` (36 versiones; prod **solo** Alembic, nunca `create_all`).
 - Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en [DATABASE.md](DATABASE.md).
 
 ## Troubleshooting

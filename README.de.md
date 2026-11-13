@@ -100,28 +100,32 @@ Der automatische Projektstart konfiguriert dies bereits, wenn `start.*` genutzt 
 
 ## Projektstatus
 
-🚧 **In aktiver Entwicklung** — Festivals, Kurzfilme, Chat mit E2EE, Karten, Offline-Modus und 9 Sprachen lauffähig; mit Backend-Tests (~1400) und Frontend (69 Dateien).
+🚧 **In aktiver Entwicklung** — Festivals, Kurzfilme, Chat mit E2EE, Karten, Offline-Modus und 9 Sprachen lauffähig; mit Backend-Tests (~1400) und Frontend (75 Testdateien).
 
 **Nächste Roadmap:**
 
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/de/API.md` regenerado)
+- [ ] Push-Benachrichtigungen (Firebase/APNs)
+- [ ] Signiertes Linux AppImage
+- [ ] Windows MSI-Installer
+- [x] Exportierbare OpenAPI-Dokumentation (`/openapi.json` ohne duplizierte operationIds + `docs/de/API.md` regeneriert)
 
 ## Projektdokumentation
 
 Die Dok-Landkarte liegt in [docs/de/README.md](docs/de/README.md). Sie ist der beste Einstieg für jeden Nutzertyp:
 
-- [docs/de/USO.md](docs/de/USO.md): arranque, operación, entorno y uso diario
-- [docs/de/ADMINISTRACION.md](docs/de/ADMINISTRACION.md): administración, cuentas y despliegue
-- [docs/de/INFRAESTRUCTURA.md](docs/de/INFRAESTRUCTURA.md): Docker, puertos, CI y infra
-- [docs/de/SEGURIDAD.md](docs/de/SEGURIDAD.md): tokens, políticas y checklist de producción
-- [docs/de/ARQUITECTURA.md](docs/de/ARQUITECTURA.md): arquitectura backend/frontend y flujos clave
-- [docs/de/API.md](docs/de/API.md): referencia de endpoints
-- [docs/de/DESARROLLO.md](docs/de/DESARROLLO.md): cómo añadir endpoints o pantallas
-- [docs/de/BACKEND.md](docs/de/BACKEND.md): guía del backend (capas, config, auth, tests)
-- [docs/de/DATABASE.md](docs/de/DATABASE.md): esquema y migraciones
+- [docs/de/USO.md](docs/de/USO.md): Start, Betrieb, Umgebung und tägliche Nutzung
+- [docs/de/ADMINISTRACION.md](docs/de/ADMINISTRACION.md): Administration, Konten und Bereitstellung
+- [docs/de/INFRAESTRUCTURA.md](docs/de/INFRAESTRUCTURA.md): Docker, Ports, CI und Infrastruktur
+- [docs/de/SEGURIDAD.md](docs/de/SEGURIDAD.md): Token, Richtlinien und Produktionscheckliste
+- [docs/de/ARQUITECTURA.md](docs/de/ARQUITECTURA.md): Backend/Frontend-Architektur und zentrale Flows
+- [docs/de/API.md](docs/de/API.md): Endpunkt-Referenz
+- [docs/de/DESARROLLO.md](docs/de/DESARROLLO.md): wie man Endpoints oder Bildschirme hinzufügt
+- [docs/de/BACKEND.md](docs/de/BACKEND.md): Backend-Anleitung (Ebenen, Konfiguration, Auth, Tests)
+- [docs/de/DATABASE.md](docs/de/DATABASE.md): Schema und Migrationen
+- [docs/de/FEDERATION_PROTOCOL.md](docs/de/FEDERATION_PROTOCOL.md): Föderationsprotokoll (Phase 4)
+- [docs/de/FEDERATION_SCHEMA.md](docs/de/FEDERATION_SCHEMA.md): Clakettes Schema v1
+- [docs/de/FEDERATION_SECURITY.md](docs/de/FEDERATION_SECURITY.md): federiertes Vertrauensmodell
+- [docs/de/PUSH.md](docs/de/PUSH.md): Push-Benachrichtigungsentscheidung
 
 Außerdem ist der Startpunkt für Entwicklung und Projektkonvention [AGENTS.md](AGENTS.md).
 
@@ -142,7 +146,7 @@ Außerdem ist der Startpunkt für Entwicklung und Projektkonvention [AGENTS.md](
 
 > Vollständige Details in [`AGENTS.md`](AGENTS.md) (Architektur, Befehle und Konventionen) und im Index von [`docs/`](docs/de/README.md) (Anleitungen pro Rolle: funktional, Nutzung, Administration, Infrastruktur, Sicherheit, Architektur, API).
 
-**Auf einen Blick**: FastAPI-Backend in Schichten (Router → Dienste → SQLAlchemy-Modelle, SQLite in Dev / MariaDB in Prod, JWT + Refresh, 18 Alembic-Migrationen); Flutter-Frontend Material 3 mit Dark Mode (Singletons + `setState()` + Streams, Hive offline, 24 wiederverwendbare Widgets).
+**Auf einen Blick**: FastAPI-Backend in Schichten (Router → Dienste → SQLAlchemy-Modelle, SQLite in Dev / MariaDB in Prod, JWT + Refresh, 36 Alembic-Migrationen); Flutter-Frontend Material 3 mit Dark Mode (Singletons + `setState()` + Streams, Hive offline, 32 wiederverwendbare Widgets).
 
 ```bash
 # Tests
@@ -181,35 +185,35 @@ Backend + Frontend (nginx) + MariaDB. Die verteilten Builds (Web, Windows, Linux
 
 ### Das Backend startet nicht
 
-- Verifica que Python 3.12+ esté instalado.
-- Comprueba que `backend/.env` existe y es válido.
-- Ejecuta `cd backend && python -m uvicorn app.main:app --reload` para ver el error real.
+- Verifiziere, ob Python 3.12+ installiert ist.
+- Prüfe, ob `backend/.env` existiert und gültig ist.
+- Führe `cd backend && python -m uvicorn app.main:app --reload` aus, um den tatsächlichen Fehler zu sehen.
 
 ### Die App verbindet nicht mit der API
 
-- Asegúrate de que el backend está en `http://localhost:8000`.
-- Revisa si `BACKEND_URL` se está pasando con `--dart-define`.
-- Comprueba que la API responde en `/docs`.
+- Stelle sicher, dass das Backend unter `http://localhost:8000` läuft.
+- Prüfe, ob `BACKEND_URL` mit `--dart-define` übergeben wird.
+- Überprüfe, ob die API unter `/docs` antwortet.
 
 ### Probleme mit Datenbanken oder Migrationen
 
-- Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/de/USO.md](docs/de/USO.md) y [docs/de/DATABASE.md](docs/de/DATABASE.md).
+- Verwende `cd backend && alembic upgrade head`.
+- Wenn du von SQLite auf MariaDB umstellst, überprüfe [docs/de/USO.md](docs/de/USO.md) und [docs/de/DATABASE.md](docs/de/DATABASE.md).
 
 ### Frontend mit Flutter-Fehlern
 
-- Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/de/ARQUITECTURA.md](docs/de/ARQUITECTURA.md).
+- Führe `cd frontend && flutter pub get` aus.
+- Bei Problemen mit der Code-Generierung befolge die Dokumentation zu Hive und build_runner in [docs/de/ARQUITECTURA.md](docs/de/ARQUITECTURA.md).
 
 ## Beitragen
 
-1. Haz un fork del repositorio.
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`).
-3. Haz commit con mensajes claros y descriptivos (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empuja la rama (`git push origin feature/nueva-funcionalidad`).
-5. Abre un Pull Request con contexto, cambios y validación.
+1. Forke das Repository.
+2. Erstelle einen Branch (`git checkout -b feature/neue-funktion`).
+3. Commite mit klaren, beschreibenden Nachrichten (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+4. Pushe den Branch (`git push origin feature/neue-funktion`).
+5. Öffne einen Pull Request mit Kontext, Änderungen und Validierung.
 
-**Qualitätskonventionen:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` y `flutter test` müssen vor dem Merge bestehen.
+**Qualitätskonventionen:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` und `flutter test` müssen vor dem Merge bestehen.
 
 ## Lizenz
 

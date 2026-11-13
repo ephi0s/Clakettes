@@ -4,31 +4,19 @@
 
 ## Tokens y sesiones
 
-- Access JWT (HS256, 30 min, `type=access`, `jti` único) + refresh opaco (SHA-256 en BD,
-  30 d, rotación al usar). Sesión (`UserSession`) con IP, dispositivo,
-  expiración y revocación; `last_used_at` lazy cada 5 min.
+- Access JWT (HS256, 30 min, `type=access`, `jti` único) + refresh opaco (SHA-256 en BD, 30 d, rotación al usar). Sesión (`UserSession`) con IP, dispositivo, expiración y revocación; `last_used_at` lazy cada 5 min.
 - Purga en arranque: se eliminan sesiones revocadas o caducadas hace >30 d.
-- Toda validación pasa por `validate_access_token` (firma + tipo + sesión
-  activa); el WS del chat también. Revocar sesión cierra el WS.
-- Passwords con bcrypt; CalDAV usa bearer en URL (redactado en logs).
-  Los tokens DAV caducan a los 180 días (`dav_token_expires_at`, regenerables).
+- Toda validación pasa por `validate_access_token` (firma + tipo + sesión activa); el WS del chat también. Revocar sesión cierra el WS.
+- Passwords con bcrypt; CalDAV usa bearer en URL (redactado en logs). Los tokens DAV caducan a los 180 días (`dav_token_expires_at`, regenerables).
 
 ## RGPD
 
 - Privacidad por defecto: `is_public*` en `False` (perfil, email, bio, ubicación).
 - Consentimiento: `privacy_policy_version` + `privacy_accepted_at` al crear cuenta.
-- Olvido: `DELETE /api/users/me` (y `DELETE /api/users/{id}` admin/organizer)
-  anonimiza la cuenta, borra sesiones/claves/alias/notificaciones/inscripciones
-  y desvincula referencias; bloquea borrar el último admin activo.
-- Portabilidad: `GET /api/users/me/export` (JSON con perfil, roles, inscripciones,
-  mensajes, sesiones, etc.).
-- Auditoría (art. 5.2): `audit_logs` append-only con actor, acción, objetivo e IP
-  en borrados, exportaciones, roles/tags y tokens DAV; lectura en
-  `GET /api/admin/audit-log` (solo admin).
-- Subidas: todo fichero pasa por `_save_file` (tipos y magia validados) y se le
-  eliminan metadatos identificativos antes de guardar: EXIF/XMP en imágenes
-  (Pillow), tags en MP4/MOV (`ffmpeg -map_metadata -1`, mutagen si no hay
-  ffmpeg), `/Info` en PDF (pypdf). WebM sin ffmpeg se rechaza (422).
+- Olvido: `DELETE /api/users/me` (y `DELETE /api/users/{id}` admin/organizer) anonimiza la cuenta, borra sesiones/claves/alias/notificaciones/inscripciones y desvincula referencias; bloquea borrar el último admin activo.
+- Portabilidad: `GET /api/users/me/export` (JSON con perfil, roles, inscripciones, mensajes, sesiones, etc.).
+- Auditoría (art. 5.2): `audit_logs` append-only con actor, acción, objetivo e IP en borrados, exportaciones, roles/tags y tokens DAV; lectura en `GET /api/admin/audit-log` (solo admin).
+- Subidas: todo fichero pasa por `_save_file` (tipos y magia validados) y se le eliminan metadatos identificativos antes de guardar: EXIF/XMP en imágenes (Pillow), tags en MP4/MOV (`ffmpeg -map_metadata -1`, mutagen si no hay ffmpeg), `/Info` en PDF (pypdf). WebM sin ffmpeg se rechaza (422).
 
 ## Autorización
 
@@ -52,9 +40,7 @@
 ## Perímetro
 
 - Rate limit SQLite 100/60s por IP (`/dav` 600/60s); `TESTING=true` lo apaga.
-- Cabeceras: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`,
-  `Content-Security-Policy` estricta en el API (relajada solo en `/docs`),
-  `HSTS` solo en producción.
+- Cabeceras: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` estricta en el API (relajada solo en `/docs`), `HSTS` solo en producción.
 - Cuerpos ≤10 MB (413). CORS con credenciales y orígenes explícitos.
 - MariaDB en producción exige TLS (`?ssl_ca=…` en `DATABASE_URL`).
 
@@ -64,3 +50,11 @@
 2. `CORS_ORIGINS` con dominios explícitos; `DATABASE_URL` MariaDB + `alembic upgrade head`.
 3. TLS con proxy + `FORWARDED_ALLOW_IPS`; sin admin `setup` (solo se crea fuera de prod).
 4. Cambiar `appUserModelId`/GUID de notificaciones Windows si se renombra la app.
+
+## Federación (fase 2)
+
+- Identidad de nodo = dominio + certificado TLS.
+- Peering mutuo vía mTLS con certificados de dominio (CA pública o privada).
+- TLS obligatorio entre nodos; validación estricta (sin self-signed en prod).
+- La rotación/revocación se gestiona por renovación del certificado. Un nodo comprometido se revoca invalidando su certificado y su entrada en el directorio.
+- `allowlist`/`blocklist` por nodo (`node_policies`). Rate limiting y anti-flood en el borde de federación. Propagación de reportes de moderación entre nodos.

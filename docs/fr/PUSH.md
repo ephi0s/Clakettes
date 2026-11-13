@@ -2,28 +2,21 @@
 
 [ES](../es/PUSH.md) · [EN](../en/PUSH.md) · [FR](PUSH.md) · [DE](../de/PUSH.md) · [IT](../it/PUSH.md) · [CA](../ca/PUSH.md) · [EU](../eu/PUSH.md) · [GL](../gl/PUSH.md) · [OC](../oc/PUSH.md)
 
-Sans Firebase ni fournisseurs externes. Stratégie par plateforme :
+Pas de Firebase ni de fournisseurs externes. Stratégie par plateforme :
 
-| Plataforma | Mecanismo | Estado |
+| Plateforme | Mécanisme | État |
 |---|---|---|
-| Escritorio (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min antes) + permiso macOS al iniciar | Funcional con la app instalada |
-| Web | Notification API nativa (`notification_web.dart` vía `package:web`, sin deps nuevas) con temporizadores; pide permiso en `init` | Funcional con pestaña abierta |
-| Android/iOS | No soportado por decisión de producto (`_supported = false` en `init`) | No-op documentado |
+| Bureau (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min avant) + permission macOS au démarrage | Fonctionnel avec l'app installée |
+| Web | Notification API native (`notification_web.dart` via `package:web`, sans nouvelles dépendances) avec minuteries ; demande la permission à `init` | Fonctionnel avec l'onglet ouvert |
+| Android/iOS | Non supporté par décision produit (`_supported = false` dans `init`) | No-op documenté |
 
 ## Détails d'implémentation
 
-- `lib/services/notification_platform.dart` : export conditionnel
-  (`notification_web.dart` si `dart.library.js_interop`, sinon
-  `notification_stub.dart`) — même motif que `file_downloader.dart`.
-- `NotificationService._supported` : true en bureau/web, false en mobile ;
-  `resetForTesting` le force à true pour ne pas casser les tests (la plateforme
-  de `flutter_test` est Android).
-- Web : `scheduleWebNotification` reprogramme par id, ignore heures passées et
-  nettoie à l'annulation ; à la fermeture de l'onglet les pendants se perdent
-  (sans Service Worker à dessein : requerrait serveur push).
+- `lib/services/notification_platform.dart` : export conditionnel (`notification_web.dart` si `dart.library.js_interop`, sinon `notification_stub.dart`) — même schéma que `file_downloader.dart`.
+- `NotificationService._supported` : vrai sur bureau/web, faux sur mobile ; `resetForTesting` le force à vrai pour ne pas casser les tests (la plateforme de `flutter_test` est Android).
+- Web : `scheduleWebNotification` reprogramme par id, ignore les heures passées et nettoie à l'annulation ; à la fermeture de l'onglet les notifications en attente sont perdues (pas de Service Worker volontairement : nécessiterait un serveur push).
 - `flutter build web` vérifié (58 s, sans erreurs de `js_interop`).
 
-## Si un jour on veut du vrai fond en web/mobile
+## Si un jour on veut un vrai arrière-plan sur web/mobile
 
-Requiert serveur push propre (VAPID + Service Worker) ou fournisseur externe ;
-voir historique de ce document pour le roadmap Firebase écarté.
+Nécessite un serveur push propre (VAPID + Service Worker) ou un fournisseur externe ; voir l'historique de ce document pour la feuille de route Firebase écartée.

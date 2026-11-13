@@ -63,9 +63,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await _loadUserCount();
   }
 
-  /// Carga el recuento total de usuarios, tolerando el acceso sin autenticación.
+  /// Carga el recuento total de usuarios, solo si hay sesión iniciada.
   Future<void> _loadUserCount() async {
     try {
+      final hasSession = await _api.isAuthenticated;
+      if (!hasSession) {
+        if (mounted) setState(() { _userCount = 0; _isLoading = false; });
+        return;
+      }
       final result = await _api.getUsers(size: 1);
       if (mounted) setState(() { _userCount = result.total; _isLoading = false; });
     } on UnauthorizedException {

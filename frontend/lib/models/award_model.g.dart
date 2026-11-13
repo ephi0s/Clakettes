@@ -31,10 +31,8 @@ class AwardAdapter extends TypeAdapter<Award> {
       isPublic: fields[11] as bool,
       isVerified: fields[12] as bool,
       year: fields[13] as int?,
-      eligibilityTags: fields[14] != null
-          ? List<String>.from(fields[14] as List)
-          : const [],
-      recipientVerified: fields[15] as bool? ?? false,
+      eligibilityTags: (fields[14] as List).cast<String>(),
+      recipientVerified: fields[15] as bool,
       recipientVerifiedBy: fields[16] as int?,
       recipientVerifiedAt: fields[17] as DateTime?,
       recipientVerificationNotes: fields[18] as String?,

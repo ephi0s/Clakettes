@@ -2,7 +2,7 @@
 
 [ES](../es/INFRAESTRUCTURA.md) · [EN](INFRAESTRUCTURA.md) · [FR](../fr/INFRAESTRUCTURA.md) · [DE](../de/INFRAESTRUCTURA.md) · [IT](../it/INFRAESTRUCTURA.md) · [CA](../ca/INFRAESTRUCTURA.md) · [EU](../eu/INFRAESTRUCTURA.md) · [GL](../gl/INFRAESTRUCTURA.md) · [OC](../oc/INFRAESTRUCTURA.md)
 
-Profiles, ports, environment and CI. Daily operations in [USO.md](USO.md), hardening checklist in [SEGURIDAD.md](SEGURIDAD.md).
+Profiles, ports, environment and CI. Daily operation in [USO.md](USO.md), hardening checklist in [SEGURIDAD.md](SEGURIDAD.md).
 
 ## Docker profiles (`docker-compose.yml`)
 
@@ -34,29 +34,29 @@ Volumes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-dat
 
 | Variable | Effect |
 |---|---|
-| `APP_ENV` | `development` creates admin `admin/setup` + `create_all`; `production` requires Alembic and blocks default `SECRET_KEY` and `*` CORS |
-| `SECRET_KEY` | JWT signing (`HS256`); access expires in 30 min, refresh in 30 d |
+| `APP_ENV` | `development` creates admin `admin/setup` + `create_all`; `production` requires Alembic and blocks default `SECRET_KEY` and CORS `*` |
+| `SECRET_KEY` | Signs JWT (`HS256`); access expires 30 min, refresh 30 d |
 | `DATABASE_URL` | `sqlite:///./clakettes.db` (dev) or `mariadb+pymysql://…` (prod) |
 | `CORS_ORIGINS` | Empty = `*` without credentials (dev only); prod requires explicit origins |
-| `PUBLIC_BASE_URL`, `FORWARDED_ALLOW_IPS` | Public URL and trusted proxies (front TLS required in prod: DAV tokens travel in the URL) |
+| `PUBLIC_BASE_URL`, `FORWARDED_ALLOW_IPS` | Public URL and trusted proxies (frontend TLS mandatory in prod: DAV tokens travel in URL) |
 | `BACKEND_URL` | `--dart-define` for the Flutter app (also changeable on the backend screen; persisted in SharedPreferences) |
 
 ## Health and observables
 
-- `GET /health` → `{"status":"healthy"}`; `GET /` → version (`0.3.0`). `ConnectivityMonitor` in the app uses them as a live probe.
+- `GET /health` → `{"status":"healthy"}`; `GET /` → version (`0.3.0`). `ConnectivityMonitor` in the app uses them as real probe.
 - Logs: uvicorn stdout (DAV tokens redacted); API errors in SnackBar + `debugPrint`.
-- Limits: body ≤10 MB (413), avatar/image ≤5 MB (`jpeg/png/webp/gif` with magic bytes), video ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s per IP (429; `/dav*` 600/60s; bypass with `TESTING=true`).
+- Limits: body ≤10 MB (413), avatar/image ≤5 MB (`jpeg/png/webp/gif` with magic-bytes), video ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s per IP (429; `/dav*` 600/60s; bypass with `TESTING=true`).
 
 ## CI
 
 - **GitHub** (push/PR to `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (MariaDB 11 + `alembic upgrade head` + pytest) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 images).
-- **GitLab**: stages `lint → test → build`; `docker-build` only on `main` with registry push.
+- **GitLab**: stages `lint → test → build`; `docker-build` only on `main` with push to registry.
 
 Local gate (same as CI): `ruff check .` + `ruff format --check .` + `pytest tests/ -x -q --tb=short` (from `backend/`), `flutter analyze` + `flutter test` (from `frontend/`).
 
 ## See also
 
-- [USO.md](USO.md): daily use of the deployment
+- [USO.md](USO.md): daily deployment use
 - [ADMINISTRACION.md](ADMINISTRACION.md): operations and recovery
-- [SEGURIDAD.md](SEGURIDAD.md): production controls and settings
-- [HERRAMIENTAS.md](HERRAMIENTAS.md): build/test scripts and commands
+- [SEGURIDAD.md](SEGURIDAD.md): controls and production parameters
+- [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts and build/test commands

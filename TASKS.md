@@ -3,6 +3,7 @@
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
 ## Fase 2 — Base y seguridad (CRÍTICO)
+- [ ] Instalador/paquete para federar una instancia (infra)
 - [ ] Auditar endpoints actuales (auth, rate limit, CORS) y documentar amenazas por nodo
 - [ ] Diseñar modelo de confianza entre nodos aprovechando certificados TLS de dominio (CA pública o privada) como raíz de identidad
 - [ ] Peering mutuo vía mTLS con los certificados de dominio; rotación/revocación gestionada por renovación de cert

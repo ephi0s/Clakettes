@@ -100,14 +100,14 @@ Le démarrage automatique du projet configure déjà ceci quand on utilise `star
 
 ## État du projet
 
-🚧 **En développement actif** — Festivals, courts, chat avec E2EE, cartes, mode offline et 9 langues fonctionnant ; avec tests en backend (~1400) et frontend (69 fichiers).
+🚧 **En développement actif** — Festivals, courts, chat avec E2EE, cartes, mode hors ligne et 9 langues fonctionnant ; avec tests backend (~1400) et frontend (75 fichiers de tests).
 
-**Roadmap prochaine :**
+**Feuille de route prochaine :**
 
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/fr/API.md` regenerado)
+- [ ] Notifications push (Firebase/APNs)
+- [ ] AppImage Linux signé
+- [ ] Installeur Windows MSI
+- [x] Documentation OpenAPI exportable (`/openapi.json` sans operationIds dupliqués + `docs/fr/API.md` régénéré)
 
 ## Documentation du projet
 
@@ -122,6 +122,10 @@ La carte de documentation est dans [docs/fr/README.md](docs/fr/README.md). C'est
 - [docs/fr/DESARROLLO.md](docs/fr/DESARROLLO.md) : comment ajouter endpoints ou écrans
 - [docs/fr/BACKEND.md](docs/fr/BACKEND.md) : guide du backend (couches, config, auth, tests)
 - [docs/fr/DATABASE.md](docs/fr/DATABASE.md) : schéma et migrations
+- [docs/fr/FEDERATION_PROTOCOL.md](docs/fr/FEDERATION_PROTOCOL.md) : protocole de fédération (phase 4)
+- [docs/fr/FEDERATION_SCHEMA.md](docs/fr/FEDERATION_SCHEMA.md) : Clakettes Schema v1
+- [docs/fr/FEDERATION_SECURITY.md](docs/fr/FEDERATION_SECURITY.md) : modèle de confiance fédéré
+- [docs/fr/PUSH.md](docs/fr/PUSH.md) : décision de notification
 
 En outre, le point de départ pour développement et convention de projet est [AGENTS.md](AGENTS.md).
 
@@ -130,6 +134,7 @@ En outre, le point de départ pour développement et convention de projet est [A
 - [docs/fr/README.md](docs/fr/README.md) : index général par audience
 - [docs/fr/HERRAMIENTAS.md](docs/fr/HERRAMIENTAS.md) : commandes de build, test et démarrage
 - [docs/fr/FUNCIONAL.md](docs/fr/FUNCIONAL.md) : usage réel du produit par rôle
+- [docs/fr/PUSH.md](docs/fr/PUSH.md) : décision de notification
 
 ### FAQ rapide
 
@@ -142,7 +147,7 @@ En outre, le point de départ pour développement et convention de projet est [A
 
 > Détail complet dans [`AGENTS.md`](AGENTS.md) (architecture, commandes et conventions) et dans l'index de [`docs/`](docs/fr/README.md) (guides par rôle : fonctionnel, usage, administration, infrastructure, sécurité, architecture, API).
 
-**En un coup d'œil** : backend FastAPI en couches (routers → services → modèles SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migrations Alembic) ; frontend Flutter Material 3 avec dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets réutilisables).
+**En un coup d'œil** : backend FastAPI en couches (routers → services → modèles SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migrations Alembic) ; frontend Flutter Material 3 avec dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets réutilisables).
 
 ```bash
 # Tests
@@ -194,7 +199,7 @@ Backend + frontend (nginx) + MariaDB. Les builds distribués (web, Windows, Linu
 ### Problèmes avec bases de données ou migrations
 
 - Utilise `cd backend && alembic upgrade head`.
-- Si tu changes de SQLite à MariaDB, révise [docs/fr/USO.md](docs/fr/USO.md) et [docs/fr/DATABASE.md](docs/fr/DATABASE.md).
+- Si tu passes de SQLite à MariaDB, révise [docs/fr/USO.md](docs/fr/USO.md) et [docs/fr/DATABASE.md](docs/fr/DATABASE.md).
 
 ### Frontend avec erreurs de Flutter
 

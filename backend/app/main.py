@@ -6,6 +6,8 @@ Initializes database, middleware, routers, and WebSocket chat backend.
 
 import logging
 import os
+import subprocess
+import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
@@ -54,6 +56,7 @@ from app.routers import (
     payments,
     posts,
     badges,
+    jury_votes,
 )
 from app.chat_backend import WebSocketChatBackend, chat_backend_registry
 from app.database import engine, SessionLocal
@@ -312,6 +315,23 @@ def _alembic_api():
         sys.path = saved
 
 
+def _run_alembic(args: list[str]) -> None:
+    """Run an Alembic command via subprocess to avoid local ``alembic/`` shadowing."""
+    backend_dir = Path(__file__).resolve().parent.parent
+    exe = "alembic.exe" if os.name == "nt" else "alembic"
+    candidate = Path(sys.executable).parent / exe
+    alembic_cmd = str(candidate) if candidate.exists() else exe
+    result = subprocess.run(
+        [alembic_cmd, "-c", str(backend_dir / "alembic.ini"), *args],
+        cwd=str(backend_dir),
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        logger.error("Alembic %s failed:\n%s", " ".join(args), result.stderr)
+        raise RuntimeError(result.stderr)
+
+
 def _run_migrations() -> None:
     """Bring the database to the latest Alembic revision on every boot.
 
@@ -327,11 +347,7 @@ def _run_migrations() -> None:
         logger.info("SKIP_AUTO_MIGRATE set — skipping automatic Alembic upgrade")
         return
     try:
-        command, Config = _alembic_api()
-        backend_dir = Path(__file__).resolve().parent.parent
-        cfg = Config(str(backend_dir / "alembic.ini"))
-        cfg.set_main_option("script_location", str(backend_dir / "alembic"))
-        command.upgrade(cfg, "head")
+        _run_alembic(["upgrade", "head"])
         logger.info("Database migrated to latest Alembic revision")
     except Exception:
         logger.exception("Automatic Alembic upgrade failed — check `alembic upgrade head` manually")
@@ -354,11 +370,7 @@ def _ensure_version_stamp() -> None:
     if get_db_revision() is not None:
         return
     try:
-        command, Config = _alembic_api()
-        backend_dir = Path(__file__).resolve().parent.parent
-        cfg = Config(str(backend_dir / "alembic.ini"))
-        cfg.set_main_option("script_location", str(backend_dir / "alembic"))
-        command.stamp(cfg, "head")
+        _run_alembic(["stamp", "head"])
         logger.info("Stamped version-less database with current Alembic head")
     except Exception:
         logger.exception("Could not stamp Alembic version")
@@ -570,6 +582,7 @@ app.include_router(payments.router, prefix="/api", tags=["payments"])
 app.include_router(dav.router, prefix="/dav", tags=["dav"])
 app.include_router(posts.router, prefix="/api", tags=["posts"])
 app.include_router(badges.router, prefix="/api", tags=["badges"])
+app.include_router(jury_votes.router, prefix="/api", tags=["jury-votes"])
 
 
 @app.get("/")
