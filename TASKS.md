@@ -2,17 +2,6 @@
 
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
-## Fase 1 — Cumplimiento RGPD y seguridad federada (CRÍTICO)
-- [ ] Auditar tratamiento de datos personales por nodo y documentar base legal (consentimiento/interés legítimo) conforme RGPD y LOPDGDD
-- [ ] Políticas de federación por instancia: allowlist/blocklist de nodos remotos
-- [ ] Federación unidireccional (solo importar, no exportar) para nodos restringidos
-- [ ] Permisos por función: deshabilitar chat/DMs, búsqueda o interacciones con nodos específicos
-- [ ] Rate limiting y anti-flood en el borde de federación; bloqueo automático de nodos maliciosos
-
-- [ ] Derecho al olvido cross-nodo: borrado propagado y confirmación de eliminación
-- [ ] Consentimiento explícito para federar datos
-
-
 ## Fase 2 — Base y seguridad (CRÍTICO)
 - [ ] Auditar endpoints actuales (auth, rate limit, CORS) y documentar amenazas por nodo
 - [ ] Diseñar modelo de confianza entre nodos aprovechando certificados TLS de dominio (CA pública o privada) como raíz de identidad
