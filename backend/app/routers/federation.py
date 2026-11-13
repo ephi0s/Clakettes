@@ -45,3 +45,8 @@ async def set_node_policy(
 @router.get("/manifest")
 async def federation_manifest():
     return {"schema_version": "1", "node": "primary", "capabilities": ["festivals", "users", "chat"]}
+
+
+@router.get("/directory")
+async def federation_directory():
+    return {"nodes": [{"domain": "primary", "schema_version": "1", "status": "online"}]}
