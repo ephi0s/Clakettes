@@ -37,6 +37,9 @@ class NodePolicyIn(BaseModel):
     allowed: bool = True
     consent_required: bool = True
     minimize_data: bool = True
+    import_only: bool = False
+    disable_chat: bool = False
+    disable_search: bool = False
     reason: str | None = None
 
 
@@ -49,7 +52,17 @@ def _require_admin(current_user: User):
 async def list_node_policies(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     _require_admin(current_user)
     return [
-        {"id": p.id, "node_domain": p.node_domain, "allowed": p.allowed, "reason": p.reason}
+        {
+            "id": p.id,
+            "node_domain": p.node_domain,
+            "allowed": p.allowed,
+            "consent_required": p.consent_required,
+            "minimize_data": p.minimize_data,
+            "import_only": p.import_only,
+            "disable_chat": p.disable_chat,
+            "disable_search": p.disable_search,
+            "reason": p.reason,
+        }
         for p in service.list_policies(db)
     ]
 
@@ -59,12 +72,26 @@ async def set_node_policy(
     body: NodePolicyIn, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     _require_admin(current_user)
-    p = service.set_policy(db, body.node_domain, body.allowed, body.consent_required, body.reason)
+    p = service.set_policy(
+        db,
+        body.node_domain,
+        body.allowed,
+        body.consent_required,
+        body.minimize_data,
+        body.import_only,
+        body.disable_chat,
+        body.disable_search,
+        body.reason,
+    )
     return {
         "id": p.id,
         "node_domain": p.node_domain,
         "allowed": p.allowed,
         "consent_required": p.consent_required,
+        "minimize_data": p.minimize_data,
+        "import_only": p.import_only,
+        "disable_chat": p.disable_chat,
+        "disable_search": p.disable_search,
         "reason": p.reason,
     }
 

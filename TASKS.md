@@ -21,16 +21,15 @@ Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse
 - [ ] Añadir TLS obligatorio entre nodos y validación estricta de certificados en peering (sin self-signed en prod)
 
 ## Fase 3 — Identidad federada (FUNDACIONAL)
-- [ ] Diseñar handle `usuario@instancia` y resolución vía `.well-known` (WebFinger-like)
-- [ ] Implementar ID estable (UUID/DID ligero) desacoplado del handle
 - [ ] Adaptar backend para validar tokens de nodos pares (JWKS compartido / clave peered)
-- [ ] Migración de usuarios existentes a identidad federada sin pérdida de datos
+- [ ] Adaptar backend para validar tokens de nodos pares (JWKS compartido / clave peered)
+
 
 ## Fase 4 — Schema y protocolo abierto (FUNDACIONAL)
 - [ ] Definir Clakettes Schema v1 (festival, edición, proyección, usuario, mensaje) versionado
 - [ ] Documentar el protocolo de federación para creación de servidores y clientes interoperables (guía paso a paso)
 - [ ] Publicar especificación OpenAPI + docs de federación
-- [ ] Implementar endpoints `/api/federation/*` en backend actual (nodo primario)
+
 - [ ] Crear SDK ligero (Dart/Python) con modelos y cliente federation
 
 ## Fase 5 — Votación del jurado (FEATURE)
