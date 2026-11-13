@@ -39,7 +39,8 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 
 ## Grafos (`graphify-out/`)
 - `graphify query "<pregunta>"` responde sobre arquitectura sin leer archivos
-- `graphify .` para regenerar (o skill graphify)
+- `graphify .` para regenerar (o skill graphify) — usar `--no-viz` para evitar generar `graph.html` (HTML pesado de 5+ MB)
+- `graphify-out/` está en `.gitignore`; no se sube al repositorio
 
 ## Docs ([docs/es/README.md](docs/es/README.md))
 - Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md), [docs/es/USO.md](docs/es/USO.md), [docs/es/DATABASE.md](docs/es/DATABASE.md), [docs/es/API.md](docs/es/API.md), [docs/es/BACKEND.md](docs/es/BACKEND.md), [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md), [docs/es/FUNCIONAL.md](docs/es/FUNCIONAL.md), [docs/es/FEDERATION_PROTOCOL.md](docs/es/FEDERATION_PROTOCOL.md), [docs/es/FEDERATION_SCHEMA.md](docs/es/FEDERATION_SCHEMA.md), [docs/es/FEDERATION_SECURITY.md](docs/es/FEDERATION_SECURITY.md), [docs/es/PUSH.md](docs/es/PUSH.md), [docs/es/AUDITORIA.md](docs/es/AUDITORIA.md), [docs/es/ADMINISTRACION.md](docs/es/ADMINISTRACION.md), [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md), [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md), [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md).
