@@ -2,20 +2,15 @@
 
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
-## Fase 0 — Premios, elegibilidad y cribado (PRIORITARIO)
-- [ ] Soporte en UI y filtrado por elegibilidad/categoría
-
 ## Fase 1 — Cumplimiento RGPD y seguridad federada (CRÍTICO)
 - [ ] Auditar tratamiento de datos personales por nodo y documentar base legal (consentimiento/interés legítimo) conforme RGPD y LOPDGDD
 - [ ] Políticas de federación por instancia: allowlist/blocklist de nodos remotos
 - [ ] Federación unidireccional (solo importar, no exportar) para nodos restringidos
 - [ ] Permisos por función: deshabilitar chat/DMs, búsqueda o interacciones con nodos específicos
 - [ ] Rate limiting y anti-flood en el borde de federación; bloqueo automático de nodos maliciosos
-- [ ] Bloqueos de usuario: ocultar contenido, bloquear DMs, silenciar
 - [ ] Propagación de reportes de moderación entre nodos
 - [ ] Derecho al olvido cross-nodo: borrado propagado y confirmación de eliminación
-- [ ] Portabilidad de datos (export) y consentimiento explícito para federar datos
-- [ ] Logs de auditoría de accesos y acciones de moderación
+- [ ] Consentimiento explícito para federar datos
 - [ ] Minimización de datos en peering (no compartir más de lo necesario)
 
 ## Fase 2 — Base y seguridad (CRÍTICO)

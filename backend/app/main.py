@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.routers import (
-    festival_rulebooks,
+    federation,    festival_rulebooks,
     festivals,
     users,
     shortfilms,
@@ -36,6 +36,7 @@ from app.routers import (
     participant_tags,
     user_roles,
     user_aliases,
+    user_blocks,
     validation_rules,
     registration_forms,
     role_groups,
@@ -535,6 +536,8 @@ app.include_router(roles.router, prefix="/api", tags=["roles"])
 app.include_router(participant_tags.router, prefix="/api", tags=["participant-tags"])
 app.include_router(user_roles.router, prefix="/api", tags=["user-roles"])
 app.include_router(user_aliases.router, prefix="/api", tags=["user-aliases"])
+app.include_router(user_blocks.router, prefix="/api", tags=["user-blocks"])
+app.include_router(federation.router, prefix="/api", tags=["federation"])
 app.include_router(validation_rules.router, prefix="/api", tags=["validation-rules"])
 app.include_router(registration_forms.router, prefix="/api", tags=["registration-forms"])
 app.include_router(role_groups.router, prefix="/api", tags=["role-groups"])

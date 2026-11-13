@@ -53,6 +53,7 @@ from app.models.group import Group, GroupMember
 from app.models.channel import Channel, ChannelMember
 from app.models.user_key import UserKey
 from app.models.audit_log import AuditLog
+from app.models.node_policy import NodePolicy
 from app.models.location import Location
 from app.models.location_tag import LocationTag
 from app.models.shortfilm_location import ShortFilmLocation
@@ -138,6 +139,7 @@ __all__ = [
     "ChannelMember",
     "UserKey",
     "AuditLog",
+    "NodePolicy",
     "Location",
     "LocationTag",
     "ShortFilmLocation",
