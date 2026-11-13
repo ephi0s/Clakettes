@@ -8,10 +8,10 @@ Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse
 - [ ] Federación unidireccional (solo importar, no exportar) para nodos restringidos
 - [ ] Permisos por función: deshabilitar chat/DMs, búsqueda o interacciones con nodos específicos
 - [ ] Rate limiting y anti-flood en el borde de federación; bloqueo automático de nodos maliciosos
-- [ ] Propagación de reportes de moderación entre nodos
+
 - [ ] Derecho al olvido cross-nodo: borrado propagado y confirmación de eliminación
 - [ ] Consentimiento explícito para federar datos
-- [ ] Minimización de datos en peering (no compartir más de lo necesario)
+
 
 ## Fase 2 — Base y seguridad (CRÍTICO)
 - [ ] Auditar endpoints actuales (auth, rate limit, CORS) y documentar amenazas por nodo

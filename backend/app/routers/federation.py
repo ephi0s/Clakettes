@@ -74,6 +74,14 @@ async def federation_manifest():
     return {"schema_version": "1", "node": "primary", "capabilities": ["festivals", "users", "chat"]}
 
 
+@router.patch("/reports/{report_id}")
+async def update_report_status(report_id: int, status: str, db: Session = Depends(get_db)):
+    r = report_service.update_status(db, report_id, status)
+    if not r:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return {"id": r.id, "status": r.status}
+
+
 @router.get("/directory")
 async def federation_directory():
     return {"nodes": [{"domain": "primary", "schema_version": "1", "status": "online"}]}
@@ -109,6 +117,14 @@ async def list_reports(node: str, db: Session = Depends(get_db)):
 @router.delete("/users/{user_ref}")
 async def propagate_erase(user_ref: str):
     return {"message": "erase propagated", "user_ref": user_ref, "status": "queued"}
+
+
+@router.get("/users/{ref}")
+async def resolve_user(ref: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter((User.uuid == ref) | (User.did == ref) | (User.handle == ref)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": user.id, "uuid": user.uuid, "did": user.did, "handle": user.handle, "username": user.username}
 
 
 @router.get("/.well-known/webfinger")

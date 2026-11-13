@@ -23,3 +23,12 @@ class ModerationReportService:
             .order_by(ModerationReport.id.desc())
             .all()
         )
+
+    def update_status(self, db: Session, report_id: int, status: str) -> ModerationReport | None:
+        obj = db.query(ModerationReport).filter(ModerationReport.id == report_id).first()
+        if not obj:
+            return None
+        obj.status = status
+        db.commit()
+        db.refresh(obj)
+        return obj

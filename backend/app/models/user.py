@@ -23,6 +23,8 @@ class User(BaseModel):
 
     username = Column(String(100), unique=True, nullable=False, index=True)
     handle = Column(String(255), unique=True, nullable=True, index=True)
+    uuid = Column(String(36), unique=True, nullable=True, index=True)
+    did = Column(String(255), unique=True, nullable=True, index=True)
     email = Column(String(200), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(200), nullable=True, index=True)
