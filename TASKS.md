@@ -2,32 +2,6 @@
 
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
-## Fase 2 — Base y seguridad (CRÍTICO)
-- [ ] Instalador/paquete para federar una instancia (infra)
-- [ ] Auditar endpoints actuales (auth, rate limit, CORS) y documentar amenazas por nodo
-- [ ] Diseñar modelo de confianza entre nodos aprovechando certificados TLS de dominio (CA pública o privada) como raíz de identidad
-- [ ] Peering mutuo vía mTLS con los certificados de dominio; rotación/revocación gestionada por renovación de cert
-- [ ] Definir identidad de nodo = dominio + certificado; verificar manifiesto firmado por la clave del cert
-- [ ] Añadir TLS obligatorio entre nodos y validación estricta de certificados en peering (sin self-signed en prod)
-
-## Fase 3 — Identidad federada (FUNDACIONAL)
-- [ ] Adaptar backend para validar tokens de nodos pares (JWKS compartido / clave peered)
-- [ ] Adaptar backend para validar tokens de nodos pares (JWKS compartido / clave peered)
-
-
-## Fase 4 — Schema y protocolo abierto (FUNDACIONAL)
-- [ ] Definir Clakettes Schema v1 (festival, edición, proyección, usuario, mensaje) versionado
-- [ ] Documentar el protocolo de federación para creación de servidores y clientes interoperables (guía paso a paso)
-- [ ] Publicar especificación OpenAPI + docs de federación
-
-- [ ] Crear SDK ligero (Dart/Python) con modelos y cliente federation
-
-## Fase 5 — Votación del jurado (FEATURE)
-- [ ] Diseñar sistema de votación por jurado (puntuación por obra, agregación, anonimato opcional)
-- [ ] Endpoints backend para emitir y consultar votos por jurado/festival
-- [ ] UI de votación para jurados y resultados agregados para organizadores
-- [ ] Integración con etiquetas de cribado y elegibilidad (Fase 0)
-
 ## Fase 6 — Descubrimiento y multi-nodo en la app (INFRA)
 - [ ] Implementar directorio de nodos (registro, capacidades, versión de schema)
 - [ ] App: soporte de múltiples `BACKEND_URL` y agregación de resultados

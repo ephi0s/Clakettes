@@ -44,6 +44,7 @@ part 'api/location_api.dart';
 part 'api/post_api.dart';
 part 'api/badge_api.dart';
 part 'api/participant_tag_api.dart';
+part 'api/jury_votes_api.dart';
 
 /// Envoltorio de respuesta paginada que coincide con el envelope del backend.
 class PaginatedResult<T> {

@@ -60,6 +60,17 @@ class Settings(BaseSettings):
     # Defaults to None so a fresh checkout needs no configuration.
     PUBLIC_BASE_URL: str | None = None
 
+    # mTLS peering entre nodos federados (Fase 2)
+    # Cuando True, los endpoints bajo /api/federation exigen certificado de
+    # cliente TLS válido y registrado en trusted_nodes.
+    MTLS_REQUIRED: bool = False
+    # Ruta al bundle de CA raíz usado para validar certificados de clientes.
+    MTLS_CA_BUNDLE_PATH: str | None = None
+    # Ruta al certificado propio de este nodo (para presentarse como cliente a pares).
+    MTLS_CLIENT_CERT_PATH: str | None = None
+    # Ruta a la clave privada del certificado propio de este nodo.
+    MTLS_CLIENT_KEY_PATH: str | None = None
+
     # Pagos online: "mock" por defecto hasta elegir pasarela (stripe/redsys).
     PAYMENTS_PROVIDER: str = "mock"
     MOCK_PAYMENTS_FORCE_FAIL: bool = False
@@ -105,3 +116,6 @@ class Settings(BaseSettings):
 
 # Global settings instance (singleton pattern via module import)
 settings = Settings()
+
+# mTLS requiere orígenes CORS explícitos en producción: wildcard + mTLS no tiene sentido
+# sin clientes identificados. La validación de _validate_secret_key en main.py ya cubre CORS.

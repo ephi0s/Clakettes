@@ -204,6 +204,79 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | GET | `/api/public/profile/{token}` | non |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | non |
 
+## `federation` → `/api`
+
+| Método | Ruta | Auth |
+|---|---|---|
+| GET | `/api/nodes` | si |
+| POST | `/api/nodes` | si |
+| GET | `/api/manifest` | non |
+| PATCH | `/api/reports/{report_id}` | non |
+| GET | `/api/directory` | non |
+| POST | `/api/reports` | non |
+| GET | `/api/reports` | non |
+| DELETE | `/api/users/{user_ref}` | non |
+| GET | `/api/export/{user_ref}` | non |
+| GET | `/api/health` | non |
+| POST | `/api/verify` | non |
+| POST | `/api/publish` | non |
+| POST | `/api/recover` | non |
+| POST | `/api/bridge` | non |
+| GET | `/api/aggregate-nodes` | non |
+| GET | `/api/keys` | non |
+| GET | `/api/events` | non |
+| GET | `/api/capabilities` | non |
+| GET | `/api/status` | non |
+| GET | `/api/info` | non |
+| GET | `/api/ping` | non |
+| POST | `/api/echo` | non |
+| GET | `/api/time` | non |
+| GET | `/api/version` | non |
+| POST | `/api/checksum` | non |
+| POST | `/api/notify` | non |
+| POST | `/api/subscribe` | non |
+| POST | `/api/unsubscribe` | non |
+| GET | `/api/discover` | non |
+| POST | `/api/register` | non |
+| POST | `/api/unregister` | non |
+| POST | `/api/sync` | non |
+| POST | `/api/reconcile` | non |
+| GET | `/api/heartbeat` | non |
+| GET | `/api/whoami` | non |
+| GET | `/api/peers` | non |
+| GET | `/api/links` | non |
+| GET | `/api/stats` | non |
+| GET | `/api/config` | non |
+| GET | `/api/status-check` | non |
+| GET | `/api/ready` | non |
+| GET | `/api/live` | non |
+| GET | `/api/alive` | non |
+| GET | `/api/down` | non |
+| GET | `/api/maintenance` | non |
+| GET | `/api/readyz` | non |
+| GET | `/api/livez` | non |
+| GET | `/api/healthz` | non |
+| GET | `/api/ok` | non |
+| GET | `/api/yes` | non |
+| GET | `/api/no` | non |
+| GET | `/api/maybe` | non |
+| GET | `/api/always` | non |
+| GET | `/api/never` | non |
+| POST | `/api/import` | non |
+| POST | `/api/dedup` | non |
+| POST | `/api/retry` | non |
+| POST | `/api/recover-node` | non |
+| GET | `/api/fallback` | non |
+| GET | `/api/integrity` | non |
+| GET | `/api/degrade` | non |
+| GET | `/api/metrics` | non |
+| GET | `/api/users/{ref}` | non |
+| GET | `/api/.well-known/webfinger` | non |
+| POST | `/api/peers/verify` | non |
+| POST | `/api/peers/{domain}/revoke` | si |
+| GET | `/api/.well-known/jwks.json` | non |
+| POST | `/api/token` | non |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Método | Ruta | Auth |
@@ -256,6 +329,16 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | PUT | `/api/forms/responses/{response_id}` | si |
 | POST | `/api/forms/responses/{response_id}/approve` | si |
 | POST | `/api/forms/responses/{response_id}/reject` | si |
+
+## `jury_votes` → `/api`
+
+| Método | Ruta | Auth |
+|---|---|---|
+| POST | `/api` | si |
+| GET | `/api/{festival_id}` | non |
+| GET | `/api/aggregate/{festival_id}` | non |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | non |
+| GET | `/api/anonymous/{festival_id}` | non |
 
 ## `keys` → `/api/users`
 
@@ -469,6 +552,15 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | si |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | si |
 
+## `user_blocks` → `/api`
+
+| Método | Ruta | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/blocks/` | si |
+| DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | si |
+| GET | `/api/users/{user_id}/blocks/` | si |
+| GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | si |
+
 ## `user_festival` → `/api/festivals`
 
 | Método | Ruta | Auth |
@@ -519,4 +611,4 @@ Detalle interactivo: `/docs` (Swagger) e `/redoc` co backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | si |
 
-Total: 339 endpoints en 35 routers.
+Total: 416 endpoints en 38 routers.

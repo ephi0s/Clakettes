@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../models/post_model.dart';
 import '../services/api_service.dart';
@@ -7,6 +9,7 @@ import 'embed_preview.dart';
 import 'loading_skeleton.dart';
 import 'error_state_widget.dart';
 import 'markdown_text.dart';
+import 'rich_text_editor.dart';
 import 'reusable_widgets.dart';
 
 class PublicationPanel extends StatefulWidget {
@@ -36,7 +39,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
   bool _publishing = false;
   bool _showUrlField = false;
   bool _allowReplies = true;
-  final _contentCtl = TextEditingController();
+  String _richContent = '';
   final _urlCtl = TextEditingController();
   final Set<int> _expanded = {};
   final Map<int, List<Post>> _replies = {};
@@ -52,7 +55,6 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   @override
   void dispose() {
-    _contentCtl.dispose();
     _urlCtl.dispose();
     for (final c in _replyCtls.values) {
       c.dispose();
@@ -99,14 +101,14 @@ class _PublicationPanelState extends State<PublicationPanel> {
   }
 
   Future<void> _publish() async {
-    final content = _contentCtl.text.trim();
+    final content = plainTextFrom(_richContent).trim();
     final url = _urlCtl.text.trim();
     if (content.isEmpty || _publishing) return;
     setState(() => _publishing = true);
     try {
       final draft = Post(
         authorId: widget.currentUserId ?? 0,
-        content: content,
+        content: _richContent.trim(),
         embedUrl: url.isNotEmpty ? (url.contains('://') ? url : 'https://$url') : null,
         embedType: url.isNotEmpty ? _embedTypeFor(url) : null,
         allowReplies: _allowReplies,
@@ -120,7 +122,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
       if (!mounted) return;
       setState(() {
         _posts = [created, ..._posts];
-        _contentCtl.clear();
+        _richContent = '';
         _urlCtl.clear();
         _showUrlField = false;
         _allowReplies = true;
@@ -146,23 +148,28 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   Future<void> _editPost(Post post) async {
     if (post.id == null) return;
-    final ctl = TextEditingController(text: post.content);
+    String newContent = post.content;
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Editar publicación'),
-        content: TextField(controller: ctl, maxLines: 5, decoration: const InputDecoration(hintText: 'Markdown: **negrita**, [enlace](url)')),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: RichTextEditor(
+            initialContent: post.content,
+            onContentChanged: (v) => newContent = v,
+          ),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
         ],
       ),
     );
-    final newText = ctl.text.trim();
-    ctl.dispose();
-    if (saved == true && newText.isNotEmpty) {
+    final content = newContent.trim();
+    if (saved == true && plainTextFrom(content).isNotEmpty) {
       try {
-        final updated = await _api.updatePost(post.id!, {'content': newText});
+        final updated = await _api.updatePost(post.id!, {'content': content});
         if (mounted) {
           setState(() => _posts = _posts.map((p) => p.id == post.id ? updated : p).toList());
         }
@@ -264,15 +271,10 @@ class _PublicationPanelState extends State<PublicationPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _contentCtl,
-              minLines: 2,
-              maxLines: 6,
-              textInputAction: TextInputAction.newline,
-              decoration: const InputDecoration(
-                hintText: 'Escribe una publicación… (Markdown: **negrita**, *cursiva*, [enlace](url), # título)',
-                border: OutlineInputBorder(),
-              ),
+            RichTextEditor(
+              initialContent: _richContent,
+              onContentChanged: (v) => setState(() => _richContent = v),
+              autoFocus: true,
             ),
             if (_showUrlField) ...[
               const SizedBox(height: 8),
@@ -335,8 +337,22 @@ class _PublicationPanelState extends State<PublicationPanel> {
     );
   }
 
+  Widget _postContent(String content, {TextStyle? style}) {
+    try {
+      final decoded = jsonDecode(content);
+      if (decoded is List) {
+        return RichTextEditor(
+          initialContent: content,
+          readOnly: true,
+        );
+      }
+    } catch (_) {}
+    return MarkdownText(data: content, style: style);
+  }
+
   (String title, String body) _splitTitle(String content) {
-    final lines = content.split('\n');
+    final plain = plainTextFrom(content);
+    final lines = plain.split('\n');
     final idx = lines.indexWhere((l) => l.trim().isNotEmpty);
     if (idx == -1) return ('Sin título', '');
     var first = lines[idx].trim();
@@ -351,7 +367,8 @@ class _PublicationPanelState extends State<PublicationPanel> {
   }
 
   int _readingMinutes(String content) {
-    final words = content.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final plain = plainTextFrom(content);
+    final words = plain.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
     return (words / 200).ceil().clamp(1, 99);
   }
 
@@ -434,7 +451,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
               ],
             ),
             const Divider(height: 24),
-            if (titleBody.$2.isNotEmpty) MarkdownText(data: titleBody.$2),
+            if (titleBody.$2.isNotEmpty) _postContent(titleBody.$2),
             if (embed != null) ...[
               const SizedBox(height: 12),
               EmbedPreview(embed: embed),
@@ -486,7 +503,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
               ],
             ),
             const SizedBox(height: 4),
-            MarkdownText(data: post.content, style: theme.textTheme.bodyMedium),
+            _postContent(post.content, style: theme.textTheme.bodyMedium),
             if (post.allowReplies || post.replyCount > 0 || canMod)
               TextButton.icon(
                 onPressed: () => _toggleExpanded(post),

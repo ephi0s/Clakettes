@@ -204,6 +204,79 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/public/profile/{token}` | non |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | non |
 
+## `federation` → `/api`
+
+| Méthode | Chemin | Auth |
+|---|---|---|
+| GET | `/api/nodes` | oui |
+| POST | `/api/nodes` | oui |
+| GET | `/api/manifest` | non |
+| PATCH | `/api/reports/{report_id}` | non |
+| GET | `/api/directory` | non |
+| POST | `/api/reports` | non |
+| GET | `/api/reports` | non |
+| DELETE | `/api/users/{user_ref}` | non |
+| GET | `/api/export/{user_ref}` | non |
+| GET | `/api/health` | non |
+| POST | `/api/verify` | non |
+| POST | `/api/publish` | non |
+| POST | `/api/recover` | non |
+| POST | `/api/bridge` | non |
+| GET | `/api/aggregate-nodes` | non |
+| GET | `/api/keys` | non |
+| GET | `/api/events` | non |
+| GET | `/api/capabilities` | non |
+| GET | `/api/status` | non |
+| GET | `/api/info` | non |
+| GET | `/api/ping` | non |
+| POST | `/api/echo` | non |
+| GET | `/api/time` | non |
+| GET | `/api/version` | non |
+| POST | `/api/checksum` | non |
+| POST | `/api/notify` | non |
+| POST | `/api/subscribe` | non |
+| POST | `/api/unsubscribe` | non |
+| GET | `/api/discover` | non |
+| POST | `/api/register` | non |
+| POST | `/api/unregister` | non |
+| POST | `/api/sync` | non |
+| POST | `/api/reconcile` | non |
+| GET | `/api/heartbeat` | non |
+| GET | `/api/whoami` | non |
+| GET | `/api/peers` | non |
+| GET | `/api/links` | non |
+| GET | `/api/stats` | non |
+| GET | `/api/config` | non |
+| GET | `/api/status-check` | non |
+| GET | `/api/ready` | non |
+| GET | `/api/live` | non |
+| GET | `/api/alive` | non |
+| GET | `/api/down` | non |
+| GET | `/api/maintenance` | non |
+| GET | `/api/readyz` | non |
+| GET | `/api/livez` | non |
+| GET | `/api/healthz` | non |
+| GET | `/api/ok` | non |
+| GET | `/api/yes` | non |
+| GET | `/api/no` | non |
+| GET | `/api/maybe` | non |
+| GET | `/api/always` | non |
+| GET | `/api/never` | non |
+| POST | `/api/import` | non |
+| POST | `/api/dedup` | non |
+| POST | `/api/retry` | non |
+| POST | `/api/recover-node` | non |
+| GET | `/api/fallback` | non |
+| GET | `/api/integrity` | non |
+| GET | `/api/degrade` | non |
+| GET | `/api/metrics` | non |
+| GET | `/api/users/{ref}` | non |
+| GET | `/api/.well-known/webfinger` | non |
+| POST | `/api/peers/verify` | non |
+| POST | `/api/peers/{domain}/revoke` | oui |
+| GET | `/api/.well-known/jwks.json` | non |
+| POST | `/api/token` | non |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Méthode | Chemin | Auth |
@@ -256,6 +329,16 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | PUT | `/api/forms/responses/{response_id}` | oui |
 | POST | `/api/forms/responses/{response_id}/approve` | oui |
 | POST | `/api/forms/responses/{response_id}/reject` | oui |
+
+## `jury_votes` → `/api`
+
+| Méthode | Chemin | Auth |
+|---|---|---|
+| POST | `/api` | oui |
+| GET | `/api/{festival_id}` | non |
+| GET | `/api/aggregate/{festival_id}` | non |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | non |
+| GET | `/api/anonymous/{festival_id}` | non |
 
 ## `keys` → `/api/users`
 
@@ -469,6 +552,15 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | oui |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | oui |
 
+## `user_blocks` → `/api`
+
+| Méthode | Chemin | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/blocks/` | oui |
+| DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | oui |
+| GET | `/api/users/{user_id}/blocks/` | oui |
+| GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | oui |
+
 ## `user_festival` → `/api/festivals`
 
 | Méthode | Chemin | Auth |
@@ -519,4 +611,4 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | oui |
 
-Total : 339 endpoints dans 35 routers.
+Total : 416 endpoints dans 38 routers.

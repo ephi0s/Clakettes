@@ -256,4 +256,11 @@ extension EventApi on ApiService {
     final data = await request('POST', '/reservations/$reservationId/cancel');
     return EventReservation.fromJson(data);
   }
+
+  /// Estado de cribado de las obras de un festival, agregado por evento.
+  /// Devuelve `{festival_id, screenings: [{shortfilm_id, status, is_disqualified, ...}]}`.
+  Future<Map<String, dynamic>> getFestivalScreenings(int festivalId) async {
+    final data = await request('GET', '/festivals/$festivalId/screenings');
+    return Map<String, dynamic>.from(data as Map);
+  }
 }

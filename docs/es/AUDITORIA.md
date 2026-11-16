@@ -2,7 +2,7 @@
 
 [ES](AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
-> **Addendum 11/10/2026** (cifras verificadas): backend 1439 `def test_` en 47 archivos; routers 40 ficheros (38 con `APIRouter`); servicios 43; modelos 40; schemas 37; Alembic 36 versiones; `docs/es/API.md` 339 endpoints en 38 routers (operationIds únicos). RGPD: privacidad por defecto, consentimiento, borrado/exportación, purga de sesiones, auditoría append-only, sanitizado de metadatos, TLS MariaDB en prod, DAV con caducidad, CSP/HSTS. Proveedores de pago mock/stripe/redsys.
+> **Addendum 16/11/2026** (cifras verificadas): backend 1439 `def test_` en 47 archivos; routers 40 ficheros (38 con `APIRouter`); servicios 45; modelos 42; schemas 37; Alembic 37 versiones; `docs/es/API.md` 416 endpoints en 38 routers (operationIds únicos). RGPD: privacidad por defecto, consentimiento, borrado/exportación, purga de sesiones, auditoría append-only, sanitizado de metadatos, TLS MariaDB en prod, DAV con caducidad, CSP/HSTS. Proveedores de pago mock/stripe/redsys. Federación: mTLS (`app/mtls.py`), `trusted_nodes`/`node_peering_sessions`, JWKS (`.well-known/jwks.json`), token federado RS256 (`/api/federation/token`), peers/verify y peers/revoke.
 
 ## 0. Resumen ejecutivo (10/10/2026, cifras verificadas)
 
@@ -10,9 +10,9 @@
 | --- | --- | --- |
 | Backend tests | 1439 `def test_` en 47 archivos | `Get-ChildItem backend/tests -Recurse -Filter "test_*.py" \| Select-String "def test_"` |
 | Frontend tests | 75 archivos `*_test.dart` | `Get-ChildItem frontend/test -Recurse -Filter "*_test.dart"` |
-| Routers/Services/Models/Schemas | 40/43/40/37 archivos (38 routers con `APIRouter`) | `dependencies.py`/`permissions.py` son helpers sin router; `base.py`/`__init__.py` no son entidades |
-| Migraciones | 36 versiones | `alembic/versions/` |
-| Endpoints | 339 en 38 routers (`docs/es/API.md` por AST) | `python tools/gen_api.py` idempotente; grep simple da ~290 (no cuenta `propfind/report/options/websocket`) |
+| Routers/Services/Models/Schemas | 40/45/42/37 archivos (38 routers con `APIRouter`) | `dependencies.py`/`permissions.py` son helpers sin router; `base.py`/`__init__.py` no son entidades |
+| Migraciones | 37 versiones | `alembic/versions/` |
+| Endpoints | 416 en 38 routers (`docs/es/API.md` por AST) | `python tools/gen_api.py` idempotente; grep simple da ~290 (no cuenta `propfind/report/options/websocket`) |
 | Lint | `ruff check` + `ruff format --check` limpios | `AGENTS.md` y CI (GH + GitLab) con gate de formato |
 | Docs | Backend consolidado en `docs/` | `docs/es/BACKEND.md` + `docs/es/DATABASE.md`; índice en `docs/es/README.md` |
 | Deuda principal | `get_or_404` parcial, `paginate_filtered` sin usos, `python-jose` sin migrar, 24 `AlertDialog` / 115 `ScaffoldMessenger` restantes | Ver §5 con conteos y verificación |

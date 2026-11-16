@@ -420,6 +420,29 @@ class AppLocalizations {
   String get requestSent => translate('requestSent');
   String get noTagsAvailable => translate('noTagsAvailable');
 
+  String get voting => translate('voting');
+  String get selectFestival => translate('selectFestival');
+  String get votingFor => translate('votingFor');
+  String get voteNoAccess => translate('voteNoAccess');
+  String get voteNoAccessDetail => translate('voteNoAccessDetail');
+  String get voteJuryInstructions => translate('voteJuryInstructions');
+  String get voteYourVotes => translate('voteYourVotes');
+  String get voteScore => translate('voteScore');
+  String get voteComment => translate('voteComment');
+  String get voteCommentHint => translate('voteCommentHint');
+  String get voteCastButton => translate('voteCastButton');
+  String get voteCast => translate('voteCast');
+  String get voteSaved => translate('voteSaved');
+  String get voteFailed => translate('voteFailed');
+  String get voteScoreRequired => translate('voteScoreRequired');
+  String get votingResults => translate('votingResults');
+  String get voteTotalVotes => translate('voteTotalVotes');
+  String get voteNoResultsYet => translate('voteNoResultsYet');
+  String get voteVotes => translate('voteVotes');
+  String get voteAndMore => translate('voteAndMore');
+  String get voteNotEligible => translate('voteNotEligible');
+  String get voteDisqualified => translate('voteDisqualified');
+
   String sectionCount(int count) => translate('sectionCount', args: {'count': count.toString()});
   String memberCount(int count) => translate('memberCount', args: {'count': count.toString()});
   String roleGroupCount(int count) => translate('roleGroupCount', args: {'count': count.toString()});

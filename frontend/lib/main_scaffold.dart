@@ -13,6 +13,7 @@ import 'screens/channels_screen.dart';
 import 'screens/locations_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/jury_voting_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/backend_setup_screen.dart';
 import 'screens/form_definitions_screen.dart';
@@ -48,7 +49,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   User? _currentUser;
   late AppLocalizations l10n;
   /// Widgets de pantalla cacheados (inicialización diferida)
-  final List<Widget?> _screens = List.filled(10, null);
+  final List<Widget?> _screens = List.filled(11, null);
   bool _initialized = false;
   int _unreadNotificationCount = 0;
   bool _isOffline = false;
@@ -258,7 +259,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   /// Requieren autenticación: Users(2), Chat(4), Locations(5), Admin(6), Notifications(7), Forms(8), Calendar(9)
   /// La pestaña Admin además requiere rol de administrador.
   void _navigateToScreen(int screenIndex) {
-    if (_currentUser == null && (screenIndex == 2 || screenIndex == 4 || screenIndex == 5 || screenIndex == 6 || screenIndex == 7 || screenIndex == 8 || screenIndex == 9)) {
+    if (_currentUser == null && (screenIndex == 2 || screenIndex == 4 || screenIndex == 5 || screenIndex == 6 || screenIndex == 7 || screenIndex == 8 || screenIndex == 9 || screenIndex == 10)) {
       _showLoginPrompt();
       return;
     }
@@ -408,6 +409,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
        7 => const NotificationsScreen(key: ValueKey('notifications')),
        8 => const FormDefinitionsScreen(),
        9 => const CalendarScreen(),
+        10 => const JuryVotingScreen(),
       _ => const DashboardScreen(),
     };
     return _screens[index] ?? const DashboardScreen();
@@ -435,6 +437,8 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
           _NavItem(icon: Icons.notifications_rounded, label: l10n.notifications, semanticLabel: l10n.notifications, screenIndex: 7, badge: _unreadNotificationCount),
         if (_currentUser != null)
           _NavItem(icon: Icons.assignment_rounded, label: l10n.forms, semanticLabel: l10n.forms, screenIndex: 8),
+        if (_currentUser != null)
+          _NavItem(icon: Icons.star_rounded, label: l10n.voting, semanticLabel: l10n.voting, screenIndex: 10),
       ];
 
   /// Título localizado de la pestaña actual (usado en AppBar y en semántica).
@@ -450,6 +454,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
       case 7: return l10n.notifications;
       case 8: return l10n.formDefinitions;
       case 9: return l10n.calendar;
+      case 10: return l10n.voting;
       default: return '';
     }
   }

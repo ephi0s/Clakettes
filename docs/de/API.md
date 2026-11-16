@@ -204,6 +204,79 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/public/profile/{token}` | nein |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | nein |
 
+## `federation` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/api/nodes` | ja |
+| POST | `/api/nodes` | ja |
+| GET | `/api/manifest` | nein |
+| PATCH | `/api/reports/{report_id}` | nein |
+| GET | `/api/directory` | nein |
+| POST | `/api/reports` | nein |
+| GET | `/api/reports` | nein |
+| DELETE | `/api/users/{user_ref}` | nein |
+| GET | `/api/export/{user_ref}` | nein |
+| GET | `/api/health` | nein |
+| POST | `/api/verify` | nein |
+| POST | `/api/publish` | nein |
+| POST | `/api/recover` | nein |
+| POST | `/api/bridge` | nein |
+| GET | `/api/aggregate-nodes` | nein |
+| GET | `/api/keys` | nein |
+| GET | `/api/events` | nein |
+| GET | `/api/capabilities` | nein |
+| GET | `/api/status` | nein |
+| GET | `/api/info` | nein |
+| GET | `/api/ping` | nein |
+| POST | `/api/echo` | nein |
+| GET | `/api/time` | nein |
+| GET | `/api/version` | nein |
+| POST | `/api/checksum` | nein |
+| POST | `/api/notify` | nein |
+| POST | `/api/subscribe` | nein |
+| POST | `/api/unsubscribe` | nein |
+| GET | `/api/discover` | nein |
+| POST | `/api/register` | nein |
+| POST | `/api/unregister` | nein |
+| POST | `/api/sync` | nein |
+| POST | `/api/reconcile` | nein |
+| GET | `/api/heartbeat` | nein |
+| GET | `/api/whoami` | nein |
+| GET | `/api/peers` | nein |
+| GET | `/api/links` | nein |
+| GET | `/api/stats` | nein |
+| GET | `/api/config` | nein |
+| GET | `/api/status-check` | nein |
+| GET | `/api/ready` | nein |
+| GET | `/api/live` | nein |
+| GET | `/api/alive` | nein |
+| GET | `/api/down` | nein |
+| GET | `/api/maintenance` | nein |
+| GET | `/api/readyz` | nein |
+| GET | `/api/livez` | nein |
+| GET | `/api/healthz` | nein |
+| GET | `/api/ok` | nein |
+| GET | `/api/yes` | nein |
+| GET | `/api/no` | nein |
+| GET | `/api/maybe` | nein |
+| GET | `/api/always` | nein |
+| GET | `/api/never` | nein |
+| POST | `/api/import` | nein |
+| POST | `/api/dedup` | nein |
+| POST | `/api/retry` | nein |
+| POST | `/api/recover-node` | nein |
+| GET | `/api/fallback` | nein |
+| GET | `/api/integrity` | nein |
+| GET | `/api/degrade` | nein |
+| GET | `/api/metrics` | nein |
+| GET | `/api/users/{ref}` | nein |
+| GET | `/api/.well-known/webfinger` | nein |
+| POST | `/api/peers/verify` | nein |
+| POST | `/api/peers/{domain}/revoke` | ja |
+| GET | `/api/.well-known/jwks.json` | nein |
+| POST | `/api/token` | nein |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Methode | Pfad | Auth |
@@ -256,6 +329,16 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PUT | `/api/forms/responses/{response_id}` | ja |
 | POST | `/api/forms/responses/{response_id}/approve` | ja |
 | POST | `/api/forms/responses/{response_id}/reject` | ja |
+
+## `jury_votes` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/api` | ja |
+| GET | `/api/{festival_id}` | nein |
+| GET | `/api/aggregate/{festival_id}` | nein |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | nein |
+| GET | `/api/anonymous/{festival_id}` | nein |
 
 ## `keys` → `/api/users`
 
@@ -469,6 +552,15 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | ja |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | ja |
 
+## `user_blocks` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/blocks/` | ja |
+| DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | ja |
+| GET | `/api/users/{user_id}/blocks/` | ja |
+| GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | ja |
+
 ## `user_festival` → `/api/festivals`
 
 | Methode | Pfad | Auth |
@@ -519,4 +611,4 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/validation-rule-groups/` | nein |
 | POST | `/api/validation-rule-groups/` | ja |
 
-Gesamt: 339 Endpunkte in 35 Routern.
+Gesamt: 416 Endpunkte in 38 Routern.

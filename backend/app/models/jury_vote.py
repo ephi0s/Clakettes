@@ -1,6 +1,6 @@
 """JuryVote model — scoring by jury (Fase 5)."""
 
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, Boolean, ForeignKey
 from app.models.base import BaseModel
 
 
@@ -12,3 +12,4 @@ class JuryVote(BaseModel):
     shortfilm_id = Column(Integer, ForeignKey("shortfilms.id"), nullable=False, index=True)
     score = Column(Float, nullable=False)
     comment = Column(String(500), nullable=True)
+    anonymous = Column(Boolean, default=False, nullable=False)

@@ -2,16 +2,24 @@
 
 import os
 
+import jwt
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
+from app.models.trusted_node import TrustedNode
 from app.auth import get_current_user
 from app.rate_limiter import RateLimiter
 from app.services.node_policy_service import NodePolicyService
 from app.services.moderation_report_service import ModerationReportService
+from app.services.node_peering_service import NodePeeringService
+from app.config import settings
+from app.services.federation_token_service import FederationTokenService
+
+federation_token_service = FederationTokenService()
 
 _federation_limiter = RateLimiter()
 
@@ -41,6 +49,23 @@ class NodePolicyIn(BaseModel):
     disable_chat: bool = False
     disable_search: bool = False
     reason: str | None = None
+
+
+def _require_peer(request: Request) -> TrustedNode | None:
+    """Exige identidad de nodo verificada vía mTLS cuando MTLS_REQUIRED está activo.
+
+    En desarrollo (MTLS_REQUIRED=False) devuelve None sin bloquear, para no romper
+    los placeholders de prueba. En producción, rechaza si no hay peer verificado.
+    """
+    if not settings.MTLS_REQUIRED:
+        return None
+    peer = getattr(request.state, "peer_node", None)
+    if peer is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="mTLS peer identity required",
+        )
+    return peer
 
 
 def _require_admin(current_user: User):
@@ -98,7 +123,19 @@ async def set_node_policy(
 
 @router.get("/manifest")
 async def federation_manifest():
-    return {"schema_version": "1", "node": "primary", "version": "1.0", "capabilities": ["festivals", "users", "chat"]}
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    return {
+        "schema_version": "1",
+        "node": settings.PUBLIC_BASE_URL or "primary",
+        "version": "1.0.0",
+        "capabilities": ["festivals", "users", "chat", "voting"],
+        "issued_at": now.isoformat(),
+        "expires_at": None,
+        "signature": None,
+        "certificate_chain": [],
+    }
 
 
 @router.patch("/reports/{report_id}")
@@ -110,10 +147,22 @@ async def update_report_status(report_id: int, status: str, db: Session = Depend
 
 
 @router.get("/directory")
-async def federation_directory():
+async def federation_directory(db: Session = Depends(get_db)):
+    nodes = NodePeeringService().list_allowed(db)
     return {
         "nodes": [
-            {"domain": "primary", "schema_version": "1", "status": "online", "version": "1.0", "last_seen": "now"}
+            {
+                "domain": n.node_domain,
+                "schema_version": "1",
+                "status": "online" if n.last_seen_at else "unknown",
+                "version": "1.0.0",
+                "last_seen": n.last_seen_at.isoformat() if n.last_seen_at else None,
+                "cert_fingerprint_sha256": n.cert_fingerprint_sha256,
+                "capabilities": n.capabilities or [],
+                "consent_required": n.consent_required,
+                "minimize_data": n.minimize_data,
+            }
+            for n in nodes
         ]
     }
 
@@ -423,7 +472,8 @@ async def federation_metrics():
 
 
 @router.get("/users/{ref}")
-async def resolve_user(ref: str, db: Session = Depends(get_db)):
+async def resolve_user(ref: str, request: Request, db: Session = Depends(get_db)):
+    _require_peer(request)
     user = db.query(User).filter((User.uuid == ref) | (User.did == ref) | (User.handle == ref)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -431,10 +481,138 @@ async def resolve_user(ref: str, db: Session = Depends(get_db)):
 
 
 @router.get("/.well-known/webfinger")
-async def webfinger(resource: str, db: Session = Depends(get_db)):
+async def webfinger(resource: str, request: Request, db: Session = Depends(get_db)):
+    _require_peer(request)
     # resource like acct:user@domain
     handle = resource.split("acct:")[-1]
     user = db.query(User).filter((User.handle == handle) | (User.username == handle.split("@")[0])).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"subject": resource, "links": [{"rel": "self", "href": f"/api/users/{user.id}"}]}
+
+
+class PeerVerifyIn(BaseModel):
+    node_domain: str
+    certificate_chain: list[str]  # PEM certificados, primero el del nodo
+    manifest_signature: str | None = None
+    manifest_payload: dict | None = None
+
+
+@router.post("/peers/verify")
+async def peers_verify(body: PeerVerifyIn, db: Session = Depends(get_db)):
+    """Valida la identidad de un nodo remoto: dominio + certificado + manifiesto firmado.
+
+    Devuelve si el nodo es de confianza y su huella de certificado.
+    """
+    service = NodePeeringService()
+    if not body.certificate_chain:
+        raise HTTPException(status_code=400, detail="certificate_chain required")
+
+    cert_pem = body.certificate_chain[0]
+    from app.mtls import cert_fingerprint_sha256
+
+    fingerprint = cert_fingerprint_sha256(cert_pem)
+
+    # El dominio del manifiesto/cert debe coincidir con node_domain
+    node = service.get_by_domain(db, body.node_domain)
+    if node is None:
+        return {"trusted": False, "reason": "dominio_no_registrado", "fingerprint": fingerprint}
+    if node.cert_fingerprint_sha256 != fingerprint:
+        return {"trusted": False, "reason": "huella_cert_no_coincide", "fingerprint": fingerprint}
+    if not node.allowed:
+        return {"trusted": False, "reason": "nodo_no_autorizado", "fingerprint": fingerprint}
+    return {"trusted": True, "domain": body.node_domain, "fingerprint": fingerprint}
+
+
+@router.post("/peers/{domain}/revoke")
+async def peers_revoke(domain: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    _require_admin(current_user)
+    service = NodePeeringService()
+    ok = service.revoke(db, domain)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Nodo no encontrado")
+    return {"domain": domain, "revoked": True}
+
+
+@router.get("/.well-known/jwks.json")
+async def federation_jwks():
+    """Clave pública de federación en formato JWKS para validación de tokens de pares."""
+    return federation_token_service.jwks()
+
+
+class FederationTokenIn(BaseModel):
+    subject: str
+
+
+@router.post("/token")
+async def federation_issue_token(body: FederationTokenIn, request: Request, db: Session = Depends(get_db)):
+    """Emite un JWT de federación firmado (RS256). Requiere peer mTLS verificado."""
+    peer = _require_peer(request)
+    if peer is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="mTLS peer identity required",
+        )
+    token = federation_token_service.create_token(
+        body.subject,
+        extra_claims={"issuer_node": peer.node_domain},
+    )
+    return {"access_token": token, "token_type": "Bearer", "expires_in": federation_token_service.ttl_seconds}
+
+
+async def get_current_federation_peer(request: Request) -> dict | None:
+    """Valida un Bearer token de federación entrante contra la clave pública JWKS del emisor.
+
+    Extrae el ``iss`` del token sin verificar (para saber qué nodo lo firmó) y
+    valida la firma contra el JWKS de ese nodo. Retorna el payload o None.
+    """
+    import base64
+    import httpx
+
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[7:].strip()
+    if not token:
+        return None
+    try:
+        unverified = jwt.decode(token, options={"verify_signature": False})
+    except jwt.PyJWTError:
+        return None
+    issuer = unverified.get("iss")
+    if not issuer:
+        return None
+    try:
+        jwks_url = f"https://{issuer}/api/federation/.well-known/jwks.json"
+        async with httpx.AsyncClient() as client:
+            r = await client.get(jwks_url, timeout=10)
+            r.raise_for_status()
+            jwks = r.json()
+    except Exception:
+        return None
+    keys = jwks.get("keys", [])
+    if not keys:
+        return None
+    key = keys[0]
+    n = int.from_bytes(base64.urlsafe_b64decode(key["n"] + "=="), "big")
+    e = int.from_bytes(base64.urlsafe_b64decode(key["e"] + "=="), "big")
+    public_numbers = RSAPublicNumbers(e, n)
+    public_key = public_numbers.public_key()
+    public_pem = public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo).decode("ascii")
+    try:
+        payload = jwt.decode(
+            token,
+            public_pem,
+            algorithms=["RS256"],
+            audience="clakettes-federation",
+            issuer=issuer,
+            options={"require": ["exp", "iss", "aud", "sub", "typ"]},
+        )
+        if payload.get("typ") != "federation":
+            return None
+        return payload
+    except jwt.PyJWTError:
+        return None

@@ -204,6 +204,79 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/public/profile/{token}` | ez |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | ez |
 
+## `federation` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| GET | `/api/nodes` | bai |
+| POST | `/api/nodes` | bai |
+| GET | `/api/manifest` | ez |
+| PATCH | `/api/reports/{report_id}` | ez |
+| GET | `/api/directory` | ez |
+| POST | `/api/reports` | ez |
+| GET | `/api/reports` | ez |
+| DELETE | `/api/users/{user_ref}` | ez |
+| GET | `/api/export/{user_ref}` | ez |
+| GET | `/api/health` | ez |
+| POST | `/api/verify` | ez |
+| POST | `/api/publish` | ez |
+| POST | `/api/recover` | ez |
+| POST | `/api/bridge` | ez |
+| GET | `/api/aggregate-nodes` | ez |
+| GET | `/api/keys` | ez |
+| GET | `/api/events` | ez |
+| GET | `/api/capabilities` | ez |
+| GET | `/api/status` | ez |
+| GET | `/api/info` | ez |
+| GET | `/api/ping` | ez |
+| POST | `/api/echo` | ez |
+| GET | `/api/time` | ez |
+| GET | `/api/version` | ez |
+| POST | `/api/checksum` | ez |
+| POST | `/api/notify` | ez |
+| POST | `/api/subscribe` | ez |
+| POST | `/api/unsubscribe` | ez |
+| GET | `/api/discover` | ez |
+| POST | `/api/register` | ez |
+| POST | `/api/unregister` | ez |
+| POST | `/api/sync` | ez |
+| POST | `/api/reconcile` | ez |
+| GET | `/api/heartbeat` | ez |
+| GET | `/api/whoami` | ez |
+| GET | `/api/peers` | ez |
+| GET | `/api/links` | ez |
+| GET | `/api/stats` | ez |
+| GET | `/api/config` | ez |
+| GET | `/api/status-check` | ez |
+| GET | `/api/ready` | ez |
+| GET | `/api/live` | ez |
+| GET | `/api/alive` | ez |
+| GET | `/api/down` | ez |
+| GET | `/api/maintenance` | ez |
+| GET | `/api/readyz` | ez |
+| GET | `/api/livez` | ez |
+| GET | `/api/healthz` | ez |
+| GET | `/api/ok` | ez |
+| GET | `/api/yes` | ez |
+| GET | `/api/no` | ez |
+| GET | `/api/maybe` | ez |
+| GET | `/api/always` | ez |
+| GET | `/api/never` | ez |
+| POST | `/api/import` | ez |
+| POST | `/api/dedup` | ez |
+| POST | `/api/retry` | ez |
+| POST | `/api/recover-node` | ez |
+| GET | `/api/fallback` | ez |
+| GET | `/api/integrity` | ez |
+| GET | `/api/degrade` | ez |
+| GET | `/api/metrics` | ez |
+| GET | `/api/users/{ref}` | ez |
+| GET | `/api/.well-known/webfinger` | ez |
+| POST | `/api/peers/verify` | ez |
+| POST | `/api/peers/{domain}/revoke` | bai |
+| GET | `/api/.well-known/jwks.json` | ez |
+| POST | `/api/token` | ez |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Metodoa | Ibilbidea | Auth |
@@ -256,6 +329,16 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | PUT | `/api/forms/responses/{response_id}` | bai |
 | POST | `/api/forms/responses/{response_id}/approve` | bai |
 | POST | `/api/forms/responses/{response_id}/reject` | bai |
+
+## `jury_votes` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| POST | `/api` | bai |
+| GET | `/api/{festival_id}` | ez |
+| GET | `/api/aggregate/{festival_id}` | ez |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | ez |
+| GET | `/api/anonymous/{festival_id}` | ez |
 
 ## `keys` → `/api/users`
 
@@ -469,6 +552,15 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | bai |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | bai |
 
+## `user_blocks` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/blocks/` | bai |
+| DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | bai |
+| GET | `/api/users/{user_id}/blocks/` | bai |
+| GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | bai |
+
 ## `user_festival` → `/api/festivals`
 
 | Metodoa | Ibilbidea | Auth |
@@ -519,4 +611,4 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/validation-rule-groups/` | ez |
 | POST | `/api/validation-rule-groups/` | bai |
 
-Guztira: 339 endpoint 35 routerretan.
+Guztira: 416 endpoint 38 routerretan.

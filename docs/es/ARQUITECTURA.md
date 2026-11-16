@@ -28,17 +28,17 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 | CalDAV | `app/dav/` + `routers/dav.py` (prefijo `/dav`, bucket propio 600/60s) | Token bearer en URL; TLS obligatorio en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import perezoso |
 | Migraciones | `alembic/` (36 versiones) | Prod solo Alembic; dev además `create_all` |
-| Federación | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directorio, nodos, reportes, webfinger, users ref |
+| Federación | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifest, directorio, nodos, reportes, webfinger, users ref, JWKS, token federado, peers/verify, peers/revoke, mTLS |
 
 Conteos reales (verificados en disco):
 
 | Componente | Archivos | Nota |
 |---|---|---|
 | Routers | 40 (38 con `APIRouter`) | `dependencies.py` y `permissions.py` son helpers sin router |
-| Servicios | 43 | + `__init__.py` |
-| Modelos de entidad | 40 | + `base.py` y `__init__.py` |
+| Servicios | 45 | + `__init__.py` |
+| Modelos de entidad | 42 | + `base.py` y `__init__.py` |
 | Schemas | 37 | |
-| Migraciones Alembic | 36 | + `__init__.py` |
+| Migraciones Alembic | 37 | + `__init__.py` |
 | Archivos de test | 47 | `test_*.py` |
 | Líneas `def test_` | 1439 | |
 

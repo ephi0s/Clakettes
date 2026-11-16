@@ -64,6 +64,7 @@ from app.models.base import Base
 from app.models.user import User
 from app.services.user_service import hash_password
 from app.config import settings
+from app.mtls import MTLSPeerVerificationMiddleware
 
 # Maximum request body size: 10 MB
 MAX_BODY_SIZE = 10 * 1024 * 1024
@@ -513,6 +514,10 @@ if settings.CORS_ORIGINS and settings.CORS_ORIGINS.strip():
     ]
     if allowed_hosts and "*" not in allowed_hosts:
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+
+# mTLS peer verification for federation endpoints (Fase 2).
+# Desactivado por defecto (MTLS_REQUIRED=False); activar en producción.
+app.add_middleware(MTLSPeerVerificationMiddleware, require_mtls=settings.MTLS_REQUIRED)
 
 app.add_middleware(
     CORSMiddleware,

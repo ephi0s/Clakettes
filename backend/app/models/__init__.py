@@ -56,6 +56,7 @@ from app.models.audit_log import AuditLog
 from app.models.node_policy import NodePolicy
 from app.models.moderation_report import ModerationReport
 from app.models.jury_vote import JuryVote
+from app.models.trusted_node import TrustedNode, NodePeeringSession
 from app.models.location import Location
 from app.models.location_tag import LocationTag
 from app.models.shortfilm_location import ShortFilmLocation
@@ -144,6 +145,8 @@ __all__ = [
     "NodePolicy",
     "ModerationReport",
     "JuryVote",
+    "TrustedNode",
+    "NodePeeringSession",
     "Location",
     "LocationTag",
     "ShortFilmLocation",

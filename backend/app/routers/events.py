@@ -61,6 +61,7 @@ from app.models.event import (
     EventVisibilityScope,
     SeatStatus,
 )
+from app.models.event_screening import EventScreening
 from app.models.festival import Festival
 from app.models.user import User
 from app.models.user_role import UserRoleStatus
@@ -385,6 +386,43 @@ async def set_screenings(
     ids = body.get("shortfilm_ids", [])
     updated = event_service.set_screenings(db, event, [int(i) for i in ids])
     return {"event_id": event_id, "shortfilm_ids": updated.screening_shortfilm_ids}
+
+
+@router.get("/festivals/{festival_id}/screenings")
+async def festival_screenings(
+    festival_id: int,
+    db: Session = Depends(get_db),
+):
+    """Estado de cribado de todas las obras de un festival, agregado por evento.
+
+    Devuelve, por cada cortometraje que tenga al menos un screening en un evento
+    del festival, su último estado conocido (priorizando 'disqualified' si
+    existe) para que el jurado sepa qué obras son elegibles para votar.
+    """
+    get_or_404(db, Festival, festival_id, "Festival")
+    events = db.query(Event).filter(Event.festival_id == festival_id).all()
+    event_ids = [e.id for e in events]
+    result = {}
+    if event_ids:
+        rows = db.query(EventScreening).filter(EventScreening.event_id.in_(event_ids)).all()
+        # Un cortometraje puede tener screenings en varios eventos; conserva el
+        # estado más restrictivo (disqualified > screened > pending).
+        rank = {"disqualified": 3, "screened": 2, "pending": 1}
+        for row in rows:
+            sid = row.shortfilm_id
+            status = row.status or "pending"
+            prev = result.get(sid)
+            if prev is None or rank.get(status, 0) > rank.get(prev["status"], 0):
+                result[sid] = {
+                    "shortfilm_id": sid,
+                    "event_id": row.event_id,
+                    "status": status,
+                    "status_reason": row.status_reason,
+                    "is_disqualified": row.is_disqualified,
+                    "jury_notes": row.jury_notes,
+                    "annotation": row.annotation,
+                }
+    return {"festival_id": festival_id, "screenings": list(result.values())}
 
 
 @router.get("/events/{event_id}/occupancy")
