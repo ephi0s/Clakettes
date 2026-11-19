@@ -18,6 +18,7 @@ import 'screens/login_screen.dart';
 import 'screens/backend_setup_screen.dart';
 import 'screens/form_definitions_screen.dart';
 import 'screens/calendar_screen.dart';
+import 'screens/node_management_screen.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
 import 'services/locale_service.dart';
@@ -582,6 +583,20 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
                       LocaleService.instance.currentLocale?.languageCode ?? 'en'] ?? 'English'),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   onTap: () => showLanguagePicker(context),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.hub, size: 22),
+                  title: Text('Nodos federados', style: Theme.of(context).textTheme.bodyLarge),
+                  subtitle: const Text('Selección y fallback de backends', style: TextStyle(fontSize: 12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const NodeManagementScreen()),
+                    );
+                  },
                 ),
               ],
             ),

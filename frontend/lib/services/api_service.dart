@@ -185,6 +185,9 @@ class ApiService {
     }
   }
 
+  /// Prueba la conectividad de una URL de nodo concreta (GET /health).
+  Future<bool> testNode(String url) async => _healthCheckSingle(url);
+
   /// Libera el cliente HTTP para liberar recursos.
   void dispose() {
     client.close();
