@@ -14,6 +14,52 @@ Mutil-ak eskainita:
 - `python export_sqlite_to_mariadb.py` — Garapena → Produktua
 - `python import_mariadb_to_sqlite.py` — Produktua → Garapena
 
+## MariaDB-ra konfigurazioa (produktuan)
+
+Lehenezgo Clakettes SQLite-ra erabiltzen du (`clakettes.db`), konfigurazioarik gabe. MariaDB erabiltzeko:
+
+1. Kopiatu `backend/.env.example` `backend/.env`-ra eta `DATABASE_URL` lerroa MariaDB-ri deskontratu:
+   ```env
+   DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
+   ```
+2. Hasi MariaDB kontainea:
+   ```bash
+   # Garapen/lerroa MariaDBarekin
+   docker compose --profile db up -d
+
+   # Produkzioa (backend + frontend + MariaDB + nginx)
+   docker compose --profile prod up -d
+   ```
+3. Egiaztatu migrazioak (Alembic-ekin baizik, `create_all` ezerk ez produktuan):
+   ```bash
+   cd backend
+   alembic upgrade head
+   ```
+   Proiektuaren skirtuak erabilita:
+   ```bash
+   start.* --migrate --mariadb
+   ```
+4. (Aukeratu) Datuak SQLite-tik MariaDB-ra kopiatu:
+   ```bash
+   cd backend && python tools/export_sqlite_to_mariadb.py
+   ```
+
+MariaDB erabiltzen denean `backend/.env`-ko aldagaiak beharrezkoa:
+
+| Aldagaia | Adibidea | Notas |
+|---|---|---|
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | SQLAlchemy konexio-arekua; Docker Compose-eko gaia `db` da |
+| `SECRET_KEY` | `change-this-in-production` | JWT zatikia |
+| `CORS_ORIGINS` | `https://your-domain.com` | Domeinu esplikutak produktuaren gaitan |
+| `PUBLIC_BASE_URL` | `https://your-domain.com` | Nodoen URL pubblica (federazioa) |
+
+Docker Compose-koan `db` zerbitzua (MariaDB 11) `--profile db` edo `--profile prod`-era aktibatzea da; backend-a `db`-re konektatuta dago, portua 3306.
+
+Oharrak garrantzitsuak:
+- MariaDB produktuaren gaitan TLS beharrezkoa da: `DATABASE_URL`-era `?ssl_ca=...` gehitu.
+- Ez erabili `create_all` produktuaren gaitan; eskemaa Alembic-rik baskerez kudeatu (`alembic upgrade head`).
+- MariaDB-tik SQLite-ra itzuli: `python tools/import_mariadb_to_sqlite.py`.
+
 ## Model-ren zerrenda
 
 | Modelo | Taula | Tipus |

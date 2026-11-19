@@ -12,6 +12,52 @@ Hi einines de migració disponibles per sincronitzar entorns:
 - `python export_sqlite_to_mariadb.py` — Desenvolupament a producció
 - `python import_mariadb_to_sqlite.py` — Producció a desenvolupament
 
+## Configurar MariaDB (producció)
+
+Per defecte Clakettes utilitza SQLite (`clakettes.db`), que no requereix configuració. Per usar MariaDB:
+
+1. Copia `backend/.env.example` a `backend/.env` i descomenta la línia de `DATABASE_URL` per MariaDB:
+   ```env
+   DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
+   ```
+2. Alça el contenidor MariaDB:
+   ```bash
+   # Desenvolupament/local amb MariaDB
+   docker compose --profile db up -d
+
+   # Producció (backend + frontend + MariaDB + nginx)
+   docker compose --profile prod up -d
+   ```
+3. Executa les migracions (només Alembic, mai `create_all` en producció):
+   ```bash
+   cd backend
+   alembic upgrade head
+   ```
+   O amb els scripts del projecte:
+   ```bash
+   start.* --migrate --mariadb
+   ```
+4. (Opcional) Copia dades de SQLite a MariaDB:
+   ```bash
+   cd backend && python tools/export_sqlite_to_mariadb.py
+   ```
+
+Variables requerides a `backend/.env` quan s'utilitza MariaDB:
+
+| Variable | Exemple | Notes |
+|---|---|---|
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | Cadena de connexió SQLAlchemy; en Docker Compose l'amfitrió es `db` |
+| `SECRET_KEY` | `canvia-aquesta-clau-en-produccio` | Clau de signat JWT |
+| `CORS_ORIGINS` | `https://teu-dominio.com` | Dominis explícits en producció |
+| `PUBLIC_BASE_URL` | `https://teu-dominio.com` | URL pública del node (federació) |
+
+En Docker Compose el servei `db` (MariaDB 11) s'activa amb `--profile db` o `--profile prod`; el backend es connecta utilitzant `db` com a amfitrió i el port `3306`.
+
+Notes importants:
+- MariaDB en producció exigeix TLS: afegeix `?ssl_ca=...` a `DATABASE_URL`.
+- No uses mai `create_all` en producció; gestiona l'esquema només amb Alembic (`alembic upgrade head`).
+- Per tornar de MariaDB a SQLite: `python tools/import_mariadb_to_sqlite.py`.
+
 ## Resum de models
 
 | Model | Taula | Tipus |

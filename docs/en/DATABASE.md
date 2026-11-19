@@ -12,6 +12,52 @@ Migration tools are available to sync between environments:
 - `python export_sqlite_to_mariadb.py` — Development to production
 - `python import_mariadb_to_sqlite.py` — Production to development
 
+## Configuring MariaDB (production)
+
+By default Clakettes uses SQLite (`clakettes.db`), which requires no configuration. To use MariaDB:
+
+1. Copy `backend/.env.example` to `backend/.env` and uncomment the MariaDB `DATABASE_URL` line:
+   ```env
+   DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
+   ```
+2. Start the MariaDB container:
+   ```bash
+   # Development/local with MariaDB
+   docker compose --profile db up -d
+
+   # Production (backend + frontend + MariaDB + nginx)
+   docker compose --profile prod up -d
+   ```
+3. Run migrations (Alembic only, never `create_all` in production):
+   ```bash
+   cd backend
+   alembic upgrade head
+   ```
+   Or with the project scripts:
+   ```bash
+   start.* --migrate --mariadb
+   ```
+4. (Optional) Copy data from SQLite to MariaDB:
+   ```bash
+   cd backend && python tools/export_sqlite_to_mariadb.py
+   ```
+
+Required variables in `backend/.env` when using MariaDB:
+
+| Variable | Example | Notes |
+|---|---|---|
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | SQLAlchemy connection string; in Docker Compose the host is `db` |
+| `SECRET_KEY` | `change-this-in-production` | JWT signing key |
+| `CORS_ORIGINS` | `https://your-domain.com` | Explicit domains in production |
+| `PUBLIC_BASE_URL` | `https://your-domain.com` | Public node URL (federation) |
+
+In Docker Compose the `db` service (MariaDB 11) is enabled with `--profile db` or `--profile prod`; the backend connects using `db` as host and port `3306`.
+
+Important notes:
+- MariaDB in production requires TLS: add `?ssl_ca=...` to `DATABASE_URL`.
+- Never use `create_all` in production; manage the schema only with Alembic (`alembic upgrade head`).
+- To revert from MariaDB to SQLite: `python tools/import_mariadb_to_sqlite.py`.
+
 ## Model summary
 
 | Model | Table | Type |

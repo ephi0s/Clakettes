@@ -12,6 +12,52 @@ Migrationswerkzeuge sind verfügbar, um zwischen Umgebungen zu synchronisieren:
 - `python export_sqlite_to_mariadb.py` — Entwicklung zu Produktion
 - `python import_mariadb_to_sqlite.py` — Produktion zu Entwicklung
 
+## MariaDB konfigurieren (Produktion)
+
+Standardmäßig verwendet Clakettes SQLite (`clakettes.db`), das keine Konfiguration erfordert. Um MariaDB zu verwenden:
+
+1. Kopieren Sie `backend/.env.example` nach `backend/.env` und kommentieren Sie die `DATABASE_URL`-Zeile für MariaDB ein:
+   ```env
+   DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
+   ```
+2. Starten Sie den MariaDB-Container:
+   ```bash
+   # Entwicklung/lokal mit MariaDB
+   docker compose --profile db up -d
+
+   # Produktion (Backend + Frontend + MariaDB + nginx)
+   docker compose --profile prod up -d
+   ```
+3. Führen Sie Migrationen aus (nur Alembic, niemals `create_all` in Produktion):
+   ```bash
+   cd backend
+   alembic upgrade head
+   ```
+   Oder mit den Projekt-Skripten:
+   ```bash
+   start.* --migrate --mariadb
+   ```
+4. (Optional) Daten von SQLite nach MariaDB kopieren:
+   ```bash
+   cd backend && python tools/export_sqlite_to_mariadb.py
+   ```
+
+Erforderliche Variablen in `backend/.env` bei Verwendung von MariaDB:
+
+| Variable | Beispiel | Hinweise |
+|---|---|---|
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | SQLAlchemy-Verbindungsstring; in Docker Compose ist der Host `db` |
+| `SECRET_KEY` | `change-this-in-production` | JWT-Signierungsschlüssel |
+| `CORS_ORIGINS` | `https://your-domain.com` | Explizite Domains in Produktion |
+| `PUBLIC_BASE_URL` | `https://your-domain.com` | Öffentliche Node-URL (Föderation) |
+
+In Docker Compose wird der `db`-Service (MariaDB 11) mit `--profile db` oder `--profile prod` aktiviert; der Backend verbindet sich über `db` als Host und Port `3306`.
+
+Wichtige Hinweise:
+- MariaDB in Produktion erfordert TLS: fügen Sie `?ssl_ca=...` zu `DATABASE_URL` hinzu.
+- Verwenden Sie niemals `create_all` in Produktion; verwalten Sie das Schema nur mit Alembic (`alembic upgrade head`).
+- Zurück von MariaDB zu SQLite: `python tools/import_mariadb_to_sqlite.py`.
+
 ## Modellzusammenfassung
 
 | Modell | Tabelle | Typ |
