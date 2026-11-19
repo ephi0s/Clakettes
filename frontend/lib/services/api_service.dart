@@ -31,6 +31,8 @@ import '../models/post_model.dart';
 import '../models/badge_model.dart';
 import 'backend_config.dart';
 import 'auth_service.dart';
+import 'node_info_model.dart';
+import 'node_service.dart';
 
 part 'api/festival_api.dart';
 part 'api/user_api.dart';
@@ -79,6 +81,7 @@ class ApiService {
   String? _rootUrl;
   String? _baseUrl;
   final AuthService _auth;
+  final NodeService _nodes = NodeService();
 
   ApiService._internal()
       : client = http.Client(),
@@ -89,11 +92,19 @@ class ApiService {
     _baseUrl = '$_rootUrl/api';
   }
 
-  /// URL raíz del backend (sin el prefijo `/api`).
-  String get rootUrl => _rootUrl ?? BackendConfig.platformDefaultUrl;
+  /// URL raíz del backend (sin el prefijo `/api`). Usa el nodo activo si hay
+  /// uno, si no el URL legacy único.
+  String get rootUrl {
+    final active = _nodes.activeNode;
+    if (active != null) return active.effectiveUrl;
+    return _rootUrl ?? BackendConfig.platformDefaultUrl;
+  }
 
   /// URL base del backend con el prefijo `/api`.
-  String get baseUrl => _baseUrl ?? '${BackendConfig.platformDefaultUrl}/api';
+  String get baseUrl => '${rootUrl}/api';
+
+  /// URL del nodo activo (o la legacy si no hay nodos), para uso directo.
+  String get activeBaseUrl => '${rootUrl}/api';
 
   /// Sustituye el cliente HTTP (útil para tests).
   void setClient(http.Client newClient) {
@@ -109,7 +120,28 @@ class ApiService {
   /// Devuelve `true` si hay una sesión de usuario iniciada (token JWT almacenado).
   Future<bool> get isAuthenticated async => _auth.isLoggedIn();
 
-  /// Actualiza la URL base en runtime (p. ej., desde la pantalla de configuración del backend).
+  /// Configura (o registra y activa) un nodo por su URL base.
+  ///
+  /// Se usa desde la pantalla de configuración del backend y desde el gestor de
+  /// nodos. El nodo queda marcado como activo.
+  Future<void> setActiveNode(String url, {String? domain, String? displayName}) async {
+    final clean = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+    final d = domain ?? Uri.parse(clean).host;
+    await _nodes.upsert(
+      NodeInfo(
+        id: d,
+        domain: d,
+        baseUrl: clean,
+        displayName: displayName ?? d,
+        trusted: true,
+        enabled: true,
+      ),
+      markActive: true,
+    );
+  }
+
+  /// Retrocede a la URL legacy única (mantiene compatibilidad con llamadas
+  /// antiguas que invocan [setBaseUrl]).
   void setBaseUrl(String url) {
     _rootUrl = url;
     _baseUrl = '$url/api';
@@ -128,10 +160,25 @@ class ApiService {
     };
   }
 
-  /// Devuelve `true` si el backend es accesible.
+  /// Devuelve `true` si algún nodo conocido es accesible. Prueba en orden de
+  /// fallback (activo primero) hasta encontrar uno vivo.
   Future<bool> healthCheck() async {
+    final candidates = _nodes.fallbackOrder();
+    if (candidates.isEmpty) {
+      return _healthCheckSingle(rootUrl);
+    }
+    for (final node in candidates) {
+      if (await _healthCheckSingle(node.effectiveUrl)) {
+        await _nodes.markSeen(node.domain);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> _healthCheckSingle(String url) async {
     try {
-      final uri = Uri.parse('$rootUrl/health');
+      final uri = Uri.parse('$url/health');
       final response =
           await client.get(uri).timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
@@ -230,16 +277,48 @@ class ApiService {
         statusCode: response.statusCode);
   }
 
-  /// Ejecuta una petición HTTP contra el backend.
+  /// Ejecuta una petición HTTP contra el backend con fallback entre nodos.
   ///
-  /// [method] es GET, POST, PUT o DELETE. [path] es relativo a [baseUrl]
-  /// (p. ej. `/festivals/`). Devuelve el cuerpo JSON decodificado, o `null` para 204.
-  /// Ante un 401, intenta automáticamente un refresh de token una vez antes de fallar.
+  /// Prueba los nodos en orden de fallback (activo primero). Reintenta en otro
+  /// nodo solo ante errores de red/timeout o 5xx/429; errores 4xx del cliente
+  /// (401, 403, 404) no se reenvían a otro nodo.
   Future<dynamic> request(
     String method,
     String path, {
     Object? body,
     bool withAuth = true,
+  }) async {
+    final candidates = _nodes.fallbackOrder();
+    if (candidates.isEmpty) {
+      return _requestSingle(method, path, body: body, withAuth: withAuth, baseUrl: baseUrl);
+    }
+
+    ApiException? lastError;
+    for (final node in candidates) {
+      try {
+        return await _requestSingle(
+          method,
+          path,
+          body: body,
+          withAuth: withAuth,
+          baseUrl: '${node.effectiveUrl}/api',
+        );
+      } on ApiException catch (e) {
+        lastError = e;
+        final sc = e.statusCode;
+        if (sc == null || sc >= 500 || sc == 429) continue;
+        rethrow;
+      }
+    }
+    throw lastError ?? ApiException('$method $path failed (todos los nodos no respondieron)');
+  }
+
+  Future<dynamic> _requestSingle(
+    String method,
+    String path, {
+    Object? body,
+    bool withAuth = true,
+    required String baseUrl,
   }) async {
     final uri = Uri.parse('$baseUrl$path');
 

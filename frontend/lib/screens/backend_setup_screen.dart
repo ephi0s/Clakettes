@@ -74,7 +74,7 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
     final url = _urlController.text.trim();
     if (url.isEmpty) return;
 
-    await BackendConfig.setUrl(url);
+    await ApiService().setActiveNode(url, displayName: url);
     ApiService().setBaseUrl(url);
     if (mounted) {
       setState(() => _isSaved = true);

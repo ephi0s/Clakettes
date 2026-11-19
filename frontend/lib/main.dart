@@ -9,6 +9,7 @@ import 'services/sync_queue_service.dart';
 import 'services/connectivity_monitor.dart';
 import 'services/locale_service.dart';
 import 'services/notification_service.dart';
+import 'services/node_service.dart';
 import 'auth_wrapper.dart';
 
 /// Punto de entrada de la aplicación.
@@ -36,6 +37,7 @@ void main() async {
   } catch (e) {
     debugPrint('NotificationService init error: $e');
   }
+  await NodeService().load();
   runApp(const ClakettesApp());
 }
 
