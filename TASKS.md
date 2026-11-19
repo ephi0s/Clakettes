@@ -29,6 +29,7 @@ Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse
 - [ ] Reintentos y entrega diferida ante nodos caídos
 
 ## Fase 10 — Resiliencia y observabilidad (POLISH)
+- [ ] Heartbeat periódico entre nodos para detección de caídas y notificación a administradores de problemas de sincronización
 - [ ] Health checks por nodo y degradación elegante en la app
 - [ ] Métricas y logs de peering (latencia, fallos, reintentos)
 - [ ] Plan de recuperación ante compromiso de un nodo (revocación de claves)
