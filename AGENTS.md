@@ -96,6 +96,24 @@ Backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, 
 - Bases de datos o migraciones: `alembic upgrade head`; SQLite ↔ MariaDB revisa `docs/es/USO.md` y `docs/es/DATABASE.md`.
 - Flutter: `flutter pub get`; generación de código Hive/build_runner en `docs/es/ARQUITECTURA.md`.
 
+## Sincronización al iniciar sesión
+
+Antes de comenzar cualquier trabajo, comprueba si el repositorio remoto tiene cambios que no están en la copia local:
+
+```bash
+git fetch origin
+git status -sb
+git log --oneline @{u}..HEAD
+```
+
+Si hay commits en `origin/main` que no están en `main` local:
+
+```bash
+git pull --ff-only
+```
+
+Esto evita trabajar sobre código obsoleto y reduce conflictos al publicar los cambios al final de la sesión.
+
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.
 
