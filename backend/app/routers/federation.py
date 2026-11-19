@@ -51,6 +51,14 @@ class NodePolicyIn(BaseModel):
     reason: str | None = None
 
 
+class NodeRegisterIn(BaseModel):
+    node_domain: str
+    fingerprint_sha256: str
+    subject_cn: str | None = None
+    capabilities: list[str] | None = None
+    allowed: bool = True
+
+
 def _require_peer(request: Request) -> TrustedNode | None:
     """Exige identidad de nodo verificada vía mTLS cuando MTLS_REQUIRED está activo.
 
@@ -307,8 +315,29 @@ async def federation_discover():
 
 
 @router.post("/register")
-async def federation_register(payload: dict):
-    return {"registered": True}
+async def federation_register(body: NodeRegisterIn, db: Session = Depends(get_db)):
+    """Registra o actualiza un nodo federado (dominio + huella de cert + capacidades).
+
+    Es el punto de entrada del directorio de nodos: tras el handshake mTLS, cada
+    nodo se anuncia aquí para aparecer en GET /federation/directory.
+    """
+    node = NodePeeringService().register_or_update(
+        db,
+        body.node_domain,
+        body.fingerprint_sha256,
+        subject_cn=body.subject_cn,
+        capabilities=body.capabilities,
+        allowed=body.allowed,
+    )
+    return {
+        "node_domain": node.node_domain,
+        "fingerprint_sha256": node.cert_fingerprint_sha256,
+        "subject_cn": node.cert_subject_cn,
+        "allowed": node.allowed,
+        "capabilities": node.capabilities or [],
+        "last_seen": node.last_seen_at.isoformat() if node.last_seen_at else None,
+        "registered": True,
+    }
 
 
 @router.post("/unregister")
