@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # Backend Python (pip)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      backend-deps:
+        patterns:
+          - "*"
+    labels:
+      - "backend"
+      - "dependencies"
+    assignees:
+      - "ephi0s"
+    commit-message:
+      prefix: "build(backend):"
+      include: "scope"
+
+  # Frontend Flutter/Dart (pub)
+  - package-ecosystem: "pub"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      frontend-deps:
+        patterns:
+          - "*"
+    labels:
+      - "frontend"
+      - "dependencies"
+    assignees:
+      - "ephi0s"
+    commit-message:
+      prefix: "build(frontend):"
+      include: "scope"
