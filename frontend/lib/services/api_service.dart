@@ -79,7 +79,6 @@ class ApiService {
   /// Cliente HTTP subyacente.
   http.Client client;
   String? _rootUrl;
-  String? _baseUrl;
   final AuthService _auth;
   final NodeService _nodes = NodeService();
 
@@ -89,7 +88,6 @@ class ApiService {
     _rootUrl = BackendConfig.compileTimeUrl != BackendConfig.defaultUrl
         ? BackendConfig.compileTimeUrl
         : BackendConfig.platformDefaultUrl;
-    _baseUrl = '$_rootUrl/api';
   }
 
   /// URL raíz del backend (sin el prefijo `/api`). Usa el nodo activo si hay
@@ -101,10 +99,10 @@ class ApiService {
   }
 
   /// URL base del backend con el prefijo `/api`.
-  String get baseUrl => '${rootUrl}/api';
+  String get baseUrl => '$rootUrl/api';
 
   /// URL del nodo activo (o la legacy si no hay nodos), para uso directo.
-  String get activeBaseUrl => '${rootUrl}/api';
+  String get activeBaseUrl => '$rootUrl/api';
 
   /// Sustituye el cliente HTTP (útil para tests).
   void setClient(http.Client newClient) {
@@ -144,7 +142,6 @@ class ApiService {
   /// antiguas que invocan [setBaseUrl]).
   void setBaseUrl(String url) {
     _rootUrl = url;
-    _baseUrl = '$url/api';
   }
 
   Map<String, String> get _jsonHeaders => {

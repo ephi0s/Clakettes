@@ -18,6 +18,8 @@ class NodeService {
   List<NodeInfo> _nodes = [];
   NodeInfo? _active;
 
+  NodeService._internal();
+
   bool get isEmpty => _nodes.isEmpty;
   List<NodeInfo> get nodes => List.unmodifiable(_nodes);
   NodeInfo? get activeNode => _active;
@@ -26,17 +28,17 @@ class NodeService {
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_key) ?? <String>[];
-    _nodes = raw.map((e) {
+    _nodes = <NodeInfo>[];
+    for (final e in raw) {
       try {
-        return NodeInfo.fromJson(jsonDecode(e) as Map<String, dynamic>);
-      } catch (_) {
-        return null;
-      }
-    }).whereType<NodeInfo>().toList();
-    _active = _nodes.firstWhere(
-      (n) => n.isActive,
-      orElse: () => _nodes.isNotEmpty ? _nodes.first : null,
-    );
+        _nodes.add(NodeInfo.fromJson(jsonDecode(e) as Map<String, dynamic>));
+      } catch (_) {}
+    }
+    _active = null;
+    for (final n in _nodes) {
+      if (n.isActive) { _active = n; break; }
+    }
+    if (_active == null && _nodes.isNotEmpty) _active = _nodes.first;
   }
 
   /// Guarda la lista actual en SharedPreferences.
@@ -88,7 +90,10 @@ class NodeService {
   /// Establece el nodo activo por id. Devuelve el nodo activo o null.
   Future<NodeInfo?> setActive(String id) async {
     _nodes = _nodes.map((n) => n.copyWith(isActive: n.id == id)).toList();
-    _active = _nodes.firstWhere((n) => n.id == id, orElse: () => null);
+    _active = null;
+    for (final n in _nodes) {
+      if (n.id == id) { _active = n; break; }
+    }
     await _save();
     return _active;
   }
