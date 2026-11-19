@@ -24,7 +24,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - Code gen Hive: `flutter pub run build_runner build --delete-conflicting-outputs`
 - Tests: `flutter test` (75 archivos) | Lint: `flutter analyze`
 
-## Inicio (`start.bat` / `.ps1` / `.sh`)
+## Inicio (`.ps1` / `.sh`)
 - `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
 - `--no-backend` / `--no-frontend` | `--kill`: mata procesos + docker compose down
 - `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
@@ -75,7 +75,7 @@ flutter analyze                                    # lint
 flutter pub run build_runner build --delete-conflicting-outputs  # code gen Hive
 ```
 
-### Arranque (`start.bat` / `.ps1` / `.sh`)
+### Arranque (`.ps1` / `.sh`)
 - `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
 - `--no-backend` / `--no-frontend` | `--kill`: mata procesos + docker compose down
 - `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
@@ -88,7 +88,7 @@ flutter pub run build_runner build --delete-conflicting-outputs  # code gen Hive
 ```bash
 docker compose --profile prod up -d
 ```
-Backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, Android) con `start.bat --build-all` y scripts de `docs/es/HERRAMIENTAS.md`.
+Backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, Android) con `.ps1 --build-all` y scripts de `docs/es/HERRAMIENTAS.md`.
 
 ### Solución de problemas
 - Backend no arranca: verifica Python 3.12+, `backend/.env`, ejecuta uvicorn directamente para ver el error.

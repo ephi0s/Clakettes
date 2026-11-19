@@ -66,7 +66,7 @@ Enums (RoleScope, UserRoleStatus, EventType, etc.) live in `app/enums.py` — sh
 - `alembic upgrade head` from `backend/`
 - Config: `backend/alembic.ini` — default `sqlite:///./clakettes.db`, override via `DATABASE_URL`
 - Docker: `docker compose run --rm backend alembic upgrade head`
-- Test migration: `start.bat --test-migration` — MariaDB + migrate + validate + cleanup
+- Test migration: `./start.ps1 --test-migration` / `./start.sh --test-migration` — MariaDB + migrate + validate + cleanup
 
 ## Export/Import
 

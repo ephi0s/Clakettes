@@ -408,7 +408,7 @@ if ($Check) {
 }
 
 if ($Web) {
-    # --web siempre usa modo local (como start.bat)
+    # --web siempre usa modo local (como .ps1)
 } elseif ($dockerDaemon) {    Write-Host "[DOCKER] Usando Docker..." -ForegroundColor Cyan
     Set-Location $root
 

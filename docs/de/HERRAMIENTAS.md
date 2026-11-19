@@ -37,5 +37,5 @@
 ## Vorschläge (nicht angewendet, mit Grund)
 
 1. **`ruff format --check`-Tor in CI**: blockiert durch ~249 bestehende E501/W292-Verstöße. Schritte: `ruff format .`, Diff prüfen, `ruff check --fix`, dann Tor hinzufügen.
-2. **`start.bat/.ps1/.sh` vereinheitlichen**: sie vervielfachen die Port-/Prozess-Logik. Der realistische Weg ist die Extraktion der Portmatrix nach `tools/ports.*` oder die Dokumentation eines einzelnen Entry-Points pro OS, nicht das gleichzeitige Umschreiben aller drei.
+2. **`.ps1`/`.sh` vereinheitlichen**: sie vervielfachen die Port-/Prozess-Logik. Der realistische Weg ist die Extraktion der Portmatrix nach `tools/ports.*` oder die Dokumentation eines einzelnen Entry-Points pro OS, nicht beide gleichzeitig umzuschreiben.
 3. **CI-Coverage** (`pytest --cov`, `flutter test --coverage` + lcov): nützlich wenn `syncAll`- und nicht abgedeckte Router-Tests erweitert werden (siehe Roadmap in [../README.md](../../README.de.md)).

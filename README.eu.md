@@ -43,12 +43,6 @@ Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, L
 
 ### Hasiera azkarra
 
-Windows-en:
-
-```bat
-start.bat --dev
-```
-
 PowerShell-en:
 
 ```powershell
@@ -66,10 +60,10 @@ Honek backend-a `http://localhost:8000`-n eta app-a modu lokalean altxatzen ditu
 ### Beste aukera erabilgarri batzuk
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 Kontsultatu abiarazte eta hedapenaren erreferentzia osoa [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md)-n eta [docs/eu/USO.md](docs/eu/USO.md)-n.

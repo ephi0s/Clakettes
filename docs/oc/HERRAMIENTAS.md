@@ -53,7 +53,7 @@
 1. **Pòrta `ruff format --check` en CI**: blocat per ~249 violacions
    E501/W292 existentas. Passas: `ruff format .`, revisar diff,
    `ruff check --fix`, e alara apondre la pòrta.
-2. **Unificar `start.bat/.ps1/.sh`**: triplican la logica de pòrts/processús.
+2. **Unificar `.ps1`/`.sh`**: duplican la logica de pòrts/processús.
    La via realista es extraire la matritz de pòrts cap a `tools/ports.*` o
    documentar un sol entrypoint per OS, non reescriure los tres a l'encòp.
 3. **Cobertura en CI** (`pytest --cov`, `flutter test --coverage` + lcov):

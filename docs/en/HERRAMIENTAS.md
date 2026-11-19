@@ -37,5 +37,5 @@
 ## Proposals (not applied, with reason)
 
 1. **`ruff format --check` gate in CI**: blocked by ~249 existing E501/W292 violations. Steps: `ruff format .`, review diff, `ruff check --fix`, then add the gate.
-2. **Unify `start.bat/.ps1/.sh`**: they triple the port/process logic. The realistic path is to extract the port matrix to `tools/ports.*` or document a single entrypoint per OS, not rewrite all three at once.
+2. **Unify `.ps1`/`.sh`**: they double the port/process logic. The realistic path is to extract the port matrix to `tools/ports.*` or document a single entrypoint per OS, not rewrite both at once.
 3. **CI coverage** (`pytest --cov`, `flutter test --coverage` + lcov): useful when expanding `syncAll` and uncovered routers tests (see roadmap in [../README.md](../../README.en.md)).

@@ -43,12 +43,6 @@ Funciona en web, Android, iOS i escriptori (Windows, macOS, Linux), en 9 idiomes
 
 ### Inici ràpid
 
-En Windows:
-
-```bat
-start.bat --dev
-```
-
 En PowerShell:
 
 ```powershell
@@ -66,10 +60,10 @@ Això aixeca el backend a `http://localhost:8000` i l'app en mode local; l'API e
 ### Altres opcions útils
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 Consulta la referència completa de l'arrencada i desplegament a [docs/ca/HERRAMIENTAS.md](docs/ca/HERRAMIENTAS.md) i [docs/ca/USO.md](docs/ca/USO.md).

@@ -43,12 +43,6 @@ Läuft auf Web, Android, iOS und Desktop (Windows, macOS, Linux), in 9 Sprachen 
 
 ### Schnellstart
 
-En Windows:
-
-```bat
-start.bat --dev
-```
-
 En PowerShell:
 
 ```powershell
@@ -66,10 +60,10 @@ Dies startet das Backend auf `http://localhost:8000` und die App im lokalen Modu
 ### Weitere nützliche Optionen
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 Die vollständige Start- und Deployment-Referenz in [docs/de/HERRAMIENTAS.md](docs/de/HERRAMIENTAS.md) und [docs/de/USO.md](docs/de/USO.md).

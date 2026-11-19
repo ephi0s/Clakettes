@@ -41,12 +41,6 @@ Works on web, Android, iOS and desktop (Windows, macOS, Linux), in 9 languages a
 
 ### Quick start
 
-On Windows:
-
-```bat
-start.bat --dev
-```
-
 In PowerShell:
 
 ```powershell
@@ -64,10 +58,10 @@ This starts the backend at `http://localhost:8000` and the app locally; the API 
 ### Other useful options
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 See the full startup and deployment reference in [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md) and [docs/en/USO.md](docs/en/USO.md).
@@ -159,7 +153,7 @@ flutter run
 docker compose --profile prod up -d
 ```
 
-Backend + frontend (nginx) + MariaDB. Distributed builds (web, Windows, Linux, Android) are managed with `start.bat --build-all` and the script set in [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md).
+Backend + frontend (nginx) + MariaDB. Distributed builds (web, Windows, Linux, Android) are managed with `./start.ps1 --build-all` and the script set in [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md).
 
 ## Troubleshooting
 

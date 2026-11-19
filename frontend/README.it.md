@@ -23,7 +23,7 @@ flutter run -d web-server --web-port 3000
 
 ## Script
 
-Consulta `../start.bat` / `../start.ps1` para los lanzadores con flags `--dev`, `--final`, `--web`.
+Consulta `../start.ps1` para los lanzadores con flags `--dev`, `--final`, `--web`.
 
 ## Architettura
 

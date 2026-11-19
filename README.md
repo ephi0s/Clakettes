@@ -43,12 +43,6 @@ Funciona en web, Android, iOS y escritorio (Windows, macOS, Linux), en 9 idiomas
 
 ### Inicio rápido
 
-En Windows:
-
-```bat
-start.bat --dev
-```
-
 En PowerShell:
 
 ```powershell

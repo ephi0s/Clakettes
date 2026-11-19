@@ -37,5 +37,5 @@
 ## Propuestas (no aplicadas, con motivo)
 
 1. **Gate `ruff format --check` en CI**: bloqueado por ~249 violaciones E501/W292 existentes. Pasos: `ruff format .`, revisar diff, `ruff check --fix`, y entonces añadir el gate.
-2. **Unificar `start.bat/.ps1/.sh`**: triplican la lógica de puertos/procesos. La vía realista es extraer la matriz de puertos a `tools/ports.*` o documentar un único entrypoint por OS, no reescribir los tres a la vez.
+2. **Unificar `.ps1`/`.sh`**: duplican la lógica de puertos/procesos. La vía realista es extraer la matriz de puertos a `tools/ports.*` o documentar un único entrypoint por OS, no reescribir ambos a la vez.
 3. **Cobertura en CI** (`pytest --cov`, `flutter test --coverage` + lcov): útil cuando se amplíen tests de `syncAll` y routers sin cubrir (ver roadmap en [../README.md](../../README.md)).

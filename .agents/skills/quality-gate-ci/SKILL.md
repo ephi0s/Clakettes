@@ -55,6 +55,6 @@ todo cambio que la afecte actualiza TODA la info pertinente en el mismo cambio.
   `docs/es/ARQUITECTURA.md`, `docs/es/ADMINISTRACION.md` y `docs/es/AUDITORIA.md` (addendum, sin reescribir).
 - Endpoints nuevos/movidos: regenera `docs/es/API.md` con `python tools/gen_api.py`
   y revisa `docs/es/USO.md` + `docs/es/SEGURIDAD.md` (auth, pagos, RGPD).
-- Flags de arranque: ayuda de `start.ps1`/`start.bat`/`start.sh` + `docs/es/USO.md` +
+- Flags de arranque: ayuda de `./start.ps1`/`./start.sh` + `docs/es/USO.md` +
   `docs/es/HERRAMIENTAS.md` + línea de `AGENTS.md`.
 - Roadmap y variables: `README.md` + `backend/.env.example` al día.

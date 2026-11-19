@@ -23,7 +23,7 @@ flutter run -d web-server --web-port 3000
 
 ## Script-ak
 
-Kontsultatu `../start.bat` / `../start.ps1` abiarazleetarako `--dev`, `--final`, `--web` flag-ekin.
+Kontsultatu `../start.ps1` abiarazleetarako `--dev`, `--final`, `--web` flag-ekin.
 
 ## Arkitektura
 

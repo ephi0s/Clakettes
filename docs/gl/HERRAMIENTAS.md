@@ -53,7 +53,7 @@
 1. **Gate `ruff format --check` en CI**: bloqueado por ~249 violacións
    E501/W292 existentes. Pasos: `ruff format .`, revisar diff,
    `ruff check --fix`, e entón engadir o gate.
-2. **Unificar `start.bat/.ps1/.sh`**: triplican a lóxica de portos/procesos.
+2. **Unificar `.ps1`/`.sh`**: duplican a lóxica de portos/procesos.
    A vía realista é extraer a matriz de portos a `tools/ports.*` ou
    documentar un único entrypoint por SO, non reescribir os tres á vez.
 3. **Cobertura en CI** (`pytest --cov`, `flutter test --coverage` + lcov):

@@ -52,9 +52,7 @@
 1. **`ruff format --check` gate-a CI-n**: ~249 baliaketa blokeatuta
    E501/W292 existitzen direnak. Pausoak: `ruff format .`, diff-a berrikusi,
    `ruff check --fix`, eta orduan gate-a gehitzea.
-2. **`start.bat/.ps1/.sh` bateratzea**: portu/prozesu logika hirukoizten dute.
-   Bide errealista portu-matrizea `tools/ports.*`-ra erauztea edo
-   OS-ko entrypoint bakarra dokumentatzea da, hirurak batera ez berridaztea.
+2. **`.ps1`/`.sh` bateratzea**: portu/prozesu logika biendeu dute. Bide errealista portu-matrizea `tools/ports.*`-ra erauztea edo OS-ko entrypoint bakarra dokumentatzea da, biendien batera ez berridaztea.
 3. **Estaldura CI-n** (`pytest --cov`, `flutter test --coverage` + lcov):
    erabilgarria `syncAll` eta estali gabeko router-en test-ak zabaltzean (ikusi
    roadmap-a [../README.md](../../README.eu.md)-n).

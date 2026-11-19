@@ -43,12 +43,6 @@ Fonciona en web, Android, iOS e escritòri (Windows, macOS, Linux), en 9 lengas 
 
 ### Aviada rapida
 
-En Windows:
-
-```bat
-start.bat --dev
-```
-
 En PowerShell:
 
 ```powershell
@@ -66,10 +60,10 @@ Aquò quilha lo backend en `http://localhost:8000` e l'app en mòde locau; l'API
 ### Autras opcions utilas
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 Consulta la referéncia completa de l'aviada e desplegament en [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md) e [docs/oc/USO.md](docs/oc/USO.md).

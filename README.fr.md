@@ -43,12 +43,6 @@ Fonctionne en web, Android, iOS et bureau (Windows, macOS, Linux), en 9 langues 
 
 ### Démarrage rapide
 
-En Windows :
-
-```bat
-start.bat --dev
-```
-
 En PowerShell :
 
 ```powershell
@@ -66,10 +60,10 @@ Ceci lève le backend sur `http://localhost:8000` et l'app en mode local ; l'API
 ### Autres options utiles
 
 ```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
+./start.ps1 --help
+./start.ps1 --migrate
+./start.ps1 --build
+./start.ps1 --build-all
 ```
 
 Consulte la référence complète du démarrage et déploiement dans [docs/fr/HERRAMIENTAS.md](docs/fr/HERRAMIENTAS.md) et [docs/fr/USO.md](docs/fr/USO.md).
