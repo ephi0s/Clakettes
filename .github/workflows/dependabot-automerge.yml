@@ -1,0 +1,22 @@
+name: Dependabot auto-merge
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  automerge:
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'dependencies')
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge for Dependabot PR
+        run: gh pr merge --auto --merge --delete-branch "${{ github.event.pull_request.number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
