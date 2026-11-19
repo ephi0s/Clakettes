@@ -3,9 +3,9 @@
 Ordenado por estado crítico y complejidad. Cada ítem se elimina al completarse; cuando esté vacío, borrar el archivo.
 
 ## Fase 6 — Descubrimiento y multi-nodo en la app (INFRA)
-- [ ] Implementar directorio de nodos (registro, capacidades, versión de schema)
-- [ ] App: soporte de múltiples `BACKEND_URL` y agregación de resultados
-- [ ] Selección de nodo / fallback cuando un nodo cae
+- [x] Implementar directorio de nodos (registro, capacidades, versión de schema)
+- [x] App: soporte de múltiples `BACKEND_URL` y agregación de resultados
+- [x] Selección de nodo / fallback cuando un nodo cae
 - [ ] Cache local (Hive) con origen por nodo y reconciliación
 
 ## Fase 7 — Portabilidad de datos (INFRA)
