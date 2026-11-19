@@ -24,7 +24,7 @@ Funciona en web, Android, iOS y escritorio (Windows, macOS, Linux), en 9 idiomas
 ## Qué puedes hacer
 
 - **Festivales y convocatorias**: cada festival puede tener varias convocatorias abiertas con sus propias reglas y formularios de inscripción.
-- **Cortos**: sube cortometrajes, vincúlalos a convocatorias y a localizaciones de rodaje.
+- **Cortos**: sube cortometrajes, vínculalos a convocatorias y a localizaciones de rodaje.
 - **Perfiles con palmarés**: palmarés vinculado a festivales de la plataforma o externo mediante enlaces, con control de privacidad campo por campo.
 - **Chat**: mensajes directos y de grupo o canal por festival, con cifrado de extremo a extremo.
 - **Mapas**: sedes y localizaciones de rodaje en mapas interactivos, con apertura en tu app de mapas favorita.
@@ -63,15 +63,6 @@ En Linux/macOS:
 
 Esto levanta el backend en `http://localhost:8000` y la app en modo local; la API expone Swagger/OpenAPI en `/docs`. Puedes desactivar cualquiera de las dos partes con `--no-backend` o `--no-frontend`.
 
-### Otras opciones útiles
-
-```bash
-start.bat --help
-start.bat --migrate
-start.bat --build
-start.bat --build-all
-```
-
 Consulta la referencia completa del arranque y despliegue en [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md) y [docs/es/USO.md](docs/es/USO.md).
 
 ## Variables de entorno y configuración
@@ -97,17 +88,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 ```
 
 El arranque automático del proyecto ya configura esto cuando se usa `start.*`.
-
-## Estado del proyecto
-
-🚧 **En desarrollo activo** — Festivales, cortos, chat con E2EE, mapas, modo offline y 9 idiomas funcionando; con tests en backend (~1400) y frontend (69 archivos).
-
-**Roadmap próximo:**
-
-- [ ] Notificaciones push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Windows MSI installer
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sin operationIds duplicados + `docs/es/API.md` regenerado)
 
 ## Documentación del proyecto
 
@@ -137,69 +117,6 @@ Además, el punto de partida para desarrollo y convención de proyecto es [AGENT
 - **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
 - **¿Qué documento debo leer primero?** Si eres usuario, [docs/es/USO.md](docs/es/USO.md); si eres desarrollador, [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md).
 - **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
-
-## Para desarrolladores
-
-> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos y convenciones) y en el índice de [`docs/`](docs/es/README.md) (guías por rol: funcional, uso, administración, infraestructura, seguridad, arquitectura, API).
-
-**De un vistazo**: backend FastAPI en capas (routers → servicios → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 18 migraciones Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 24 widgets reutilizables).
-
-```bash
-# Tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-cd frontend && flutter test
-
-# Lint
-cd backend && ruff check . && ruff format --check .
-cd frontend && flutter analyze
-
-# Migraciones
-cd backend && alembic upgrade head
-```
-
-## Desarrollo local
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
-## Despliegue
-
-```bash
-docker compose --profile prod up -d
-```
-
-Backend + frontend (nginx) + MariaDB. Los builds distribuidos (web, Windows, Linux, Android) se gestionan con `start.bat --build-all` y el conjunto de scripts de [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md).
-
-## Solución de problemas
-
-### El backend no arranca
-
-- Verifica que Python 3.12+ esté instalado.
-- Comprueba que `backend/.env` existe y es válido.
-- Ejecuta `cd backend && python -m uvicorn app.main:app --reload` para ver el error real.
-
-### La app no conecta con la API
-
-- Asegúrate de que el backend está en `http://localhost:8000`.
-- Revisa si `BACKEND_URL` se está pasando con `--dart-define`.
-- Comprueba que la API responde en `/docs`.
-
-### Problemas con bases de datos o migraciones
-
-- Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/es/USO.md](docs/es/USO.md) y [docs/es/DATABASE.md](docs/es/DATABASE.md).
-
-### Frontend con errores de Flutter
-
-- Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md).
 
 ## Contribuir
 

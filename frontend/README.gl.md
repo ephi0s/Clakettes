@@ -10,7 +10,7 @@ Frontend Flutter multiplataforma para a plataforma de xestión de festivais de c
 - **Estado**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Almacenamento local**: Hive, SharedPreferences
 - **i18n**: 9 idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sen gen-l10n)
-- **Accesibilidade**: 94+ widgets Semantics, soporte TalkBack/VoiceOver, WCAG 2.1 AA
+- **Accesibilidade**: Semantics, soporte TalkBack/VoiceOver, WCAG 2.1 AA
 - **Arquitectura**: Services / Managers / Views (Arquitectura Flutter Pragmática)
 
 ## Inicio rápido
@@ -29,7 +29,7 @@ Consulta `../start.bat` / `../start.ps1` para os lanzadores con flags `--dev`, `
 
 ```
 lib/
-├── screens/           # 36 pantallas UI
+├── screens/           # pantallas UI
 │   ├── auth/          # Login
 │   ├── festivals/     # Lista, perfil, crear festival
 │   ├── users/         # Perfil, directorio, crear usuario, roles
@@ -43,7 +43,7 @@ lib/
 │   ├── admin/         # Panel de administración
 │   ├── committees/    # Comités
 │   └── settings/      # Configuración del backend, miembro del directorio, dashboard
-├── services/          # 17 servicios + api/ (9 dominios) + chat_backend (4 clases)
+├── services/          # servicios + api/ + chat_backend
 │   ├── api_service.dart              # Fachada + núcleo (auth, transporte, admin, búsqueda)
 │   ├── api/                          # Métodos por dominio (part of api_service.dart)
 │   │   ├── user_api.dart, festival_api.dart, channel_api.dart, form_api.dart
@@ -66,8 +66,8 @@ lib/
 │       ├── chat_service.dart         # Fachada WS/REST/E2EE
 │       ├── rest_chat_backend.dart    # Historial/sync vía REST (usado como fake en tests)
 │       └── websocket_chat_backend.dart  # Tiempo real vía WebSocket
-├── models/            # 24 modelos Dart (manuales fromJson/toJson + Hive codegen)
-├── widgets/           # 24 widgets reutilizables accesibles
+├── models/            # modelos Dart (manuales fromJson/toJson + Hive codegen)
+├── widgets/           # widgets reutilizables accesibles
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
 │   ├── chat_bubble.dart          # Burbuja de mensaje + contenido enriquecido
@@ -92,7 +92,7 @@ lib/
 │   ├── open_in_maps_action.dart
 │   ├── seat_map_widget.dart      # Mapa de asientos interactivo
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
-├── l10n/              # AppLocalizations + 9 ARB
+├── l10n/              # AppLocalizations + ARB
 ├── main.dart          # Entry point, tema Material 3, orden de init de servicios
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
 └── auth_wrapper.dart  # Gate de autenticación (splash → login / home)
@@ -167,12 +167,12 @@ AppLocalizations.of(context)!.roles['admin']
 
 | Patrón | Uso |
 |---------|-------|
-| `Semantics` | 94+ instancias para lectores de pantalla |
+| `Semantics` | instancias para lectores de pantalla |
 | `SemanticHeader` | Encabezados de sección (`header: true`) |
 | `SemanticTextField` | Campos de formulario con semántica de validación |
-| `ExcludeSemantics` | 8+ iconos decorativos |
-| `Tooltip` | 26+ elementos interactivos |
-| `SnackBarBehavior.floating` | 29+ snackbars |
+| `ExcludeSemantics` | iconos decorativos |
+| `Tooltip` | elementos interactivos |
+| `SnackBarBehavior.floating` | snackbars |
 | `autovalidateMode: onUserInteraction` | Formularios |
 | `TextInputAction.next/done` + `onSubmitted` | Navegación por teclado |
 
@@ -198,7 +198,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 
 - **Cor semente**: `#B8956E` (area dourada)
 - **Modo escuro**: soporte completo vía `_baseTheme(ColorScheme)`
-- **18+ temas de compoñentes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
+- **Temas de compoñentes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Transicións de páxina Cupertino** en iOS/macOS
 
 ## Chat (E2EE)
@@ -284,14 +284,14 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 archivos ARB
+│   ├── l10n/                # archivos ARB
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # 44 modelos Dart (Hive + codegen)
-│   ├── screens/             # 36 pantallas
-│   ├── widgets/             # 24 widgets reutilizables
-│   ├── services/            # 17 servicios + api/ (9) + chat_backend (4)
+│   ├── models/              # modelos Dart (Hive + codegen)
+│   ├── screens/             # pantallas
+│   ├── widgets/             # widgets reutilizables
+│   ├── services/            # servicios + api/ + chat_backend
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart

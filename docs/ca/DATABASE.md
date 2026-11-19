@@ -63,7 +63,7 @@ Taulles d'associacio:
 - `user_festival` — M2M entre `User` i `Festival`
 - `validation_rule_group_rules` — M2M entre `ValidationRuleGroup` i `ValidationRule`
 
-Total: 40 models d'entitat + 2 taules d'associacio = 42 construccions SQLAlchemy.
+
 
 ## Model base
 
@@ -327,7 +327,7 @@ Això s'utilitza com a dependencia de FastAPI per a l'accés a la base de dades 
 
 ## Notes de migracio de SQLite a MariaDB
 
-Els canvis d'esquema es gestionen amb Alembic (`backend/alembic/versions/`, 36 versions; `alembic upgrade head`). En producció solament Alembic, mai `create_all`.
+Els canvis d'esquema es gestionen amb Alembic (`backend/alembic/versions/`; `alembic upgrade head`). En producció solament Alembic, mai `create_all`.
 
 Al migrar de SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` correspon a MariaDB `INT AUTO_INCREMENT`

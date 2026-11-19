@@ -12,7 +12,7 @@ Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (k
 - **Ich möchte die App nutzen** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Ich verwalte eine Bereitstellung** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Entwicklung** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **KI / Agent** → [ARQUITECTURA.md](ARQUITECTURA.md) und das Aufgaben-Dokument; die verpflichtenden Befehle und Konventionen stehen in [../AGENTS.md](../../AGENTS.md)
+- **Referenz für Agenten** → die Befehle und Konventionen stehen in [../AGENTS.md](../../AGENTS.md)
 
 ## Grundsätze der Dokumentation
 
@@ -25,22 +25,22 @@ Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (k
 
 | Dokument | Deckt ab | Zielgruppe |
 |---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Realer Wert nach Rolle und Flows (Festival, Anmeldung, Komitees, Auszeichnungen, Chat/E2EE, Juryabstimmung) | Nutzer, Admin, KI |
+| [FUNCIONAL.md](FUNCIONAL.md) | Realer Wert nach Rolle und Flows (Festival, Anmeldung, Komitees, Auszeichnungen, Chat/E2EE, Juryabstimmung) | Nutzer, Admin |
 | [USO.md](USO.md) | Start, Variablen, Migration SQLite↔MariaDB, Backups, Rollen, Betrieb | Nutzer, Admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | Endpunkte `/api/admin`, erstes Konto, Schlüsselrotation, Limits, Fehlerbehebung | Admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker-Profile, Ports, Volumes, Nginx, Health, CI (GitHub + GitLab) | Admin, Dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, `require_*`-Matrix, Perimeter, Produktions-Checkliste | Admin, Dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Systemkarte + Backend/Frontend-Regeln + zentrale Flows | Dev, KI |
-| [API.md](API.md) | Endpunkt-Referenz (neu generierbar mit `tools/gen_api.py`) | Dev, KI |
-| [DESARROLLO.md](DESARROLLO.md) | Konvention zum Hinzufügen von Endpoint/Bildschirm + CI-Tore | Dev, KI |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Systemkarte + Backend/Frontend-Regeln + zentrale Flows | Dev |
+| [API.md](API.md) | Endpunkt-Referenz | Dev |
+| [DESARROLLO.md](DESARROLLO.md) | Konvention zum Hinzufügen von Endpoint/Bildschirm + CI-Tore | Dev |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*`-Skripte, verteilbare Builds, Docker, CI-Fixes | Dev |
 | [PUSH.md](PUSH.md) | Entscheidung zu Benachrichtigungen ohne Firebase | Dev |
-| [DATABASE.md](DATABASE.md) | Duales SQLite/MariaDB-Schema, pro-Modell-Karten, ER | Dev, KI |
+| [DATABASE.md](DATABASE.md) | Duales SQLite/MariaDB-Schema, pro-Modell-Karten, ER | Dev |
 | [BACKEND.md](BACKEND.md) | Backend-Anleitung (Ebenen, Konfiguration, Auth, Tests) | Dev |
 | [AUDITORIA.md](AUDITORIA.md) | Audit-Bericht (Rev. 10/10/2026) | Referenz |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Föderationsprotokoll zwischen Knoten (Phase 4) | Dev, KI |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federierte Entitäten) | Dev, KI |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Föderiertes Vertrauensmodell, mTLS, Zertifikatsrotation | Dev, KI |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Föderationsprotokoll zwischen Knoten (Phase 4) | Dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federierte Entitäten) | Dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Föderiertes Vertrauensmodell, mTLS, Zertifikatsrotation | Dev |
 
 ## Empfohlener Pfad nach Profil
 
@@ -89,19 +89,3 @@ Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (k
 - [ARQUITECTURA.md](ARQUITECTURA.md): technische Systemkarte
 - [API.md](API.md): Endpunkt-Referenz
 
-## Empfohlener Start
-
-Für den Start in einer lokalen Umgebung:
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-Oder mit den Projektskripten:
-
-```bat
-start.bat --dev
-```
-
-Die vollständige Befehls- und Profilreferenz steht in [HERRAMIENTAS.md](HERRAMIENTAS.md) und in [../README.md](../../README.de.md).

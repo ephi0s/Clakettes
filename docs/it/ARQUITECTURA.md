@@ -27,20 +27,8 @@ Layer: Routers → Services → Models, tipi via `app.enums`.
 | Chat in tempo reale | `app/chat_backend/` (WebSocket) + REST in `routers/chat.py` | WS valida sessione via `validate_access_token` |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefisso `/dav`, bucket proprio 600/60s) | Token bearer in URL; TLS obbligatorio in prod |
 | Export | `services/export_service.py` | CSV/ICS in stdlib; PDF con reportlab in import pigro |
-| Migrazioni | `alembic/` (36 versioni) | Prod solo Alembic; dev anche `create_all` |
+| Migrazioni | `alembic/` | Prod solo Alembic; dev anche `create_all` |
 | Federazione | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directory, nodi, report, webfinger, rif user |
-
-Conteggi reali (verificati su disco):
-
-| Componente | File | Nota |
-|------------|------|------|
-| Router | 40 (38 con `APIRouter`) | `dependencies.py` e `permissions.py` sono helper senza router |
-| Servizi | 43 | + `__init__.py` |
-| Modelli entità | 40 | + `base.py` e `__init__.py` |
-| Schemi | 37 | |
-| Migrazioni Alembic | 36 | + `__init__.py` |
-| File di test | 47 | `test_*.py` |
-| Linee `def test_` | 1439 | |
 
 ## Frontend (`frontend/`)
 
@@ -56,14 +44,6 @@ Servizi singleton + `setState()` + Streams (nessun Provider). Avvio in `main()`:
 | Navigazione | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer sempre; 10 schermate memorizzate |
 | i18n | `l10n/` + `assets/l10n/` (9 locali) | `en.arb` è fallback; 0 chiavi mancanti (verificato con script) |
 | Permessi SO | `AndroidManifest.xml` / `Info.plist` | Rete, posizione, fotocamera, fototeca, allarmi esatti |
-
-Conteggi reali (verificati su disco):
-
-| Componente | File | Nota |
-|------------|------|------|
-| Widget riutilizzabili | 32 | in `lib/widgets/` |
-| Schermate | 36 | in `lib/screens/` |
-| File di test | 75 | `*_test.dart` in `test/` e sottocartelle |
 
 ## Flussi chiave
 

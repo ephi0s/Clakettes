@@ -227,8 +227,6 @@ POST /api/auth/refresh
 | `moderation_reports` | `/api` | moderation-reports | Informes de moderación |
 | `node_policies` | `/api` | node-policies | Políticas de nodos de federación |
 
-Total: 38 routers con `APIRouter` (40 arquivos de router, 2 auxiliares sen router).
-
 ### Paginación e filtrado
 
 Parámetros de consulta estándar nos endpoints de listado:
@@ -428,34 +426,6 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 ```
 
 ---
-
-## Estrutura do proxecto
-
-```
-backend/
-├── app/
-│   ├── models/              # 40 modelos SQLAlchemy (+ base.py)
-│   ├── schemas/             # 37 esquemas Pydantic
-│   ├── servizos/            # 43 servizos de lóxica de negócios
-│   ├── routers/             # 40 routers API (38 con APIRouter)
-│   ├── chat_backend/        # Implementación WebSocket do chateo
-│   ├── auth.py              # Autenticación JWT + sesión
-│   ├── config.py            # Pydantic Settings
-│   ├── database.py          # Motor, SessionLocal, get_db()
-│   ├── main.py              # App FastAPI, middleware, routers
-│   ├── rate_limiter.py      # Limite de peticións SQLite
-│   ├── enums.py             # Enums compartidos
-│   └── scripts/             # Scripts de seed/migración
-├── alembic/                 # Migracións (36 versións)
-├── tools/                   # Scripts de exportación/importación
-├── tests/                   # Probas pytest (47 arquivos, 1439 funcións de proba)
-├── uploads/                 # Arquivos subidos estáticos
-├── .env.example             # Template de configuración
-├── requirements.txt         # Dependencias de produción
-├── requirements-dev.txt     # Dependencias de desenvolvemento (pytest, ruff)
-├── pyproject.toml           # Configuración Ruff, pytest
-└── pytest.ini               # Configuración pytest
-```
 
 Documentación en `docs/gl/BACKEND.md` (este arquivo) e `docs/gl/DATABASE.md`.
 

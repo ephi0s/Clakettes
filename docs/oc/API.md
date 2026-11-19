@@ -2,7 +2,6 @@
 
 [ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
-Generat dempuèi `app/routers/*.py` + prefixes de `app/main.py`.
 Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 
 ## `admin` → `/api/admin`
@@ -611,4 +610,3 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | òc |
 
-Total: 416 endpoints en 38 routers.

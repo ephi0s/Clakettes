@@ -227,8 +227,6 @@ POST /api/auth/refresh
 | `moderation_reports` | `/api` | moderation-reports | moderazio-itzulpenak |
 | `node_policies` | `/api` | node-policies | nodo-eko federazio-politikoak |
 
-Guztira: 38 router `APIRouter`-ekin (40 router-fitxategia, 2 erabiltzaile-roker gabe).
-
 ### Paginazioa eta filtratzea
 
 Esku-menuko ezazu betikareांक:
@@ -444,9 +442,9 @@ backend/
 │   ├── rate_limiter.py      # SQLite rate-limit
 │   ├── enums.py             # shared enums
 │   └── scripts/             # Seed/migazio eskriptuak
-├── alembic/                 # Migrerak (36 bertsioa)
+├── alembic/                 # Migrerak
 ├── tools/                   # Eskaintza/importatutako eskriptuak
-├── tests/                   # Proveek pytest-ak (47 fitxategi, 1439 prove-funtzioak)
+├── tests/                   # Proveek pytest-ak
 ├── uploads/                 # eskaintzea
 ├── .env.example             # konfigurazio-mikroa
 ├── requirements.txt         # produktu-ko jarduera

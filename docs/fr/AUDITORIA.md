@@ -2,23 +2,6 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
-> **Addendum 11/10/2026** (chiffres vérifiés) : backend 1439 `def test_` dans 47 fichiers ; routeurs 40 fichiers (38 avec `APIRouter`) ; services 43 ; modèles 40 ; schémas 37 ; migrations Alembic 36 versions ; `docs/fr/API.md` 339 endpoints dans 38 routeurs (operationIds uniques). RGPD : vie privée par défaut, consentement, suppression/exportation, purge des sessions, audit append-only, nettoyage des métadonnées, TLS MariaDB en prod, DAV avec expiration, CSP/HSTS. Fournisseurs de paiement mock/stripe/redsys.
-
-## 0. Résumé exécutif (10/10/2026, chiffres vérifiés)
-
-| Domaine | État | Détail |
-| --- | --- | --- |
-| Tests backend | 1439 `def test_` dans 47 fichiers | `Get-ChildItem backend/tests -Recurse -Filter "test_*.py" \| Select-String "def test_"` |
-| Tests frontend | 75 fichiers `*_test.dart` | `Get-ChildItem frontend/test -Recurse -Filter "*_test.dart"` |
-| Routeurs/Services/Modèles/Schémas | 40/43/40/37 fichiers (38 routeurs avec `APIRouter`) | `dependencies.py`/`permissions.py` sont des helpers sans routeur ; `base.py`/`__init__.py` ne sont pas des entités |
-| Migrations | 36 versions | `alembic/versions/` |
-| Endpoints | 339 dans 38 routeurs (`docs/fr/API.md` via AST) | `python tools/gen_api.py` idempotent ; simple grep donne ~290 (ne compte pas `propfind/report/options/websocket`) |
-| Lint | `ruff check` + `ruff format --check` propres | `AGENTS.md` et CI (GH + GitLab) avec porte de formatage |
-| Docs | Backend consolidé dans `docs/` | `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` ; index dans `docs/fr/README.md` |
-| Dette principale | `get_or_404` partiel, `paginate_filtered` sans utilisations, `python-jose` non migré, 24 `AlertDialog` / 115 `ScaffoldMessenger` restants | Voir §5 avec comptages et vérification |
-
-Comment revérifier : `cd backend; python -m ruff check .; python -m pytest tests/ -x -q --tb=short` et `cd frontend; flutter analyze; flutter test`.
-
 ## 1. Dépendances externes : ce qui peut être supprimé et ce qui ne peut pas
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
@@ -78,23 +61,10 @@ Toutes les dépendances sont en usage réel ; aucune n'a pu être supprimée san
 21. Tests de flux (`tests/integration/test_flows.py`) : réservation complète (festival → événement → sièges → réservation → occupation), messagerie (canal → membre → DM → lecture → suppression) et délégation (créer → lister → révoquer).
 22. Tests de widgets des widgets extraits (13) : `chat_bubble`, `chat_input_bar`, `user_profile_cards`, `location_cards`. Note : les widgets sous `wrapWithLocalization` nécessitent un `pump()` supplémentaire (le Builder de localisation résout dans la deuxième frame).
 23. Push natif sans Firebase (`docs/fr/PUSH.md`) : Notification API du navigateur sur web (`notification_web.dart` + stub avec export conditionnel, sans nouvelles dépendances), `flutter_local_notifications` sur bureau + permission macOS au démarrage, mobile en no-op explicite (`_supported`). `flutter build web` vérifié.
-24. Documentation : `docs/fr/API.md` (339 endpoints dans 38 routeurs, générée par AST avec `tools/gen_api.py` — régénérable), `docs/fr/ARQUITECTURA.md` (couches, flux, décisions multiplateforme), `docs/fr/USO.md` (démarrage, env, opération, rôles), `docs/fr/DESARROLLO.md` (conventions + portes CI), `docs/fr/SEGURIDAD.md` (tokens, matrice de permissions, checklist prod), `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` (déplacées depuis `backend/` le 10/10/2026). READMEs et `AGENTS.md` avec chiffres réels ; admin dev `admin`/`setup` (sans `ADMIN_PASSWORD` dans `backend/.env.example` ; seed seulement non-prod dans `app/main.py:257`).
-État : 1439 tests backend (47 fichiers) + 75 frontend (75 fichiers) verts, ruff + analyze propres.
+24. Documentation : `docs/fr/API.md`, `docs/fr/ARQUITECTURA.md` (couches, flux, décisions multiplateforme), `docs/fr/USO.md` (démarrage, env, opération, rôles), `docs/fr/DESARROLLO.md` (conventions + portes CI), `docs/fr/SEGURIDAD.md` (tokens, matrice de permissions, checklist prod), `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` (déplacées depuis `backend/` le 10/10/2026). READMEs et `AGENTS.md` ; admin dev `admin`/`setup` (sans `ADMIN_PASSWORD` dans `backend/.env.example` ; seed seulement non-prod dans `app/main.py:257`).
 
 ## 4. Révision 10/10/2026 (corrections de §2–§3)
 
 1. Docs backend consolidées : `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` ; liens mis à jour dans `README.fr.md`, `AGENTS.md`, `docs/fr/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-2. Comptage réel : routeurs 40 fichiers (38 avec `APIRouter` ; `permissions.py`/`dependencies.py` sont des helpers), services 43 modules (+`__init__`), modèles 40 entités (+`base.py`+`__init__`), schémas 37, Alembic 36, `API.md` 339 endpoints/38 routeurs (AST compte `propfind/report/options/websocket` ; simple grep donne ~290).
-3. Tests : backend 1439 `def test_` dans 47 fichiers ; frontend 75 blocs `*_test.dart`. Widgets 32 OK. Écrans : `festival_profile` 1173L, `locations` 645L, `chat` 709L, `api_service` 464L, `user_profile` 1391L.
-4. Corrections à §2 : `RateLimiter` sont 3 instances (`main.py`, `admin.py`, `auth.py`), pas 1 ; `ADMIN_PASSWORD` n'existe pas dans `backend/.env.example` (seulement commentaire `admin/setup`) ; `ruff format` couvre 216 fichiers (pas 215).
-5. `tools/gen_api.py` régénère `API.md` de manière idempotente mais avec chemin absolu hardcodé et sans shebang (non portable).
+2. Corrections à §2 : `RateLimiter` sont 3 instances (`main.py`, `admin.py`, `auth.py`) ; `ADMIN_PASSWORD` n'existe pas dans `backend/.env.example` (seulement commentaire `admin/setup`).
 
-## 5. Maintenabilité en attente (ordre suggéré, avec vérification)
-
-| # | Tâche | État 10/10/2026 | Comment vérifier |
-|---|---|---|---|
-| 1 | Migrer les routeurs vers `get_or_404` et les services vers `paginate_filtered` | `get_or_404` dans 13 routeurs (110 utilisations), 186 `404` inline restants ; `paginate_filtered` avec 0 utilisations | `Select-String "get_or_404\(" backend/app/routers; Select-String "404" backend/app/routers; Select-String "paginate_filtered" backend/app/services` |
-| 2 | Migrer `python-jose` → `PyJWT` (PR isolé avec tests d'expiration/type/rotation) | Non migré (`app/auth.py` utilise `jose`) | `Select-String "from jose\|import jose" backend/app; Select-String "import jwt" backend/app` |
-| 3 | Découpage des grands écrans | Fait : `festival_profile` 1173L, `locations` 645L, `api_service` 464L, `chat` 709L, `user_profile` 1391L (widgets extraits dans `lib/widgets/`) | `(Get-Content frontend/lib/screens/<écran>).Count` |
-| 4 | Migrer `AlertDialog` → `ConfirmDialog` et `ScaffoldMessenger` → `showAppSnack` | 24 `AlertDialog` vs 19 utilisations `showConfirmDialog` ; 115 `ScaffoldMessenger` vs 8 utilisations `showAppSnack` (les `AlertDialog` restants sont des formulaires : nécessitent un `CreateEntityDialog` commun) | `Select-String "AlertDialog|showConfirmDialog|ScaffoldMessenger|showAppSnack" frontend/lib` |
-| 5 | Hygiène de formatage + `.gitignore` | `ruff format --check` + `ruff check` propres et avec porte dans CI (GH + GitLab) ; `.gitignore` couvre `*.db*`, `*.hive`, `*.lock`, `uploads/` (pas le glob `*.hive*`) | `ruff format --check .; ruff check .; Get-Content .gitignore` |

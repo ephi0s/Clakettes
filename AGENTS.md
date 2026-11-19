@@ -55,6 +55,47 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
   8 hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
   Los 17 documentos existen traducidos en las 9 lenguas.
 
+## Operación y referencia rápida para agentes
+
+### Comandos de backend
+```bash
+cd backend
+python -m uvicorn app.main:app --reload          # entry (8000), usa .venv/ si existe
+python -m pytest tests/ -x -q --tb=short          # tests (47 archivos, ~1439)
+ruff check . && ruff format --check .             # lint (line-length 120)
+alembic upgrade head                               # migraciones (36 versiones)
+```
+Nota: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`. Auto-migra al arrancar (`SKIP_AUTO_MIGRATE=1` para omitir).
+
+### Comandos de frontend
+```bash
+cd frontend
+flutter test                                       # 75 archivos
+flutter analyze                                    # lint
+flutter pub run build_runner build --delete-conflicting-outputs  # code gen Hive
+```
+
+### Arranque (`start.bat` / `.ps1` / `.sh`)
+- `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
+- `--no-backend` / `--no-frontend` | `--kill`: mata procesos + docker compose down
+- `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
+- `--test-backend` / `--test-frontend` | `--test-migration`: MariaDB + migrate + validate
+- `--build`: `docker compose build dev` | `--build-all`: via `tools\build-all.ps1`
+- Detecta Brave/Chrome para `CHROME_EXECUTABLE`. Crea `.venv` + `flutter pub get`.
+- `--install-missing`: instala deps bare-metal (winget/apt/dnf/brew + git clone); si no, guía por SO + pregunta.
+
+### Despliegue
+```bash
+docker compose --profile prod up -d
+```
+Backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, Android) con `start.bat --build-all` y scripts de `docs/es/HERRAMIENTAS.md`.
+
+### Solución de problemas
+- Backend no arranca: verifica Python 3.12+, `backend/.env`, ejecuta uvicorn directamente para ver el error.
+- App no conecta con la API: backend en `http://localhost:8000`, `BACKEND_URL` con `--dart-define`, API responde en `/docs`.
+- Bases de datos o migraciones: `alembic upgrade head`; SQLite ↔ MariaDB revisa `docs/es/USO.md` y `docs/es/DATABASE.md`.
+- Flutter: `flutter pub get`; generación de código Hive/build_runner en `docs/es/ARQUITECTURA.md`.
+
 ## Tareas pendientes
 Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.
 

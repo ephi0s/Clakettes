@@ -98,7 +98,7 @@ The project's automatic startup configures this when using `start.*`.
 
 ## Project status
 
-🚧 **Active development** — Festivals, shorts, E2EE chat, maps, offline mode and 9 languages working; with backend tests (~1400) and frontend (75 test files).
+🚧 **Active development** — Festivals, shorts, E2EE chat, maps, offline mode and 9 languages working.
 
 **Next roadmap:**
 
@@ -140,25 +140,6 @@ Also, the starting point for development and project convention is [AGENTS.md](A
 - **What if the API doesn't respond?** Check that the backend is running at `http://localhost:8000` and that `/docs` responds.
 - **Which document should I read first?** If you are a user, [docs/en/USO.md](docs/en/USO.md); if you are a developer, [docs/en/ARQUITECTURA.md](docs/en/ARQUITECTURA.md).
 - **How do I know if a change requires updating documentation?** If startup, API, roles, permissions, environment variables or schema change, update the corresponding documentation too.
-
-## For developers
-
-> Full detail in [`AGENTS.md`](AGENTS.md) (architecture, commands and conventions) and in the [`docs/`](docs/en/README.md) index (guides by role: functional, usage, administration, infrastructure, security, architecture, API).
-
-**At a glance**: layered FastAPI backend (routers → SQLAlchemy services → models, SQLite in dev / MariaDB in prod, JWT + refresh, 36 Alembic migrations); Flutter Material 3 frontend with dark mode (singletons + `setState()` + streams, Hive offline, 32 reusable widgets).
-
-```bash
-# Tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-cd frontend && flutter test
-
-# Lint
-cd backend && ruff check . && ruff format --check .
-cd frontend && flutter analyze
-
-# Migrations
-cd backend && alembic upgrade head
-```
 
 ## Local development
 

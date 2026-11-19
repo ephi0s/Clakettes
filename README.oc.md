@@ -100,7 +100,7 @@ L'aviada automatica del projècte ja configura aquò quand s'utiliza `start.*`.
 
 ## Estat del projècte
 
-🚧 **En desvolopament actiu** — Festivals, corts, chat amb E2EE, mapas, mòde offline e 9 lengas que foncionan; amb tèsts en backend (~1400) e frontend (75 fichièrs de tèsts).
+🚧 **En desvolopament actiu** — Festivals, corts, chat amb E2EE, mapas, mòde offline e 9 lengas que foncionan.
 
 **Roadmap pròche:**
 
@@ -142,68 +142,7 @@ En mai, lo punt de partença per desvolopament e convencion de projècte es [AGE
 - **¿Qué documento debo leer primero?** Si eres usuario, [docs/oc/USO.md](docs/oc/USO.md); si eres desarrollador, [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
 - **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
 
-## Per desvolopaires
 
-> Detalh complet en [`AGENTS.md`](AGENTS.md) (arquitectura, comandas e convencions) e en l'indici de [`docs/`](docs/oc/README.md) (guidas per ròtle: foncionau, usatge, administracion, infraestructura, seguretat, arquitectura, API).
-
-**D'un uèlh**: backend FastAPI en capas (routers → servicis → modèls SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migracions Alembic); frontend Flutter Material 3 amb dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets reutilizables).
-
-```bash
-# Tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-cd frontend && flutter test
-
-# Lint
-cd backend && ruff check . && ruff format --check .
-cd frontend && flutter analyze
-
-# Migraciones
-cd backend && alembic upgrade head
-```
-
-## Desvolopament locau
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
-## Desplegament
-
-```bash
-docker compose --profile prod up -d
-```
-
-Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linux, Android) se gerisson amb `start.bat --build-all` e lo jòc de scripts de [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md).
-
-## Solucion de problèmas
-
-### Lo backend non avia
-
-- Verifica que Python 3.12+ esté instalado.
-- Comprueba que `backend/.env` existe y es válido.
-- Ejecuta `cd backend && python -m uvicorn app.main:app --reload` para ver el error real.
-
-### L'app non connecta amb l'API
-
-- Asegúrate de que el backend está en `http://localhost:8000`.
-- Revisa si `BACKEND_URL` se está pasando con `--dart-define`.
-- Comprueba que la API responde en `/docs`.
-
-### Problèmas amb bancas de donadas o migracions
-
-- Usa `cd backend && alembic upgrade head`.
-- Si cambias de SQLite a MariaDB, revisa [docs/oc/USO.md](docs/oc/USO.md) y [docs/oc/DATABASE.md](docs/oc/DATABASE.md).
-
-### Frontend amb errors de Flutter
-
-- Ejecuta `cd frontend && flutter pub get`.
-- Si hay problemas de generación de código, sigue la documentación de Hive y build_runner en [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
 
 ## Contribuir
 
@@ -213,7 +152,7 @@ Backend + frontend (nginx) + MariaDB. Los builds distribuits (web, Windows, Linu
 4. Empuja la rama (`git push origin feature/nov-funcionalitat`).
 5. Abre un Pull Request con contexto, cambios y validación.
 
-**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` devon passar abans de fusionar.
+**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## Licéncia
 

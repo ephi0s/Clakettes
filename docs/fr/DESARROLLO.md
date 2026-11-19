@@ -8,7 +8,7 @@
 2. Logique dans `app/services/` héritant de `BaseService` (`paginate` / `paginate_filtered` ; pas de `HTTPException` dans le nouveau code).
 3. Route dans `app/routers/` + `get_or_404(db, Modelo, id, "Etiqueta")` et `require_*` de `permissions.py`. Auth optionnel seulement pour la lecture publique.
 4. Migration si le schéma change : `alembic revision --autogenerate -m "..."`.
-5. Test dans `tests/test_<dominio>.py` (200 + 401 sans token + 403 sans permission + 404 inexistant). Régénérez [API.md](API.md) avec `tools/gen_api.py`.
+5. Test dans `tests/test_<dominio>.py` (200 + 401 sans token + 403 sans permission + 404 inexistant).
 
 ## Frontend : ajouter un écran
 
@@ -18,12 +18,3 @@
 4. Textes dans `assets/l10n/en.arb` d'abord (fallback) + reste des locales ; 0 clés manquantes vérifiées.
 5. Test dans `test/screens/` ou `test/widgets/` (les widgets avec `l10n` nécessitent un `pump()` supplémentaire après `pumpWidget`).
 
-## Portes (CI les exige)
-
-| Commande | Où |
-|---|---|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 problèmes) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` avant le test | `frontend/` |

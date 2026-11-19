@@ -11,7 +11,7 @@
    `require_*` de `permissions.py`. Auth opcional só para lectura pública.
 4. Migración se cambia o esquema: `alembic revision --autogenerate -m "..."`.
 5. Test en `tests/test_<dominio>.py` (200 + 401 sen token + 403 sen permiso +
-   404 inexistente). Rexenerar [API.md](API.md) con `tools/gen_api.py`.
+   404 inexistente).
 
 ## Frontend: engadir unha pantalla
 
@@ -25,12 +25,4 @@
 5. Test en `test/screens/` ou `test/widgets/` (os widgets con `l10n`
    necesitan un `pump()` extra tras `pumpWidget`).
 
-## Portas (CI esíxeas)
 
-| Comando | Dónde |
-|---|---|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 issues) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` antes de test | `frontend/` |

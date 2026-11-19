@@ -12,7 +12,6 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 - **I want to use the app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **I manage a deployment** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Development** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **AI / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) and the task document; mandatory commands and conventions are in [../AGENTS.md](../../AGENTS.md)
 
 ## Documentation principles
 
@@ -25,22 +24,22 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 
 | Document | What it covers | Audience |
 |---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Real value by role and flows (festival, registration, committees, awards, chat/E2EE, jury voting) | user, admin, AI |
+| [FUNCIONAL.md](FUNCIONAL.md) | Real value by role and flows (festival, registration, committees, awards, chat/E2EE, jury voting) | user, admin |
 | [USO.md](USO.md) | Startup, variables, SQLite↔MariaDB migration, backups, roles and operation | user, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | `/api/admin` endpoints, initial account, secret rotation, limits, troubleshooting | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker profiles, ports, volumes, Nginx, health, CI (GitHub + GitLab) | admin, dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, `require_*` matrix, perimeter, production checklist | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | System map + backend/frontend rules + key flows | dev, AI |
-| [API.md](API.md) | Endpoint reference (regenerable with `tools/gen_api.py`) | dev, AI |
-| [DESARROLLO.md](DESARROLLO.md) | Convention for adding endpoint/screen + CI gates | dev, AI |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | System map + backend/frontend rules + key flows | dev |
+| [API.md](API.md) | Endpoint reference | dev |
+| [DESARROLLO.md](DESARROLLO.md) | Convention for adding endpoint/screen + CI gates | dev |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*` scripts, distributable builds, Docker, CI fixes | dev |
 | [PUSH.md](PUSH.md) | Notification decision without Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB schema, per-model cards, ER | dev, AI |
+| [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB schema, per-model cards, ER | dev |
 | [BACKEND.md](BACKEND.md) | Backend guide (layers, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Audit report (rev. 10/10/2026) | reference |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Federation protocol between nodes (phase 4) | dev, AI |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimal federated entities) | dev, AI |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federated trust model, mTLS, certificate rotation | dev, AI |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Federation protocol between nodes (phase 4) | dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimal federated entities) | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federated trust model, mTLS, certificate rotation | dev |
 
 ## Recommended path by profile
 
@@ -89,19 +88,3 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 - [ARQUITECTURA.md](ARQUITECTURA.md): technical system map
 - [API.md](API.md): endpoint reference
 
-## Recommended start
-
-To start in a local environment:
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-Or, using the project scripts:
-
-```bat
-start.bat --dev
-```
-
-The full command and profile reference is in [HERRAMIENTAS.md](HERRAMIENTAS.md) and in [../README.md](../../README.en.md).

@@ -30,18 +30,6 @@ Nazioak: Routers → Services → Models, motak `app.enums`-ekin.
 | Migrazioak | `alembic/` (36 bertsioa) | Produktuan Alembic-ak; dev-en `create_all` gehiago |
 | Federazioa | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | esku-menua, direktorioa, nodoak, taldeak, webfinger, erabiltzailea ref |
 
-Egiten diren konbendak (diskoan egiaztatuta):
-
-| Eskura | Fitxategi | Eskaera |
-|--------|-----------|---------|
-| Routers | 40 (38 `APIRouter`-ekin) | `dependencies.py` eta `permissions.py` helper-ak, routerek gabe |
-| Zerbitzariak | 43 | + `__init__.py` |
-| Entitate-ko modeloak | 40 | + `base.py` eta `__init__.py` |
-| Eskaera | 37 | |
-| Alembic-ko migrazioak | 36 | + `__init__.py` |
-| Prove-fitxategiak | 47 | `test_*.py` |
-| `def test_` errenkadak | 1439 | |
-
 ## Frontend (`frontend/`)
 
 Zerbitziak erakusten daitezkeena + `setState()` + Streams (ez Provider). `main()`-ean:
@@ -57,14 +45,6 @@ Zerbitziak erakusten daitezkeena + `setState()` + Streams (ez Provider). `main()
 | Navegatzea | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer бидеan; 10 pantalla-cacheatutakoak |
 | i18n | `l10n/` + `assets/l10n/` (9 localak) | `en.arb` ezarrezkoa; 0 kladiak absentak (script-ak eskaintzen du) |
 | SO-ko baimendiak | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubikazioa, kamera, fototeka, alarmak |
-
-Egiten diren konbendak (diskoan egiaztatuta):
-
-| Eskura | Fitxategi | Eskaera |
-|--------|-----------|---------|
-| Atzeratutako widget-ak | 32 | `lib/widgets/` barruan |
-| Pantailak | 36 | `lib/screens/` barruan |
-| Prove-fitxategiak | 75 | `*_test.dart` `test/` barruan eta subcarpeten barruan |
 
 ## Bidaia garrantzitsuak
 

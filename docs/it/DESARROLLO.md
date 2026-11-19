@@ -11,7 +11,7 @@
    `require_*` di `permissions.py`. Auth opzionale solo per lettura pubblica.
 4. Migrazione se cambia lo schema: `alembic revision --autogenerate -m "..."`.
 5. Test in `tests/test_<dominio>.py` (200 + 401 senza token + 403 senza permesso +
-   404 inesistente). Rigenerare [API.md](../es/API.md) con `tools/gen_api.py`.
+   404 inesistente).
 
 ## Frontend: aggiungere una schermata
 
@@ -25,12 +25,4 @@
 5. Test in `test/screens/` o `test/widgets/` (i widget con `l10n`
    necessitano di un `pump()` extra dopo `pumpWidget`).
 
-## Cancelli (il CI li esige)
 
-| Comando | Dónde |
-|---|---|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 issues) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` antes de test | `frontend/` |

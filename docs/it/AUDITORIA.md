@@ -2,28 +2,6 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
-> **Addendum 11/10/2026** (cifre verificate): backend 1402 test in 37 file;
-> router 36 file (33 con `APIRouter`); services 36; models 34; schemas 33;
-> Alembic 18 versioni; `docs/es/API.md` 310 endpoint (operationIds unici).
-> RGPD: privacy di default, consenso, cancellazione/esportazione, purga delle
-> sessioni, audit append-only, sanificazione dei metadati, TLS MariaDB in prod,
-> DAV con scadenza, CSP/HSTS. Provider di pagamento mock/stripe/redsys.
-
-## 0. Riepilogo esecutivo (10/10/2026, cifre verificate)
-
-| Área | Estado | Detalle |
-| --- | --- | --- |
-| Backend tests | 1321 `def test_` en 33 archivos | `Get-ChildItem backend/tests -Recurse -Filter "test_*.py" \| Select-String "def test_"` |
-| Frontend tests | 347 bloques en 69 archivos | `Get-ChildItem frontend/test -Recurse -Filter "*_test.dart" \| Select-String "testWidgets\(|test\("` |
-| Routers/Services/Models/Schemas | 35/33/33/32 archivos (33 routers con `APIRouter`) | `permissions.py`/`dependencies.py` son helpers sin router; `base.py`/`__init__.py` no son entidades |
-| Migraciones | 15 + `__init__.py` | `alembic/versions/` |
-| Endpoints | 294 en 33 routers (`docs/es/API.md` por AST) | `python tools/gen_api.py` idempotente; grep simple da 272 (no cuenta `propfind/report/options/websocket`) |
-| Lint | `ruff check` + `ruff format --check` limpios (216 archivos) | `AGENTS.md` y CI (GH + GitLab) con gate de formato |
-| Docs | Backend consolidado en `docs/` | `docs/es/BACKEND.md` + `docs/es/DATABASE.md`; índice en `docs/es/README.md` |
-| Deuda principal | `get_or_404` parcial, `paginate_filtered` sin usos, `python-jose` sin migrar, 24 `AlertDialog` / 115 `ScaffoldMessenger` restantes | Ver §5 con conteos y verificación |
-
-Come ri-verificare: `cd backend; python -m ruff check .; python -m pytest tests/ -x -q --tb=short` e `cd frontend; flutter analyze; flutter test`.
-
 ## 1. Dipendenze esterne: cosa si può eliminare e cosa no
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
@@ -145,8 +123,7 @@ Tutte le dipendenze sono in uso reale; nessuna si è potuta eliminare senza romp
     nuove), `flutter_local_notifications` su desktop + permesso macOS
     all'avvio, mobile in no-op esplicito (`_supported`). `flutter build web`
     verificato.
-24. Documentazione: `docs/es/API.md` (294 endpoint in 33 router, generata via
-    AST con `tools/gen_api.py` — rigenerabile), `docs/it/ARQUITECTURA.md`
+24. Documentazione: `docs/es/API.md`, `docs/it/ARQUITECTURA.md`
     (livelli, flussi, decisioni multipiattaforma), `docs/it/USO.md` (avvio,
     env, gestione, ruoli), `docs/it/DESARROLLO.md` (convenzioni + cancelli
     CI), `docs/it/SEGURIDAD.md` (token, matrice dei permessi, checklist prod),
@@ -158,17 +135,9 @@ Stato: 1321 test backend (33 file) + 347 frontend (69 file) in verde, ruff + ana
 ## 4. Revisione 10/10/2026 (correzioni a §2–§3)
 
 1. Doc backend consolidate: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/it/BACKEND.md` + `docs/it/DATABASE.md`; link aggiornati in `README.it.md`, `AGENTS.md`, `docs/it/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-2. Conteggio reale: router 35 file (33 con `APIRouter`; `permissions.py`/`dependencies.py` sono helper), services 33 moduli (+`__init__`), models 33 entità (+`base.py`+`__init__`), schemas 32, Alembic 15, `API.md` 294 endpoint/33 router (AST conta `propfind/report/options/websocket`; grep semplice dà 272).
+
 3. Test: backend 1321 `def test_` in 33 file (non 1366/38); frontend 347 blocchi in 69 file (non 313/70). Widget 24 OK. Schermate: `festival_profile` 956L, `locations` 680L, `chat` 767L, `api_service` 511L, `user_profile` 803L.
 4. Correzioni a §2: `RateLimiter` sono 3 istanze (`main.py`, `admin.py`, `auth.py`), non 1; `ADMIN_PASSWORD` non esiste in `backend/.env.example` (solo commento `admin/setup`); `ruff format` copre 216 file (non 215).
 5. `tools/gen_api.py` rigenera `API.md` idempotente ma con percorso assoluto hardcodato e senza shebang (non portabile).
 
-## 5. Manutenibilità pendente (ordine suggerito, con verifica)
 
-| # | Tarea | Estado 10/10/2026 | Cómo verificar |
-| --- | --- | --- | --- |
-| 1 | Migrar routers a `get_or_404` y servicios a `paginate_filtered` | `get_or_404` en 13 routers (110 usos), 186 `404` inline restantes; `paginate_filtered` con 0 usos | `Select-String "get_or_404\(" backend/app/routers; Select-String "404" backend/app/routers; Select-String "paginate_filtered" backend/app/services` |
-| 2 | Migrar `python-jose` → `PyJWT` (PR aislado con tests de expiración/tipo/rotación) | Sin migrar (`app/auth.py` usa `jose`) | `Select-String "from jose\|import jose" backend/app; Select-String "import jwt" backend/app` |
-| 3 | Troceo de pantallas grandes | Hecho: `festival_profile` 956L, `locations` 680L, `api_service` 511L, `chat` 767L, `user_profile` 803L (widgets extraídos en `lib/widgets/`) | `(Get-Content frontend/lib/screens/<pantalla>).Count` |
-| 4 | Migrar `AlertDialog` → `ConfirmDialog` y `ScaffoldMessenger` → `showAppSnack` | 24 `AlertDialog` vs 19 usos `showConfirmDialog`; 115 `ScaffoldMessenger` vs 8 usos `showAppSnack` (los `AlertDialog` restantes son formularios: requieren `CreateEntityDialog` común) | `Select-String "AlertDialog|showConfirmDialog|ScaffoldMessenger|showAppSnack" frontend/lib` |
-| 5 | Higiene formato + `.gitignore` | `ruff format --check` + `ruff check` limpios y con gate en CI (GH + GitLab); `.gitignore` cubre `*.db*`, `*.hive`, `*.lock`, `uploads/` (no el glob `*.hive*`) | `ruff format --check .; ruff check .; Get-Content .gitignore` |

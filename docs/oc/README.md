@@ -12,7 +12,7 @@ Tota la documentacion existe nei 9 lengas de la plataforma. L'espaiòl (canario)
 - **Voglì utiar l'app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Administro un desplegament** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Desenvolviment** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **IA / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) e lo document de la tasca; las comandas e convencons obligatòrias son en [../AGENTS.md](../../AGENTS.md)
+
 
 ## Principis de la documentacion
 
@@ -25,22 +25,22 @@ Tota la documentacion existe nei 9 lengas de la plataforma. L'espaiòl (canario)
 
 | Documento | Que cover | Audiencia |
 |-----------|-----------|-----------|
-| [FUNCIONAL.md](FUNCIONAL.md) | Valor real per rol e fluxos (festival, inscripcion, comitots, premis, chate/E2EE, votaciu del jurat) | usagi, admin, IA |
+| [FUNCIONAL.md](FUNCIONAL.md) | Valor real per rol e fluxos (festival, inscripcion, comitots, premis, chate/E2EE, votaciu del jurat) | usagi, admin |
 | [USO.md](USO.md) | Arrancada, variables, migracion SQLite↔MariaDB, backup, ròls e operacion | usagi, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, compte initial, rotacion de secrets, limites, solucion de problemas | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfils Docker, ports, volumens, Nginx, sanitat, CI (GitHub + GitLab) | admin, dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriza `require_*`, perimetre, checklist de produccion | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa del sistema + regras backend/frontend + fluxos claus | dev, IA |
-| [API.md](API.md) | Referenca d'endpoints (regenerable con `tools/gen_api.py`) | dev, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Convencon per afegir endpoint/pantalla + portas CI | dev, IA |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa del sistema + regras backend/frontend + fluxos claus | dev |
+| [API.md](API.md) | Referenca d'endpoints | dev |
+| [DESARROLLO.md](DESARROLLO.md) | Convencon per afegir endpoint/pantalla + portas CI | dev |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuibles, Docker, fiças CI | dev |
 | [PUSH.md](PUSH.md) | Decisio de notificacions sens Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas per model, ER | dev, IA |
+| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas per model, ER | dev |
 | [BACKEND.md](BACKEND.md) | Guia del backend (capas, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Raport d'auditoria (rev. 10/10/2026) | referenzia |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federacion entre nods (fasa 4) | dev, IA |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats minimas federades) | dev, IA |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confianza federat, mTLS, rotacion de certificats | dev, IA |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federacion entre nods (fasa 4) | dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats minimas federades) | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confianza federat, mTLS, rotacion de certificats | dev |
 
 ## Ruta recomendada per profil
 
@@ -89,19 +89,3 @@ Tota la documentacion existe nei 9 lengas de la plataforma. L'espaiòl (canario)
 - [ARQUITECTURA.md](ARQUITECTURA.md): mapa tecnico del sistema
 - [API.md](API.md): referenca d'endpoints
 
-## Inici recomendat
-
-Per comensar en entorn local:
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-O, usanz los scripts del projècte:
-
-```bat
-start.bat --dev
-```
-
-La referenca completa de comandas e perfilhs esta en [HERRAMIENTAS.md](HERRAMIENTAS.md) e en [../README.oc.md](../../README.oc.md).

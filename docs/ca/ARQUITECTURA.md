@@ -30,17 +30,7 @@ Capes: Routers → Services → Models, tipus via `app.enums`.
 | Migracions | `alembic/` (36 versions) | Prod només Alembic; dev també `create_all` |
 | Federació | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directori, nodes, informes, webfinger, ref usuaris |
 
-Comptes reals (verificats al disc):
 
-| Component | Fitxers | Nota |
-|-----------|---------|------|
-| Routers | 40 (38 amb `APIRouter`) | `dependencies.py` i `permissions.py` són helpers sense router |
-| Serveis | 43 | + `__init__.py` |
-| Models d'entitat | 40 | + `base.py` i `__init__.py` |
-| Esquemes | 37 | |
-| Migracions Alembic | 36 | + `__init__.py` |
-| Fitxers de prova | 47 | `test_*.py` |
-| Linies `def test_` | 1439 | |
 
 ## Frontend (`frontend/`)
 
@@ -57,13 +47,7 @@ Serveis singleton + `setState()` + Streams (sense Provider). Arrancada a `main()
 | i18n | `l10n/` + `assets/l10n/` (9 locals) | `en.arb` és el fallback; 0 claus absents (verificat amb script) |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubicació, càmera, fototeca, alarmes exaetes |
 
-Comptes reals (verificats al disc):
 
-| Component | Fitxers | Nota |
-|-----------|---------|------|
-| Widgets reutilitzables | 32 | a `lib/widgets/` |
-| Pantalles | 36 | a `lib/screens/` |
-| Fitxers de prova | 75 | `*_test.dart` a `test/` i subcarpetes |
 
 ## Fluxos clau
 

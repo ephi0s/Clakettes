@@ -11,7 +11,7 @@
    `permissions.py`-ko `require_*`. Auth aukerakoa irakurketa publikorako soilik.
 4. Migrazioa eskema aldatzen bada: `alembic revision --autogenerate -m "..."`.
 5. Test-a `tests/test_<dominio>.py`-n (200 + 401 token gabe + 403 baimen gabe +
-   404 existitzen ez dena). Birsortu [API.md](../es/API.md) `tools/gen_api.py`-rekin.
+   404 existitzen ez dena).
 
 ## Frontend-a: pantaila bat gehitzea
 
@@ -25,12 +25,3 @@
 5. Test-a `test/screens/` edo `test/widgets/`-n (`l10n`-dun widget-ek
    `pump()` gehigarri bat behar dute `pumpWidget` ondoren).
 
-## Ateak (CI-k exijitzen ditu)
-
-| Comando | Dónde |
-|---|---|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 issues) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` antes de test | `frontend/` |

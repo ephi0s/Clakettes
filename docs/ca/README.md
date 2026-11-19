@@ -12,7 +12,7 @@ Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol (
 - **Vull utilitzar l'aplicació** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Administre un desplegament** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Desenvolupament** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **IA / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) i el document de la tasca; les ordres i convencions obligatòries estan a [../AGENTS.md](../../AGENTS.md)
+
 
 ## Principis de la documentació
 
@@ -25,22 +25,22 @@ Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol (
 
 | Document | Què cobreix | Audiència |
 |----------|-------------|-----------|
-| [FUNCIONAL.md](FUNCIONAL.md) | Valor real per rol i fluxos (festival, inscripció, comitats, premis, xat/E2EE, vot jurat) | usuari, admin, IA |
+| [FUNCIONAL.md](FUNCIONAL.md) | Valor real per rol i fluxos (festival, inscripció, comitats, premis, xat/E2EE, vot jurat) | usuari, admin |
 | [USO.md](USO.md) | Arrancada, variables, migració SQLite↔MariaDB, còpies de seguretat, funcions, operació | usuari, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, compte inicial, rotació de secrets, límits, solució de problemes | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfils Docker, ports, volumens, Nginx, salud, CI (GitHub + GitLab) | admin, dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriu `require_*`, perímetre, llista de comprovació de producció | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa del sistema + regles backend/frontend + fluxos clau | dev, IA |
-| [API.md](API.md) | Referència d'endpoints (regenerable amb `tools/gen_api.py`) | dev, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Conveció per afegir endpoint/pantalla + portes CI | dev, IA |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa del sistema + regles backend/frontend + fluxos clau | dev |
+| [API.md](API.md) | Referència d'endpoints | dev |
+| [DESARROLLO.md](DESARROLLO.md) | Conveció per afegir endpoint/pantalla + portes CI | dev |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuïbles, Docker, correccions CI | dev |
 | [PUSH.md](PUSH.md) | Decisió de notificacions sense Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fitxes per model, ER | dev, IA |
+| [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fitxes per model, ER | dev |
 | [BACKEND.md](BACKEND.md) | Guia del backend (capes, configuració, autenticació, proves) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Informe d'auditoria (rev. 10/10/2026) | referència |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federació entre nodes (fase 4) | dev, IA |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats mínimes federades) | dev, IA |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confiança federat, mTLS, rotació de certificats | dev, IA |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federació entre nodes (fase 4) | dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats mínimes federades) | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confiança federat, mTLS, rotació de certificats | dev |
 
 ## Ruta recomanada per perfil
 
@@ -89,19 +89,3 @@ Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol (
 - [ARQUITECTURA.md](ARQUITECTURA.md): mapa tècnic del sistema
 - [API.md](API.md): referència d'endpoints
 
-## Inici recomanat
-
-Per començar en un entorn local:
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-O, utilitzant els scripts del projecte:
-
-```bat
-start.bat --dev
-```
-
-La referència completa d'ordres i perfils del projecte està a [HERRAMIENTAS.md](HERRAMIENTAS.md) i a [../README.ca.md](../../README.ca.md).

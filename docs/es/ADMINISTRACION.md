@@ -26,7 +26,7 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 ## Backups y migraciones
 
 - SQLite: copiar `*.db` en caliente parado (`-Kill` antes). MariaDB: `mariadb-dump` (volumen `db-data`).
-- Migraciones: `alembic upgrade head` desde `backend/` (36 versiones; prod **solo** Alembic, nunca `create_all`).
+- Migraciones: `alembic upgrade head` desde `backend/` (prod **solo** Alembic, nunca `create_all`).
 - Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en [DATABASE.md](DATABASE.md).
 
 ## Troubleshooting

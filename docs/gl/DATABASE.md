@@ -63,8 +63,6 @@ Táboas de asociación:
 - `user_festival` — M2M entre `User` e `Festival`
 - `validation_rule_group_rules` — M2M entre `ValidationRuleGroup` e `ValidationRule`
 
-Total: 40 modelos de entidad + 2 táboas de asociación = 42 constructos SQLAlchemy.
-
 ## Modelo base
 
 Todos os modelos herdan de `BaseModel` definido en `app/models/base.py`:
@@ -327,7 +325,7 @@ Iso úsase como dependencia de FastAPI para o acceso á base de datos desde os e
 
 ## Notas de migración de SQLite a MariaDB
 
-Los cambios de esquema xéstananse con Alembic (`backend/alembic/versions/`, 36 versións; `alembic upgrade head`). En produción só Alembic, nunca `create_all`.
+Los cambios de esquema xéstananse con Alembic (`backend/alembic/versions/`; `alembic upgrade head`). En produción só Alembic, nunca `create_all`.
 
 Al migrar de SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corresponde a MariaDB `INT AUTO_INCREMENT`

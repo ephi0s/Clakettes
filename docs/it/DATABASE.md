@@ -63,8 +63,6 @@ Tabelle di associazione:
 - `user_festival` — M2M tra `User` e `Festival`
 - `validation_rule_group_rules` — M2M tra `ValidationRuleGroup` e `ValidationRule`
 
-Totale: 40 modelli di entità + 2 tabelle di associazione = 42 costruiti SQLAlchemy.
-
 ## Modello base
 
 Tutti i modelli ereditano da `BaseModel` definito in `app/models/base.py`:
@@ -327,7 +325,7 @@ Questo è usato come dipendenza di FastAPI per l'accesso al database dagli endpo
 
 ## Note di migrazione da SQLite a MariaDB
 
-Le modifiche allo schema sono gestite con Alembic (`backend/alembic/versions/`, 36 versioni; `alembic upgrade head`). In produzione solo Alembic, mai `create_all`.
+Le modifiche allo schema sono gestite con Alembic (`backend/alembic/versions/`). In produzione solo Alembic, mai `create_all`.
 
 Durante la migrazione da SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corrisponde a MariaDB `INT AUTO_INCREMENT`

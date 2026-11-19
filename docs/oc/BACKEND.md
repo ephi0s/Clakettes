@@ -227,7 +227,7 @@ POST /api/auth/refresh
 | `moderation_reports` | `/api` | moderation-reports | Informes de moderacio |
 | `node_policies` | `/api` | node-policies | Politiques de nodes de federacio |
 
-Total: 38 routers amb `APIRouter` (40 fitxers de router, 2 auxiliars sens router).
+
 
 ### Paginacio i filtratge
 
@@ -444,9 +444,9 @@ backend/
 │   ├── rate_limiter.py      # Limitador de velocitat SQLite
 │   ├── enums.py             | Enums compartits
 │   └── scripts/             # Scripts de seed/migracio
-├── alembic/                 # Migracions (36 versions)
+├── alembic/                 # Migracions
 ├── tools/                   # Scripts d'exportacio/importacio
-├── tests/                   # Provades pytest (47 fitxers, 1439 funcions de provades)
+├── tests/                   # Provades pytest
 ├── uploads/                 | Fitxers pujats estatics
 ├── .env.example             | Plantilla de configuracio
 ├── requirements.txt         | Dependencies de productiu

@@ -52,7 +52,7 @@ Volums: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-data
 - **GitHub** (push/PR a `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (MariaDB 11 + `alembic upgrade head` + pytest) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 imatges).
 - **GitLab**: stages `lint → test → build`; `docker-build` només a `main` amb push al registry.
 
-Porta local (mateixa que CI): `ruff check .` + `ruff format --check .` + `pytest tests/ -x -q --tb=short` (des de `backend/`), `flutter analyze` + `flutter test` (des de `frontend/`).
+
 
 ## Vegeu també
 

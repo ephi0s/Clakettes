@@ -227,7 +227,7 @@ POST /api/auth/refresh
 | `moderation_reports` | `/api` | moderation-reports | Informes de moderació |
 | `node_policies` | `/api` | node-policies | Polítiques de nodes de federació |
 
-Total: 38 routers amb `APIRouter` (40 fitxers de router, 2 helpers sense router).
+
 
 ### Paginació i filtratge
 
@@ -427,35 +427,7 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Estructura del projecte
 
-```
-backend/
-├── app/
-│   ├── models/              # 40 models SQLAlchemy (+ base.py)
-│   ├── schemas/             # 37 esquemes Pydantic
-│   ├── services/            # 43 serveis de lògica de negoci
-│   ├── routers/             # 40 routers API (38 amb APIRouter)
-│   ├── chat_backend/        # Implementació WebSocket de xat
-│   ├── auth.py              # JWT + autenticació de sessió
-│   ├── config.py            # Pydantic Settings
-│   ├── database.py          # Motor, SessionLocal, get_db()
-│   ├── main.py              # Aplicació FastAPI, middleware, routers
-│   ├── rate_limiter.py      # Limitador de velocitat SQLite
-│   ├── enums.py             # Enums compartits
-│   └── scripts/             # Scripts de seed/migracio
-├── alembic/                 # Migracions (36 versions)
-├── tools/                   # Scripts d'exportacio/importacio
-├── tests/                   # Proves pytest (47 fitxers, 1439 funcions de prova)
-├── uploads/                 # Fitxers pujats estàtics
-├── .env.example             # Plantilla de configuracio
-├── requirements.txt         # Dependencies de producció
-├── requirements-dev.txt     # Dependencies de desenvolupament (pytest, ruff)
-├── pyproject.toml           # Configuracio Ruff, pytest
-└── pytest.ini               # Configuracio pytest
-```
-
-Documentació a `docs/ca/BACKEND.md` (aquest fitxer) i `docs/ca/DATABASE.md`.
 
 ---
 

@@ -100,7 +100,7 @@ O arranque automático do proxecto xa configura isto cando se usa `start.*`.
 
 ## Estado do proxecto
 
-🚧 **En desenvolvemento activo** — Festivais, curtas, chateo con E2EE, mapas, modo sen liña e 9 idiomas funcionando; con probas en backend (~1400) e frontend (75 archivos de probas).
+🚧 **En desenvolvemento activo** — Festivais, curtas, chateo con E2EE, mapas, modo sen liña e 9 idiomas funcionando.
 
 **Roadmap seguinte:**
 
@@ -142,69 +142,6 @@ Ademais, o punto de partida para desenvolvemento e convención de proxecto é [A
 - **Que documento debo ler primeiro?** Se es usuario, [docs/gl/USO.md](docs/gl/USO.md); se es desenvolvedor, [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md).
 - **Como sei se un cambio require actualizar documentación?** Se cambia arranque, API, roles, permisos, variables de entorno ou esquema, actualiza tamén a documentación que corresponda.
 
-## Para desenvolvedores
-
-> Detalle completo en [`AGENTS.md`](AGENTS.md) (arquitectura, comandos e convencións) e no índice de [`docs/`](docs/gl/README.md) (guías por rol: funcional, uso, administración, infraestrutura, seguridade, arquitectura, API).
-
-**Dunha ollada**: backend FastAPI en capas (routers → servizos → modelos SQLAlchemy, SQLite en dev / MariaDB en prod, JWT + refresh, 36 migracións Alembic); frontend Flutter Material 3 con dark mode (singletons + `setState()` + streams, Hive offline, 32 widgets reutilizables).
-
-```bash
-# Tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-cd frontend && flutter test
-
-# Lint
-cd backend && ruff check . && ruff format --check .
-cd frontend && flutter analyze
-
-# Migraciones
-cd backend && alembic upgrade head
-```
-
-## Desenvolvemento local
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
-## Despregamento
-
-```bash
-docker compose --profile prod up -d
-```
-
-Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Linux, Android) xestiónanse con `start.bat --build-all` e o conxunto de scripts de [docs/gl/HERRAMIENTAS.md](docs/gl/HERRAMIENTAS.md).
-
-## Solución de problemas
-
-### O backend non arranca
-
-- Verifica que Python 3.12+ estea instalado.
-- Comproba que `backend/.env` existe e é válido.
-- Executa `cd backend && python -m uvicorn app.main:app --reload` para ver o erro real.
-
-### A app non conecta coa API
-
-- Asegúrate de que o backend está en `http://localhost:8000`.
-- Revisa se `BACKEND_URL` se está pasando con `--dart-define`.
-- Comproba que a API responde en `/docs`.
-
-### Problemas con bases de datos ou migracións
-
-- Usa `cd backend && alembic upgrade head`.
-- Se cambias de SQLite a MariaDB, revisa [docs/gl/USO.md](docs/gl/USO.md) e [docs/gl/DATABASE.md](docs/gl/DATABASE.md).
-
-### Frontend con erros de Flutter
-
-- Executa `cd frontend && flutter pub get`.
-- Se hai problemas de xeración de código, segue a documentación de Hive e build_runner en [docs/gl/ARQUITECTURA.md](docs/gl/ARQUITECTURA.md).
-
 ## Contribuír
 
 1. Fai un fork do repositorio.
@@ -213,7 +150,7 @@ Backend + frontend (nginx) + MariaDB. Os builds distribuídos (web, Windows, Lin
 4. Empuxa a rama (`git push origin feature/nova-funcionalidade`).
 5. Abre un Pull Request con contexto, cambios e validación.
 
-**Convencións de calidade:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` deben pasar antes de fusionar.
+**Convencións de calidade:** [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## Licenza
 

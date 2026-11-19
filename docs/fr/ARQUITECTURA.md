@@ -30,18 +30,6 @@ Couches : Routers → Services → Models, types via `app.enums`.
 | Migrations | `alembic/` (36 versions) | Prod seulement Alembic ; dev aussi `create_all` |
 | Fédération | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, répertoire, nœuds, rapports, webfinger, ref users |
 
-Comptes réels (vérifiés sur disque) :
-
-| Composant | Fichiers | Note |
-|---|---|---|
-| Routers | 40 (38 avec `APIRouter`) | `dependencies.py` et `permissions.py` sont des helpers sans router |
-| Services | 43 | + `__init__.py` |
-| Modèles d'entité | 40 | + `base.py` et `__init__.py` |
-| Schémas | 37 | |
-| Migrations Alembic | 36 | + `__init__.py` |
-| Fichiers de test | 47 | `test_*.py` |
-| Lignes `def test_` | 1439 | |
-
 ## Frontend (`frontend/`)
 
 Services singleton + `setState()` + Streams (sans Provider). Démarrage dans `main()` :
@@ -56,14 +44,6 @@ Services singleton + `setState()` + Streams (sans Provider). Démarrage dans `ma
 | Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer toujours ; 10 écrans mis en cache |
 | i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` est le fallback ; 0 clés manquantes (vérifié avec script) |
 | Permissions OS | `AndroidManifest.xml` / `Info.plist` | Réseau, localisation, caméra, photothèque, alarmes exactes |
-
-Comptes réels (vérifiés sur disque) :
-
-| Composant | Fichiers | Note |
-|---|---|---|
-| Widgets réutilisables | 32 | dans `lib/widgets/` |
-| Écrans | 36 | dans `lib/screens/` |
-| Fichiers de test | 75 | `*_test.dart` dans `test/` et sous-dossiers |
 
 ## Flux clés
 

@@ -52,8 +52,6 @@ Bolumenak: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-d
 - **GitHub** (push/PR `main,develop`-ra): `backend-lint` + `frontend-lint` + `backend-test` (MariaDB 11 + `alembic upgrade head` + pytest) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 irudi).
 - **GitLab**: stage-ak `lint → test → build`; `docker-build` `main`-en soilik registry-ra push-arekin.
 
-Ate lokala (CI-aren berdina): `ruff check .` + `ruff format --check .` + `pytest tests/ -x -q --tb=short` (`backend/`-tik), `flutter analyze` + `flutter test` (`frontend/`-tik).
-
 ## Ikusi halaber
 
 - [USO.md](USO.md): hedapenaren eguneroko erabilera

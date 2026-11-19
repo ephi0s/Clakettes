@@ -52,8 +52,6 @@ Volumi: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-data
 - **GitHub** (push/PR a `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (MariaDB 11 + `alembic upgrade head` + pytest) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 immagini).
 - **GitLab**: stages `lint → test → build`; `docker-build` solo in `main` con push al registry.
 
-Porta locale (stessa del CI): `ruff check .` + `ruff format --check .` + `pytest tests/ -x -q --tb=short` (da `backend/`), `flutter analyze` + `flutter test` (da `frontend/`).
-
 ## Vedi anche
 
 - [USO.md](USO.md): uso quotidiano del deployment

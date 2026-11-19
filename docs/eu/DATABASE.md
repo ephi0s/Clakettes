@@ -66,8 +66,6 @@ Erlazioa taulak:
 - `user_festival` — M2M `User`-en eta `Festival`-en artean
 - `validation_rule_group_rules` — M2M `ValidationRuleGroup`-en eta `ValidationRule`-en artean
 
-Guztira: 40 eskura-modeloa + 2 erlazioa-taula = 42 SQLAlchemy-eko eraikina.
-
 ## Base Model
 
 Modeloak guztiak `BaseModel`-etik heretan, `app/models/base.py`-ko:
@@ -368,7 +366,7 @@ FastAPI-ek eskaintzen du endpoints-ko eskura-ko eskaintzaz.
 
 ## SQLite → MariaDB-ko mugatu
 
-Eskaerak alembic-eko `backend/alembic/versions/` (36 bertsioa; `alembic upgrade head`). Produktuan alembic-ak, `create_all` bat ez.
+Eskaerak alembic-eko `backend/alembic/versions/` (`alembic upgrade head`). Produktuan alembic-ak, `create_all` bat ez.
 
 SQLite ↔ MariaDB:
 

@@ -12,8 +12,6 @@ Toute la documentation existe dans les 9 langues de la plateforme. L'espagnol (c
 - **Je veux utiliser l'app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **J'administre un déploiement** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Développement** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **IA / agent** → [ARQUITECTURA.md](ARQUITECTURA.md) et le document de la tâche ; les commandes et conventions obligatoires sont dans [../AGENTS.md](../../AGENTS.md)
-
 ## Principes de la documentation
 
 - **Un seul document canonique par sujet** : [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) et [API.md](API.md) sont la référence officielle de leur domaine.
@@ -25,22 +23,22 @@ Toute la documentation existe dans les 9 langues de la plateforme. L'espagnol (c
 
 | Document | Qué cubre | Audiencia |
 |---|---|---|
-| [FUNCIONAL.md](FUNCIONAL.md) | Valeur réelle par rôle et flux (festival, inscription, comités, récompenses, chat/E2EE, vote jury) | utilisateur, admin, IA |
+| [FUNCIONAL.md](FUNCIONAL.md) | Valeur réelle par rôle et flux (festival, inscription, comités, récompenses, chat/E2EE, vote jury) | utilisateur, admin |
 | [USO.md](USO.md) | Démarrage, variables, migration SQLite↔MariaDB, sauvegardes, rôles et opération | utilisateur, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, compte initial, rotation de secrets, limites, dépannage | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Profils Docker, ports, volumes, Nginx, santé, CI (GitHub + GitLab) | admin, dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matrice `require_*`, périmètre, checklist production | admin, dev |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Carte du système + règles backend/frontend + flux clés | dev, IA |
-| [API.md](API.md) | Référence des endpoints (regénérable avec `tools/gen_api.py`) | dev, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Convention pour ajouter un endpoint/écran + portes CI | dev, IA |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Carte du système + règles backend/frontend + flux clés | dev |
+| [API.md](API.md) | Référence des endpoints | dev |
+| [DESARROLLO.md](DESARROLLO.md) | Convention pour ajouter un endpoint/écran + portes CI | dev |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuables, Docker, corrections CI | dev |
 | [PUSH.md](PUSH.md) | Décision de notification sans Firebase | dev |
-| [DATABASE.md](DATABASE.md) | Schéma dual SQLite/MariaDB, fiches par modèle, ER | dev, IA |
+| [DATABASE.md](DATABASE.md) | Schéma dual SQLite/MariaDB, fiches par modèle, ER | dev |
 | [BACKEND.md](BACKEND.md) | Guide du backend (couches, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Rapport d'audit (rev. 10/10/2026) | référence |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocole de fédération entre nœuds (phase 4) | dev, IA |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entités fédérées minimales) | dev, IA |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modèle de confiance fédéré, mTLS, rotation de certificats | dev, IA |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocole de fédération entre nœuds (phase 4) | dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entités fédérées minimales) | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modèle de confiance fédéré, mTLS, rotation de certificats | dev |
 
 ## Parcours recommandé par profil
 
@@ -89,19 +87,3 @@ Toute la documentation existe dans les 9 langues de la plateforme. L'espagnol (c
 - [ARQUITECTURA.md](ARQUITECTURA.md) : carte technique du système
 - [API.md](API.md) : référence d'endpoints
 
-## Démarrage recommandé
-
-Pour commencer dans un environnement local :
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-Ou, en utilisant les scripts du projet :
-
-```bat
-start.bat --dev
-```
-
-La référence complète de commandes et profils du projet est dans [HERRAMIENTAS.md](HERRAMIENTAS.md) et dans [../README.fr.md](../../README.fr.md).

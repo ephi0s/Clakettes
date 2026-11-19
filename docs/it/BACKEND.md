@@ -227,8 +227,6 @@ POST /api/auth/refresh
 | `moderation_reports` | `/api` | moderation-reports | Report moderazione |
 | `node_policies` | `/api` | node-policies | Politiche nodi federazione |
 
-Totale: 38 router con `APIRouter` (40 file di router, 2 helper senza router).
-
 ### Paginazione e filtraggio
 
 Parametri di query standard sugli endpoint di elenco:
@@ -429,35 +427,7 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Struttura del progetto
 
-```
-backend/
-├── app/
-│   ├── models/              # 40 modelli SQLAlchemy (+ base.py)
-│   ├── schemas/             # 37 schemi Pydantic
-│   ├── services/            # 43 servizi di logica di business
-│   ├── routers/             # 40 router API (38 con APIRouter)
-│   ├── chat_backend/        # Implementazione WebSocket chat
-│   ├── auth.py              # Auth JWT + sessione
-│   ├── config.py            # Pydantic Settings
-│   ├── database.py          # Engine, SessionLocal, get_db()
-│   ├── main.py              # App FastAPI, middleware, router
-│   ├── rate_limiter.py      # Limitatore di velocità SQLite
-│   ├── enums.py             # Enum condivisi
-│   └── scripts/             # Script seed/migrazione
-├── alembic/                 # Migrazioni (36 versioni)
-├── tools/                   # Script export/import
-├── tests/                   # Test pytest (47 file, 1439 funzioni di test)
-├── uploads/                 # File caricati statici
-├── .env.example             # Template configurazione
-├── requirements.txt         # Dipendenze produzione
-├── requirements-dev.txt     # Dipendenze dev (pytest, ruff)
-├── pyproject.toml           # Config Ruff, pytest
-└── pytest.ini               # Config pytest
-```
-
-Documentazione in `docs/it/BACKEND.md` (questo file) e `docs/it/DATABASE.md`.
 
 ---
 

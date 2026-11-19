@@ -27,20 +27,8 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 | Chate en temps real | `app/chat_backend/` (WebSocket) + REST en `routers/chat.py` | WS valida sesion vía `validate_access_token` |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefixe `/dav`, cub propi 600/60s) | Token bearer en URL; TLS obligatari en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import preguisat |
-| Migracions | `alembic/` (36 versiones) | Prod solament Alembic; dev ademas `create_all` |
+| Migracions | `alembic/` | Prod solament Alembic; dev ademas `create_all` |
 | Federacio | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directori, nods, informes, webfinger, ref usagis |
-
-Comptes reals (verificats en disc):
-
-| Component | Fitxers | Nota |
-|-----------|---------|------|
-| Routers | 40 (38 amb `APIRouter`) | `dependencies.py` e `permissions.py` son auxiliars sens router |
-| Servizos | 43 | + `__init__.py` |
-| Models d'entitat | 40 | + `base.py` e `__init__.py` |
-| Esquemes | 37 | |
-| Migracions Alembic | 36 | + `__init__.py` |
-| Fitxers de prova | 47 | `test_*.py` |
-| Linies `def test_` | 1439 | |
 
 ## Frontend (`frontend/`)
 
@@ -56,14 +44,6 @@ Servizos singleton + `setState()` + Streams (sens Provider). Arrancada en `main(
 | Navegacion | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer sempre; 10 pantallas emmagatzemades |
 | i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` es fallback; 0 claus absents (verificat amb script) |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubicacio, camera, fototeca, alarmas exactas |
-
-Comptes reals (verificats en disc):
-
-| Component | Fitxers | Nota |
-|-----------|---------|------|
-| Widgets reutilizables | 32 | en `lib/widgets/` |
-| Pantallas | 36 | en `lib/screens/` |
-| Fitxers de prova | 75 | `*_test.dart` en `test/` e subpastas |
 
 ## Fluxos claus
 

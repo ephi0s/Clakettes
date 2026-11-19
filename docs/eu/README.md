@@ -12,7 +12,6 @@ Dokumentazio osoa platformaren 9 hizketan dago. Eskainera (kanarioak) kanonikoa 
 - **Aplikazioa erabiltzen nahi dut** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Deploiamentua administratorratzen dut** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
 - **Garatze** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
-- **IA / agente** → [ARQUITECTURA.md](ARQUITECTURA.md) eta tasaren dokumentazioa; komando eta konbendio obligatzailea [../AGENTS.md](../../AGENTS.md) clickuan daude
 
 ## Dokumentazioen prinsipioak
 
@@ -25,22 +24,22 @@ Dokumentazio osoa platformaren 9 hizketan dago. Eskainera (kanarioak) kanonikoa 
 
 | Dokumentua | Zergatik dugu | Audientzia |
 |------------|---------------|------------|
-| [FUNCIONAL.md](FUNCIONAL.md) | Balio ekonomiko rolen arabera eta bidez (festival,registrement, komitetak, saria, xat/E2EE, juradoko bota) | erabiltzailea, admin, IA |
+| [FUNCIONAL.md](FUNCIONAL.md) | Balio ekonomiko rolen arabera eta bidez (festival,registrement, komitetak, saria, xat/E2EE, juradoko bota) | erabiltzailea, admin |
 | [USO.md](USO.md) | Hasi, aldagaiak, SQLite↔MariaDB migrazioa, kopak, kideak, ondorio | erabiltzailea, admin |
 | [ADMINISTRACION.md](ADMINISTRACION.md) | `/api/admin` endpoints, hasiera kontua, secret rotaketa, ondorioak, problema burutzea | admin |
 | [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker-profilak, portuak, bideuak, Nginx, norabidea, CI (GitHub + GitLab) | admin, garatzailea |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokenek, `require_*`-matrizua, bihurtzea, hogoa zizketa | admin, garatzailea |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Sistemaren mapa + backend/frontend gailuak + bidez handia | garatzailea, IA |
-| [API.md](API.md) | Endpoint-eren inkesta (erakuskita `tools/gen_api.py`-ekin) | garatzailea, IA |
-| [DESARROLLO.md](DESARROLLO.md) | Konbendio endpoint/pantalla gehitzeko + CI portuak | garatzailea, IA |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Sistemaren mapa + backend/frontend gailuak + bidez handia | garatzailea |
+| [API.md](API.md) | Endpoint-eren inkesta | garatzailea |
+| [DESARROLLO.md](DESARROLLO.md) | Konbendio endpoint/pantalla gehitzeko + CI portuak | garatzailea |
 | [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*` eskurak, konprezatutako gunoi, Docker, garatzeko fix | garatzailea |
 | [PUSH.md](PUSH.md) | Notification-akerekutzeko aukerak Firebase ellenére | garatzailea |
-| [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB esku, modelo-aren fichak, ER | garatzailea, IA |
+| [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB esku, modelo-aren fichak, ER | garatzailea |
 | [BACKEND.md](BACKEND.md) | Backend-gidea (nazio, konfigurazioa, autentikazioa, proveek) | garatzailea |
 | [AUDITORIA.md](AUDITORIA.md) | Auditen aurkezpena (10/10/2026, rev) | ahulpen |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Noden arteko federazio protokoloa (fase 4) | garatzailea, IA |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federatutako eskuroak) | garatzailea, IA |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federatutako confianzaaren modeloa, mTLS, sertifikatu rotazioa | garatzailea, IA |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Noden arteko federazio protokoloa (fase 4) | garatzailea |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federatutako eskuroak) | garatzailea |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federatutako confianzaaren modeloa, mTLS, sertifikatu rotazioa | garatzailea |
 
 ## Bidaia garatzailearen arabera
 
@@ -89,19 +88,4 @@ Dokumentazio osoa platformaren 9 hizketan dago. Eskainera (kanarioak) kanonikoa 
 - [ARQUITECTURA.md](ARQUITECTURA.md): sistemaren mapa teknikoa
 - [API.md](API.md): endpoint-eren oharra
 
-## Ezaugarritako hasiera
 
-Hasieran entornu batean:
-
-```bash
-cd backend && python -m uvicorn app.main:app --reload
-cd frontend && flutter run
-```
-
-Bakoitzaren erabiltzen:
-
-```bat
-start.bat --dev
-```
-
-Komando eta perfilen oharra [HERRAMIENTAS.md](HERRAMIENTAS.md) eta [../README.eu.md](../../README.eu.md).

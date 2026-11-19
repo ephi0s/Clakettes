@@ -100,7 +100,7 @@ Proiektuaren abiarazte automatikoak hau jada konfiguratzen du `start.*` erabiltz
 
 ## Proiektuaren egoera
 
-🚧 **Garapen aktiboan** — Jaialdiak, laburrak, E2EE-dun txata, mapak, offline modua eta 9 hizkuntza funtzionatzen; test-ekin backend-ean (~1400) eta frontend-ean (75 fitxategi provingatuan).
+🚧 **Garapen aktiboan** — Jaialdiak, laburrak, E2EE-dun txata, mapak, offline modua eta 9 hizkuntza funtzionatzen.
 
 **Hurrengo roadmap-a:**
 
@@ -146,20 +146,7 @@ Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.
 
 > Xehetasun osoa [`AGENTS.md`](AGENTS.md)-n (arkitektura, komandoak eta konbentzioak) eta [`docs/`](docs/eu/README.md)-ko indizean (rol-gidak: funtzionala, erabilera, administrazioa, azpiegitura, segurtasuna, arkitektura, API).
 
-**Begirada batean**: FastAPI backend-a geruzatan (router-ak → zerbitzuak → SQLAlchemy modeloak, SQLite dev-ean / MariaDB prod-ean, JWT + refresh, 36 Alembic migrazio); Flutter frontend-a Material 3 dark mode-arekin (singleton-ak + `setState()` + stream-ak, Hive offline, 32 widget berrerabilgarri).
 
-```bash
-# Tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-cd frontend && flutter test
-
-# Lint
-cd backend && ruff check . && ruff format --check .
-cd frontend && flutter analyze
-
-# Migraciones
-cd backend && alembic upgrade head
-```
 
 ## Tokiko garapena
 
@@ -173,38 +160,6 @@ cd frontend
 flutter run
 ```
 
-## Hedapena
-
-```bash
-docker compose --profile prod up -d
-```
-
-Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Android) `start.bat --build-all`-ekin eta [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md)-ko script-multzoarekin kudeatzen dira.
-
-## Arazoen konponbidea
-
-### Backend-ak ez du abiatzen
-
-- Egiaztatu Python 3.12+ instalatuta dagoela.
-- Egiaztatu `backend/.env` existitzen dela eta baliozkoa dela.
-- Exekutatu `cd backend && python -m uvicorn app.main:app --reload` benetako errorea ikusteko.
-
-### App-a ez da API-ra konektatzen
-
-- Ziurtatu backend-a `http://localhost:8000`-n dagoela.
-- Berrikusi `BACKEND_URL` `--dart-define`-ekin pasatzen ari den.
-- Egiaztatu API-k `/docs`-en erantzuten duela.
-
-### Datu-base edo migrazio arazoak
-
-- Erabili `cd backend && alembic upgrade head`.
-- SQLite-tik MariaDB-ra aldatzen bazara, berrikusi [docs/eu/USO.md](docs/eu/USO.md) eta [docs/eu/DATABASE.md](docs/eu/DATABASE.md).
-
-### Erroreak dituen Flutter frontend-a
-
-- Exekutatu `cd frontend && flutter pub get`.
-- Kode-sorkuntza arazoak badaude, jarraitu Hive eta build_runner dokumentazioa [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md)-n.
-
 ## Laguntzea
 
 1. Egin fork errepositorioan.
@@ -213,8 +168,9 @@ Backend + frontend (nginx) + MariaDB. Build banatuak (web, Windows, Linux, Andro
 4. Bultzatu adarra (`git push origin feature/berri-bat`).
 5. Ireki Pull Request testuinguru, aldaketa eta balidazioarekin.
 
-**Kalitate-konbentzioak:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` eta `flutter test` fusionatu aurretik pasa behar dute.
+**Kalitate-konbentzioak:** [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## Lizentzia
 
 Proiektu hau **MIT Lizentzia** pean dago. Kontsultatu [LICENSE](LICENSE).
+

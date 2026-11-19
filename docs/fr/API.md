@@ -2,7 +2,6 @@
 
 [ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
-Généré depuis `app/routers/*.py` + préfixes de `app/main.py`.
 Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 
 ## `admin` → `/api/admin`
@@ -611,4 +610,3 @@ Détail interactif : `/docs` (Swagger) et `/redoc` avec le backend lancé.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | oui |
 
-Total : 416 endpoints dans 38 routers.

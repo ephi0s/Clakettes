@@ -10,7 +10,7 @@ Multi-platform Flutter frontend for the film festival management platform.
 - **State**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Local storage**: Hive, SharedPreferences
 - **i18n**: 9 languages (en, es, fr, de, it, ca, eu, gl, oc) — manual `AppLocalizations` (no gen-l10n)
-- **Accessibility**: 94+ Semantics widgets, TalkBack/VoiceOver support, WCAG 2.1 AA
+- **Accessibility**: Semantics widgets, TalkBack/VoiceOver support, WCAG 2.1 AA
 - **Architecture**: Services / Managers / Views (Pragmatic Flutter Architecture)
 
 ## Quick start
@@ -29,7 +29,7 @@ See `../start.bat` / `../start.ps1` for launchers with `--dev`, `--final`, `--we
 
 ```
 lib/
-├── screens/           # 36 pantallas UI
+├── screens/           # pantallas UI
 │   ├── auth/          # Login
 │   ├── festivals/     # Lista, perfil, crear festival
 │   ├── users/         # Perfil, directorio, crear usuario, roles
@@ -43,7 +43,7 @@ lib/
 │   ├── admin/         # Panel de administración
 │   ├── committees/    # Comités
 │   └── settings/      # Configuración del backend, miembro del directorio, dashboard
-├── services/          # 17 servicios + api/ (9 dominios) + chat_backend (4 clases)
+├── services/          # servicios + api/ + chat_backend
 │   ├── api_service.dart              # Fachada + núcleo (auth, transporte, admin, búsqueda)
 │   ├── api/                          # Métodos por dominio (part of api_service.dart)
 │   │   ├── user_api.dart, festival_api.dart, channel_api.dart, form_api.dart
@@ -66,8 +66,8 @@ lib/
 │       ├── chat_service.dart         # Fachada WS/REST/E2EE
 │       ├── rest_chat_backend.dart    # Historial/sync vía REST (usado como fake en tests)
 │       └── websocket_chat_backend.dart  # Tiempo real vía WebSocket
-├── models/            # 24 modelos Dart (manuales fromJson/toJson + Hive codegen)
-├── widgets/           # 24 widgets reutilizables accesibles
+├── models/            # modelos Dart (manuales fromJson/toJson + Hive codegen)
+├── widgets/           # widgets reutilizables accesibles
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
 │   ├── chat_bubble.dart          # Burbuja de mensaje + contenido enriquecido
@@ -167,12 +167,12 @@ AppLocalizations.of(context)!.roles['admin']
 
 | Pattern | Use |
 |---------|-------|
-| `Semantics` | 94+ instances for screen readers |
+| `Semantics` | instances for screen readers |
 | `SemanticHeader` | Section headings (`header: true`) |
 | `SemanticTextField` | Form fields with validation semantics |
-| `ExcludeSemantics` | 8+ decorative icons |
-| `Tooltip` | 26+ interactive elements |
-| `SnackBarBehavior.floating` | 29+ snackbars |
+| `ExcludeSemantics` | decorative icons |
+| `Tooltip` | interactive elements |
+| `SnackBarBehavior.floating` | snackbars |
 | `autovalidateMode: onUserInteraction` | Forms |
 | `TextInputAction.next/done` + `onSubmitted` | Keyboard navigation |
 
@@ -288,10 +288,10 @@ frontend/
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # 44 modelos Dart (Hive + codegen)
-│   ├── screens/             # 36 pantallas
-│   ├── widgets/             # 24 widgets reutilizables
-│   ├── services/            # 17 servicios + api/ (9) + chat_backend (4)
+│   ├── models/              # modelos Dart (Hive + codegen)
+│   ├── screens/             # pantallas
+│   ├── widgets/             # widgets reutilizables
+│   ├── services/            # servicios + api/ + chat_backend
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart

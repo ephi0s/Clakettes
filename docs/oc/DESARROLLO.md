@@ -11,7 +11,7 @@
    `require_*` de `permissions.py`. Auth opcionau sonque per lectura publica.
 4. Migracion se cambia l'esquèma: `alembic revision --autogenerate -m "..."`.
 5. Tèst en `tests/test_<dominio>.py` (200 + 401 sens token + 403 sens permission +
-   404 inexistent). Regenerar [API.oc.md](API.md) amb `tools/gen_api.py`.
+   404 inexistent).
 
 ## Frontend: apondre un ecran
 

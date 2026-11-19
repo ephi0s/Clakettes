@@ -30,18 +30,6 @@ Layers: Routers → Services → Models, types via `app.enums`.
 | Migrations | `alembic/` (36 versions) | Prod only Alembic; dev also `create_all` |
 | Federation | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, directory, nodes, reports, webfinger, users ref |
 
-Real counts (verified on disk):
-
-| Component | Files | Note |
-|---|---|---|
-| Routers | 40 (38 with `APIRouter`) | `dependencies.py` and `permissions.py` are helpers without router |
-| Services | 43 | + `__init__.py` |
-| Entity models | 40 | + `base.py` and `__init__.py` |
-| Schemas | 37 | |
-| Alembic migrations | 36 | + `__init__.py` |
-| Test files | 47 | `test_*.py` |
-| `def test_` lines | 1439 | |
-
 ## Frontend (`frontend/`)
 
 Singleton services + `setState()` + Streams (no Provider). Startup in `main()`:
@@ -56,14 +44,6 @@ Singleton services + `setState()` + Streams (no Provider). Startup in `main()`:
 | Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer always; 10 cached screens |
 | i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` is fallback; 0 missing keys (verified with script) |
 | OS permissions | `AndroidManifest.xml` / `Info.plist` | Network, location, camera, photo library, exact alarms |
-
-Real counts (verified on disk):
-
-| Component | Files | Note |
-|---|---|---|
-| Reusable widgets | 32 | in `lib/widgets/` |
-| Screens | 36 | in `lib/screens/` |
-| Test files | 75 | `*_test.dart` in `test/` and subfolders |
 
 ## Key flows
 

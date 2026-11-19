@@ -27,20 +27,9 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 | Chat realtime | `app/chat_backend/` (WebSocket) + REST en `routers/chat.py` | WS valida sesión vía `validate_access_token` |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefijo `/dav`, bucket propio 600/60s) | Token bearer en URL; TLS obligatorio en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import perezoso |
-| Migraciones | `alembic/` (36 versiones) | Prod solo Alembic; dev además `create_all` |
+| Migraciones | `alembic/` | Prod solo Alembic; dev además `create_all` |
 | Federación | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifest, directorio, nodos, reportes, webfinger, users ref, JWKS, token federado, peers/verify, peers/revoke, mTLS |
 
-Conteos reales (verificados en disco):
-
-| Componente | Archivos | Nota |
-|---|---|---|
-| Routers | 40 (38 con `APIRouter`) | `dependencies.py` y `permissions.py` son helpers sin router |
-| Servicios | 45 | + `__init__.py` |
-| Modelos de entidad | 42 | + `base.py` y `__init__.py` |
-| Schemas | 37 | |
-| Migraciones Alembic | 37 | + `__init__.py` |
-| Archivos de test | 47 | `test_*.py` |
-| Líneas `def test_` | 1439 | |
 
 ## Frontend (`frontend/`)
 
@@ -56,14 +45,6 @@ Servicios singleton + `setState()` + Streams (sin Provider). Arranque en `main()
 | Navegación | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer siempre; 10 pantallas cacheadas |
 | i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` es fallback; 0 claves ausentes (verificado con script) |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Red, ubicación, cámara, fototeca, alarmas exactas |
-
-Conteos reales (verificados en disco):
-
-| Componente | Archivos | Nota |
-|---|---|---|
-| Widgets reutilizables | 32 | en `lib/widgets/` |
-| Pantallas | 36 | en `lib/screens/` |
-| Archivos de test | 75 | `*_test.dart` en `test/` y subcarpetas |
 
 ## Flujos clave
 

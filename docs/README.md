@@ -18,4 +18,4 @@ Elige un idioma para consultar el índice, la guía de navegación y todos los d
 
 Cada carpeta de idioma contiene el índice `README.md` y las guías con el mismo nombre en todas las lenguas. Para actualizar una traducción, parte de su equivalente en `es/`; mantén también sus enlaces entre documentos dentro de la carpeta correspondiente.
 
-La documentación de la API se puede regenerar en los nueve idiomas con `python tools/gen_api.py --all`.
+
