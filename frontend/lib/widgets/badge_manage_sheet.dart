@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge_model.dart';
 import '../services/api_service.dart';
 import 'badges_row.dart';
@@ -53,6 +54,7 @@ class BadgeManageSheet extends StatefulWidget {
 
 class _BadgeManageSheetState extends State<BadgeManageSheet> {
   final ApiService _api = ApiService();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   bool _enabled = false;
   bool _loading = true;
   List<ProfileBadge> _badges = [];
@@ -121,8 +123,8 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       final result = await _api.checkBadgeEligibility(_selectedBadgeId!, widget.userId!);
       if (mounted) {
         setState(() => _eligibility = result['eligible'] == true
-            ? 'Cumple condiciones: ${result['reason'] ?? ''}'
-            : 'No cumple: ${result['reason'] ?? ''}');
+            ? l10n.translate('badgeConditionsMet', args: {'reason': result['reason'] ?? ''})
+            : l10n.translate('badgeConditionsNotMet', args: {'reason': result['reason'] ?? ''}));
       }
     } catch (_) {
       if (mounted) setState(() => _eligibility = null);
@@ -135,10 +137,10 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       final enabled = await _api.setBadgesEnabled(value);
       if (mounted) {
         setState(() => _enabled = enabled);
-        showAppSnack(context, enabled ? 'Insignias activadas' : 'Insignias desactivadas');
+        showAppSnack(context, enabled ? l10n.badgeEnabled : l10n.badgeDisabled);
       }
     } catch (_) {
-      if (mounted) showAppSnack(context, 'No se pudo cambiar el estado');
+      if (mounted) showAppSnack(context, l10n.badgeToggleFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -189,11 +191,11 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
           _descCtl.clear();
           _pickedImagePath = null;
         });
-        showAppSnack(context, 'Insignia creada');
+        showAppSnack(context, l10n.badgeCreated);
       }
       _load();
     } catch (e) {
-      if (mounted) showAppSnack(context, 'No se pudo crear la insignia');
+      if (mounted) showAppSnack(context, l10n.badgeCreateFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -213,11 +215,11 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       await _api.assignBadge(_selectedBadgeId!, fields);
       if (mounted) {
         _reasonCtl.clear();
-        showAppSnack(context, 'Insignia otorgada');
+        showAppSnack(context, l10n.badgeGranted);
       }
       _load();
     } catch (_) {
-      if (mounted) showAppSnack(context, 'No se pudo otorgar (revisa condiciones o permisos)');
+      if (mounted) showAppSnack(context, l10n.badgeGrantFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -229,7 +231,7 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       await _api.deleteBadgeAssignment(assignment.id!);
       _load();
     } catch (_) {
-      if (mounted) showAppSnack(context, 'No se pudo retirar');
+      if (mounted) showAppSnack(context, l10n.badgeRevokeFailed);
     }
   }
 
@@ -244,31 +246,31 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SemanticHeader(text: 'Insignias', style: theme.textTheme.titleLarge),
+          SemanticHeader(text: l10n.badgeTitle, style: theme.textTheme.titleLarge),
           if (widget.isAdmin) ...[
             const SizedBox(height: 8),
             SwitchListTile(
-              title: const Text('Función activa'),
-              subtitle: const Text('Solo el equipo administrativo puede activarla'),
+              title: Text(l10n.badgeFeatureActive),
+              subtitle: Text(l10n.badgeFeatureAdminOnly),
               value: _enabled,
               onChanged: _busy ? null : _toggleEnabled,
               contentPadding: EdgeInsets.zero,
             ),
           ],
           if (!_enabled && !widget.isAdmin)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Las insignias están desactivadas por ahora.'),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(l10n.badgeFeatureOff),
             ),
           if (_enabled || widget.isAdmin) ...[
             const SizedBox(height: 8),
-            SemanticHeader(text: 'Otorgar a este perfil', style: theme.textTheme.titleSmall),
+            SemanticHeader(text: l10n.badgeGrantToProfile, style: theme.textTheme.titleSmall),
             if (_badges.isEmpty)
-              const Text('No hay insignias creadas todavía')
+              Text(l10n.badgeNoneCreated)
             else ...[
               DropdownButtonFormField<int>(
                 initialValue: _selectedBadgeId,
-                decoration: const InputDecoration(labelText: 'Insignia', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.badgeLabel, border: const OutlineInputBorder()),
                 items: _badges.map((b) => DropdownMenuItem(value: b.id, child: Text(b.name))).toList(),
                 onChanged: (v) {
                   setState(() => _selectedBadgeId = v);
@@ -282,42 +284,42 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
               const SizedBox(height: 8),
               TextField(
                 controller: _reasonCtl,
-                decoration: const InputDecoration(labelText: 'Motivo (opcional)', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.badgeReasonOptional, border: const OutlineInputBorder()),
                 maxLines: 2,
               ),
               const SizedBox(height: 8),
               FilledButton.icon(
                 onPressed: _busy ? null : _assign,
                 icon: const Icon(Icons.verified_outlined, size: 18),
-                label: const Text('Otorgar insignia'),
+                label: Text(l10n.badgeGrant),
               ),
             ],
             const SizedBox(height: 16),
-            SemanticHeader(text: 'En este perfil (${_assignments.length})', style: theme.textTheme.titleSmall),
+            SemanticHeader(text: l10n.translate('badgeOnProfile', args: {'count': _assignments.length}), style: theme.textTheme.titleSmall),
             ..._assignments.map((a) => ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: a.badge != null ? BadgeAvatar(badge: a.badge!) : null,
-                  title: Text(a.badge?.name ?? 'Insignia'),
+                  title: Text(a.badge?.name ?? l10n.badgeLabel),
                   subtitle: a.reason != null ? Text(a.reason!, maxLines: 1, overflow: TextOverflow.ellipsis) : null,
                   trailing: (widget.isAdmin || widget.canManage)
-                      ? IconButton(icon: const Icon(Icons.delete_outline, size: 20), tooltip: 'Retirar', onPressed: () => _removeAssignment(a))
+                      ? IconButton(icon: const Icon(Icons.delete_outline, size: 20), tooltip: l10n.badgeRevoke, onPressed: () => _removeAssignment(a))
                       : null,
                 )),
             if (widget.isAdmin) ...[
               const Divider(height: 32),
-              SemanticHeader(text: 'Crear insignia', style: theme.textTheme.titleSmall),
+              SemanticHeader(text: l10n.badgeCreate, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
-              TextField(controller: _nameCtl, decoration: const InputDecoration(labelText: 'Nombre *', border: OutlineInputBorder())),
+              TextField(controller: _nameCtl, decoration: InputDecoration(labelText: l10n.nameRequired, border: const OutlineInputBorder())),
               const SizedBox(height: 8),
-              TextField(controller: _descCtl, decoration: const InputDecoration(labelText: 'Descripción', border: OutlineInputBorder()), maxLines: 2),
+              TextField(controller: _descCtl, decoration: InputDecoration(labelText: l10n.description, border: const OutlineInputBorder()), maxLines: 2),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _scope,
-                      decoration: const InputDecoration(labelText: 'Ámbito', border: OutlineInputBorder()),
-                      items: const [DropdownMenuItem(value: 'platform', child: Text('Plataforma')), DropdownMenuItem(value: 'festival', child: Text('Festival'))],
+                      decoration: InputDecoration(labelText: l10n.badgeScope, border: const OutlineInputBorder()),
+                      items: [DropdownMenuItem(value: 'platform', child: Text(l10n.badgePlatform)), DropdownMenuItem(value: 'festival', child: Text(l10n.typeFestival))],
                       onChanged: (v) => setState(() => _scope = v ?? 'platform'),
                     ),
                   ),
@@ -325,13 +327,13 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _category,
-                      decoration: const InputDecoration(labelText: 'Categoría', border: OutlineInputBorder()),
-                      items: const [
-                        DropdownMenuItem(value: 'merit', child: Text('Mérito')),
-                        DropdownMenuItem(value: 'veteran', child: Text('Veterano')),
-                        DropdownMenuItem(value: 'popular', child: Text('Popular')),
-                        DropdownMenuItem(value: 'role', child: Text('Rol')),
-                        DropdownMenuItem(value: 'special', child: Text('Especial')),
+                      decoration: InputDecoration(labelText: l10n.category, border: const OutlineInputBorder()),
+                      items: [
+                        DropdownMenuItem(value: 'merit', child: Text(l10n.badgeMerit)),
+                        DropdownMenuItem(value: 'veteran', child: Text(l10n.badgeVeteran)),
+                        DropdownMenuItem(value: 'popular', child: Text(l10n.badgePopular)),
+                        DropdownMenuItem(value: 'role', child: Text(l10n.role)),
+                        DropdownMenuItem(value: 'special', child: Text(l10n.badgeSpecial)),
                       ],
                       onChanged: (v) => setState(() => _category = v ?? 'merit'),
                     ),
@@ -341,34 +343,34 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _conditionType,
-                decoration: const InputDecoration(labelText: 'Condición', border: OutlineInputBorder()),
-                items: const [
-                  DropdownMenuItem(value: 'manual', child: Text('Manual (a criterio)')),
-                  DropdownMenuItem(value: 'veteran', child: Text('Veterano (nº festivales)')),
-                  DropdownMenuItem(value: 'role', child: Text('Rol (p. ej. organizador)')),
-                  DropdownMenuItem(value: 'award', child: Text('Premiado')),
+                decoration: InputDecoration(labelText: l10n.badgeCondition, border: const OutlineInputBorder()),
+                items: [
+                  DropdownMenuItem(value: 'manual', child: Text(l10n.badgeConditionManual)),
+                  DropdownMenuItem(value: 'veteran', child: Text(l10n.badgeConditionVeteran)),
+                  DropdownMenuItem(value: 'role', child: Text(l10n.badgeConditionRole)),
+                  DropdownMenuItem(value: 'award', child: Text(l10n.badgeConditionAwarded)),
                 ],
                 onChanged: (v) => setState(() => _conditionType = v ?? 'manual'),
               ),
               if (_conditionType == 'veteran') ...[
                 const SizedBox(height: 8),
-                TextField(controller: _minFestivalsCtl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Mínimo de festivales', border: OutlineInputBorder())),
+                TextField(controller: _minFestivalsCtl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: l10n.badgeMinFestivals, border: const OutlineInputBorder())),
               ],
               if (_conditionType == 'role') ...[
                 const SizedBox(height: 8),
-                TextField(controller: _roleCtl, decoration: const InputDecoration(labelText: 'Rol requerido', border: OutlineInputBorder())),
+                TextField(controller: _roleCtl, decoration: InputDecoration(labelText: l10n.badgeRequiredRole, border: const OutlineInputBorder())),
               ],
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: _pickImage,
                 icon: const Icon(Icons.upload_outlined, size: 18),
-                label: Text(_pickedImagePath == null ? 'Subir imagen (SVG preferido)' : _pickedImagePath!.split('/').last),
+                label: Text(_pickedImagePath == null ? l10n.badgeUploadImage : _pickedImagePath!.split('/').last),
               ),
               const SizedBox(height: 8),
               FilledButton.icon(
                 onPressed: _busy ? null : _createBadge,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Crear insignia'),
+                label: Text(l10n.badgeCreate),
               ),
               const SizedBox(height: 24),
             ],

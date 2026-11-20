@@ -10,33 +10,40 @@ from app.schemas.user_session import (
 from app.auth import (
     rotate_refresh_token,
     get_current_user,
-    _hash_token,
+    hash_token,
+    is_expired,
     oauth2_scheme,
 )
 from app.models.user import User
 from app.services.auth_session_service import AuthSessionService
 from app.rate_limiter import RateLimiter
+from app.config import is_testing
+from app.http_utils import client_ip
 
 router = APIRouter()
 auth_session_service = AuthSessionService()
 _refresh_limiter = RateLimiter()
 
 
-@router.post("/refresh", response_model=TokenRefreshResponse)
-async def refresh_token(request: Request, body: TokenRefreshRequest, db: Session = Depends(get_db)):
-    ip = request.client.host if request.client else "unknown"
+def _check_refresh_rate_limit(request: Request) -> None:
+    if is_testing():
+        return
+    ip = client_ip(request)
     if not _refresh_limiter.check(f"refresh:{ip}", 20, 60):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
-    refresh_hash = _hash_token(body.refresh_token)
+
+
+@router.post("/refresh", response_model=TokenRefreshResponse)
+async def refresh_token(request: Request, body: TokenRefreshRequest, db: Session = Depends(get_db)):
+    _check_refresh_rate_limit(request)
+    refresh_hash = hash_token(body.refresh_token)
     session = auth_session_service.get_by_refresh_token_hash(db, refresh_hash)
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",
         )
-    from datetime import datetime, timezone
-
-    if session.expires_at and session.expires_at < datetime.now(timezone.utc):
+    if is_expired(session.expires_at):
         auth_session_service.revoke_session(db, session.id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -55,7 +62,7 @@ async def list_sessions(
     current_user: User = Depends(get_current_user),
 ):
     result = auth_session_service.get_user_sessions_paginated(db, current_user.id, page, size)
-    current_hash = _hash_token(token)
+    current_hash = hash_token(token)
     items = []
     for s in result["items"]:
         item = UserSessionResponse.model_validate(s)

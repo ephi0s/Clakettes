@@ -397,11 +397,7 @@ class _AdminScreenState extends State<AdminScreen> {
               if (controller.text == 'yes') {
                 Navigator.pop(ctx);
                 try {
-                  await _api.search(''); // just to verify auth
-                  final client = _api.client;
-                  final uri = Uri.parse('${_api.baseUrl}/admin/reset?confirm=yes');
-                  final headers = await _getAuthHeaders();
-                  await client.post(uri, headers: headers);
+                  await _api.resetDatabase();
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(l10n.databaseReset), behavior: SnackBarBehavior.floating),
@@ -443,15 +439,6 @@ class _AdminScreenState extends State<AdminScreen> {
         builder: (_) => UserProfileScreen(user: _currentUser!, currentUser: _currentUser!),
       ),
     );
-  }
-
-  /// Construye las cabeceras de petición autenticadas a partir del token JWT guardado.
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final token = await AuthService().getToken();
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
   }
 
   IconData _getTableIcon(String tableName) {

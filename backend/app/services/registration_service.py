@@ -186,6 +186,15 @@ class RegistrationFormLinkService(
         db.refresh(db_obj)
         return db_obj
 
+    def regenerate(self, db: Session, link: RegistrationFormLink) -> RegistrationFormLink:
+        """Issue a fresh token for *link* and reset its usage counters."""
+        link.token = uuid.uuid4().hex
+        link.use_count = 0
+        link.is_active = True
+        db.commit()
+        db.refresh(link)
+        return link
+
     def consume_link(self, db: Session, token: str) -> RegistrationFormLink | None:
         """Mark a link as used (for unique links)."""
         link = (

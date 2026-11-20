@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/post_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -32,6 +33,7 @@ class PublicationPanel extends StatefulWidget {
 
 class _PublicationPanelState extends State<PublicationPanel> {
   final ApiService _api = ApiService();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   List<Post> _posts = [];
   bool _loading = true;
   bool _hasError = false;
@@ -128,7 +130,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
         _allowReplies = true;
       });
     } catch (e) {
-      if (mounted) showAppSnack(context, 'No se pudo publicar');
+      if (mounted) showAppSnack(context, l10n.postPublishFailed);
     } finally {
       if (mounted) setState(() => _publishing = false);
     }
@@ -136,13 +138,13 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   Future<void> _deletePost(Post post) async {
     if (post.id == null) return;
-    final confirmed = await showConfirmDialog(context, title: 'Eliminar', message: '¿Eliminar esta publicación?');
+    final confirmed = await showConfirmDialog(context, title: l10n.delete, message: l10n.postDeleteConfirm);
     if (confirmed != true) return;
     try {
       await _api.deletePost(post.id!);
       if (mounted) setState(() => _posts = _posts.where((p) => p.id != post.id).toList());
     } catch (_) {
-      if (mounted) showAppSnack(context, 'No se pudo eliminar');
+      if (mounted) showAppSnack(context, l10n.postDeleteFailed);
     }
   }
 
@@ -152,7 +154,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Editar publicación'),
+        title: Text(l10n.postEditTitle),
         content: SizedBox(
           width: double.maxFinite,
           child: RichTextEditor(
@@ -161,8 +163,8 @@ class _PublicationPanelState extends State<PublicationPanel> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.save)),
         ],
       ),
     );
@@ -174,7 +176,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
           setState(() => _posts = _posts.map((p) => p.id == post.id ? updated : p).toList());
         }
       } catch (_) {
-        if (mounted) showAppSnack(context, 'No se pudo guardar');
+        if (mounted) showAppSnack(context, l10n.postSaveFailed);
       }
     }
   }
@@ -190,7 +192,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
         setState(() => _posts = _posts.map((p) => p.id == post.id ? updated : p).toList());
       }
     } catch (_) {
-      if (mounted) showAppSnack(context, 'Acción no permitida');
+      if (mounted) showAppSnack(context, l10n.postActionForbidden);
     }
   }
 
@@ -236,7 +238,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
         ctl.clear();
       });
     } catch (_) {
-      if (mounted) showAppSnack(context, 'No se pudo responder');
+      if (mounted) showAppSnack(context, l10n.postReplyFailed);
     }
   }
 
@@ -281,10 +283,10 @@ class _PublicationPanelState extends State<PublicationPanel> {
               TextField(
                 controller: _urlCtl,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
-                  hintText: 'Pega un enlace de YouTube, Vimeo, Odysee, iVoox…',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
+                decoration: InputDecoration(
+                  hintText: l10n.postEmbedHint,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.link),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -297,15 +299,15 @@ class _PublicationPanelState extends State<PublicationPanel> {
             Row(
               children: [
                 Tooltip(
-                  message: 'Añadir enlace multimedia',
+                  message: l10n.postAddMediaLink,
                   child: IconButton(
                     icon: Icon(Icons.link, color: _showUrlField ? colorScheme.primary : null),
                     onPressed: () => setState(() => _showUrlField = !_showUrlField),
                   ),
                 ),
-                const Tooltip(
-                  message: 'Imágenes próximamente',
-                  child: IconButton(icon: Icon(Icons.image_outlined), onPressed: null),
+                Tooltip(
+                  message: l10n.postImagesSoon,
+                  child: const IconButton(icon: Icon(Icons.image_outlined), onPressed: null),
                 ),
                 Expanded(
                   child: Row(
@@ -313,7 +315,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
                     children: [
                       const Icon(Icons.reply, size: 18),
                       const SizedBox(width: 4),
-                      const Flexible(child: Text('Respuestas', overflow: TextOverflow.ellipsis)),
+                      Flexible(child: Text(l10n.postReplies, overflow: TextOverflow.ellipsis)),
                       Switch(
                         value: _allowReplies,
                         onChanged: (v) => setState(() => _allowReplies = v),
@@ -327,7 +329,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
                   icon: _publishing
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.send, size: 18),
-                  label: const Text('Publicar'),
+                  label: Text(l10n.postPublish),
                 ),
               ],
             ),
@@ -354,7 +356,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
     final plain = plainTextFrom(content);
     final lines = plain.split('\n');
     final idx = lines.indexWhere((l) => l.trim().isNotEmpty);
-    if (idx == -1) return ('Sin título', '');
+    if (idx == -1) return (l10n.postUntitled, '');
     var first = lines[idx].trim();
     final header = RegExp(r'^#{1,3}\s+').firstMatch(first);
     if (header != null) first = first.substring(header.end).trim();
@@ -363,7 +365,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
     if (link != null) title = title.replaceAll(link.group(0)!, link.group(1)!);
     if (title.length > 90) title = '${title.substring(0, 90)}…';
     final rest = [...lines]..removeAt(idx);
-    return (title.isEmpty ? 'Sin título' : title, rest.join('\n').trimLeft());
+    return (title.isEmpty ? l10n.postUntitled : title, rest.join('\n').trimLeft());
   }
 
   int _readingMinutes(String content) {
@@ -374,7 +376,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   Widget _moderationMenu(Post post, bool canMod, bool own) {
     return PopupMenuButton<String>(
-      tooltip: 'Opciones',
+      tooltip: l10n.postOptions,
       onSelected: (v) {
         if (v == 'edit') {
           _editPost(post);
@@ -389,11 +391,11 @@ class _PublicationPanelState extends State<PublicationPanel> {
         }
       },
       itemBuilder: (_) => [
-        if (own || canMod) const PopupMenuItem(value: 'edit', child: Text('Editar')),
-        if (canMod) PopupMenuItem(value: 'pin', child: Text(post.isPinned ? 'Desfijar' : 'Fijar')),
-        if (canMod) PopupMenuItem(value: 'hide', child: Text(post.isHidden ? 'Mostrar' : 'Ocultar')),
-        if (canMod) PopupMenuItem(value: 'lock', child: Text(post.allowReplies ? 'Bloquear respuestas' : 'Permitir respuestas')),
-        if (own || canMod) const PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+        if (own || canMod) PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
+        if (canMod) PopupMenuItem(value: 'pin', child: Text(post.isPinned ? l10n.postUnpin : l10n.postPin)),
+        if (canMod) PopupMenuItem(value: 'hide', child: Text(post.isHidden ? l10n.postShow : l10n.postHide)),
+        if (canMod) PopupMenuItem(value: 'lock', child: Text(post.allowReplies ? l10n.postBlockReplies : l10n.postAllowReplies)),
+        if (own || canMod) PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
       ],
     );
   }
@@ -442,11 +444,11 @@ class _PublicationPanelState extends State<PublicationPanel> {
                     style: TextStyle(fontSize: 8, color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.w700),
                   ),
                 ),
-                Text('Usuario ${post.authorId}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text(l10n.translate('postUserFallback', args: {'id': post.authorId}), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
                 if (date.isNotEmpty) Text(date, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                Text('${_readingMinutes(post.content)} min de lectura', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                if (post.isPinned) const Chip(label: Text('Destacada'), avatar: Icon(Icons.push_pin, size: 14), visualDensity: VisualDensity.compact),
-                if (post.isHidden) const Chip(label: Text('Oculta'), visualDensity: VisualDensity.compact),
+                Text(l10n.translate('postReadMinutes', args: {'minutes': _readingMinutes(post.content)}), style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                if (post.isPinned) Chip(label: Text(l10n.postFeatured), avatar: const Icon(Icons.push_pin, size: 14), visualDensity: VisualDensity.compact),
+                if (post.isHidden) Chip(label: Text(l10n.postHidden), visualDensity: VisualDensity.compact),
                 if (!post.allowReplies) Icon(Icons.comments_disabled_outlined, size: 16, color: colorScheme.onSurfaceVariant),
               ],
             ),
@@ -463,10 +465,12 @@ class _PublicationPanelState extends State<PublicationPanel> {
                   TextButton.icon(
                     onPressed: () => _toggleExpanded(post),
                     icon: Icon(expanded ? Icons.expand_less : Icons.expand_more, size: 18),
-                    label: Text(post.replyCount > 0 ? 'Respuestas (${post.replyCount})' : 'Responder'),
+                    label: Text(post.replyCount > 0
+                        ? l10n.translate('postRepliesCount', args: {'count': post.replyCount})
+                        : l10n.replyAction),
                   ),
                 if (!post.allowReplies)
-                  Text('Respuestas desactivadas', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                  Text(l10n.postRepliesDisabled, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
             if (expanded) _buildReplies(post, theme, replies),
@@ -494,7 +498,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
               children: [
                 Expanded(
                   child: Text(
-                    'Usuario ${post.authorId}',
+                    l10n.translate('postUserFallback', args: {'id': post.authorId}),
                     style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -508,7 +512,9 @@ class _PublicationPanelState extends State<PublicationPanel> {
               TextButton.icon(
                 onPressed: () => _toggleExpanded(post),
                 icon: Icon(expanded ? Icons.expand_less : Icons.expand_more, size: 16),
-                label: Text(post.replyCount > 0 ? 'Respuestas (${post.replyCount})' : 'Responder'),
+                label: Text(post.replyCount > 0
+                        ? l10n.translate('postRepliesCount', args: {'count': post.replyCount})
+                        : l10n.replyAction),
               ),
             if (expanded) _buildReplies(post, theme, replies),
           ],
@@ -536,7 +542,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
                 Expanded(
                   child: TextField(
                     controller: _replyCtls.putIfAbsent(post.id!, () => TextEditingController()),
-                    decoration: const InputDecoration(hintText: 'Escribe una respuesta…', border: OutlineInputBorder(), isDense: true),
+                    decoration: InputDecoration(hintText: l10n.postReplyHint, border: const OutlineInputBorder(), isDense: true),
                     minLines: 1,
                     maxLines: 4,
                     textInputAction: TextInputAction.send,
@@ -544,7 +550,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton.filled(onPressed: () => _sendReply(post), icon: const Icon(Icons.send, size: 18), tooltip: 'Responder'),
+                IconButton.filled(onPressed: () => _sendReply(post), icon: const Icon(Icons.send, size: 18), tooltip: l10n.replyAction),
               ],
             ),
         ],

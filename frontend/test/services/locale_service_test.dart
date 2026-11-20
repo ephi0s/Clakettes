@@ -20,11 +20,15 @@ void main() {
       expect(localeService.currentLocale, isNull);
     });
 
-    test('load returns null when no locale saved', () async {
+    test('load resolves the system locale when none is saved', () async {
       final localeService = LocaleService.instance;
       final result = await localeService.load();
-      expect(result, isNull);
-      expect(localeService.currentLocale, isNull);
+      expect(result, isNotNull);
+      expect(LocaleService.supportedLocales.map((l) => l.languageCode),
+          contains(result!.languageCode));
+      expect(localeService.currentLocale, result);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('app_locale'), result.languageCode);
     });
 
     test('setLocale updates currentLocale', () async {

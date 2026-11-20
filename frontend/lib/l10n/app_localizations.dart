@@ -24,13 +24,15 @@ class AppLocalizations {
   }
 
   /// Delegate de localización usado por MaterialApp.
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// Carga el archivo ARB del locale actual (recurre a `app_en.arb`).
   Future<bool> load() async {
     String jsonString;
     try {
-      jsonString = await rootBundle.loadString('assets/l10n/app_${locale.languageCode}.arb');
+      jsonString = await rootBundle
+          .loadString('assets/l10n/app_${locale.languageCode}.arb');
     } catch (e) {
       jsonString = await rootBundle.loadString('assets/l10n/app_en.arb');
     }
@@ -223,11 +225,15 @@ class AppLocalizations {
   String get revokeAll => translate('revokeAll');
   String get noActiveSessions => translate('noActiveSessions');
   String get timeJustNow => translate('timeJustNow');
-  String timeMinutesAgo(int count) => translate('timeMinutesAgo', args: {'count': count.toString()});
-  String timeHoursAgo(int count) => translate('timeHoursAgo', args: {'count': count.toString()});
-  String timeDaysAgo(int count) => translate('timeDaysAgo', args: {'count': count.toString()});
+  String timeMinutesAgo(int count) =>
+      translate('timeMinutesAgo', args: {'count': count.toString()});
+  String timeHoursAgo(int count) =>
+      translate('timeHoursAgo', args: {'count': count.toString()});
+  String timeDaysAgo(int count) =>
+      translate('timeDaysAgo', args: {'count': count.toString()});
   String get unknownDevice => translate('unknownDevice');
-  String lastUsed(String time, String ip) => translate('lastUsed', args: {'time': time, 'ip': ip});
+  String lastUsed(String time, String ip) =>
+      translate('lastUsed', args: {'time': time, 'ip': ip});
   String get revokeSession => translate('revokeSession');
   String get manageSessions => translate('manageSessions');
   String get userAliases => translate('userAliases');
@@ -255,7 +261,8 @@ class AppLocalizations {
   String get roleGroupsManagement => translate('roleGroupsManagement');
   String get roleGroupsDescription => translate('roleGroupsDescription');
   String get memberDirectory => translate('memberDirectory');
-  String get memberDirectoryDescription => translate('memberDirectoryDescription');
+  String get memberDirectoryDescription =>
+      translate('memberDirectoryDescription');
   String get typeYesToConfirm => translate('typeYesToConfirm');
   String get createChannel => translate('createChannel');
   String get createFirstChannel => translate('createFirstChannel');
@@ -263,12 +270,14 @@ class AppLocalizations {
   String get channelName => translate('channelName');
   String get channelPrivate => translate('channelPrivate');
   String get channelCommunity => translate('channelCommunity');
-  String get channelDescriptionOptional => translate('channelDescriptionOptional');
+  String get channelDescriptionOptional =>
+      translate('channelDescriptionOptional');
   String get channelType => translate('channelType');
   String get maxMembers => translate('maxMembers');
   String get channelRequired => translate('channelRequired');
   String get errorFormat => translate('errorFormat');
-  String errorFormatWith(String error) => translate('errorFormat', args: {'error': error});
+  String errorFormatWith(String error) =>
+      translate('errorFormat', args: {'error': error});
   String get errorBadRequest => translate('errorBadRequest');
   String get errorUnauthorized => translate('errorUnauthorized');
   String get errorForbidden => translate('errorForbidden');
@@ -310,6 +319,7 @@ class AppLocalizations {
     }
     return errorFormatWith(e.toString());
   }
+
   String get registrationForms => translate('registrationForms');
   String get events => translate('events');
   String get committees => translate('committees');
@@ -373,7 +383,9 @@ class AppLocalizations {
   String get images => translate('images');
   String get noImages => translate('noImages');
   String get addImage => translate('addImage');
-  String roleGroupLabel(String name, String description) => translate('roleGroupLabel', args: {'name': name, 'description': description});
+  String roleGroupLabel(String name, String description) =>
+      translate('roleGroupLabel',
+          args: {'name': name, 'description': description});
 
   String get notes => translate('notes');
   String get status => translate('status');
@@ -384,8 +396,10 @@ class AppLocalizations {
   String get recipientVerified => translate('recipientVerified');
   String get recipientNotVerified => translate('recipientNotVerified');
   String get verifyRecipient => translate('verifyRecipient');
-  String get recipientVerificationNotes => translate('recipientVerificationNotes');
-  String get recipientVerificationTitle => translate('recipientVerificationTitle');
+  String get recipientVerificationNotes =>
+      translate('recipientVerificationNotes');
+  String get recipientVerificationTitle =>
+      translate('recipientVerificationTitle');
   String get screening => translate('screening');
   String get statusReason => translate('statusReason');
   String get markScreened => translate('markScreened');
@@ -443,15 +457,24 @@ class AppLocalizations {
   String get voteNotEligible => translate('voteNotEligible');
   String get voteDisqualified => translate('voteDisqualified');
 
-  String sectionCount(int count) => translate('sectionCount', args: {'count': count.toString()});
-  String memberCount(int count) => translate('memberCount', args: {'count': count.toString()});
-  String roleGroupCount(int count) => translate('roleGroupCount', args: {'count': count.toString()});
-  String capacityFormat(int? count) => translate('capacityFormat', args: {'count': count?.toString() ?? '∞'});
-  String registrationFormCount(int count) => translate('registrationFormCount', args: {'count': count.toString()});
-  String userDefaultName(int id) => translate('userDefaultName', args: {'id': id.toString()});
-  String deleteFormMessage(String title) => translate('deleteFormMessage', args: {'title': title});
-  String deleteEntityMessage(String name) => translate('deleteEntityMessage', args: {'name': name});
-  String deleteRoleGroupMessage(String name) => translate('deleteRoleGroupMessage', args: {'name': name});
+  String sectionCount(int count) =>
+      translate('sectionCount', args: {'count': count.toString()});
+  String memberCount(int count) =>
+      translate('memberCount', args: {'count': count.toString()});
+  String roleGroupCount(int count) =>
+      translate('roleGroupCount', args: {'count': count.toString()});
+  String capacityFormat(int? count) =>
+      translate('capacityFormat', args: {'count': count?.toString() ?? '∞'});
+  String registrationFormCount(int count) =>
+      translate('registrationFormCount', args: {'count': count.toString()});
+  String userDefaultName(int id) =>
+      translate('userDefaultName', args: {'id': id.toString()});
+  String deleteFormMessage(String title) =>
+      translate('deleteFormMessage', args: {'title': title});
+  String deleteEntityMessage(String name) =>
+      translate('deleteEntityMessage', args: {'name': name});
+  String deleteRoleGroupMessage(String name) =>
+      translate('deleteRoleGroupMessage', args: {'name': name});
 
   // Registration form editor
   String get editForm => translate('editForm');
@@ -500,12 +523,14 @@ class AppLocalizations {
   String get currency => translate('currency');
   String get markPaid => translate('markPaid');
   String get markRefunded => translate('markRefunded');
-  String payInstructions(String fee) => translate('payInstructions', args: {'fee': fee});
+  String payInstructions(String fee) =>
+      translate('payInstructions', args: {'fee': fee});
   String get paymentMethod => translate('paymentMethod');
   String get paymentPaid => translate('paymentPaid');
   String get paymentPending => translate('paymentPending');
   String get paymentRefunded => translate('paymentRefunded');
-  String get paymentRequiredForApproval => translate('paymentRequiredForApproval');
+  String get paymentRequiredForApproval =>
+      translate('paymentRequiredForApproval');
   String get paymentStatus => translate('paymentStatus');
   String get paymentUnpaid => translate('paymentUnpaid');
   String get registrationFee => translate('registrationFee');
@@ -532,7 +557,8 @@ class AppLocalizations {
 
   // Agenda settings (global admin)
   String get calendarSettings => translate('calendarSettings');
-  String get calendarSettingsDescription => translate('calendarSettingsDescription');
+  String get calendarSettingsDescription =>
+      translate('calendarSettingsDescription');
   String get enableAgenda => translate('enableAgenda');
   String get agendaDisabled => translate('agendaDisabled');
   String get visibleFestivals => translate('visibleFestivals');
@@ -563,7 +589,8 @@ class AppLocalizations {
   String get visibility => translate('visibility');
   String get visibilityDescription => translate('visibilityDescription');
   String get visibilityPublic => translate('visibilityPublic');
-  String get visibilityFestivalMembers => translate('visibilityFestivalMembers');
+  String get visibilityFestivalMembers =>
+      translate('visibilityFestivalMembers');
   String get visibilityRoles => translate('visibilityRoles');
   String get visibilityAttendeesOnly => translate('visibilityAttendeesOnly');
   String get selectRoles => translate('selectRoles');
@@ -586,8 +613,10 @@ class AppLocalizations {
   String get saveForm => translate('saveForm');
   String get deleteField => translate('deleteField');
   String get deletePage => translate('deletePage');
-  String deleteFieldMessage(String msg) => translate('deleteFieldMessage', args: {'msg': msg});
-  String fieldsCount(int count) => translate('fieldsCount', args: {'count': count.toString()});
+  String deleteFieldMessage(String msg) =>
+      translate('deleteFieldMessage', args: {'msg': msg});
+  String fieldsCount(int count) =>
+      translate('fieldsCount', args: {'count': count.toString()});
   String get editField => translate('editField');
   String get fieldLabel => translate('fieldLabel');
   String get helpText => translate('helpText');
@@ -654,7 +683,8 @@ class AppLocalizations {
   String get proposeTagHint => translate('proposeTagHint');
   String get revokeTag => translate('revokeTag');
   String get addTag => translate('addTag');
-  String timeRange(String start, String end) => translate('timeRange', args: {'start': start, 'end': end});
+  String timeRange(String start, String end) =>
+      translate('timeRange', args: {'start': start, 'end': end});
   String get searchLocations => translate('searchLocations');
   String get allBadges => translate('allBadges');
   String get filterByBadge => translate('filterByBadge');
@@ -678,7 +708,8 @@ class AppLocalizations {
   String get suggestRelations => translate('suggestRelations');
   String get noRelatedLocations => translate('noRelatedLocations');
   String get noFilmLocations => translate('noFilmLocations');
-  String get mandatoryLocationRequired => translate('mandatoryLocationRequired');
+  String get mandatoryLocationRequired =>
+      translate('mandatoryLocationRequired');
 
   String get alreadyHasReservation => translate('alreadyHasReservation');
   String get reservationCreated => translate('reservationCreated');
@@ -699,7 +730,8 @@ class AppLocalizations {
   String get no => translate('no');
   String get ticketTypes => translate('ticketTypes');
   String get noTicketTypes => translate('noTicketTypes');
-  String reserveCount(int count) => translate('reserve', args: {'count': count.toString()});
+  String reserveCount(int count) =>
+      translate('reserve', args: {'count': count.toString()});
   String get seatMapDisabled => translate('seatMapDisabled');
   String get enableSeatMapHint => translate('enableSeatMapHint');
   String get confirm => translate('confirm');
@@ -717,17 +749,23 @@ class AppLocalizations {
   String get noEventsOnDay => translate('noEventsOnDay');
   String get remindersEnabled => translate('remindersEnabled');
   String get eventReminderTitle => translate('eventReminderTitle');
-  String eventReminderBody(String title) => translate('eventReminderBody', args: {'title': title});
+  String eventReminderBody(String title) =>
+      translate('eventReminderBody', args: {'title': title});
   String get notificationChannelName => translate('notificationChannelName');
-  String get notificationChannelDescription => translate('notificationChannelDescription');
-  String rolesCount(int count) => translate('rolesCount', args: {'count': count.toString()});
-  String tagsCount(int count) => translate('tagsCount', args: {'count': count.toString()});
+  String get notificationChannelDescription =>
+      translate('notificationChannelDescription');
+  String rolesCount(int count) =>
+      translate('rolesCount', args: {'count': count.toString()});
+  String tagsCount(int count) =>
+      translate('tagsCount', args: {'count': count.toString()});
   String get systemSender => translate('systemSender');
-  String rowCount(int count) => translate('rowCount', args: {'count': count.toString()});
+  String rowCount(int count) =>
+      translate('rowCount', args: {'count': count.toString()});
   String get typeFestival => translate('typeFestival');
   String get typeUser => translate('typeUser');
   String get webDeviceName => translate('webDeviceName');
-  String bioLengthHint(int max) => translate('bioLengthHint', args: {'max': max.toString()});
+  String bioLengthHint(int max) =>
+      translate('bioLengthHint', args: {'max': max.toString()});
 
   String get export => translate('export');
   String get rulebooks => translate('rulebooks');
@@ -743,10 +781,169 @@ class AppLocalizations {
   String get rulebookDocumentRequired => translate('rulebookDocumentRequired');
   String get openDocument => translate('openDocument');
 
+  String get nodeAnyOnline => translate('nodeAnyOnline');
+  String get nodeNoneOnline => translate('nodeNoneOnline');
+  String get nodeAddFederated => translate('nodeAddFederated');
+  String get nodeDomainHint => translate('nodeDomainHint');
+  String get nodeBaseUrlHint => translate('nodeBaseUrlHint');
+  String get nodeDisplayNameOptional => translate('nodeDisplayNameOptional');
+  String get nodeDelete => translate('nodeDelete');
+  String get nodeOnline => translate('nodeOnline');
+  String get nodeOffline => translate('nodeOffline');
+  String get nodeMarkActive => translate('nodeMarkActive');
+  String get nodeTestConnection => translate('nodeTestConnection');
+  String get nodeReload => translate('nodeReload');
+  String get nodeEmptyTitle => translate('nodeEmptyTitle');
+  String get nodeEmptyHint => translate('nodeEmptyHint');
+  String get nodeAddShort => translate('nodeAddShort');
+  String get nodeTitle => translate('nodeTitle');
+  String get paymentsTitle => translate('paymentsTitle');
+  String get paymentsProcessing => translate('paymentsProcessing');
+  String get paymentsPayMock => translate('paymentsPayMock');
+  String get paymentsMockHint => translate('paymentsMockHint');
+  String get paymentsRefundMock => translate('paymentsRefundMock');
+  String get paymentsMockResult => translate('paymentsMockResult');
+  String get paymentsMockFailed => translate('paymentsMockFailed');
+  String get badgeTitle => translate('badgeTitle');
+  String get badgeFeatureActive => translate('badgeFeatureActive');
+  String get badgeFeatureAdminOnly => translate('badgeFeatureAdminOnly');
+  String get badgeFeatureOff => translate('badgeFeatureOff');
+  String get badgeGrantToProfile => translate('badgeGrantToProfile');
+  String get badgeNoneCreated => translate('badgeNoneCreated');
+  String get badgeLabel => translate('badgeLabel');
+  String get badgeReasonOptional => translate('badgeReasonOptional');
+  String get badgeGrant => translate('badgeGrant');
+  String get badgeOnProfile => translate('badgeOnProfile');
+  String get badgeRevoke => translate('badgeRevoke');
+  String get badgeCreate => translate('badgeCreate');
+  String get badgeScope => translate('badgeScope');
+  String get badgePlatform => translate('badgePlatform');
+  String get badgeCategoryLabel => translate('badgeCategoryLabel');
+  String get badgeScopeLabel => translate('badgeScopeLabel');
+  String get badgeReasonLabel => translate('badgeReasonLabel');
+  String get badgeGrantedAt => translate('badgeGrantedAt');
+  String get badgeDisabledChip => translate('badgeDisabledChip');
+  String get badgeManage => translate('badgeManage');
+  String get badgeAdminOnlyHint => translate('badgeAdminOnlyHint');
+  String get badgeNoneYet => translate('badgeNoneYet');
+  String get badgeConditionsMet => translate('badgeConditionsMet');
+  String get badgeConditionsNotMet => translate('badgeConditionsNotMet');
+  String get badgeEnabled => translate('badgeEnabled');
+  String get badgeDisabled => translate('badgeDisabled');
+  String get badgeToggleFailed => translate('badgeToggleFailed');
+  String get badgeCreated => translate('badgeCreated');
+  String get badgeCreateFailed => translate('badgeCreateFailed');
+  String get badgeGranted => translate('badgeGranted');
+  String get badgeGrantFailed => translate('badgeGrantFailed');
+  String get badgeRevokeFailed => translate('badgeRevokeFailed');
+  String get badgeMerit => translate('badgeMerit');
+  String get badgeVeteran => translate('badgeVeteran');
+  String get badgePopular => translate('badgePopular');
+  String get badgeSpecial => translate('badgeSpecial');
+  String get badgeCondition => translate('badgeCondition');
+  String get badgeConditionManual => translate('badgeConditionManual');
+  String get badgeConditionVeteran => translate('badgeConditionVeteran');
+  String get badgeConditionRole => translate('badgeConditionRole');
+  String get badgeConditionAwarded => translate('badgeConditionAwarded');
+  String get badgeMinFestivals => translate('badgeMinFestivals');
+  String get badgeRequiredRole => translate('badgeRequiredRole');
+  String get badgeUploadImage => translate('badgeUploadImage');
+  String get postPublishFailed => translate('postPublishFailed');
+  String get postDeleteConfirm => translate('postDeleteConfirm');
+  String get postDeleteFailed => translate('postDeleteFailed');
+  String get postEditTitle => translate('postEditTitle');
+  String get postSaveFailed => translate('postSaveFailed');
+  String get postActionForbidden => translate('postActionForbidden');
+  String get postReplyFailed => translate('postReplyFailed');
+  String get postEmbedHint => translate('postEmbedHint');
+  String get postAddMediaLink => translate('postAddMediaLink');
+  String get postImagesSoon => translate('postImagesSoon');
+  String get postReplies => translate('postReplies');
+  String get postPublish => translate('postPublish');
+  String get postUntitled => translate('postUntitled');
+  String get postOptions => translate('postOptions');
+  String get postPin => translate('postPin');
+  String get postUnpin => translate('postUnpin');
+  String get postUserFallback => translate('postUserFallback');
+  String get postReadMinutes => translate('postReadMinutes');
+  String get postFeatured => translate('postFeatured');
+  String get postHidden => translate('postHidden');
+  String get postRepliesCount => translate('postRepliesCount');
+  String get postRepliesDisabled => translate('postRepliesDisabled');
+  String get postReplyHint => translate('postReplyHint');
+  String get exportDataTitle => translate('exportDataTitle');
+  String get copiedToClipboard => translate('copiedToClipboard');
+  String get copy => translate('copy');
+  String get exportDataFailed => translate('exportDataFailed');
+  String get deleteAccountTitle => translate('deleteAccountTitle');
+  String get deleteAccountConfirm => translate('deleteAccountConfirm');
+  String get deleteAccountFailed => translate('deleteAccountFailed');
+  String get privacyAndData => translate('privacyAndData');
+  String get exportMyData => translate('exportMyData');
+  String get deleteMyAccount => translate('deleteMyAccount');
+
+  String get replyAction => translate('replyAction');
+  String get postShow => translate('postShow');
+  String get postHide => translate('postHide');
+  String get postBlockReplies => translate('postBlockReplies');
+  String get postAllowReplies => translate('postAllowReplies');
+
+  String get rolesTitle => translate('rolesTitle');
+  String get following => translate('following');
+  String get follow => translate('follow');
+  String get messageButton => translate('messageButton');
+  String get socialLinksTitle => translate('socialLinksTitle');
+  String get customLabel => translate('customLabel');
+  String get embedContent => translate('embedContent');
+
+  String get awardPrize => translate('awardPrize');
+  String get awardYear => translate('awardYear');
+  String get awardYearExample => translate('awardYearExample');
+  String get awardPosition => translate('awardPosition');
+  String get awardPrizeExample => translate('awardPrizeExample');
+  String get awardShortFilmId => translate('awardShortFilmId');
+  String get awardUserId => translate('awardUserId');
+  String get awardEventId => translate('awardEventId');
+  String get awardTotal => translate('awardTotal');
+  String get awardWinnersCount => translate('awardWinnersCount');
+  String get awardWinners => translate('awardWinners');
+  String get awardYearsCount => translate('awardYearsCount');
+  String get awardNoResults => translate('awardNoResults');
+  String get awardNoYear => translate('awardNoYear');
+  String get awardPositionCount => translate('awardPositionCount');
+  String get eventShortFilmFallback => translate('eventShortFilmFallback');
+  String get eventOccupancy => translate('eventOccupancy');
+  String get eventFull => translate('eventFull');
+  String get eventAvailable => translate('eventAvailable');
+  String get eventPayMock => translate('eventPayMock');
+  String get profileAssignRole => translate('profileAssignRole');
+  String get profileAchievements => translate('profileAchievements');
+  String get profilePublications => translate('profilePublications');
+  String get profileAlias => translate('profileAlias');
+  String get profileNoAwards => translate('profileNoAwards');
+  String get profileNoRoles => translate('profileNoRoles');
+  String get profileAddRole => translate('profileAddRole');
+  String get profileTagline => translate('profileTagline');
+  String get profileAvatarUrl => translate('profileAvatarUrl');
+  String get profileCoverUrl => translate('profileCoverUrl');
+  String get profileWeb => translate('profileWeb');
+  String get profileInstagram => translate('profileInstagram');
+  String get profileX => translate('profileX');
+  String get profileYouTube => translate('profileYouTube');
+  String get festivalLocations => translate('festivalLocations');
+  String get eventsVenue => translate('eventsVenue');
+  String get eventsScreeningCount => translate('eventsScreeningCount');
+  String get juryFestivalLoadFailed => translate('juryFestivalLoadFailed');
+  String get juryShortFilmsLoadFailed => translate('juryShortFilmsLoadFailed');
+  String get createUserRolesHint => translate('createUserRolesHint');
+
+  String get screeningLabel => translate('screeningLabel');
+
   /// Devuelve la traducción legible para la categoría de bases [category]
   /// (p. ej. "official_section" -> "Sección oficial").
   String getRulebookCategory(String category) {
-    final categories = _localizedStrings['rulebookCategories'] as Map<String, dynamic>?;
+    final categories =
+        _localizedStrings['rulebookCategories'] as Map<String, dynamic>?;
     return categories?[category] ?? category;
   }
 
@@ -762,12 +959,15 @@ class AppLocalizations {
   /// Acepta los valores internos (español o código) y devuelve la etiqueta
   /// localizada; si el valor no es reconocido lo devuelve tal cual.
   String getBadgeTranslation(String badge) {
-    switch (badge) {
-      case 'Sugerido' || 'sugerido':
+    switch (badge.toLowerCase()) {
+      case 'sugerido':
+      case 'suggested':
         return badgeSuggested;
-      case 'Obligatorio' || 'obligatorio':
+      case 'obligatorio':
+      case 'mandatory':
         return badgeMandatory;
-      case 'Destacado' || 'destacado':
+      case 'destacado':
+      case 'featured':
         return badgeFeatured;
       default:
         return badge;
@@ -801,13 +1001,15 @@ class AppLocalizations {
 }
 
 /// Implementación de [LocalizationsDelegate] para [AppLocalizations].
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   /// Indica si el locale está dentro de los idiomas soportados.
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'es', 'fr', 'de', 'it', 'ca', 'eu', 'gl', 'oc'].contains(locale.languageCode);
+    return ['en', 'es', 'fr', 'de', 'it', 'ca', 'eu', 'gl', 'oc']
+        .contains(locale.languageCode);
   }
 
   /// Carga las localizaciones para [locale].

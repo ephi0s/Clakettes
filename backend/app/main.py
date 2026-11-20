@@ -11,9 +11,12 @@ import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
 from app.rate_limiter import RateLimiter
+from app.config import is_testing
+from app.http_utils import client_ip
 from app.dav import auth as dav_auth
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -65,6 +68,8 @@ from app.models.user import User
 from app.services.user_service import hash_password
 from app.config import settings
 from app.mtls import MTLSPeerVerificationMiddleware
+
+APP_VERSION = "0.3.0"
 
 # Maximum request body size: 10 MB
 MAX_BODY_SIZE = 10 * 1024 * 1024
@@ -165,22 +170,14 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         if content_length:
             try:
                 if int(content_length) > MAX_BODY_SIZE:
-                    return Response(
-                        content='{"detail":"Request body too large"}',
-                        status_code=413,
-                        media_type="application/json",
-                    )
+                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
             except ValueError:
                 pass
             return await call_next(request)
         # No Content-Length (chunked): buffer and enforce limit.
         body = await request.body()
         if len(body) > MAX_BODY_SIZE:
-            return Response(
-                content='{"detail":"Request body too large"}',
-                status_code=413,
-                media_type="application/json",
-            )
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
         return await call_next(request)
 
 
@@ -248,9 +245,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._limiter = RateLimiter()
 
     async def dispatch(self, request: Request, call_next):
-        if os.environ.get("TESTING", "").lower() in ("true", "1"):
+        if is_testing():
             return await call_next(request)
-        ip = request.client.host if request.client else "unknown"
+        ip = client_ip(request)
         if request.url.path.startswith(DAV_PREFIX):
             key = f"dav:{ip}"
             max_requests, window = self.dav_max_requests, self.dav_window_seconds
@@ -258,7 +255,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             key = f"middleware:{ip}"
             max_requests, window = self.max_requests, self.window_seconds
         if not self._limiter.check(key, max_requests, window):
-            return Response(content='{"detail":"Too many requests"}', status_code=429, media_type="application/json")
+            return JSONResponse(status_code=429, content={"detail": "Too many requests"})
         return await call_next(request)
 
 
@@ -342,7 +339,7 @@ def _run_migrations() -> None:
     production databases). Always skipped under ``TESTING=true``, where the
     suite owns the schema via ``create_all``.
     """
-    if os.getenv("TESTING", "").strip().lower() in ("1", "true", "yes", "on"):
+    if is_testing():
         return
     if os.getenv("SKIP_AUTO_MIGRATE", "").strip().lower() in ("1", "true", "yes", "on"):
         logger.info("SKIP_AUTO_MIGRATE set — skipping automatic Alembic upgrade")
@@ -462,7 +459,7 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     title="Clakettes API",
     description="Backend API for Clakettes film festival management platform",
-    version="0.3.0",
+    version=APP_VERSION,
     lifespan=lifespan,
 )
 
@@ -476,15 +473,8 @@ async def global_exception_handler(request: Request, exc: Exception):
     Logs full traceback for debugging. Returns generic error message to client
     to avoid leaking internal details.
     """
-    import logging
-
-    logger = logging.getLogger(__name__)
     logger.exception("Unhandled exception: %s", exc)
-    return Response(
-        content='{"detail":"Internal server error"}',
-        status_code=500,
-        media_type="application/json",
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 # --- Middleware (order matters: last added = first executed) ---
@@ -531,7 +521,7 @@ app.add_middleware(
 # answered, so uvicorn logs a redacted path while routing and auth stay intact.
 app.add_middleware(RedactDavTokenMiddleware)
 
-# --- Routers (34 total) ---
+# --- Routers ---
 # Organized by domain. Prefix determines URL path.
 # Tags used for OpenAPI/Swagger grouping.
 app.include_router(festivals.router, prefix="/api/festivals", tags=["festivals"])
@@ -592,7 +582,7 @@ app.include_router(jury_votes.router, prefix="/api", tags=["jury-votes"])
 
 @app.get("/")
 async def root():
-    return {"message": "Clakettes API is running", "version": "0.3.0"}
+    return {"message": "Clakettes API is running", "version": APP_VERSION}
 
 
 def get_db_revision() -> str | None:

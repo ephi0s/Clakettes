@@ -16,7 +16,6 @@ from app.schemas.participant_tag import (
     FestivalParticipantTagsPage,
 )
 from app.services.participant_tag_service import ParticipantTagService, FestivalParticipantTagService
-from app.services.festival_service import FestivalService
 from app.routers.permissions import require_admin, require_festival_admin
 from app.routers.dependencies import get_or_404
 from app.models.user import User
@@ -27,7 +26,6 @@ router = APIRouter()
 
 tag_service = ParticipantTagService()
 festival_tag_service = FestivalParticipantTagService()
-festival_service = FestivalService()
 
 
 @router.get("/participant-tags/", response_model=ParticipantTagsPage)

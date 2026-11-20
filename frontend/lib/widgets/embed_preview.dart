@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmbedInfo {
@@ -99,10 +100,11 @@ class EmbedPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Semantics(
-      label: 'Contenido incrustado de ${embed.label}',
+      label: l10n.translate('embedContent', args: {'label': embed.label}),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => openEmbedUrl(context, embed.url),

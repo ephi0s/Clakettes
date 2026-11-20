@@ -27,6 +27,7 @@ void main() async {
   await DatabaseService.init();
   await OfflineCacheService.instance.init();
   await SyncQueueService.instance.init();
+  await NodeService().load();
   ConnectivityMonitor.instance.start();
   await LocaleService.instance.load();
   try {
@@ -37,7 +38,6 @@ void main() async {
   } catch (e) {
     debugPrint('NotificationService init error: $e');
   }
-  await NodeService().load();
   runApp(const ClakettesApp());
 }
 
@@ -162,14 +162,21 @@ class _ClakettesAppState extends State<ClakettesApp> {
       // NavigationBar (mobile): pill indicator, only selected label shown
       navigationBarTheme: NavigationBarThemeData(
         indicatorColor: colorScheme.primaryContainer,
-        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        indicatorShape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colorScheme.primary);
+            return TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary);
           }
-          return TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colorScheme.onSurfaceVariant);
+          return TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurfaceVariant);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -182,7 +189,8 @@ class _ClakettesAppState extends State<ClakettesApp> {
       // NavigationRail (desktop): full labels, wider when extended
       navigationRailTheme: NavigationRailThemeData(
         indicatorColor: colorScheme.primaryContainer,
-        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        indicatorShape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         labelType: NavigationRailLabelType.all,
         minExtendedWidth: 220,
         groupAlignment: 0.0,
@@ -195,7 +203,8 @@ class _ClakettesAppState extends State<ClakettesApp> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        extendedPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
 
       // Input fields: filled, rounded, subtle borders
@@ -222,23 +231,29 @@ class _ClakettesAppState extends State<ClakettesApp> {
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(120)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        labelStyle: TextStyle(
+            color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
+        hintStyle:
+            TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(120)),
       ),
 
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
         ),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
           shadowColor: Colors.transparent,
         ),
@@ -246,7 +261,8 @@ class _ClakettesAppState extends State<ClakettesApp> {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
 
@@ -291,14 +307,19 @@ class _ClakettesAppState extends State<ClakettesApp> {
       listTileTheme: ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        titleTextStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-        subtitleTextStyle: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+        titleTextStyle: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface),
+        subtitleTextStyle:
+            TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
       ),
 
       drawerTheme: DrawerThemeData(
         backgroundColor: colorScheme.surface,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topRight: Radius.circular(24), bottomRight: Radius.circular(24)),
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(24), bottomRight: Radius.circular(24)),
         ),
       ),
 
@@ -328,7 +349,9 @@ class _ClakettesAppState extends State<ClakettesApp> {
 
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return colorScheme.onPrimary;
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onPrimary;
+          }
           return colorScheme.onSurfaceVariant;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
@@ -374,7 +397,8 @@ class _ClakettesAppState extends State<ClakettesApp> {
 
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );

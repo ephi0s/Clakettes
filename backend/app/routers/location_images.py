@@ -9,13 +9,11 @@ from app.models.location_image import LocationImage
 from app.routers.dependencies import get_or_404
 from app.schemas.location_image import LocationImageResponse
 from app.services.location_image_service import LocationImageService
-from app.services.location_service import LocationService
 from app.routers.permissions import require_location_admin
 from app.routers.uploads import _save_file, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE
 
 router = APIRouter()
 image_service = LocationImageService()
-location_service = LocationService()
 
 
 class ImageUrlRequest(BaseModel):

@@ -76,8 +76,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
       ]);
       if (mounted) {
         final event = results[0] as FestivalEvent;
-        final isScreening = event.eventType == 'screening' &&
-            event.screeningShortfilmIds.isNotEmpty;
+        final isScreening = event.eventType == 'screening';
         _syncTabController(isScreening ? 3 : 2);
         setState(() {
           _event = event;
@@ -691,7 +690,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
                                 style: const TextStyle(fontSize: 12))),
                         title: Text(
                           _screenings!.items[i].title ??
-                              'Corto ${_screenings!.items[i].shortfilmId}',
+                              l10n.translate('eventShortFilmFallback', args: {'id': _screenings!.items[i].shortfilmId}),
                           style: const TextStyle(fontSize: 13),
                         ),
                         trailing: Text(
@@ -712,8 +711,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
               return Card(
                 child: ListTile(
                   leading: const Icon(Icons.meeting_room_outlined),
-                  title: Text('Ocupación: ${occ['attendee_count'] ?? 0}/${occ['capacity'] ?? '-'}'),
-                  subtitle: Text((occ['is_full'] ?? false) ? 'Completo' : 'Disponibles: ${occ['available_capacity'] ?? '-'}'),
+                  title: Text(l10n.translate('eventOccupancy', args: {'count': '${occ['attendee_count'] ?? 0}/${occ['capacity'] ?? '-'}'})),
+                  subtitle: Text((occ['is_full'] ?? false)
+                      ? l10n.eventFull
+                      : l10n.translate('eventAvailable', args: {'count': occ['available_capacity'] ?? '-'})),
                 ),
               );
             },
@@ -725,7 +726,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> with SingleTicker
               MaterialPageRoute(builder: (_) => PaymentsScreen(eventId: widget.eventId)),
             ),
             icon: const Icon(Icons.payments_outlined),
-            label: const Text('Pagar / Pagos (mock)'),
+            label: Text(l10n.eventPayMock),
           ),
           const SizedBox(height: 16),
           Text(l10n.ticketTypes, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.onSurface)),

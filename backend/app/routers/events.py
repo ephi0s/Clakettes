@@ -44,7 +44,6 @@ from app.services.event_service import (
 )
 from app.services.award_service import AwardService
 from app.services.festival_service import FestivalService
-from app.services.user_service import UserService
 from app.services.user_alias_service import UserAliasService
 from app.services.role_service import UserRoleService
 from app.services.participant_tag_service import UserParticipantTagService
@@ -74,7 +73,6 @@ seat_service = EventSeatService()
 reservation_service = EventReservationService()
 attendee_service = EventAttendeeService()
 festival_service = FestivalService()
-user_service = UserService()
 alias_service = UserAliasService()
 user_role_service = UserRoleService()
 user_participant_tag_service = UserParticipantTagService()

@@ -1,8 +1,19 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.models.user_session import UserSession
 from app.schemas.user_session import UserSessionCreate, UserSessionUpdate
 from .base_service import BaseService
+
+
+def touch_session(db: Session, session: UserSession) -> None:
+    """Update ``last_used_at`` lazily (at most once every five minutes)."""
+    now = datetime.now(timezone.utc)
+    last_used = session.last_used_at
+    if last_used is not None and last_used.tzinfo is None:
+        last_used = last_used.replace(tzinfo=timezone.utc)
+    if last_used is None or now - last_used >= timedelta(minutes=5):
+        session.last_used_at = now
+        db.commit()
 
 
 class AuthSessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpdate]):

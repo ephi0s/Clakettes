@@ -11,7 +11,6 @@ from app.schemas.location import LocationResponse
 from app.schemas.festival_location import FestivalLocationCreate
 from app.services.festival_service import FestivalService
 from app.services.festival_location_service import FestivalLocationService
-from app.services.location_service import LocationService
 from app.routers.permissions import can_edit_festival, can_delete_festival
 from app.routers.uploads import _save_file, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE
 from app.models.user import User
@@ -19,7 +18,6 @@ from app.models.user import User
 router = APIRouter()
 service = FestivalService()
 festival_location_service = FestivalLocationService()
-location_service = LocationService()
 
 
 @router.get("/", response_model=FestivalsPage)

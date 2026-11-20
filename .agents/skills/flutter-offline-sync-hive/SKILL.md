@@ -1,6 +1,6 @@
 ---
 name: flutter-offline-sync-hive
-description: Expert guidance for Clakettes offline-first data. Covers DatabaseService.init() with 36 Hive adapters, OfflineCacheService HMAC-signed cache with schema validation, SyncQueueService FIFO replay (contains/enqueue/syncAll, maxAttempts 3, backoff), and ConnectivityMonitor health-probed status. Use when working with offline cache, sync queue, or connectivity.
+description: Expert guidance for Clakettes offline-first data. Covers DatabaseService.init() with 37 Hive adapters, OfflineCacheService HMAC-signed cache with schema validation, SyncQueueService FIFO replay (contains/enqueue/syncAll, maxAttempts 3, backoff), and ConnectivityMonitor health-probed status. Use when working with offline cache, sync queue, or connectivity.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Sat, 10 Oct 2026 00:00:00 GMT

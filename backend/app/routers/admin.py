@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter, Query, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -11,6 +9,8 @@ from app.services.admin_service import AdminService
 from app.services.audit_service import AuditService
 from app.schemas.audit_log import AuditLogsPage
 from app.rate_limiter import RateLimiter
+from app.config import is_testing
+from app.routers.permissions import require_admin
 
 router = APIRouter()
 admin_service = AdminService()
@@ -19,7 +19,7 @@ _reset_limiter = RateLimiter()
 
 
 def _check_reset_rate_limit(user_id: int):
-    if os.environ.get("TESTING", "").lower() in ("true", "1"):
+    if is_testing():
         return
     if not _reset_limiter.check(f"reset:{user_id}", 3, 300):
         raise HTTPException(
@@ -33,20 +33,15 @@ class ResetConfirm(BaseModel):
     password: str = ""
 
 
-def _require_admin(current_user: User):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
-
-
 @router.get("/stats")
 async def database_stats(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    _require_admin(current_user)
+    require_admin(current_user, db)
     return admin_service.get_stats(db)
 
 
 @router.get("/tables")
 async def list_tables(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    _require_admin(current_user)
+    require_admin(current_user, db)
     return admin_service.get_tables(db)
 
 
@@ -60,7 +55,7 @@ async def list_audit_log(
     current_user: User = Depends(get_current_user),
 ):
     """Append-only record of sensitive actions (RGPD art. 5.2). Admin only."""
-    _require_admin(current_user)
+    require_admin(current_user, db)
     return audit_service.list_paginated(db, page=page, size=size, action=action, actor_user_id=actor_user_id)
 
 
@@ -70,7 +65,7 @@ async def reset_database(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    _require_admin(current_user)
+    require_admin(current_user, db)
     _check_reset_rate_limit(current_user.id)
     if body.confirm != "yes":
         raise HTTPException(status_code=400, detail="Send confirm=yes to proceed")

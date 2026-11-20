@@ -43,6 +43,7 @@ class DatabaseService {
     Hive.registerAdapter(EventTicketTypeAdapter());
     Hive.registerAdapter(EventSeatAdapter());
     Hive.registerAdapter(EventReservationAdapter());
+    Hive.registerAdapter(EventAttendeeAdapter());
     Hive.registerAdapter(FestivalAdapter());
     Hive.registerAdapter(MessageAdapter());
     Hive.registerAdapter(AppNotificationAdapter());

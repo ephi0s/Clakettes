@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +13,8 @@ class LocaleService {
   static const String _key = 'app_locale';
   static LocaleService? _instance;
 
-  final StreamController<Locale> _controller = StreamController<Locale>.broadcast();
+  final StreamController<Locale> _controller =
+      StreamController<Locale>.broadcast();
   Locale? _locale;
 
   LocaleService._();
@@ -55,25 +57,33 @@ class LocaleService {
     'oc': 'Aranés',
   };
 
-  /// Restaura el locale persistido previamente, si existe.
+  static String _normalizeCode(String? code) {
+    if (code != null && supportedLocales.any((l) => l.languageCode == code)) {
+      return code;
+    }
+    return 'en';
+  }
+
+  /// Restaura el locale persistido o, si no hay ninguno, detecta el del sistema.
   ///
-  /// Devuelve el locale restaurado o `null` si no se había almacenado ninguno.
+  /// El locale resuelto se persiste siempre, de modo que el resto de servicios
+  /// (notificaciones incluidas) usen el mismo idioma que la interfaz.
   Future<Locale?> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final code = prefs.getString(_key);
-    if (code != null) {
-      final supported = supportedLocales.any((l) => l.languageCode == code);
-      _locale = Locale(supported ? code : 'en');
-    }
+    final code = _normalizeCode(prefs.getString(_key) ??
+        PlatformDispatcher.instance.locale.languageCode);
+    _locale = Locale(code);
+    await prefs.setString(_key, code);
     return _locale;
   }
 
   /// Establece el locale activo, lo persiste y notifica a los suscriptores.
   Future<void> setLocale(Locale locale) async {
-    _locale = locale;
+    final code = _normalizeCode(locale.languageCode);
+    _locale = Locale(code);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, locale.languageCode);
-    _controller.add(locale);
+    await prefs.setString(_key, code);
+    _controller.add(_locale!);
   }
 
   /// Cierra el stream de cambios y libera los recursos.

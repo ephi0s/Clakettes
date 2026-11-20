@@ -54,13 +54,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Novedad'), findsOneWidget);
-    expect(find.text('Destacada'), findsOneWidget);
-    expect(find.textContaining('min de lectura'), findsOneWidget);
+    expect(find.text('Featured'), findsOneWidget);
+    expect(find.textContaining('min read'), findsOneWidget);
     expect(find.byType(MarkdownText), findsWidgets);
     final bodies = tester.widgetList<MarkdownText>(find.byType(MarkdownText));
     expect(bodies.any((w) => w.data.contains('Hello')), isTrue);
     expect(find.text('YouTube'), findsOneWidget);
-    expect(find.textContaining('Usuario 1'), findsWidgets);
+    expect(find.textContaining('User 1'), findsWidgets);
   });
 
   testWidgets('publication panel shows empty state', (tester) async {

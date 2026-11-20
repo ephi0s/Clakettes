@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge_model.dart';
 import '../services/api_service.dart';
 import 'badge_manage_sheet.dart';
@@ -60,6 +61,7 @@ class ProfileBadges extends StatefulWidget {
 
 class _ProfileBadgesState extends State<ProfileBadges> {
   final ApiService _api = ApiService();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   bool _enabled = false;
   bool _loading = true;
   List<BadgeAssignment> _assignments = [];
@@ -119,16 +121,16 @@ class _ProfileBadgesState extends State<ProfileBadges> {
             const SizedBox(height: 12),
             if (badge.description != null) Text(badge.description!),
             const SizedBox(height: 8),
-            if (badge.category != null) Text('Categoría: ${badge.category}'),
-            Text('Ámbito: ${badge.scope == 'festival' ? 'Festival' : 'Plataforma'}'),
+            if (badge.category != null) Text(l10n.translate('badgeCategoryLabel', args: {'category': badge.category})),
+            Text(l10n.translate('badgeScopeLabel', args: {'scope': badge.scope == 'festival' ? l10n.typeFestival : l10n.badgePlatform})),
             if (assignment.reason != null && assignment.reason!.isNotEmpty)
-              Text('Motivo: ${assignment.reason}'),
+              Text(l10n.translate('badgeReasonLabel', args: {'reason': assignment.reason})),
             if (assignment.createdAt != null)
-              Text('Otorgada: ${assignment.createdAt!.toLocal().toString().substring(0, 10)}'),
+              Text(l10n.translate('badgeGrantedAt', args: {'date': assignment.createdAt!.toLocal().toString().substring(0, 10)})),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.close)),
         ],
       ),
     );
@@ -147,15 +149,15 @@ class _ProfileBadgesState extends State<ProfileBadges> {
           children: [
             Expanded(
               child: SemanticHeader(
-                text: 'Insignias${_assignments.isNotEmpty ? ' (${_assignments.length})' : ''}',
+                text: '${l10n.badgeTitle}${_assignments.isNotEmpty ? ' (${_assignments.length})' : ''}',
                 style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.primary),
               ),
             ),
             if (!_enabled)
-              const Chip(label: Text('Desactivadas'), visualDensity: VisualDensity.compact),
+              Chip(label: Text(l10n.badgeDisabledChip), visualDensity: VisualDensity.compact),
             if (widget.canManage || widget.isAdmin)
               Tooltip(
-                message: 'Gestionar insignias',
+                message: l10n.badgeManage,
                 child: IconButton(icon: const Icon(Icons.settings_outlined, size: 20), onPressed: _openManage),
               ),
           ],
@@ -164,7 +166,7 @@ class _ProfileBadgesState extends State<ProfileBadges> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'Solo visible para administración hasta activar la función',
+              l10n.badgeAdminOnlyHint,
               style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
@@ -172,7 +174,7 @@ class _ProfileBadgesState extends State<ProfileBadges> {
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
-              'Sin insignias todavía',
+              l10n.badgeNoneYet,
               style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           )
@@ -184,7 +186,7 @@ class _ProfileBadgesState extends State<ProfileBadges> {
               final badge = a.badge;
               return ActionChip(
                 avatar: badge != null ? BadgeAvatar(badge: badge, radius: 12) : null,
-                label: Text(badge?.name ?? 'Insignia'),
+                label: Text(badge?.name ?? l10n.badgeLabel),
                 onPressed: () => _showDetail(a),
               );
             }).toList(),

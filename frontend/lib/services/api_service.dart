@@ -514,6 +514,11 @@ class ApiService {
     return await request('GET', '/admin/tables');
   }
 
+  /// Restablece la base de datos (requiere confirmación en el backend).
+  Future<void> resetDatabase() async {
+    await request('POST', '/admin/reset?confirm=yes');
+  }
+
   // ---------------------------------------------------------------------------
   // Notifications
   // ---------------------------------------------------------------------------

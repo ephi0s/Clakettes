@@ -1,6 +1,6 @@
 """Router for role, festival role, role dependency, and role conflict management."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -16,9 +16,7 @@ from app.schemas.role import (
     FestivalRolesPage,
 )
 from app.services.role_service import RoleService, FestivalRoleService
-from app.services.user_service import UserService
-from app.services.festival_service import FestivalService
-from app.routers.permissions import is_admin, require_festival_admin
+from app.routers.permissions import require_admin, require_festival_admin
 from app.routers.dependencies import get_current_user_optional, get_or_404
 from app.models.user import User
 from app.models.role import Role
@@ -28,13 +26,6 @@ router = APIRouter()
 
 role_service = RoleService()
 festival_role_service = FestivalRoleService()
-user_service = UserService()
-festival_service = FestivalService()
-
-
-def require_admin(user: User):
-    if not is_admin(user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
 
 @router.get("/roles/", response_model=RolesPage)
@@ -50,7 +41,7 @@ async def list_roles(
 
 @router.post("/roles/", response_model=RoleResponse, status_code=201)
 async def create_role(role: RoleCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    require_admin(current_user)
+    require_admin(current_user, db)
     if role_service.get_by_name(db, role.name):
         raise HTTPException(status_code=400, detail="Role already exists")
     return role_service.create(db, role)
@@ -76,7 +67,7 @@ async def get_role(
 async def update_role(
     role_id: int, role: RoleUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     get_or_404(db, Role, role_id, "Role")
     updated = role_service.update(db, role_id, role)
     if not updated:
@@ -86,7 +77,7 @@ async def update_role(
 
 @router.delete("/roles/{role_id}")
 async def delete_role(role_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    require_admin(current_user)
+    require_admin(current_user, db)
     get_or_404(db, Role, role_id, "Role")
     deleted = role_service.delete(db, role_id)
     if not deleted:
@@ -132,8 +123,7 @@ async def initialize_festival_roles(
     current_user: User = Depends(get_current_user),
 ):
     get_or_404(db, Festival, festival_id, "Festival")
-    if not is_admin(current_user):
-        raise HTTPException(status_code=403, detail="Admin only")
+    require_admin(current_user, db)
     return festival_role_service.initialize_default_festival_roles(db, festival_id)
 
 
@@ -188,7 +178,7 @@ async def create_role_dependency(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     return festival_role_service.add_dependency(db, role_id, depends_on_role_id, dependency_type, notes)
 
 
@@ -198,7 +188,7 @@ async def delete_role_dependency(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     if not festival_role_service.remove_dependency(db, dependency_id):
         raise HTTPException(status_code=404, detail="Dependency not found")
     return {"message": "Dependency deleted"}
@@ -222,7 +212,7 @@ async def create_role_conflict(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     return festival_role_service.add_conflict(db, role_id, conflicts_with_role_id, conflict_type, notes)
 
 
@@ -232,7 +222,7 @@ async def delete_role_conflict(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     if not festival_role_service.remove_conflict(db, conflict_id):
         raise HTTPException(status_code=404, detail="Conflict not found")
     return {"message": "Conflict deleted"}

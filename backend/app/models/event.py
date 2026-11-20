@@ -1,6 +1,6 @@
 """Event/Gala model — festivals can organize events with ticketing, seating, and guest management."""
 
-from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, DateTime, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.models.base import Base, BaseModel
 from app.enums import EventType, SeatStatus, AttendeeStatus, EventVisibilityScope
@@ -140,6 +140,7 @@ class EventSeat(BaseModel):
     """Individual seat within an event venue (for seat selection/assignment)."""
 
     __tablename__ = "event_seats"
+    __table_args__ = (UniqueConstraint("event_id", "section", "row_label", "number", name="uq_event_seat_location"),)
 
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False, index=True)
     ticket_type_id = Column(Integer, ForeignKey("event_ticket_types.id"), nullable=True)
@@ -159,9 +160,6 @@ class EventSeat(BaseModel):
 
     def __repr__(self):
         return f"<EventSeat(event_id={self.event_id}, {self.row_label}{self.number})>"
-
-    class Meta:
-        unique_together = ("event_id", "section", "row_label", "number")
 
 
 class EventReservation(BaseModel):

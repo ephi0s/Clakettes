@@ -1,6 +1,6 @@
 """Router for role groups and role group memberships."""
 
-from fastapi import APIRouter, Query, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,7 +17,7 @@ from app.schemas.role_group import (
 )
 from app.services.group_service import RoleGroupService, RoleGroupMembershipService
 from app.services.role_service import RoleService
-from app.routers.permissions import is_admin
+from app.routers.permissions import require_admin
 from app.models.user import User
 
 router = APIRouter()
@@ -25,11 +25,6 @@ router = APIRouter()
 role_group_service = RoleGroupService()
 role_group_membership_service = RoleGroupMembershipService()
 role_service = RoleService()
-
-
-def require_admin(user: User):
-    if not is_admin(user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
 
 @router.get("/role-groups/", response_model=RoleGroupPage)
@@ -48,7 +43,7 @@ async def create_role_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     return role_group_service.create(db, obj)
 
 
@@ -67,7 +62,7 @@ async def update_role_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     existing = role_group_service.get(db, group_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Role group not found")
@@ -80,7 +75,7 @@ async def delete_role_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     deleted = role_group_service.delete(db, group_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Role group not found")
@@ -107,7 +102,7 @@ async def create_group_membership(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     group = role_group_service.get(db, group_id)
     if not group:
         raise HTTPException(status_code=404, detail="Role group not found")
@@ -127,7 +122,7 @@ async def update_group_membership(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     updated = role_group_membership_service.update(db, membership_id, obj)
     if not updated:
         raise HTTPException(status_code=404, detail="Membership not found")
@@ -140,7 +135,7 @@ async def delete_group_membership(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     deleted = role_group_membership_service.delete(db, membership_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Membership not found")

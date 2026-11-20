@@ -10,8 +10,6 @@ from app.schemas.festival_rulebook import (
     FestivalRulebooksPage,
 )
 from app.services.festival_rulebook_service import FestivalRulebookService
-from app.services.festival_service import FestivalService
-from app.services.event_service import EventService
 from app.routers.permissions import can_edit_festival, require_festival_admin
 from app.routers.dependencies import get_or_404
 from app.models.festival import Festival
@@ -20,8 +18,6 @@ from app.routers.uploads import _save_file, ALLOWED_DOC_TYPES, MAX_DOC_SIZE
 
 router = APIRouter()
 rulebook_service = FestivalRulebookService()
-festival_service = FestivalService()
-event_service = EventService()
 
 
 def _get_festival_or_404(db: Session, festival_id: int):

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'reusable_widgets.dart';
 
@@ -36,6 +37,7 @@ class SocialProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     return Semantics(
       header: true,
@@ -114,16 +116,16 @@ class SocialProfileHeader extends StatelessWidget {
                       FilledButton.icon(
                         onPressed: onEdit,
                         icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Editar'),
+                        label: Text(l10n.edit),
                       )
                     else ...[
                       FilledButton(
                         onPressed: onFollow,
-                        child: Text(isFollowing ? 'Siguiendo' : 'Seguir'),
+                        child: Text(isFollowing ? l10n.following : l10n.follow),
                       ),
                       OutlinedButton(
                         onPressed: onMessage,
-                        child: const Text('Mensaje'),
+                        child: Text(l10n.messageButton),
                       ),
                     ],
                   ],
@@ -243,6 +245,7 @@ class SocialLinksRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final keys = [
       for (final k in _order)
         if (links.containsKey(k)) k,
@@ -251,7 +254,7 @@ class SocialLinksRow extends StatelessWidget {
     ];
     return Semantics(
       container: true,
-      label: 'Enlaces sociales',
+      label: l10n.socialLinksTitle,
       child: Wrap(
         spacing: 4,
         children: [

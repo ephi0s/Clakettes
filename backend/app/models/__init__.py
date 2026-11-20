@@ -40,6 +40,7 @@ from app.models.event import (
 from app.models.event_screening import EventScreening
 from app.models.payment import Payment
 from app.models.award import Award
+from app.models.badge import Badge, BadgeAssignment
 from app.models.festival_rulebook import FestivalRulebook
 from app.models.user_session import UserSession
 from app.models.validation_rule import (
@@ -134,6 +135,8 @@ __all__ = [
     "EventScreening",
     "Payment",
     "Award",
+    "Badge",
+    "BadgeAssignment",
     "FestivalRulebook",
     "UserSession",
     "Group",

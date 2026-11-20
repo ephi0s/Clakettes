@@ -178,7 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Gestiona un mensaje entrante en directo, desempaquetando el contenido y
   /// añadiendo una burbuja.
-  void _onIncomingMessage(Message msg) async {
+  Future<void> _onIncomingMessage(Message msg) async {
     if (!mounted) return;
 
     if (msg.messageType == 'e2ee_key' && ChatCrypto.isSenderKeyMessage(msg.content) && _isChannelChat) {
@@ -187,6 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     final unpacked = await _unpackContent(msg.content, msg.senderId);
+    if (!mounted) return;
     final displayMsg = Message(
       id: msg.id,
       content: unpacked,

@@ -1,6 +1,6 @@
 """Router for validation rules and validation rule groups."""
 
-from fastapi import APIRouter, Query, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -15,18 +15,13 @@ from app.schemas.validation_rule import (
     ValidationRuleGroupsPage,
 )
 from app.services.validation_rule_service import ValidationRuleService, ValidationRuleGroupService
-from app.routers.permissions import is_admin
+from app.routers.permissions import require_admin
 from app.models.user import User
 
 router = APIRouter()
 
 validation_rule_service = ValidationRuleService()
 validation_rule_group_service = ValidationRuleGroupService()
-
-
-def require_admin(user: User):
-    if not is_admin(user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
 
 @router.get("/validation-rules/", response_model=ValidationRulesPage)
@@ -46,7 +41,7 @@ async def create_validation_rule(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     return validation_rule_service.create(db, rule)
 
 
@@ -65,7 +60,7 @@ async def update_validation_rule(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     updated = validation_rule_service.update(db, rule_id, rule)
     if not updated:
         raise HTTPException(status_code=404, detail="Validation rule not found")
@@ -78,7 +73,7 @@ async def delete_validation_rule(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     deleted = validation_rule_service.delete(db, rule_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Validation rule not found")
@@ -101,5 +96,5 @@ async def create_validation_rule_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    require_admin(current_user)
+    require_admin(current_user, db)
     return validation_rule_group_service.create_with_rules(db, group)

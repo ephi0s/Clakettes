@@ -350,10 +350,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) => AlertDialog(
-          title: const Text('Asignar rol'),
+          title: Text(l10n.profileAssignRole),
           content: DropdownButtonFormField<String>(
             initialValue: selected,
-            decoration: const InputDecoration(labelText: 'Rol', border: OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.role, border: const OutlineInputBorder()),
             items: _availableRoles.map((r) {
               String label;
               try {
@@ -455,6 +455,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       await ApiService().revokeAllSessions();
       await AuthService().clear();
       await OfflineCacheService.instance.clear();
+      await SyncQueueService.instance.clear();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.allSessionsRevoked), behavior: SnackBarBehavior.floating),
@@ -679,7 +680,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 headerSliverBuilder: (ctx, inner) => [SliverToBoxAdapter(child: _buildCoverHeader(user, theme, colorScheme))],
                 body: Column(
                   children: [
-                    TabBar(tabs: [Tab(text: l10n.bio), const Tab(text: 'Palmarés'), const Tab(text: 'Roles'), const Tab(text: 'Publicaciones'), Tab(text: l10n.participantTags)]),
+                    TabBar(tabs: [Tab(text: l10n.bio), Tab(text: l10n.profileAchievements), Tab(text: l10n.rolesTitle), Tab(text: l10n.profilePublications), Tab(text: l10n.participantTags)]),
                     Expanded(
                       child: TabBarView(
                         children: [
@@ -774,20 +775,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _StatItem(value: '${_palmares.length}', label: 'Premios'),
+                  _StatItem(value: '${_palmares.length}', label: l10n.awards),
                   const SizedBox(width: 24),
-                  _StatItem(value: '${_userRoles.length}', label: 'Festivales'),
+                  _StatItem(value: '${_userRoles.length}', label: l10n.festivals),
                   const SizedBox(width: 24),
-                  _StatItem(value: '${_aliases.length}', label: 'Alias'),
+                  _StatItem(value: '${_aliases.length}', label: l10n.profileAlias),
                 ],
               ),
               const SizedBox(height: 12),
               if (!_isOwnProfile)
                 Row(
                   children: [
-                    FilledButton.icon(icon: const Icon(Icons.person_add, size: 18), label: const Text('Seguir'), onPressed: () => _dummyAction('Seguir')),
+                    FilledButton.icon(icon: const Icon(Icons.person_add, size: 18), label: Text(l10n.follow), onPressed: () => _dummyAction(l10n.follow)),
                     const SizedBox(width: 8),
-                    OutlinedButton.icon(icon: const Icon(Icons.message, size: 18), label: const Text('Mensaje'), onPressed: () => _dummyAction('Mensaje')),
+                    OutlinedButton.icon(icon: const Icon(Icons.message, size: 18), label: Text(l10n.messageButton), onPressed: () => _dummyAction(l10n.messageButton)),
                   ],
                 )
               else if (_canEdit)
@@ -902,7 +903,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _buildPalmaresTab(ThemeData theme, ColorScheme colorScheme) {
     if (_palmares.isEmpty) {
-      return Center(child: Padding(padding: const EdgeInsets.all(32), child: Text('Sin premios todavía', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant))));
+      return Center(child: Padding(padding: const EdgeInsets.all(32), child: Text(l10n.profileNoAwards, style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant))));
     }
     final Map<String, List<dynamic>> byYear = {};
     for (final p in _palmares) {
@@ -969,12 +970,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           children: [
             for (final r in _userRoles)
               Chip(label: Text(_roleLabel(r)), deleteIcon: _canEdit ? const Icon(Icons.close, size: 18) : null, onDeleted: _canEdit ? () => _removeRole(r) : null),
-            if (_userRoles.isEmpty) Text('Sin roles asignados', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+            if (_userRoles.isEmpty) Text(l10n.profileNoRoles, style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
           ],
         ),
         if (_canEdit) ...[
           const SizedBox(height: 16),
-          OutlinedButton.icon(icon: const Icon(Icons.add), label: const Text('Añadir rol'), onPressed: _showRoleDialog),
+          OutlinedButton.icon(icon: const Icon(Icons.add), label: Text(l10n.profileAddRole), onPressed: _showRoleDialog),
         ],
       ],
     );
@@ -1338,19 +1339,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           const SizedBox(height: 16),
           SemanticTextField(controller: _bioController, label: l10n.bio, semanticLabel: l10n.bio, helperText: l10n.bioLengthHint(500), maxLines: 3, maxLength: 500, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _taglineController, label: 'Tagline', semanticLabel: 'Tagline', helperText: 'Tagline', textInputAction: TextInputAction.next, maxLength: 120),
+          SemanticTextField(controller: _taglineController, label: l10n.profileTagline, semanticLabel: l10n.profileTagline, helperText: l10n.profileTagline, textInputAction: TextInputAction.next, maxLength: 120),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _avatarController, label: 'Avatar URL', semanticLabel: 'Avatar URL', helperText: 'Avatar URL', keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
+          SemanticTextField(controller: _avatarController, label: l10n.profileAvatarUrl, semanticLabel: l10n.profileAvatarUrl, helperText: l10n.profileAvatarUrl, keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _bannerController, label: 'Portada URL', semanticLabel: 'Portada URL', helperText: 'Portada URL', keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
+          SemanticTextField(controller: _bannerController, label: l10n.profileCoverUrl, semanticLabel: l10n.profileCoverUrl, helperText: l10n.profileCoverUrl, keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _websiteController, label: 'Web', semanticLabel: 'Web', helperText: 'Web', keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
+          SemanticTextField(controller: _websiteController, label: l10n.profileWeb, semanticLabel: l10n.profileWeb, helperText: l10n.profileWeb, keyboardType: TextInputType.url, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _instagramController, label: 'Instagram', semanticLabel: 'Instagram', helperText: 'Instagram', textInputAction: TextInputAction.next),
+          SemanticTextField(controller: _instagramController, label: l10n.profileInstagram, semanticLabel: l10n.profileInstagram, helperText: l10n.profileInstagram, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _xController, label: 'X', semanticLabel: 'X', helperText: 'X', textInputAction: TextInputAction.next),
+          SemanticTextField(controller: _xController, label: l10n.profileX, semanticLabel: l10n.profileX, helperText: l10n.profileX, textInputAction: TextInputAction.next),
           const SizedBox(height: 16),
-          SemanticTextField(controller: _youtubeController, label: 'YouTube', semanticLabel: 'YouTube', helperText: 'YouTube', textInputAction: TextInputAction.next, onSubmitted: (_) => _saveProfile()),
+          SemanticTextField(controller: _youtubeController, label: l10n.profileYouTube, semanticLabel: l10n.profileYouTube, helperText: l10n.profileYouTube, textInputAction: TextInputAction.next, onSubmitted: (_) => _saveProfile()),
         ],
       ),
     );

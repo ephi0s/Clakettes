@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class SocialLinksEditor extends StatefulWidget {
   final Map<String, String> initial;
@@ -19,6 +20,7 @@ class _SocialLinksEditorState extends State<SocialLinksEditor> {
   late Map<String, TextEditingController> _controllers;
   late List<String> _order;
   final TextEditingController _customKeyController = TextEditingController();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -80,7 +82,7 @@ class _SocialLinksEditorState extends State<SocialLinksEditor> {
   Widget build(BuildContext context) {
     return Semantics(
       container: true,
-      label: 'Enlaces sociales',
+      label: l10n.socialLinksTitle,
       child: Column(
         children: [
           for (final key in _order)
@@ -105,7 +107,7 @@ class _SocialLinksEditorState extends State<SocialLinksEditor> {
                   ),
                   if (!_known.contains(key))
                     IconButton(
-                      tooltip: 'Delete',
+                      tooltip: l10n.delete,
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => _remove(key),
                     ),
@@ -117,9 +119,9 @@ class _SocialLinksEditorState extends State<SocialLinksEditor> {
               Expanded(
                 child: TextField(
                   controller: _customKeyController,
-                  decoration: const InputDecoration(
-                    labelText: 'custom',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.customLabel,
+                    border: const OutlineInputBorder(),
                   ),
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _addCustom(),
@@ -129,7 +131,7 @@ class _SocialLinksEditorState extends State<SocialLinksEditor> {
               FilledButton.icon(
                 onPressed: _addCustom,
                 icon: const Icon(Icons.add_outlined),
-                label: const Text('add'),
+                label: Text(l10n.add),
               ),
             ],
           ),

@@ -15,6 +15,7 @@ class FestivalEvent {
   final String title;
   @HiveField(3)
   final String? description;
+
   /// Tipo de evento, p. ej. ``screening``, ``gala`` o ``workshop``.
   @HiveField(4)
   final String? eventType;
@@ -32,12 +33,15 @@ class FestivalEvent {
   final bool isActive;
   @HiveField(11)
   final String? externalUrl;
+
   /// Notas internas visibles solo para el personal.
   @HiveField(12)
   final String? internalNotes;
+
   /// Código de color hexadecimal usado para mostrar el evento en los calendarios.
   @HiveField(13)
   final String? colorCode;
+
   /// Indica si el evento dispone de un mapa de asientos interactivo.
   @HiveField(14)
   final bool showSeatMap;
@@ -47,17 +51,20 @@ class FestivalEvent {
   final double? venueLatitude;
   @HiveField(17)
   final double? venueLongitude;
+
   /// Alcance de visibilidad del evento en la agenda compartida.
   ///
   /// Valores: ``public``, ``festival_members``, ``roles``, ``attendees_only``.
   @HiveField(18)
   final String visibilityScope;
+
   /// Ids de los roles del festival que pueden ver el evento
   /// (solo tiene efecto cuando [visibilityScope] es ``roles``).
   @HiveField(19)
   final List<int> visibleRoleIds;
 
   /// Cortometrajes proyectados (solo `eventType == screening`).
+  @HiveField(20)
   final List<int> screeningShortfilmIds;
 
   FestivalEvent({
@@ -92,8 +99,11 @@ class FestivalEvent {
       title: json['title'],
       description: json['description'],
       eventType: json['event_type'],
-      startDate: json['start_date'] != null ? DateTime.parse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
+      startDate: json['start_date'] != null
+          ? DateTime.parse(json['start_date'])
+          : null,
+      endDate:
+          json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
       location: json['location'],
       capacity: json['capacity'],
       isPublic: json['is_public'] ?? true,
@@ -117,32 +127,31 @@ class FestivalEvent {
 
   /// Serializa este [FestivalEvent] a un mapa JSON (claves snake_case).
   Map<String, dynamic> toJson() => {
-    'festival_id': festivalId,
-    'title': title,
-    'description': description,
-    'event_type': eventType,
-    'start_date': startDate?.toIso8601String(),
-    'end_date': endDate?.toIso8601String(),
-    'location': location,
-    'capacity': capacity,
-    'is_public': isPublic,
-    'is_active': isActive,
-    'external_url': externalUrl,
-    'internal_notes': internalNotes,
-    'color_code': colorCode,
-    'show_seat_map': showSeatMap,
-    'venue': venue,
-    'venue_latitude': venueLatitude,
-    'venue_longitude': venueLongitude,
-    'visibility_scope': visibilityScope,
-    'visible_role_ids': visibleRoleIds,
-    'screening_shortfilm_ids': screeningShortfilmIds,
-  };
+        'festival_id': festivalId,
+        'title': title,
+        'description': description,
+        'event_type': eventType,
+        'start_date': startDate?.toIso8601String(),
+        'end_date': endDate?.toIso8601String(),
+        'location': location,
+        'capacity': capacity,
+        'is_public': isPublic,
+        'is_active': isActive,
+        'external_url': externalUrl,
+        'internal_notes': internalNotes,
+        'color_code': colorCode,
+        'show_seat_map': showSeatMap,
+        'venue': venue,
+        'venue_latitude': venueLatitude,
+        'venue_longitude': venueLongitude,
+        'visibility_scope': visibilityScope,
+        'visible_role_ids': visibleRoleIds,
+        'screening_shortfilm_ids': screeningShortfilmIds,
+      };
 
   /// Indica si el evento solo es visible para una audiencia restringida.
   bool get isRestricted => visibilityScope != 'public';
 }
-
 
 /// Modelo de datos de un tipo de entrada disponible para un [FestivalEvent].
 ///
@@ -159,6 +168,7 @@ class EventTicketType {
   final double? price;
   @HiveField(4)
   final int? capacity;
+
   /// Número máximo de entradas de este tipo por usuario.
   @HiveField(5)
   final int? maxPerUser;
@@ -166,6 +176,7 @@ class EventTicketType {
   final String? description;
   @HiveField(7)
   final bool isActive;
+
   /// Código de color hexadecimal usado para mostrar el tipo de entrada en el mapa de asientos.
   @HiveField(8)
   final String? colorCode;
@@ -199,17 +210,16 @@ class EventTicketType {
 
   /// Serializa este [EventTicketType] a un mapa JSON (claves snake_case).
   Map<String, dynamic> toJson() => {
-    'event_id': eventId,
-    'name': name,
-    'price': price,
-    'capacity': capacity,
-    'max_per_user': maxPerUser,
-    'description': description,
-    'is_active': isActive,
-    'color_code': colorCode,
-  };
+        'event_id': eventId,
+        'name': name,
+        'price': price,
+        'capacity': capacity,
+        'max_per_user': maxPerUser,
+        'description': description,
+        'is_active': isActive,
+        'color_code': colorCode,
+      };
 }
-
 
 /// Modelo de datos de un asiento individual dentro del mapa de asientos de un evento.
 ///
@@ -228,15 +238,19 @@ class EventSeat {
   final String? rowLabel;
   @HiveField(5)
   final int? number;
+
   /// Disponibilidad del asiento, p. ej. ``available``, ``reserved`` u ``occupied``.
   @HiveField(6)
   final String status;
+
   /// Posición horizontal normalizada (0-1) en el mapa de asientos.
   @HiveField(7)
   final double? x;
+
   /// Posición vertical normalizada (0-1) en el mapa de asientos.
   @HiveField(8)
   final double? y;
+
   /// Indica si el asiento está adaptado para movilidad reducida.
   @HiveField(9)
   final bool isAccessible;
@@ -272,30 +286,40 @@ class EventSeat {
 
   /// Serializa este [EventSeat] a un mapa JSON (claves snake_case).
   Map<String, dynamic> toJson() => {
-    'event_id': eventId,
-    'ticket_type_id': ticketTypeId,
-    'section': section,
-    'row_label': rowLabel,
-    'number': number,
-    'status': status,
-    'x': x,
-    'y': y,
-    'is_accessible': isAccessible,
-  };
+        'event_id': eventId,
+        'ticket_type_id': ticketTypeId,
+        'section': section,
+        'row_label': rowLabel,
+        'number': number,
+        'status': status,
+        'x': x,
+        'y': y,
+        'is_accessible': isAccessible,
+      };
 }
 
 /// Modelo de datos de un asistente a un evento (usuario registrado o invitado).
 ///
 /// Mapea entre el JSON snake_case del backend y los campos camelCase de Dart.
+@HiveType(typeId: 28)
 class EventAttendee {
+  @HiveField(0)
   final int? id;
+  @HiveField(1)
   final int? userId;
+  @HiveField(2)
   final int? seatId;
+
   /// Estado de asistencia, p. ej. ``registered``, ``checked_in`` o ``cancelled``.
+  @HiveField(3)
   final String status;
+
   /// Indica si el asistente es un invitado externo en lugar de un usuario registrado.
+  @HiveField(4)
   final bool isGuest;
+  @HiveField(5)
   final String? guestName;
+  @HiveField(6)
   final DateTime? checkedInAt;
 
   EventAttendee({
@@ -317,7 +341,9 @@ class EventAttendee {
       status: json['status'] ?? 'registered',
       isGuest: json['is_guest'] ?? false,
       guestName: json['guest_name'],
-      checkedInAt: json['checked_in_at'] != null ? DateTime.parse(json['checked_in_at']) : null,
+      checkedInAt: json['checked_in_at'] != null
+          ? DateTime.parse(json['checked_in_at'])
+          : null,
     );
   }
 }
@@ -333,6 +359,7 @@ class EventReservation {
   final int eventId;
   @HiveField(2)
   final int? userId;
+
   /// Estado de la reserva, p. ej. ``pending``, ``confirmed`` o ``cancelled``.
   @HiveField(3)
   final String status;
@@ -372,20 +399,26 @@ class EventReservation {
       totalQuantity: json['total_quantity'] ?? 1,
       notes: json['notes'],
       createdBy: json['created_by'],
-      confirmedAt: json['confirmed_at'] != null ? DateTime.parse(json['confirmed_at']) : null,
-      cancelledAt: json['cancelled_at'] != null ? DateTime.parse(json['cancelled_at']) : null,
+      confirmedAt: json['confirmed_at'] != null
+          ? DateTime.parse(json['confirmed_at'])
+          : null,
+      cancelledAt: json['cancelled_at'] != null
+          ? DateTime.parse(json['cancelled_at'])
+          : null,
       attendees: json['attendees'] != null
-          ? (json['attendees'] as List).map((a) => EventAttendee.fromJson(a)).toList()
+          ? (json['attendees'] as List)
+              .map((a) => EventAttendee.fromJson(a))
+              .toList()
           : null,
     );
   }
 
   /// Serializa este [EventReservation] a un mapa JSON (claves snake_case).
   Map<String, dynamic> toJson() => {
-    'event_id': eventId,
-    'user_id': userId,
-    'status': status,
-    'total_quantity': totalQuantity,
-    'notes': notes,
-  };
+        'event_id': eventId,
+        'user_id': userId,
+        'status': status,
+        'total_quantity': totalQuantity,
+        'notes': notes,
+      };
 }

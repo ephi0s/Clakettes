@@ -20,6 +20,11 @@ router = APIRouter()
 user_block_service = UserBlockService()
 
 
+def require_owner_or_admin(db: Session, current_user: User, target: User) -> None:
+    if current_user.id != target.id and not can_edit_user(db, current_user, target):
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+
 @router.post("/users/{user_id}/blocks/", response_model=UserBlockResponse, status_code=201)
 async def block_user(
     user_id: int,
@@ -27,11 +32,9 @@ async def block_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
+    target = get_or_404(db, User, user_id, "User")
     get_or_404(db, User, body.blocked_id, "User")
-    target = db.get(User, user_id)
-    if current_user.id != user_id and not can_edit_user(db, current_user, target):
-        raise HTTPException(status_code=403, detail="Not allowed")
+    require_owner_or_admin(db, current_user, target)
     if body.blocked_id == user_id:
         raise HTTPException(status_code=400, detail="Cannot block yourself")
     return user_block_service.block(db, user_id, body.blocked_id, body.reason)
@@ -44,10 +47,8 @@ async def unblock_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
-    target = db.get(User, user_id)
-    if current_user.id != user_id and not can_edit_user(db, current_user, target):
-        raise HTTPException(status_code=403, detail="Not allowed")
+    target = get_or_404(db, User, user_id, "User")
+    require_owner_or_admin(db, current_user, target)
     ok = user_block_service.unblock(db, user_id, blocked_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Block not found")
@@ -62,10 +63,8 @@ async def list_blocked_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
-    target = db.get(User, user_id)
-    if current_user.id != user_id and not can_edit_user(db, current_user, target):
-        raise HTTPException(status_code=403, detail="Not allowed")
+    target = get_or_404(db, User, user_id, "User")
+    require_owner_or_admin(db, current_user, target)
     return user_block_service.list_blocked(db, user_id, page, size)
 
 
@@ -76,5 +75,6 @@ async def block_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
+    target = get_or_404(db, User, user_id, "User")
+    require_owner_or_admin(db, current_user, target)
     return {"blocked": user_block_service.is_blocked(db, user_id, blocked_id)}

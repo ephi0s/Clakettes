@@ -37,13 +37,14 @@ class FestivalEventAdapter extends TypeAdapter<FestivalEvent> {
       venueLongitude: fields[17] as double?,
       visibilityScope: fields[18] as String,
       visibleRoleIds: (fields[19] as List).cast<int>(),
+      screeningShortfilmIds: (fields[20] as List).cast<int>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, FestivalEvent obj) {
     writer
-      ..writeByte(20)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -83,7 +84,9 @@ class FestivalEventAdapter extends TypeAdapter<FestivalEvent> {
       ..writeByte(18)
       ..write(obj.visibilityScope)
       ..writeByte(19)
-      ..write(obj.visibleRoleIds);
+      ..write(obj.visibleRoleIds)
+      ..writeByte(20)
+      ..write(obj.screeningShortfilmIds);
   }
 
   @override
@@ -212,6 +215,58 @@ class EventSeatAdapter extends TypeAdapter<EventSeat> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is EventSeatAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class EventAttendeeAdapter extends TypeAdapter<EventAttendee> {
+  @override
+  final int typeId = 28;
+
+  @override
+  EventAttendee read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EventAttendee(
+      id: fields[0] as int?,
+      userId: fields[1] as int?,
+      seatId: fields[2] as int?,
+      status: fields[3] as String,
+      isGuest: fields[4] as bool,
+      guestName: fields[5] as String?,
+      checkedInAt: fields[6] as DateTime?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EventAttendee obj) {
+    writer
+      ..writeByte(7)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.userId)
+      ..writeByte(2)
+      ..write(obj.seatId)
+      ..writeByte(3)
+      ..write(obj.status)
+      ..writeByte(4)
+      ..write(obj.isGuest)
+      ..writeByte(5)
+      ..write(obj.guestName)
+      ..writeByte(6)
+      ..write(obj.checkedInAt);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EventAttendeeAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

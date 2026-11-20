@@ -1,6 +1,7 @@
 """ValidationRule model — defines required fields and validation per role/festival."""
 
 from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, JSON, Enum as SQLEnum, Table
+from sqlalchemy.orm import relationship
 from app.models.base import BaseModel, Base
 from app.enums import ValidationScope, FieldType
 
@@ -54,6 +55,7 @@ class ValidationRuleGroup(BaseModel):
     scope = Column(SQLEnum(ValidationScope, values_callable=lambda x: [e.value for e in x]), nullable=False)
     scope_id = Column(Integer, nullable=True, index=True)
     is_active = Column(Boolean, default=True)
+    rules = relationship("ValidationRule", secondary="validation_rule_group_rules")
 
     def __repr__(self):
         return f"<ValidationRuleGroup(name='{self.name}', scope={self.scope.value})>"

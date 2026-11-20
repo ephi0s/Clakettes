@@ -25,6 +25,7 @@ class UserSession {
   final bool isActive;
 
   /// Indica si esta sesión es la que usa actualmente la aplicación.
+  @HiveField(9)
   final bool isCurrent;
 
   UserSession({

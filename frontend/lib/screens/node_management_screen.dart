@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 import '../services/api_service.dart';
 import '../services/node_info_model.dart';
@@ -20,9 +21,11 @@ class NodeManagementScreen extends StatefulWidget {
 class _NodeManagementScreenState extends State<NodeManagementScreen> {
   final NodeService _nodes = NodeService();
   final ApiService _api = ApiService();
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   bool _loading = false;
   String? _status;
   final _nodeOk = <String, bool>{};
+  bool _allNodesDown = false;
   @override
   void initState() {
     super.initState();
@@ -32,13 +35,16 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
   Future<void> _refresh() async {
     setState(() => _loading = true);
     await _nodes.load();
+    if (!mounted) return;
     await _testAll();
+    if (!mounted) return;
     setState(() => _loading = false);
   }
 
   Future<void> _testAll() async {
     final ok = await _api.healthCheck();
-    _status = ok ? 'Al menos un nodo responde' : 'Ningún nodo responde';
+    _allNodesDown = !ok;
+    _status = ok ? l10n.nodeAnyOnline : l10n.nodeNoneOnline;
     for (final n in _nodes.nodes) {
       _nodeOk[n.domain] = await _api.testNode(n.effectiveUrl);
     }
@@ -52,29 +58,29 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Agregar nodo federado'),
+        title: Text(l10n.nodeAddFederated),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: domainCtrl,
-              decoration: const InputDecoration(labelText: 'Dominio (ej. festival.example.com)'),
+              decoration: InputDecoration(labelText: l10n.nodeDomainHint),
             ),
             TextField(
               controller: urlCtrl,
-              decoration: const InputDecoration(labelText: 'URL base (sin /api)'),
+              decoration: InputDecoration(labelText: l10n.nodeBaseUrlHint),
             ),
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nombre para mostrar (opcional)'),
+              decoration: InputDecoration(labelText: l10n.nodeDisplayNameOptional),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Guardar'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -105,13 +111,13 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Eliminar nodo'),
-        content: Text('¿Eliminar "${node.displayName ?? node.domain}"?'),
+        title: Text(l10n.nodeDelete),
+        content: Text(l10n.deleteEntityMessage(node.displayName ?? node.domain)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.no)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sí'),
+            child: Text(l10n.yes),
           ),
         ],
       ),
@@ -147,7 +153,7 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
                 size: 16,
               ),
               const SizedBox(width: 6),
-              Text('Activo: ${isActive ? 'sí' : 'no'}', style: const TextStyle(fontSize: 12)),
+              Text('${l10n.active}: ${isActive ? l10n.yes : l10n.no}', style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 12),
               Icon(
                 ok ? Icons.wifi : Icons.wifi_off,
@@ -155,7 +161,8 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
                 size: 16,
               ),
               const SizedBox(width: 6),
-              Text(ok ? 'en línea' : 'sin respuesta', style: TextStyle(fontSize: 12, color: ok ? Colors.green : Colors.red)),
+              Text(ok ? l10n.nodeOnline : l10n.nodeOffline,
+                  style: TextStyle(fontSize: 12, color: ok ? Colors.green : Colors.red)),
             ],
           ),
         ],
@@ -167,21 +174,22 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
             icon: Icon(isActive ? Icons.check : Icons.radio_button_unchecked,
                 color: isActive ? Colors.green : null),
             onPressed: () => _setActive(n),
-            tooltip: 'Marcar como activo',
+            tooltip: l10n.nodeMarkActive,
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
             onPressed: () async {
               _nodeOk[n.domain] = await _api.testNode(n.effectiveUrl);
               await _nodes.markSeen(n.domain);
+              if (!mounted) return;
               setState(() {});
             },
-            tooltip: 'Probar conectividad',
+            tooltip: l10n.nodeTestConnection,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),
             onPressed: () => _remove(n),
-            tooltip: 'Eliminar nodo',
+            tooltip: l10n.nodeDelete,
           ),
         ],
       ),
@@ -193,12 +201,12 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nodos federados'),
+        title: Text(l10n.nodeTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loading ? null : _refresh,
-            tooltip: 'Recargar',
+            tooltip: l10n.nodeReload,
           ),
         ],
       ),
@@ -209,11 +217,11 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
                 if (_status != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    color: _status!.contains('Ningún') ? Colors.red.withAlpha(26) : Colors.green.withAlpha(26),
+                    color: _allNodesDown ? Colors.red.withAlpha(26) : Colors.green.withAlpha(26),
                     child: Row(
                       children: [
-                        Icon(_status!.contains('Ningún') ? Icons.error : Icons.check_circle,
-                            color: _status!.contains('Ningún') ? Colors.red : Colors.green, size: 20),
+                        Icon(_allNodesDown ? Icons.error : Icons.check_circle,
+                            color: _allNodesDown ? Colors.red : Colors.green, size: 20),
                         const SizedBox(width: 8),
                         Expanded(child: Text(_status!)),
                       ],
@@ -228,12 +236,12 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
                               const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
                               const SizedBox(height: 16),
                               Text(
-                                'No hay nodos configurados',
+                                l10n.nodeEmptyTitle,
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Agrega al menos un nodo para poder usar la app con varios backends.',
+                                l10n.nodeEmptyHint,
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                               ),
@@ -249,7 +257,7 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loading ? null : _addNode,
-        tooltip: 'Agregar nodo',
+        tooltip: l10n.nodeAddShort,
         child: const Icon(Icons.add),
       ),
     );

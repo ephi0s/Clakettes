@@ -1,7 +1,5 @@
 """Router for registration forms, links, sections, and festival registrations."""
 
-import uuid
-
 from fastapi import APIRouter, Query, Depends, HTTPException
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
@@ -33,8 +31,6 @@ from app.services.registration_service import (
     RegistrationFormLinkService,
     FestivalRegistrationService,
 )
-from app.services.festival_service import FestivalService
-from app.services.user_service import UserService
 from app.services.export_service import export_registrations_csv, export_registrations_pdf
 from app.routers.permissions import is_admin, require_festival_admin
 from app.routers.dependencies import get_current_user_optional, get_or_404
@@ -48,8 +44,6 @@ form_service = RegistrationFormService()
 section_service = RegistrationFormSectionService()
 link_service = RegistrationFormLinkService()
 reg_service = FestivalRegistrationService()
-festival_service = FestivalService()
-user_service = UserService()
 
 
 @router.get("/festivals/{festival_id}/registration-forms/", response_model=RegistrationFormPage)
@@ -253,9 +247,7 @@ async def delete_registration_form_link(
 ):
     get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    link = link_service.get(db, link_id)
-    if not link or link.form_id != form_id:
-        raise HTTPException(status_code=404, detail="Link not found")
+    _get_link_or_404(db, form_id, link_id)
     link_service.delete(db, link_id)
     return {"message": "Link deleted"}
 
@@ -273,15 +265,8 @@ async def regenerate_registration_form_link(
 ):
     get_or_404(db, Festival, festival_id, "Festival")
     require_festival_admin(db, current_user, festival_id)
-    link = link_service.get(db, link_id)
-    if not link or link.form_id != form_id:
-        raise HTTPException(status_code=404, detail="Link not found")
-    link.token = uuid.uuid4().hex
-    link.use_count = 0
-    link.is_active = True
-    db.commit()
-    db.refresh(link)
-    return link
+    link = _get_link_or_404(db, form_id, link_id)
+    return link_service.regenerate(db, link)
 
 
 def _get_link_or_404(db, form_id: int, link_id: int):
@@ -349,12 +334,7 @@ async def regenerate_registration_form_link_by_id(
     link = get_or_404(db, RegistrationFormLink, link_id, "Link")
     form = get_or_404(db, RegistrationForm, link.form_id, "Form")
     require_festival_admin(db, current_user, form.festival_id)
-    link.token = uuid.uuid4().hex
-    link.use_count = 0
-    link.is_active = True
-    db.commit()
-    db.refresh(link)
-    return link
+    return link_service.regenerate(db, link)
 
 
 @router.get("/festivals/{festival_id}/registrations/", response_model=FestivalRegistrationPage)

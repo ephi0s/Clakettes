@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -80,18 +81,48 @@ class SyncQueueService {
 
   static const String _boxName = 'sync_queue';
   static const String _queueKey = 'operations';
+
   /// Número máximo de reintentos por operación.
   static const int maxAttempts = 3;
-  static const Set<String> allowedEntityTypes = {'festival', 'user', 'shortfilm', 'message'};
+  static const Set<String> allowedEntityTypes = {
+    'festival',
+    'user',
+    'shortfilm',
+    'message'
+  };
   static const Set<String> allowedOperations = {'create', 'update', 'delete'};
 
   late Box _box;
   final ApiService _api;
   bool _syncing = false;
+  Future<void> _lock = Future.value();
 
-  /// Inicializa la caja de la cola.
+  /// Inicializa la caja de la cola y recupera operaciones huérfanas de un cierre abrupt.
   Future<void> init() async {
     _box = await Hive.openBox(_boxName);
+    final queue = _loadQueue();
+    var recovered = false;
+    for (final op in queue) {
+      if (op.status == SyncStatus.syncing) {
+        op.status = SyncStatus.pending;
+        recovered = true;
+      }
+    }
+    if (recovered) await _saveQueue(queue);
+  }
+
+  /// Serializa las mutaciones de la cola para que `enqueue` y `syncAll` no se
+  /// sobrescriban al persistir.
+  Future<T> _exclusive<T>(Future<T> Function() action) async {
+    final previous = _lock;
+    final next = Completer<void>();
+    _lock = next.future;
+    await previous;
+    try {
+      return await action();
+    } finally {
+      next.complete();
+    }
   }
 
   static String _newId() {
@@ -107,8 +138,10 @@ class SyncQueueService {
   List<SyncOperation> _loadQueue() {
     final raw = _box.get(_queueKey);
     if (raw == null) return [];
-    final list = List<Map<String, dynamic>>.from(raw);
-    return list.map((j) => SyncOperation.fromJson(j)).toList();
+    final list = raw as List;
+    return list
+        .map((j) => SyncOperation.fromJson(Map<String, dynamic>.from(j as Map)))
+        .toList();
   }
 
   Future<void> _saveQueue(List<SyncOperation> queue) async {
@@ -121,27 +154,32 @@ class SyncQueueService {
     required String operation,
     int? entityId,
     required Map<String, dynamic> payload,
-  }) async {
-    if (!allowedEntityTypes.contains(entityType)) {
-      throw ArgumentError.value(entityType, 'entityType', 'Unsupported entity type');
-    }
-    if (!allowedOperations.contains(operation)) {
-      throw ArgumentError.value(operation, 'operation', 'Unsupported operation');
-    }
-    if ((operation == 'update' || operation == 'delete') && entityId == null) {
-      throw ArgumentError.value(entityId, 'entityId', 'entityId required for $operation');
-    }
-    final queue = _loadQueue();
-    queue.add(SyncOperation(
-      id: _newId(),
-      entityType: entityType,
-      operation: operation,
-      entityId: entityId,
-      payload: payload,
-      createdAt: DateTime.now(),
-    ));
-    await _saveQueue(queue);
-  }
+  }) =>
+      _exclusive(() async {
+        if (!allowedEntityTypes.contains(entityType)) {
+          throw ArgumentError.value(
+              entityType, 'entityType', 'Unsupported entity type');
+        }
+        if (!allowedOperations.contains(operation)) {
+          throw ArgumentError.value(
+              operation, 'operation', 'Unsupported operation');
+        }
+        if ((operation == 'update' || operation == 'delete') &&
+            entityId == null) {
+          throw ArgumentError.value(
+              entityId, 'entityId', 'entityId required for $operation');
+        }
+        final queue = _loadQueue();
+        queue.add(SyncOperation(
+          id: _newId(),
+          entityType: entityType,
+          operation: operation,
+          entityId: entityId,
+          payload: payload,
+          createdAt: DateTime.now(),
+        ));
+        await _saveQueue(queue);
+      });
 
   /// Indica si ya existe una operación equivalente en cola.
   bool contains({
@@ -155,14 +193,8 @@ class SyncQueueService {
       if (op.entityType != entityType) return false;
       if (op.operation != operation) return false;
       if (op.status == SyncStatus.syncing) return false;
-      if (entityId != null && op.entityId != entityId) return false;
-      if (payload != null) {
-        if (payload['content'] != null) {
-          if (op.payload['content'] != payload['content']) return false;
-        } else if (!_mapEquals(op.payload, payload)) {
-          return false;
-        }
-      }
+      if (op.entityId != entityId) return false;
+      if (payload != null && !_mapEquals(op.payload, payload)) return false;
       return true;
     });
   }
@@ -198,50 +230,53 @@ class SyncQueueService {
     }
     _syncing = true;
     try {
-      final queue = _loadQueue();
-      int synced = 0;
-      int failed = 0;
-      final List<String> errors = [];
+      return await _exclusive(() async {
+        final queue = _loadQueue();
+          int synced = 0;
+          int failed = 0;
+          final List<String> errors = [];
+          final syncedIds = <String>{};
 
-      for (final op in queue) {
-        if (op.status == SyncStatus.syncing) continue;
-        if (op.status == SyncStatus.failed && op.attempts >= maxAttempts) {
-          continue;
-        }
-        op.status = SyncStatus.syncing;
-        await _saveQueue(queue);
+          for (final op in queue) {
+            if (op.status == SyncStatus.syncing) continue;
+            if (op.status == SyncStatus.failed && op.attempts >= maxAttempts) {
+              continue;
+            }
+            op.status = SyncStatus.syncing;
+            await _saveQueue(queue);
 
-        try {
-          if (op.attempts > 0) {
-            final delayMs = 300 * (1 << (op.attempts - 1));
-            await Future.delayed(
-                Duration(milliseconds: delayMs > 5000 ? 5000 : delayMs));
+            try {
+              if (op.attempts > 0) {
+                final delayMs = 300 * (1 << (op.attempts - 1));
+                await Future.delayed(
+                    Duration(milliseconds: delayMs > 5000 ? 5000 : delayMs));
+              }
+              await _executeOperation(op);
+              synced++;
+              syncedIds.add(op.id);
+            } catch (e) {
+              op.attempts++;
+              op.errorMessage = e.toString();
+              op.status = op.attempts >= maxAttempts
+                  ? SyncStatus.failed
+                  : SyncStatus.pending;
+              failed++;
+              errors.add('${op.entityType}/${op.operation}: ${e.toString()}');
+            }
           }
-          await _executeOperation(op);
-          synced++;
-        } catch (e) {
-          op.attempts++;
-          op.errorMessage = e.toString();
-          op.status = op.attempts >= maxAttempts
-              ? SyncStatus.failed
-              : SyncStatus.pending;
-          failed++;
-          errors.add('${op.entityType}/${op.operation}: ${e.toString()}');
-        }
-      }
 
-      // Remove successfully synced operations.
-      queue.removeWhere(
-          (op) => op.status == SyncStatus.syncing && op.errorMessage == null);
-      // Keep failed operations for inspection/retry.
+          // Remove only operations actually executed in this pass.
+          queue.removeWhere((op) => syncedIds.contains(op.id));
+          // Keep failed operations for inspection/retry.
 
-      await _saveQueue(queue);
+          await _saveQueue(queue);
 
-      return {
-        'synced': synced,
-        'failed': failed,
-        'errors': errors,
-      };
+        return {
+          'synced': synced,
+          'failed': failed,
+          'errors': errors,
+        };
+      });
     } finally {
       _syncing = false;
     }
@@ -257,11 +292,15 @@ class SyncQueueService {
         await api.create(path, op.payload);
         break;
       case 'update':
-        if (op.entityId == null) throw Exception('entityId required for update');
+        if (op.entityId == null) {
+          throw Exception('entityId required for update');
+        }
         await api.request('PUT', path, body: json.encode(op.payload));
         break;
       case 'delete':
-        if (op.entityId == null) throw Exception('entityId required for delete');
+        if (op.entityId == null) {
+          throw Exception('entityId required for delete');
+        }
         await api.request('DELETE', path);
         break;
       default:

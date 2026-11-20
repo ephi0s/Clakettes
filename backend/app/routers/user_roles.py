@@ -17,12 +17,11 @@ from app.schemas.user_role import (
     UserParticipantTagsPage,
 )
 from app.services.audit_service import AuditService
-from app.services.role_service import RoleService, UserRoleService
-from app.services.user_service import UserService
-from app.services.festival_service import FestivalService
-from app.services.participant_tag_service import ParticipantTagService, UserParticipantTagService
+from app.services.role_service import UserRoleService
+from app.services.participant_tag_service import UserParticipantTagService
 from app.routers.permissions import is_admin, require_role_scope_admin, can_manage_festival
 from app.routers.dependencies import get_or_404
+from app.http_utils import client_ip
 from app.models.user import User
 from app.models.role import Role
 from app.models.festival import Festival
@@ -30,12 +29,8 @@ from app.models.participant_tag import ParticipantTag
 
 router = APIRouter()
 
-user_service = UserService()
 audit_service = AuditService()
-role_service = RoleService()
 user_role_service = UserRoleService()
-festival_service = FestivalService()
-participant_tag_service = ParticipantTagService()
 user_participant_tag_service = UserParticipantTagService()
 
 
@@ -89,7 +84,7 @@ async def assign_user_role(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail={"role_id": ur.role_id, "festival_id": ur.festival_id},
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return created
 
@@ -115,7 +110,7 @@ async def update_user_role(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail={"user_role_id": ur_id},
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return updated
 
@@ -140,7 +135,7 @@ async def remove_user_role(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail={"user_role_id": ur_id},
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return {"message": "Role removed from user"}
 
@@ -203,7 +198,7 @@ async def verify_user_participant_tag(
             "status": body.status.value,
             "method": body.method.value if body.method else None,
         },
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return updated
 
@@ -245,7 +240,7 @@ async def request_participant_tag_verification(
             "festival_id": existing.festival_id,
             "method": method,
         },
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return updated
 
@@ -275,7 +270,7 @@ async def assign_user_participant_tag(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail={"tag_id": upt.tag_id, "festival_id": upt.festival_id},
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return created
 
@@ -300,6 +295,6 @@ async def remove_user_participant_tag(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail={"tag_id": existing.tag_id},
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return {"message": "Tag removed from user"}

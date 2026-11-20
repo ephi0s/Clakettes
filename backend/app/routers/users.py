@@ -9,15 +9,12 @@ from app.services.user_service import UserService
 from app.services.notification_service import NotificationService
 from app.routers.permissions import can_edit_user, can_delete_user, is_admin
 from app.models.user import User
+from app.http_utils import client_ip
 
 router = APIRouter()
 service = UserService()
 audit_service = AuditService()
 notification_service = NotificationService()
-
-
-def _client_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
 
 
 @router.get("/", response_model=UsersPage | UsersPublicPage)
@@ -55,7 +52,7 @@ async def export_my_data(
     request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     """RGPD art. 20 — descarga todos los datos personales en JSON."""
-    audit_service.log(db, "user.export", actor_user_id=current_user.id, ip_address=_client_ip(request))
+    audit_service.log(db, "user.export", actor_user_id=current_user.id, ip_address=client_ip(request))
     return service.export_personal_data(db, current_user)
 
 
@@ -74,7 +71,7 @@ async def delete_my_account(
         actor_user_id=current_user.id,
         target_user_id=current_user.id,
         detail=summary,
-        ip_address=_client_ip(request),
+        ip_address=client_ip(request),
     )
     return {"message": "Account data erased", "summary": summary}
 
@@ -151,6 +148,6 @@ async def delete_user(
         actor_user_id=current_user.id,
         target_user_id=user_id,
         detail=summary,
-        ip_address=_client_ip(request),
+        ip_address=client_ip(request),
     )
     return {"message": "User deleted", "summary": summary}

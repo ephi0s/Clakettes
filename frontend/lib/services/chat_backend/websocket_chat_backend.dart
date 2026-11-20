@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../models/message_model.dart';
 import '../api_service.dart';
-import '../backend_config.dart';
 import 'abstract_chat_backend.dart';
 
 /// Backend de chat basado en WebSocket para entrega de mensajes en tiempo real.
@@ -12,7 +11,7 @@ import 'abstract_chat_backend.dart';
 /// Conecta a `ws(s)://<backend>/api/chat/ws`, enviando el token de autenticación
 /// como subprotocolo WebSocket. Se reconecta automáticamente con backoff
 /// exponencial (hasta [_maxReconnectAttempts]) salvo que se cierre de forma
-/// intencionada. Depende de [ApiService] y [BackendConfig].
+/// intencionada. La URL se resuelve desde [ApiService], igual que el REST.
 class WebSocketChatBackend extends AbstractChatBackend {
   final ApiService _api;
   final StreamController<Message> _controller = StreamController<Message>.broadcast();
@@ -52,7 +51,7 @@ class WebSocketChatBackend extends AbstractChatBackend {
     final token = _token;
     if (token == null) return;
 
-    final baseUrl = await BackendConfig.getUrl();
+    final baseUrl = _api.rootUrl;
     final wsBase = baseUrl
         .replaceFirst('https://', 'wss://')
         .replaceFirst('http://', 'ws://');

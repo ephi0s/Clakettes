@@ -16,6 +16,7 @@ from app.dav import auth as dav_auth
 from app.models.user import User
 from app.routers.dependencies import get_current_user_optional
 from app.routers.permissions import require_admin
+from app.http_utils import client_ip
 from app.schemas.calendar import (
     AgendaResponse,
     CalendarSettingsPublic,
@@ -139,7 +140,7 @@ async def create_dav_token(
         db,
         "dav.token.issue",
         actor_user_id=current_user.id,
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return DavTokenResponse(
         token=raw, expires_at=current_user.dav_token_expires_at, collections=_dav_collections(db, current_user)
@@ -171,6 +172,6 @@ async def revoke_dav_token(
         db,
         "dav.token.revoke",
         actor_user_id=current_user.id,
-        ip_address=request.client.host if request.client else "unknown",
+        ip_address=client_ip(request),
     )
     return DavTokenStatusResponse(has_token=False, collections=_dav_collections(db, current_user))

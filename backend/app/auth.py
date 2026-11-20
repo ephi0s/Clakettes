@@ -27,6 +27,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.models.user_session import UserSession
+from app.services.auth_session_service import touch_session
 
 # OAuth2 scheme for Bearer token extraction from Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
@@ -38,12 +39,34 @@ REFRESH_TOKEN_EXPIRE_DAYS = 30
 JWT_ALGORITHM = "HS256"
 
 
-def _hash_token(token: str) -> str:
+def hash_token(token: str) -> str:
     """SHA-256 hash of a token for secure storage.
 
     Never store raw tokens in database. Hash with SHA-256 before saving.
     """
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+_hash_token = hash_token
+
+
+def is_expired(expires_at: datetime | None) -> bool:
+    """Return True when *expires_at* is in the past (naive values are treated as UTC)."""
+    if expires_at is None:
+        return False
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    return expires_at < datetime.now(timezone.utc)
+
+
+def get_user_with_roles(db: Session, user_id: int) -> User | None:
+    """Load a user with roles eager-loaded for permission checks."""
+    return (
+        db.query(User)
+        .options(selectinload(User.user_roles).selectinload(UserRole.role))
+        .filter(User.id == user_id)
+        .first()
+    )
 
 
 def _generate_token() -> str:
@@ -186,12 +209,8 @@ def validate_access_token(db: Session, token: str) -> tuple[int, UserSession] | 
     )
     if not session:
         return None
-    if session.expires_at is not None:
-        expires = session.expires_at
-        if expires.tzinfo is None:
-            expires = expires.replace(tzinfo=timezone.utc)
-        if expires < datetime.now(timezone.utc):
-            return None
+    if is_expired(session.expires_at):
+        return None
     return user_id, session
 
 
@@ -220,22 +239,9 @@ async def get_current_user(
         raise credentials_exception
     user_id, session = result
 
-    # Touch last_used_at (lazy, not every request — only if >5 min old)
-    now = datetime.now(timezone.utc)
-    last_used = session.last_used_at
-    if last_used is not None and last_used.tzinfo is None:
-        last_used = last_used.replace(tzinfo=timezone.utc)
-    if last_used is None or now - last_used >= timedelta(minutes=5):
-        session.last_used_at = now
-        db.commit()
+    touch_session(db, session)
 
-    # Eager load user_roles with roles for permission checks downstream
-    user = (
-        db.query(User)
-        .options(selectinload(User.user_roles).selectinload(UserRole.role))
-        .filter(User.id == user_id)
-        .first()
-    )
+    user = get_user_with_roles(db, user_id)
     if user is None:
         raise credentials_exception
     return user

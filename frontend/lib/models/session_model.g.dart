@@ -26,13 +26,14 @@ class UserSessionAdapter extends TypeAdapter<UserSession> {
       createdAt: fields[6] as DateTime,
       expiresAt: fields[7] as DateTime,
       isActive: fields[8] as bool,
+      isCurrent: fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserSession obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class UserSessionAdapter extends TypeAdapter<UserSession> {
       ..writeByte(7)
       ..write(obj.expiresAt)
       ..writeByte(8)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(9)
+      ..write(obj.isCurrent);
   }
 
   @override

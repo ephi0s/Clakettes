@@ -149,7 +149,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SemanticHeader(text: 'Premio', style: Theme.of(ctx).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                    SemanticHeader(text: l10n.awardPrize, style: Theme.of(ctx).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
                     Semantics(
                       label: l10n.awardName,
@@ -166,11 +166,11 @@ class _AwardsScreenState extends State<AwardsScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: SemanticTextField(controller: yearCtl, label: 'Año', semanticLabel: 'Año', helperText: 'Ej. 2025', keyboardType: TextInputType.number, textInputAction: TextInputAction.next),
+                          child: SemanticTextField(controller: yearCtl, label: l10n.awardYear, semanticLabel: l10n.awardYear, helperText: l10n.awardYearExample, keyboardType: TextInputType.number, textInputAction: TextInputAction.next),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: SemanticTextField(controller: posCtl, label: 'Posición', semanticLabel: 'Posición', helperText: l10n.optional, keyboardType: TextInputType.number, textInputAction: TextInputAction.next),
+                          child: SemanticTextField(controller: posCtl, label: l10n.awardPosition, semanticLabel: l10n.awardPosition, helperText: l10n.optional, keyboardType: TextInputType.number, textInputAction: TextInputAction.next),
                         ),
                       ],
                     ),
@@ -178,11 +178,11 @@ class _AwardsScreenState extends State<AwardsScreen> {
                     SemanticHeader(text: 'Ganador', style: Theme.of(ctx).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                     SwitchListTile(
                       title: Text(isWinner ? l10n.winner : l10n.nominee),
-                      subtitle: const Text('Ganador'),
+                      subtitle: Text(l10n.winner),
                       value: isWinner,
                       onChanged: (v) => setDialog(() => isWinner = v),
                     ),
-                    SemanticTextField(controller: prizeCtl, label: 'Premio', semanticLabel: 'Premio', helperText: 'Ej. 1.000 €', textInputAction: TextInputAction.next),
+                    SemanticTextField(controller: prizeCtl, label: l10n.awardPrize, semanticLabel: l10n.awardPrize, helperText: l10n.awardPrizeExample, textInputAction: TextInputAction.next),
                     const SizedBox(height: 8),
                     SemanticTextField(controller: descCtl, label: l10n.description, semanticLabel: l10n.description, helperText: l10n.optional, maxLines: 3),
                     const SizedBox(height: 8),
@@ -191,27 +191,27 @@ class _AwardsScreenState extends State<AwardsScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: SemanticTextField(controller: shortCtl, label: 'Cortometraje ID', semanticLabel: 'Cortometraje ID', keyboardType: TextInputType.number),
+                          child: SemanticTextField(controller: shortCtl, label: l10n.awardShortFilmId, semanticLabel: l10n.awardShortFilmId, keyboardType: TextInputType.number),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: SemanticTextField(controller: userCtl, label: 'Usuario ID', semanticLabel: 'Usuario ID', keyboardType: TextInputType.number),
+                          child: SemanticTextField(controller: userCtl, label: l10n.awardUserId, semanticLabel: l10n.awardUserId, keyboardType: TextInputType.number),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: SemanticTextField(controller: eventCtl, label: 'Evento ID', semanticLabel: 'Evento ID', keyboardType: TextInputType.number),
+                          child: SemanticTextField(controller: eventCtl, label: l10n.awardEventId, semanticLabel: l10n.awardEventId, keyboardType: TextInputType.number),
                         ),
                       ],
                     ),
                     SwitchListTile(
                       title: Text(isPublic ? l10n.public : l10n.hidden),
-                      subtitle: const Text('Visible'),
+                      subtitle: Text(l10n.isVisible),
                       value: isPublic,
                       onChanged: (v) => setDialog(() => isPublic = v),
                     ),
                     SwitchListTile(
                       title: Text(isVerified ? l10n.verified : l10n.unverified),
-                      subtitle: const Text('Verificado'),
+                      subtitle: Text(l10n.verified),
                       value: isVerified,
                       onChanged: (v) => setDialog(() => isVerified = v),
                     ),
@@ -385,32 +385,32 @@ class _AwardsScreenState extends State<AwardsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: [
                                     Semantics(
-                                      label: 'Total ${_awards.length}',
+                                      label: l10n.translate('awardTotal', args: {'count': _awards.length}),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text('${_awards.length}', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                                          const Text('Premios'),
+                                          Text(l10n.awards),
                                         ],
                                       ),
                                     ),
                                     Semantics(
-                                      label: 'Ganadores $winners',
+                                      label: l10n.translate('awardWinnersCount', args: {'count': winners}),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text('$winners', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
-                                          const Text('Ganadores'),
+                                          Text(l10n.awardWinners),
                                         ],
                                       ),
                                     ),
                                     Semantics(
-                                      label: 'Años $yearsCount',
+                                      label: l10n.translate('awardYearsCount', args: {'count': yearsCount}),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text('$yearsCount', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                                          const Text('Años'),
+                                          Text(l10n.awardYear),
                                         ],
                                       ),
                                     ),
@@ -431,7 +431,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 FilterChip(
-                                  label: const Text('Todos'),
+                                  label: Text(l10n.all),
                                   selected: !_showOnlyWinners,
                                   onSelected: (v) => setState(() => _showOnlyWinners = false),
                                 ),
@@ -443,9 +443,9 @@ class _AwardsScreenState extends State<AwardsScreen> {
                                 ),
                                 DropdownButton<int?>(
                                   value: _selectedYear,
-                                  hint: const Text('Año'),
+                                  hint: Text(l10n.awardYear),
                                   items: [
-                                    const DropdownMenuItem<int?>(value: null, child: Text('Todos')),
+                                    DropdownMenuItem<int?>(value: null, child: Text(l10n.all)),
                                     for (final y in _years) DropdownMenuItem<int?>(value: y, child: Text('$y')),
                                   ],
                                   onChanged: (v) => setState(() => _selectedYear = v),
@@ -472,13 +472,13 @@ class _AwardsScreenState extends State<AwardsScreen> {
                             ),
                             const SizedBox(height: 8),
                             if (_filtered.isEmpty)
-                              const EmptyStateWidget(icon: Icons.search_off_rounded, title: 'Sin resultados', subtitle: 'Prueba con otra búsqueda o filtro')
+                              EmptyStateWidget(icon: Icons.search_off_rounded, title: l10n.awardNoResults, subtitle: l10n.tryDifferentSearch)
                             else
                               for (final entry in grouped.entries) ...[
                                 Padding(
                                   padding: const EdgeInsets.only(top: 12, bottom: 4, left: 4),
                                   child: SemanticHeader(
-                                    text: entry.key == null ? 'Sin año' : '${entry.key}',
+                                    text: entry.key == null ? l10n.awardNoYear : '${entry.key}',
                                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                                   ),
                                 ),
@@ -500,7 +500,7 @@ class _AwardsScreenState extends State<AwardsScreen> {
                                           Text(
                                             [
                                               if (a.awardCategory != null && a.awardCategory!.isNotEmpty) a.awardCategory!,
-                                              if (a.position != null) 'Posición ${a.position}',
+                                              if (a.position != null) l10n.translate('awardPositionCount', args: {'count': a.position}),
                                               if (a.prizeAmount != null && a.prizeAmount!.isNotEmpty) a.prizeAmount!,
                                             ].join(' • '),
                                             style: theme.textTheme.bodySmall,

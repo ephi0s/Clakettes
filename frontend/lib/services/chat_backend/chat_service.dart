@@ -19,7 +19,7 @@ class ChatService {
   ChatService({AbstractChatBackend? backend, ApiService? api, AuthService? auth})
       : _api = api ?? ApiService(),
         _auth = auth ?? AuthService(),
-        _backend = backend ?? WebSocketChatBackend(api: ApiService());
+        _backend = backend ?? WebSocketChatBackend(api: api);
 
   /// Expone el servicio de API crudo para subidas.
   ApiService get api => _api;

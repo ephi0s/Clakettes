@@ -229,7 +229,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Los roles de festival se asignan después desde el perfil',
+                        l10n.createUserRolesHint,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),

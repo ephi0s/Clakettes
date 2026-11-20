@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Any, Optional
+from typing import Any
 from datetime import datetime
 from .common import PageBase
 from app.enums import FormType, FormFieldType, FormAccessLevel, SubmissionStatus
@@ -25,7 +25,7 @@ class FormDefinitionBase(BaseModel):
 
 
 class FormDefinitionCreate(FormDefinitionBase):
-    pages: list[Optional["FormPageCreate"]] = None
+    pages: list["FormPageCreate"] = []
 
 
 class FormDefinitionUpdate(BaseModel):
@@ -88,7 +88,7 @@ class FormPageCreate(BaseModel):
     description: str | None = None
     sort_order: int = 0
     is_repeatable: bool = False
-    fields: list[Optional["FormFieldCreate"]] = None
+    fields: list["FormFieldCreate"] = []
 
 
 class FormPageUpdate(BaseModel):
@@ -138,7 +138,7 @@ class FormFieldBase(BaseModel):
 
 
 class FormFieldCreate(FormFieldBase):
-    options: list[Optional["FormFieldOptionCreate"]] = None
+    options: list["FormFieldOptionCreate"] = []
 
 
 class FormFieldUpdate(BaseModel):

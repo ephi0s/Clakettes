@@ -10,7 +10,14 @@ Required for production:
 - APP_ENV: Set to "production"
 """
 
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def is_testing() -> bool:
+    """Return True when the process runs the test suite."""
+    return os.environ.get("TESTING", "").strip().lower() in ("1", "true", "yes", "on")
 
 
 class Settings(BaseSettings):

@@ -6,13 +6,11 @@ from app.models.shortfilm import ShortFilm
 from app.routers.dependencies import get_or_404
 from app.schemas.shortfilm_location import ShortFilmLocationCreate, ShortFilmLocationUpdate, ShortFilmLocationResponse
 from app.services.shortfilm_location_service import ShortFilmLocationService
-from app.services.shortfilm_service import ShortFilmService
 from app.routers.permissions import can_edit_shortfilm
 from app.models.user import User
 
 router = APIRouter()
 service = ShortFilmLocationService()
-shortfilm_service = ShortFilmService()
 
 
 @router.get("/", response_model=list[ShortFilmLocationResponse])

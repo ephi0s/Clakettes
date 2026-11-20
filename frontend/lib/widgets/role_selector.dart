@@ -87,7 +87,7 @@ class _RolePickerSheetState extends State<RolePickerSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Semantics(
-      label: 'Roles',
+      label: l10n?.rolesTitle ?? 'Roles',
       child: SafeArea(
         child: Column(
           children: [
@@ -248,7 +248,7 @@ class _UserRolesCardState extends State<UserRolesCard> {
     final l10n = AppLocalizations.of(context);
     return Semantics(
       container: true,
-      label: 'Roles',
+      label: l10n?.rolesTitle ?? 'Roles',
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -257,9 +257,9 @@ class _UserRolesCardState extends State<UserRolesCard> {
             children: [
               Row(
                 children: [
-                  const Expanded(child: Text('Roles')),
+                  Expanded(child: Text(l10n?.rolesTitle ?? 'Roles')),
                   IconButton(
-                    tooltip: 'Add',
+                    tooltip: l10n?.add ?? 'Add',
                     icon: const Icon(Icons.add_outlined),
                     onPressed: _add,
                   ),
@@ -278,7 +278,7 @@ class _UserRolesCardState extends State<UserRolesCard> {
                       children: [
                         if (_isPrimary(ur)) const Chip(label: Text('★')),
                         IconButton(
-                          tooltip: 'Delete',
+                          tooltip: l10n?.delete ?? 'Delete',
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () => _remove(ur),
                         ),

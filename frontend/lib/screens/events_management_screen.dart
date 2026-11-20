@@ -194,8 +194,10 @@ class _EventsManagementScreenState extends State<EventsManagementScreen> {
                                 title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w600)),
                                 subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                                   if (e.location != null) Text(e.location!, style: Theme.of(context).textTheme.bodySmall),
-                                  if (e.venue != null) Text('Sede: ${e.venue!}', style: Theme.of(context).textTheme.bodySmall),
-                                  if (e.eventType == 'screening') Text('Proyección${e.screeningShortfilmIds.isNotEmpty ? ' · ${e.screeningShortfilmIds.length} cortos' : ''}', style: Theme.of(context).textTheme.bodySmall),
+                                  if (e.venue != null) Text(l10n.translate('eventsVenue', args: {'venue': e.venue!}), style: Theme.of(context).textTheme.bodySmall),
+                                  if (e.eventType == 'screening') Text(e.screeningShortfilmIds.isNotEmpty
+                                      ? l10n.translate('eventsScreeningCount', args: {'count': e.screeningShortfilmIds.length})
+                                      : l10n.screeningLabel, style: Theme.of(context).textTheme.bodySmall),
                                   if (e.startDate != null) Text('${e.startDate!.toLocal()}'.substring(0, 16), style: Theme.of(context).textTheme.bodySmall),
 Row(children: [
                                      StatusIndicator(isActive: e.isActive, activeLabel: l10n.open, inactiveLabel: l10n.closed),

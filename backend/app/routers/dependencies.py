@@ -1,16 +1,15 @@
 """Shared router helpers and dependencies."""
 
-from datetime import datetime, timedelta, timezone
 from typing import Type
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.auth import validate_access_token
+from app.auth import get_user_with_roles, validate_access_token
 from app.database import get_db
 from app.models.user import User
-from app.services.user_service import UserService
+from app.services.auth_session_service import touch_session
 
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/users/login", auto_error=False)
 
@@ -38,12 +37,5 @@ async def get_current_user_optional(
         return None
     user_id, session = result
 
-    now = datetime.now(timezone.utc)
-    last_used = session.last_used_at
-    if last_used is not None and last_used.tzinfo is None:
-        last_used = last_used.replace(tzinfo=timezone.utc)
-    if last_used is None or now - last_used >= timedelta(minutes=5):
-        session.last_used_at = now
-        db.commit()
-
-    return UserService().get(db, user_id)
+    touch_session(db, session)
+    return get_user_with_roles(db, user_id)

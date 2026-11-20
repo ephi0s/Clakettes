@@ -1,7 +1,5 @@
 """Authentication router — handles user login and JWT issuance."""
 
-import os
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -11,6 +9,8 @@ from app.services.user_service import UserService
 from app.auth import create_session
 
 from app.rate_limiter import RateLimiter
+from app.config import is_testing
+from app.http_utils import client_ip
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ _login_limiter = RateLimiter()
 
 
 def _check_rate_limit(ip: str):
-    if os.environ.get("TESTING", "").lower() in ("true", "1"):
+    if is_testing():
         return
     if not _login_limiter.check(f"login:{ip}", 5, 300):
         raise HTTPException(
@@ -30,7 +30,7 @@ def _check_rate_limit(ip: str):
 @router.post("/login", response_model=LoginResponse)
 async def login(user_login: UserLogin, request: Request, db: Session = Depends(get_db)):
     """Authenticate user by username/password and return JWT with refresh token."""
-    ip = request.client.host if request.client else "unknown"
+    ip = client_ip(request)
     _check_rate_limit(ip)
     service = UserService()
     user = service.authenticate(db, user_login.username, user_login.password)

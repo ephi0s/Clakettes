@@ -13,14 +13,19 @@ from app.schemas.user_alias import (
     UserAliasesPage,
 )
 from app.services.user_alias_service import UserAliasService
-from app.services.user_service import UserService
 from app.models.user import User
 from app.routers.dependencies import get_or_404
+from app.routers.permissions import is_admin
 
 router = APIRouter()
 
-user_service = UserService()
 user_alias_service = UserAliasService()
+
+
+def require_self_or_admin(db: Session, current_user: User, user_id: int) -> None:
+    """Raise 403 unless *current_user* owns the resource or is an admin."""
+    if user_id != current_user.id and not is_admin(current_user, db):
+        raise HTTPException(status_code=403, detail="Not allowed")
 
 
 @router.get("/users/{user_id}/aliases/", response_model=UserAliasesPage)
@@ -42,7 +47,8 @@ async def create_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
+    target = get_or_404(db, User, user_id, "User")
+    require_self_or_admin(db, current_user, target.id)
     data = alias.model_dump()
     data["user_id"] = user_id
     if not data.get("profile_token"):
@@ -59,7 +65,8 @@ async def update_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
+    target = get_or_404(db, User, user_id, "User")
+    require_self_or_admin(db, current_user, target.id)
     existing = user_alias_service.get(db, alias_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="Alias not found")
@@ -74,7 +81,8 @@ async def delete_user_alias(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    get_or_404(db, User, user_id, "User")
+    target = get_or_404(db, User, user_id, "User")
+    require_self_or_admin(db, current_user, target.id)
     existing = user_alias_service.get(db, alias_id)
     if not existing or existing.user_id != user_id:
         raise HTTPException(status_code=404, detail="Alias not found")

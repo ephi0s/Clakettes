@@ -187,15 +187,33 @@ def _is_user_in_organizer_festivals(
 # ---------------------------------------------------------------------------
 
 
-def is_admin(user: User) -> bool:
-    """Return True if *user* is an admin (checks legacy role + granular UserRole).
+def _role_status_value(status) -> str:
+    """Return the stored value of a role status, whether it is an enum or a string."""
+    return getattr(status, "value", status)
 
-    Uses the already-loaded ``user.user_roles`` relationship (no extra DB query).
+
+def is_admin(user: User, db: Session | None = None) -> bool:
+    """Return True if *user* is an admin (granular UserRole + legacy fallback).
+
+    With *db*, the granular check is done in the database, so it also works when
+    ``user.user_roles`` was not eager-loaded. Without *db*, the already-loaded
+    relationship is used (no extra query).
     """
-    if user.role == "admin":
+    if _has_legacy_role(user, "admin"):
         return True
+    if db is not None:
+        return _has_active_role(db, user.id, "admin")
     for ur in user.user_roles:
-        if ur.role and ur.role.name == "admin" and ur.status == UserRoleStatus.APPROVED.value:
+        role = getattr(ur, "role", None)
+        if (
+            role
+            and role.name == "admin"
+            and _role_status_value(ur.status)
+            in (
+                UserRoleStatus.ACTIVE.value,
+                UserRoleStatus.APPROVED.value,
+            )
+        ):
             return True
     return False
 
@@ -257,9 +275,9 @@ def can_delete_shortfilm(db: Session, deleter: User, shortfilm: ShortFilm) -> bo
 # ---------------------------------------------------------------------------
 
 
-def require_admin(user: User) -> None:
+def require_admin(user: User, db: Session | None = None) -> None:
     """Raise 403 unless *user* is a global admin."""
-    if not is_admin(user):
+    if not is_admin(user, db):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
 

@@ -17,7 +17,6 @@ from app.schemas.role_transition import (
     RoleTransitionPage,
 )
 from app.services.group_service import RoleDelegationService, RoleTransitionService
-from app.services.user_service import UserService
 from app.services.role_service import RoleService
 from app.models.role_delegation import RoleDelegation
 from app.models.role import Role
@@ -29,7 +28,6 @@ router = APIRouter()
 
 delegation_service = RoleDelegationService()
 transition_service = RoleTransitionService()
-user_service = UserService()
 role_service = RoleService()
 
 

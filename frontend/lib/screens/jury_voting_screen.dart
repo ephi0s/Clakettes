@@ -56,6 +56,7 @@ class _JuryVotingScreenState extends State<JuryVotingScreen> {
     _loadCurrentUser();
     if (widget.festivalId != null) {
       _selectedFestivalId = widget.festivalId;
+      _loadFestival(widget.festivalId!);
     } else {
       _loadFestivals();
     }
@@ -74,6 +75,26 @@ class _JuryVotingScreenState extends State<JuryVotingScreen> {
   bool get _canSeeResults {
     final role = _currentUser?.role?.toLowerCase();
     return role == 'organizer' || role == 'admin';
+  }
+
+  /// Carga el festival fijo recibido por parámetro.
+  Future<void> _loadFestival(int id) async {
+    try {
+      final festival = await _apiService.getFestival(id);
+      if (!mounted) return;
+      setState(() {
+        _festivals = [festival];
+        _selectedFestivalId = festival.id ?? id;
+      });
+      _loadShortFilms(_selectedFestivalId!);
+    } catch (e) {
+      debugPrint('Error cargando festival: $e');
+      if (!mounted) return;
+      setState(() {
+        _hasError = true;
+        _errorMessage = AppLocalizations.of(context)!.juryFestivalLoadFailed;
+      });
+    }
   }
 
   /// Carga la lista de festivales activos (para el selector cuando no hay festival fijo).
@@ -117,7 +138,7 @@ class _JuryVotingScreenState extends State<JuryVotingScreen> {
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = 'No se pudieron cargar los cortometrajes.';
+        _errorMessage = AppLocalizations.of(context)!.juryShortFilmsLoadFailed;
       });
     }
   }
@@ -229,7 +250,10 @@ class _JuryVotingScreenState extends State<JuryVotingScreen> {
       return _festivalSelector(colorScheme);
     }
 
-    final festival = _festivals.where((f) => f.id == _selectedFestivalId).first;
+    final festival = _festivals.firstWhere(
+      (f) => f.id == _selectedFestivalId,
+      orElse: () => Festival(id: _selectedFestivalId, name: '#$_selectedFestivalId'),
+    );
     final title = '${l10n.votingFor} ${festival.name}';
 
     return Scaffold(

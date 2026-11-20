@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
 from app.services.location_relation_service import LocationRelationService
-from app.services.location_service import LocationService
 from app.models.location import Location
 from app.models.location_relation import LocationRelation
 from app.routers.dependencies import get_or_404
@@ -15,7 +14,6 @@ from app.models.user import User
 router = APIRouter()
 
 service = LocationRelationService()
-location_service = LocationService()
 
 
 @router.get("/", response_model=list[LocationRelationResponse])

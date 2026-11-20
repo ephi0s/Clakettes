@@ -7,14 +7,12 @@ from app.routers.permissions import is_admin
 from app.models.location import Location
 from app.routers.dependencies import get_or_404
 from app.services.location_tag_service import LocationTagService
-from app.services.location_service import LocationService
 from app.schemas.location_tag import LocationTagCreate, LocationTagResponse
 from app.models.user import User
 
 router = APIRouter()
 
 tag_service = LocationTagService()
-location_service = LocationService()
 
 
 @router.get("/", response_model=list[LocationTagResponse])

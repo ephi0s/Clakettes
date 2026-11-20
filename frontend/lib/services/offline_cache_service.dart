@@ -30,7 +30,13 @@ class _CacheEntry {
 }
 
 /// Roles válidos conocidos por el sistema (previene la escalada de privilegios desde la caché).
-const Set<String> _validRoles = {'admin', 'organizer', 'user', 'jury', 'moderator'};
+const Set<String> _validRoles = {
+  'admin',
+  'organizer',
+  'user',
+  'jury',
+  'moderator'
+};
 
 /// Capa de caché offline-first con validación de integridad HMAC-SHA256.
 ///
@@ -108,6 +114,7 @@ class OfflineCacheService {
   ///
   /// Devuelve `null` si es válido, o un mensaje de error si no lo es.
   String? _validateEntitySchema(String entityType, Map<String, dynamic> json) {
+    entityType = entityType.replaceFirst(RegExp(r'_list$'), '');
     if (json case {'id': int? id} when id != null && id < 0) {
       return 'Negative id';
     }
