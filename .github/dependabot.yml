@@ -14,6 +14,10 @@ updates:
     labels:
       - "backend"
       - "dependencies"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     assignees:
       - "ephi0s"
     commit-message:
@@ -34,6 +38,10 @@ updates:
     labels:
       - "frontend"
       - "dependencies"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
     assignees:
       - "ephi0s"
     commit-message:

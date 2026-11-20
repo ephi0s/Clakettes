@@ -1,0 +1,24 @@
+name: Dependabot rebase
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Actualizar ramas de PRs abiertos de Dependabot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh pr list --author 'dependabot[bot]' --state open --json number --jq '.[].number' |
+          while read -r number; do
+            gh api -X PUT "repos/$GH_REPO/pulls/$number/update-branch" >/dev/null 2>&1 || true
+          done

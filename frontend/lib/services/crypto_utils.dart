@@ -295,7 +295,9 @@ class ChatCrypto {
       _secureRandom(),
     ));
     final pair = keyGen.generateKeyPair();
+    // ignore: unnecessary_cast
     final privKey = pair.privateKey as ECPrivateKey;
+    // ignore: unnecessary_cast
     final pubKey = pair.publicKey as ECPublicKey;
     final privBigInt = privKey.d;
     final privBytes = _bigIntToBytes(privBigInt!, 32);

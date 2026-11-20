@@ -1,6 +1,5 @@
 /// Modelos de datos del Clakettes Schema v1 para federación.
-
-library sdk.federation_models;
+library;
 
 class Festival {
   final String id;

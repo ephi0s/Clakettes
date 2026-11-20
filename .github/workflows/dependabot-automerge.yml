@@ -1,22 +1,27 @@
 name: Dependabot auto-merge
 
-on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   automerge:
-    if: |
-      github.actor == 'dependabot[bot]' &&
-      github.event.pull_request.draft == false &&
-      contains(github.event.pull_request.labels.*.name, 'dependencies')
-    permissions:
-      contents: write
-      pull-requests: write
+    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Enable auto-merge for Dependabot PR
-        run: gh pr merge --auto --merge --delete-branch "${{ github.event.pull_request.number }}"
+      - name: Leer metadatos de Dependabot
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Activar auto-merge para patch y minor
+        if: >-
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"

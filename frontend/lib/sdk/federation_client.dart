@@ -7,7 +7,7 @@
 /// Nota: en Flutter web el mTLS con certificado de cliente no está soportado
 /// nativamente por el paquete `http`; usar un proxy (nginx/Traefik) que termine
 /// el mTLS y reenvíe la identidad en headers.
-library sdk.federation_client;
+library;
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
