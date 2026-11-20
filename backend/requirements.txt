@@ -13,4 +13,4 @@ alembic==1.20.1
 reportlab==5.1.0
 Pillow==13.0.0
 mutagen==1.48.1
-pypdf==6.21.0
+pypdf==6.21.4
