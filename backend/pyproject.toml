@@ -8,22 +8,22 @@ version = "0.3.0"
 description = "Clakettes film festival management platform backend"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi==0.162.5",
+    "fastapi==0.163.1",
     "uvicorn[standard]==0.54.0",
-    "sqlalchemy==2.1.8",
+    "sqlalchemy==2.1.9",
     "pydantic==2.14.3",
-    "pydantic-settings==2.16.2",
-    "email-validator==2.3.0",
+    "pydantic-settings==2.16.3",
+    "email-validator==2.4.0",
     "pymysql==1.2.4",
-    "python-multipart==0.0.33",
-    "PyJWT==2.15.0",
-    "cryptography==50.0.1",
+    "python-multipart==0.0.34",
+    "PyJWT==2.15.1",
+    "cryptography==50.0.2",
     "bcrypt>=4.3.0",
     "alembic==1.20.1",
     "reportlab==5.1.0",
     "Pillow==13.0.0",
     "mutagen==1.48.1",
-    "pypdf==6.21.4",
+    "pypdf==7.1.0",
 ]
 
 [tool.ruff]
