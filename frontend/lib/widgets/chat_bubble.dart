@@ -21,6 +21,8 @@ class ChatBubbleWidget extends StatelessWidget {
 
   const ChatBubbleWidget({super.key, required this.bubble, required this.l10n});
 
+  static const String readLabel = 'leído';
+
   static Future<void> openInMaps(double lat, double lng) async {
     final geoUri = Uri.parse('geo:0,0?q=$lat,$lng');
     if (await canLaunchUrl(geoUri)) {
@@ -94,6 +96,26 @@ class ChatBubbleWidget extends StatelessWidget {
                       ),
                     ),
                   _buildMessageContent(context, msg),
+                  if (msg.isRead)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ExcludeSemantics(
+                            child: Icon(Icons.done_all, size: 13, color: Theme.of(context).colorScheme.primary),
+                          ),
+                          const SizedBox(width: 2),
+                          Semantics(
+                            label: readLabel,
+                            child: Text(
+                              readLabel,
+                              style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),

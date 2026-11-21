@@ -6,29 +6,29 @@
 
 Clakettes utilise une configuration à deux bases de données :
 - **Développement** : SQLite (`clakettes.db`) — par défaut, aucune configuration requise
-- **Production** : MariaDB — configuré via `DATABASE_URL` dans `backend/.env`
+- **Production** : MariaDB — configurée via `DATABASE_URL` dans `backend/.env`
 
-Des outils de migration sont disponibles pour synchroniser entre les environnements :
-- `python export_sqlite_to_mariadb.py` — Développement vers production
-- `python import_mariadb_to_sqlite.py` — Production vers développement
+Des outils de migration sont disponibles pour synchroniser entre environnements :
+- `python export_sqlite_to_mariadb.py` — Du développement à la production
+- `python import_mariadb_to_sqlite.py` — De la production au développement
 
 ## Configurer MariaDB (production)
 
-Par défaut Clakettes utilise SQLite (`clakettes.db`), qui ne nécessite aucune configuration. Pour utiliser MariaDB :
+Par défaut Clakettes utilise SQLite (`clakettes.db`), qui ne requiert aucune configuration. Pour utiliser MariaDB :
 
 1. Copiez `backend/.env.example` vers `backend/.env` et décommentez la ligne `DATABASE_URL` pour MariaDB :
    ```env
    DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
    ```
-2. Démarrez le conteneur MariaDB :
+2. Lancez le conteneur MariaDB :
    ```bash
    # Développement/local avec MariaDB
    docker compose --profile db up -d
 
-   # Production (backend + frontend + MariaDB + nginx)
+   # Production complète (backend + frontend + MariaDB + nginx)
    docker compose --profile prod up -d
    ```
-3. Exécutez les migrations (Alembic uniquement, jamais `create_all` en production) :
+3. Exécutez les migrations (Alembic seulement, jamais `create_all` en production) :
    ```bash
    cd backend
    alembic upgrade head
@@ -37,7 +37,7 @@ Par défaut Clakettes utilise SQLite (`clakettes.db`), qui ne nécessite aucune 
    ```bash
    start.* --migrate --mariadb
    ```
-4. (Optionnel) Copiez les données de SQLite vers MariaDB :
+4. (Facultatif) Copiez les données de SQLite vers MariaDB :
    ```bash
    cd backend && python tools/export_sqlite_to_mariadb.py
    ```
@@ -46,27 +46,29 @@ Variables requises dans `backend/.env` lors de l'utilisation de MariaDB :
 
 | Variable | Exemple | Notes |
 |---|---|---|
-| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | Chaîne de connexion SQLAlchemy ; dans Docker Compose l'hôte est `db` |
-| `SECRET_KEY` | `changez-cette-clé-en-production` | Clé de signature JWT |
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | Chaîne SQLAlchemy ; dans Docker Compose l'hôte est `db` |
+| `SECRET_KEY` | `change-this-in-production` | Clé de signature JWT |
 | `CORS_ORIGINS` | `https://votre-domaine.com` | Domaines explicites en production |
-| `PUBLIC_BASE_URL` | `https://votre-domaine.com` | URL publique du node (fédération) |
+| `PUBLIC_BASE_URL` | `https://votre-domaine.com` | URL publique du nœud (fédération) |
 
-Dans Docker Compose le service `db` (MariaDB 11) est activé avec `--profile db` ou `--profile prod` ; le backend se connecte en utilisant `db` comme hôte et le port `3306`.
+Dans Docker Compose, le service `db` (MariaDB 11) est activé avec `--profile db` ou `--profile prod` ; le backend se connecte en utilisant `db` comme hôte et le port `3306`.
 
 Notes importantes :
-- MariaDB en production nécessite TLS : ajoutez `?ssl_ca=...` à `DATABASE_URL`.
+- MariaDB en production exige TLS : ajoutez `?ssl_ca=...` à `DATABASE_URL`.
 - N'utilisez jamais `create_all` en production ; gérez le schéma uniquement avec Alembic (`alembic upgrade head`).
 - Pour revenir de MariaDB à SQLite : `python tools/import_mariadb_to_sqlite.py`.
 
 ## Résumé des modèles
 
 | Modèle | Table | Type |
-|--------|-------|------|
+|---|---|---|
 | `AppSetting` | `app_settings` | Entité |
 | `AuditLog` | `audit_logs` | Entité |
 | `Award` | `awards` | Entité |
 | `Badge` | `badges` | Entité |
 | `Calendar` | `calendars` | Entité |
+| `ChatMute` | `chat_mutes` | Entité (fédération) |
+| `ChatOutbox` | `chat_outbox` | Entité (fédération) |
 | `Channel` | `channels` | Entité |
 | `Committee` | `committees` | Entité |
 | `Event` | `events` | Entité |
@@ -76,7 +78,10 @@ Notes importantes :
 | `FestivalRulebook` | `festival_rulebooks` | Entité |
 | `FormDefinition` | `form_definitions` | Entité |
 | `Group` | `groups` | Entité |
+| `IdentityRedirect` | `identity_redirects` | Entité (fédération) |
 | `JuryVote` | `jury_votes` | Entité |
+| `MessageReport` | `message_reports` | Entité (fédération) |
+| `MigrationAudit` | `migration_audits` | Entité (fédération) |
 | `Location` | `locations` | Entité |
 | `LocationImage` | `location_images` | Entité |
 | `LocationRelation` | `location_relations` | Entité |
@@ -109,8 +114,6 @@ Tables d'association :
 - `user_festival` — M2M entre `User` et `Festival`
 - `validation_rule_group_rules` — M2M entre `ValidationRuleGroup` et `ValidationRule`
 
-
-
 ## Modèle de base
 
 Tous les modèles héritent de `BaseModel` défini dans `app/models/base.py` :
@@ -125,7 +128,7 @@ class BaseModel(Base):
 
 Champs :
 - `id` : Clé primaire, entier auto-incrémenté
-- `created_at` : Horodatage assigné à la création
+- `created_at` : Horodatage attribué à la création
 - `updated_at` : Horodatage mis à jour à chaque modification
 
 ## Modèles principaux
@@ -134,227 +137,257 @@ Champs :
 - **Table :** `festivals`
 - **Classe :** `Festival`
 - **Champs clés :** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
-- **Relations :** A plusieurs ShortFilms, Utilisateurs (M2M via `user_festival`), FestivalRoles, FestivalParticipantTags, UserRoles, UserParticipantTags, RegistrationForms, FestivalRegistrations, Events, Awards
+- **Relations :** Possède de nombreux ShortFilms, Users (M2M via `user_festival`), FestivalRoles, FestivalParticipantTags, UserRoles, UserParticipantTags, RegistrationForms, FestivalRegistrations, Events, Awards
 
-### Utilisateur
+### User
 - **Table :** `users`
 - **Classe :** `User`
 - **Champs clés :** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active, is_public, is_public_email, is_public_bio, is_public_location, latitude, longitude, dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
-- **Relations :** A plusieurs ShortFilms, Festivals (M2M), UserRoles, UserParticipantTags, UserAliases, FestivalRegistrations, Sessions, Awards, Events (créés), EventAttendees, EventReservations
+- **Relations :** Possède de nombreux ShortFilms, Festivals (M2M), UserRoles, UserParticipantTags, UserAliases, FestivalRegistrations, Sessions, Awards, Events (créés), EventAttendees, EventReservations
 
-### Court-métrage
+### ShortFilm
 - **Table :** `shortfilms`
 - **Classe :** `ShortFilm`
 - **Champs clés :** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Relations :** Appartient à Festival, appartient à Utilisateur, a plusieurs Awards, a plusieurs ShortFilmLocations
+- **Relations :** Appartient à Festival, appartient à User, possède de nombreux Awards, possède de nombreuses ShortFilmLocations
 
 ### Message
 - **Table :** `messages`
 - **Classe :** `Message`
 - **Champs clés :** content, sender_id (FK), receiver_id (FK), group_id, channel_id (FK), is_read, message_type, media_url, latitude, longitude, vcard_data, ical_data
-- **Relations :** Appartient à Utilisateur (expéditeur), appartient à Utilisateur (destinataire), appartient à Channel
+- **Relations :** Appartient à User (expéditeur), appartient à User (destinataire), appartient à Channel
 
-### Association Utilisateur-Festival
+### Association User-Festival
 - **Table :** `user_festival`
 - **Classe :** None (Table SQLAlchemy)
 - **Champs clés :** user_id (FK, PK), festival_id (FK, PK), role, joined_at
-- **Relations :** Pont M2M entre Utilisateur et Festival ; PK composite sur (user_id, festival_id)
+- **Relations :** Pont M2M entre User et Festival ; PK composite sur (user_id, festival_id)
 
-### Récompense
+### Award
 - **Table :** `awards`
 - **Classe :** `Award`
 - **Champs clés :** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
-- **Relations :** Appartient à Festival, appartient à Événement, appartient à Court-métrage, appartient à Utilisateur (destinataire), appartient à Utilisateur (vérificateur), appartient à Utilisateur (créateur)
+- **Relations :** Appartient à Festival, appartient à Event, appartient à ShortFilm, appartient à User (destinataire), appartient à User (vérificateur), appartient à User (créateur)
 
-### Insigne
+### Badge
 - **Table :** `badges`
 - **Classe :** `Badge`
 - **Champs clés :** name, description, image_url (SVG préféré), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
-- **Relations :** Appartient à Festival, a plusieurs BadgeAssignments
+- **Relations :** Appartient à Festival, possède de nombreuses BadgeAssignments
 - **Notes :** Fonction en développement actif et désactivée par défaut (`badges.enabled`) ; seule l'équipe administrative l'active.
 
-### Canal
+### Channel
 - **Table :** `channels`
 - **Classe :** `Channel`
 - **Champs clés :** name, description, channel_type, max_members, created_by (FK), is_active
-- **Relations :** Appartient à Utilisateur (créateur), a plusieurs ChannelMembers, a plusieurs Messages
+- **Relations :** Appartient à User (créateur), possède de nombreux ChannelMembers, possède de nombreux Messages
 
-### Comité
+### Committee
 - **Table :** `committees`
 - **Classe :** `Committee`
 - **Champs clés :** festival_id (FK), name, description, role_id (FK), is_active, max_members, external_visible
-- **Relations :** Appartient à Festival, appartient à Role, a plusieurs CommitteeMembers
+- **Relations :** Appartient à Festival, appartient à Role, possède de nombreux CommitteeMembers
 
-### Événement
+### Event
 - **Table :** `events`
 - **Classe :** `Event`
 - **Champs clés :** festival_id (FK), title, description, short_description, event_type, start_date, end_date, location, venue, venue_latitude, venue_longitude, has_external_page, external_url, internal_page_enabled, capacity, show_seat_map, is_public, is_active, image_url, color, created_by (FK), sort_order
-- **Relations :** Appartient à Festival, appartient à Utilisateur (créateur), a plusieurs EventTicketTypes, EventSeats, EventReservations, EventAttendees, Awards, EventScreenings
+- **Relations :** Appartient à Festival, appartient à User (créateur), possède de nombreux EventTicketTypes, EventSeats, EventReservations, EventAttendees, Awards, EventScreenings
 
 ### Notification
 - **Table :** `notifications`
 - **Classe :** `Notification`
 - **Champs clés :** user_id (FK), title, message, notification_type, is_read, related_user_id (FK)
-- **Relations :** Appartient à Utilisateur (destinataire), appartient à Utilisateur (lié)
+- **Relations :** Appartient à User (destinataire), appartient à User (associé)
 
-### Tag de participant
+### ParticipantTag
 - **Table :** `participant_tags`
 - **Classe :** `ParticipantTag`
 - **Champs clés :** name, display_name, description, category, is_global, is_active, sort_order
-- **Relations :** A plusieurs UserParticipantTags, a plusieurs FestivalParticipantTags
+- **Relations :** Possède de nombreux UserParticipantTags, possède de nombreux FestivalParticipantTags
 
-### Publication
+### Post
 - **Table :** `posts`
 - **Classe :** `Post`
 - **Champs clés :** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type, allow_replies, is_pinned, is_hidden
-- **Relations :** Appartient à Utilisateur (auteur), appartient à Utilisateur (mur), appartient à Festival (mur), a plusieurs réponses (Post), appartient à Publication (parent)
+- **Relations :** Appartient à User (auteur), appartient à User (mur), appartient à Festival (mur), possède de nombreuses réponses (Post), appartient à Post (parent)
 - **Notes :** Fonction en développement actif.
 
-### Inscription
+### Registration
 - **Table :** `registration_forms`
 - **Classe :** `RegistrationForm`
 - **Champs clés :** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations, require_existing_account, allow_role_selection, allow_tag_selection, created_by (FK)
-- **Relations :** Appartient à Festival, a plusieurs RegistrationFormSections, RegistrationFormLinks, FestivalRegistrations
+- **Relations :** Appartient à Festival, possède de nombreux RegistrationFormSections, RegistrationFormLinks, FestivalRegistrations
 
-### Rôle
+### Role
 - **Table :** `roles`
 - **Classe :** `Role`
 - **Champs clés :** name, display_name, description, scope, hierarchy_level, parent_role_id (FK), group_id (FK), is_assignable_by_admin, requires_approval, is_active, permissions
-- **Relations :** Appartient à Role (parent), appartient à RoleGroup, a plusieurs UserRoles, FestivalRoles, RoleGroupMemberships, RoleDependencies, RoleConflicts
+- **Relations :** Appartient à Role (parent), appartient à RoleGroup, possède de nombreux UserRoles, FestivalRoles, RoleGroupMemberships, RoleDependencies, RoleConflicts
 
-### Alias d'utilisateur
+### UserAlias
 - **Table :** `user_aliases`
 - **Classe :** `UserAlias`
 - **Champs clés :** user_id (FK), alias, context, context_id, is_primary, is_public, show_awards, profile_token, visibility_scope, notes
-- **Relations :** Appartient à Utilisateur
-- **Notes :** Permet des noms visibles par contexte (global, festival, shortfilm, chat, public_profile, credits) avec contrôle de visibilité
+- **Relations :** Appartient à User
+- **Notes :** Prend en charge les noms visibles par contexte (global, festival, shortfilm, chat, public_profile, credits) avec contrôle de visibilité
 
-### Clé utilisateur
+### UserKey
 - **Table :** `user_keys`
 - **Classe :** `UserKey`
 - **Champs clés :** user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
-- **Relations :** Appartient à Utilisateur
-- **Notes :** Stocke la clé publique X25519 pour l'E2EE ; une clé active par utilisateur
+- **Relations :** Appartient à User
+- **Notes :** Stocke la clé publique X25519 pour E2EE ; une clé active par utilisateur
 
-### Session utilisateur
+### UserSession
 - **Table :** `user_sessions`
 - **Classe :** `UserSession`
 - **Champs clés :** user_id (FK), token_hash, refresh_token_hash, device_name, ip_address, user_agent, last_used_at, expires_at, revoked_at, is_active
-- **Relations :** Appartient à Utilisateur
+- **Relations :** Appartient à User
 
-### Règle de validation
+### ValidationRule
 - **Table :** `validation_rules`
 - **Classe :** `ValidationRule`
 - **Champs clés :** name, description, scope, scope_id, field_name, field_label, field_type, is_required, is_visible, is_editable_by_user, min_length, max_length, regex_pattern, allowed_values (JSON), default_value, help_text, display_order, depends_on_field, depends_on_value, error_message
 - **Relations :** M2M avec ValidationRuleGroup via `validation_rule_group_rules`
 
-### Paiement
+### Payment
 - **Table :** `payments`
 - **Classe :** `Payment`
 - **Champs clés :** amount, currency, provider_ref, status, provider, registration_id (FK)
 - **Relations :** Appartient à Registration
 
-### Vote du jury
+### JuryVote
 - **Table :** `jury_votes`
 - **Classe :** `JuryVote`
 - **Champs clés :** festival_id (FK), shortfilm_id (FK), user_id (FK), score, is_anonymous, comment
-- **Relations :** Appartient à Festival, appartient à Court-métrage, appartient à Utilisateur (juré)
+- **Relations :** Appartient à Festival, appartient à ShortFilm, appartient à User (juré)
 
-### Politique de nœud
+### NodePolicy
 - **Table :** `node_policies`
 - **Classe :** `NodePolicy`
 - **Champs clés :** node_id, allowlist, blocklist, rate_limit, minimize_data, consent_required, import_only
 - **Relations :** Entité de fédération
 
-### Rapport de modération
+### ModerationReport
 - **Table :** `moderation_reports`
 - **Classe :** `ModerationReport`
 - **Champs clés :** reporter_node, target_node, target_user_ref, reason, status
 - **Relations :** Entité de fédération
 
-### Localisation
+### IdentityRedirect
+- **Table :** `identity_redirects`
+- **Classe :** `IdentityRedirect`
+- **Champs clés :** old_ref (index unique), new_ref, target_domain, created_at
+- **Relations :** Entité de fédération ; résout l'ancienne ref après une migration d'identité
+
+### MigrationAudit
+- **Table :** `migration_audits`
+- **Classe :** `MigrationAudit`
+- **Champs clés :** entity_type, entity_id, action, source_domain, target_domain, details (JSON), created_at
+- **Relations :** Entité de fédération ; trace chaque migration de festival ou d'utilisateur
+
+### ChatOutbox
+- **Table :** `chat_outbox`
+- **Classe :** `ChatOutbox`
+- **Champs clés :** message_id (unique), node_origin, subject, payload (JSON), signature, status, attempts, last_error, created_at
+- **Relations :** File durable du chat fédéré (`DurableQueueBackend`) ; l'unicité de `message_id` assure la déduplication et `attempts`/`last_error` gèrent les relances
+
+### MessageReport
+- **Table :** `message_reports`
+- **Classe :** `MessageReport`
+- **Champs clés :** reporter_id (FK), message_id (FK), reason, status
+- **Relations :** Appartient à User (signalant) et à Message
+
+### ChatMute
+- **Table :** `chat_mutes`
+- **Classe :** `ChatMute`
+- **Champs clés :** user_id (FK), channel_id (FK), node_domain, until, reason
+- **Relations :** Appartient à User et à Channel ; le mute peut s'appliquer à un canal ou à un nœud fédéré
+
+### Location
 - **Table :** `locations`
 - **Classe :** `Location`
 - **Champs clés :** name, description, latitude, longitude, address, is_active
-- **Relations :** Appartient à Festival (M2M), a plusieurs LocationImages, LocationTags, LocationRelations
+- **Relations :** Appartient à Festival (M2M), possède de nombreux LocationImages, LocationTags, LocationRelations
 
-### Séance d'événement
+### EventScreening
 - **Table :** `event_screenings`
 - **Classe :** `EventScreening`
 - **Champs clés :** event_id (FK), shortfilm_id (FK), start_date, end_date, venue, notes, status
-- **Relations :** Appartient à Événement, appartient à Court-métrage
+- **Relations :** Appartient à Event, appartient à ShortFilm
 
-### Livre de règles du festival
+### FestivalRulebook
 - **Table :** `festival_rulebooks`
 - **Classe :** `FestivalRulebook`
 - **Champs clés :** festival_id (FK), title, content, file_url, is_active
 - **Relations :** Appartient à Festival
 
-### Définition de formulaire
+### FormDefinition
 - **Table :** `form_definitions`
 - **Classe :** `FormDefinition`
 - **Champs clés :** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations
-- **Relations :** Appartient à Festival, a plusieurs FormPages, FormLinks, FormResponses
+- **Relations :** Appartient à Festival, possède de nombreux FormPages, FormLinks, FormResponses
 
-### Groupe
+### Group
 - **Table :** `groups`
 - **Classe :** `Group`
 - **Champs clés :** name, display_name, description, sort_order, is_active
-- **Relations :** A plusieurs RoleGroupMemberships, Roles
+- **Relations :** Possède de nombreux RoleGroupMemberships, Roles
 
-### Réglage d'application
+### AppSetting
 - **Table :** `app_settings`
 - **Classe :** `AppSetting`
 - **Champs clés :** key, value, description, is_public
 - **Relations :** Entité de configuration
 
-### Journal d'audit
+### AuditLog
 - **Table :** `audit_logs`
 - **Classe :** `AuditLog`
 - **Champs clés :** actor_id (FK), action, target, ip, created_at
-- **Relations :** Appartient à Utilisateur (acteur), append-only
+- **Relations :** Appartient à User (acteur), append-only
 
-### Blocage utilisateur
+### UserBlock
 - **Table :** `user_blocks`
 - **Classe :** `UserBlock`
 - **Champs clés :** blocker_id (FK), blocked_id (FK), reason, starts_at, expires_at
-- **Relations :** Appartient à Utilisateur (bloqueur), appartient à Utilisateur (bloqué)
+- **Relations :** Appartient à User (bloqueur), appartient à User (bloqué)
 
-### Délégation de rôle
+### RoleDelegation
 - **Table :** `role_delegations`
 - **Classe :** `RoleDelegation`
 - **Champs clés :** delegator_id (FK), delegate_id (FK), role_id (FK), festival_id (FK), status, starts_at, expires_at, reason, scope_limitations, revoked_by (FK), revoked_at, revoked_reason
-- **Relations :** Appartient à Utilisateur (délégateur), appartient à Utilisateur (délégué), appartient à Role, appartient à Festival, appartient à Utilisateur (révocateur)
+- **Relations :** Appartient à User (délégateur), appartient à User (délégué), appartient à Role, appartient à Festival, appartient à User (révocateur)
 
-### Transition de rôle
+### RoleTransition
 - **Table :** `role_transitions`
 - **Classe :** `RoleTransition`
 - **Champs clés :** user_id (FK), from_role_id (FK), to_role_id (FK), from_festival_id (FK), to_festival_id (FK), transition_type, changed_by (FK), reason, transitioned_at
-- **Relations :** Appartient à Utilisateur, appartient à Role (origine), appartient à Role (destination), appartient à Festival (origine), appartient à Festival (destination), appartient à Utilisateur (responsable du changement)
+- **Relations :** Appartient à User, appartient à Role (origine), appartient à Role (destination), appartient à Festival (origine), appartient à Festival (destination), appartient à User (responsable du changement)
 
-### Type de billet d'événement
+### EventTicketType
 - **Table :** `event_ticket_types`
 - **Classe :** `EventTicketType`
 - **Champs clés :** event_id (FK), name, description, price, currency, capacity, sold_count, reserved_count, assigned_count, is_active, is_hidden, sort_order, color
-- **Relations :** Appartient à Événement
+- **Relations :** Appartient à Event
 
-### Siège d'événement
+### EventSeat
 - **Table :** `event_seats`
 - **Classe :** `EventSeat`
 - **Champs clés :** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
-- **Relations :** Appartient à Événement, appartient à EventTicketType
+- **Relations :** Appartient à Event, appartient à EventTicketType
 
-### Réservation d'événement
+### EventReservation
 - **Table :** `event_reservations`
 - **Classe :** `EventReservation`
 - **Champs clés :** event_id (FK), user_id (FK), status, total_quantity, notes, created_by (FK), is_hidden, confirmed_at, cancelled_at
-- **Relations :** Appartient à Événement, appartient à Utilisateur (réservateur), appartient à Utilisateur (créateur)
+- **Relations :** Appartient à Event, appartient à User (réserveur), appartient à User (créateur)
 
-### Participant à l'événement
+### EventAttendee
 - **Table :** `event_attendees`
 - **Classe :** `EventAttendee`
 - **Champs clés :** event_id (FK), reservation_id (FK), user_id (FK), seat_id (FK), ticket_type_id (FK), status, invited_by (FK), is_guest, is_hidden, guest_name, guest_email, guest_phone, checked_in_at, notes
-- **Relations :** Appartient à Événement, appartient à EventReservation, appartient à Utilisateur, appartient à EventSeat, appartient à EventTicketType, appartient à Utilisateur (inviteur)
+- **Relations :** Appartient à Event, appartient à EventReservation, appartient à User, appartient à EventSeat, appartient à EventTicketType, appartient à User (inviteur)
 
 ## Sessions de base de données
 
@@ -369,14 +402,14 @@ def get_db():
         db.close()
 ```
 
-Ceci est utilisé comme dépendance FastAPI pour l'accès à la base de données depuis les endpoints.
+Cela sert de dépendance FastAPI pour l'accès à la base de données depuis les endpoints.
 
 ## Notes de migration de SQLite vers MariaDB
 
-Les changements de schéma sont gérés avec Alembic (`backend/alembic/versions/` ; `alembic upgrade head`). En production seulement Alembic, jamais `create_all`.
+Les changements de schéma sont gérés avec Alembic (`backend/alembic/versions/` ; `alembic upgrade head`). Il y a 42 révisions et le head est `c1d2e3f4a5b6` ; les trois dernières (`a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`) ajoutent les tables de portabilité, la file durable de chat et la modération. En production, seulement Alembic, jamais `create_all`.
 
 Lors de la migration de SQLite vers MariaDB :
 - SQLite `INTEGER PRIMARY KEY` correspond à MariaDB `INT AUTO_INCREMENT`
 - SQLite `TEXT` correspond à MariaDB `TEXT` ou `VARCHAR`
 - SQLite `DATETIME` est stocké en texte ; MariaDB utilise `DATETIME` natif
-- Les scripts de migration dans `export_sqlite_to_mariadb.py` et `import_mariadb_to_sqlite.py` gèrent les conversions de types automatiquement
+- Les scripts de migration dans `export_sqlite_to_mariadb.py` et `import_mariadb_to_sqlite.py` gèrent automatiquement les conversions de types

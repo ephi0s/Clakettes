@@ -21,6 +21,10 @@
 | iOS/iPad (requires macOS) | `tools/build-ios.sh` | Only on Mac with Xcode |
 | macOS / Windows / Linux | `tools/build-macos.sh` / `flutter build windows` / `flutter build linux` | Corresponding host |
 | Docker multi-target | `tools/build-all.ps1` | Requires Docker |
+| Verify node conformance | `python tools/federation_conformance.py <url> [--json]` | Root (`tools/`) |
+| Regenerate API reference | `python tools/gen_api.py --all` | Root (`tools/`) |
+
+The conformance CLI verifies manifest, JWKS, token, directory, users, WebFinger, reports, portability, chat bridge and event stream; it returns 1 if there are `critical`/`high` failures and 0 otherwise, and `--json` prints the full report.
 
 ## Improvements applied (09/10/2026)
 
@@ -38,4 +42,4 @@
 
 1. **`ruff format --check` gate in CI**: blocked by ~249 existing E501/W292 violations. Steps: `ruff format .`, review diff, `ruff check --fix`, then add the gate.
 2. **Unify `.ps1`/`.sh`**: they double the port/process logic. The realistic path is to extract the port matrix to `tools/ports.*` or document a single entrypoint per OS, not rewrite both at once.
-3. **CI coverage** (`pytest --cov`, `flutter test --coverage` + lcov): useful when expanding `syncAll` and uncovered routers tests (see roadmap in [../README.md](../../README.en.md)).
+3. **CI coverage** (`pytest --cov`, `flutter test --coverage` + lcov): useful when expanding `syncAll` and uncovered routers tests (see roadmap in [../README.md](../../README.md)).

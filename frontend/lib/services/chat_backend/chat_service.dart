@@ -14,7 +14,14 @@ class ChatService {
 
   AbstractChatBackend _backend;
   StreamSubscription<Message>? _subscription;
+  StreamSubscription<TypingEvent>? _typingSubscription;
+  StreamSubscription<Duration>? _latencySubscription;
+  StreamSubscription<int>? _readSubscription;
   final StreamController<Message> _incomingController = StreamController<Message>.broadcast();
+  final StreamController<TypingEvent> _typingController = StreamController<TypingEvent>.broadcast();
+  final StreamController<Duration> _latencyController = StreamController<Duration>.broadcast();
+  final StreamController<int> _messageReadController = StreamController<int>.broadcast();
+  final List<Message> _history = [];
 
   ChatService({AbstractChatBackend? backend, ApiService? api, AuthService? auth})
       : _api = api ?? ApiService(),
@@ -30,14 +37,57 @@ class ChatService {
   /// Estado de reconexión del backend activo.
   Stream<bool> get onReconnecting => _backend.onReconnecting;
 
+  /// Eventos de escritura reenviados por el backend activo.
+  Stream<TypingEvent> get onTyping => _typingController.stream;
+
+  /// Latencia reenviada por el backend activo.
+  Stream<Duration> get onLatency => _latencyController.stream;
+
+  /// Confirmaciones de lectura reenviadas por el backend activo.
+  Stream<int> get onMessageRead => _messageReadController.stream;
+
+  /// Historial local cargado, sin exponer la lista mutable interna.
+  List<Message> get history => List.unmodifiable(_history);
+
   /// Intercambia el [backend] activo, desconectando el anterior.
   ///
   /// Reconecta el nuevo backend automáticamente; seguro de llamar tras [init].
   Future<void> useBackend(AbstractChatBackend backend) async {
     await _subscription?.cancel();
+    await _typingSubscription?.cancel();
+    await _latencySubscription?.cancel();
+    await _readSubscription?.cancel();
     await _backend.disconnect();
     _backend = backend;
     await _tryConnect();
+  }
+
+  void _subscribePresence() {
+    if (_backend is! ChatPresenceBackend) return;
+    final presence = _backend as ChatPresenceBackend;
+    _typingSubscription = presence.onTyping.listen(
+      (event) => _typingController.add(event),
+      onError: (Object e) => debugPrint('[ChatService] typing stream error: $e'),
+    );
+    _latencySubscription = presence.onLatency.listen(
+      (value) => _latencyController.add(value),
+      onError: (Object e) => debugPrint('[ChatService] latency stream error: $e'),
+    );
+    _readSubscription = presence.onMessageRead.listen(
+      (id) => _messageReadController.add(id),
+      onError: (Object e) => debugPrint('[ChatService] read stream error: $e'),
+    );
+  }
+
+  void _remember(Message msg) {
+    final id = msg.id;
+    if (id == null) return;
+    final index = _history.indexWhere((m) => m.id == id);
+    if (index == -1) {
+      _history.add(msg);
+    } else {
+      _history[index] = msg;
+    }
   }
 
   Future<void> _tryConnect() async {
@@ -46,9 +96,13 @@ class ChatService {
       if (token == null) return;
       await _backend.connect(token);
       _subscription = _backend.onMessage.listen(
-        (msg) => _incomingController.add(msg),
+        (msg) {
+          _remember(msg);
+          _incomingController.add(msg);
+        },
         onError: (Object e) => debugPrint('[ChatService] stream error: $e'),
       );
+      _subscribePresence();
     } catch (e) {
       debugPrint('[ChatService] connection error: $e');
     }
@@ -119,7 +173,18 @@ class ChatService {
       channelId: channelId,
       unreadOnly: unreadOnly,
     );
+    if (page <= 1) _history.clear();
+    for (final msg in result.items) {
+      _remember(msg);
+    }
     return result.items;
+  }
+
+  /// Filtra el historial local cargado por contenido, sin distinguir mayúsculas.
+  List<Message> searchMessages(String query) {
+    final needle = query.trim().toLowerCase();
+    if (needle.isEmpty) return List.unmodifiable(_history);
+    return _history.where((m) => m.content.toLowerCase().contains(needle)).toList();
   }
 
   /// Marca [messageId] como leído en el backend activo.
@@ -128,7 +193,13 @@ class ChatService {
   /// Desconecta el backend, cancela las suscripciones y cierra los streams.
   Future<void> dispose() async {
     await _subscription?.cancel();
+    await _typingSubscription?.cancel();
+    await _latencySubscription?.cancel();
+    await _readSubscription?.cancel();
     await _backend.disconnect();
     await _incomingController.close();
+    await _typingController.close();
+    await _latencyController.close();
+    await _messageReadController.close();
   }
 }

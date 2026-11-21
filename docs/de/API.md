@@ -93,6 +93,17 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | ja |
 | WEBSOCKET | `/api/chat/ws` | token (query) |
 
+## `chat_moderation` → `/`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/messages/{message_id}/report` | ja |
+| PATCH | `/messages/{message_id}/moderate` | ja |
+| GET | `/reports` | ja |
+| POST | `/mutes` | ja |
+| GET | `/mutes` | ja |
+| GET | `/limits` | ja |
+
 ## `committees` → `/api`
 
 | Methode | Pfad | Auth |
@@ -166,6 +177,7 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | ja |
 | PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | ja |
 | PUT | `/api/events/{event_id}/screenings` | ja |
+| GET | `/api/festivals/{festival_id}/screenings` | nein |
 | GET | `/api/events/{event_id}/occupancy` | nein |
 | GET | `/api/events/{event_id}/ticket-types/` | nein |
 | POST | `/api/events/{event_id}/ticket-types/` | ja |
@@ -277,6 +289,44 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/.well-known/jwks.json` | nein |
 | POST | `/api/token` | nein |
 
+## `federation_chat_bridge` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/api/chat/bridge/inbound` | nein |
+| POST | `/api/chat/bridge/outbound` | nein |
+| GET | `/api/chat/bridge/config` | nein |
+| GET | `/api/chat/messages` | nein |
+
+## `federation_events` → `/`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/stream` | nein |
+| POST | `/publish` | ja |
+| GET | `/retry-queue` | ja |
+
+## `federation_portability` → `/`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/bundles` | ja |
+| POST | `/imports` | ja |
+| POST | `/festivals/{festival_id}/migrate` | nein |
+| POST | `/users/{user_ref}/migrate` | nein |
+| GET | `/redirects/{old_ref}` | ja |
+
+## `federation_resilience` → `/`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/health` | nein |
+| GET | `/heartbeat` | nein |
+| GET | `/metrics` | nein |
+| POST | `/keys/revoke` | ja |
+| GET | `/keys/revoked` | nein |
+| GET | `/incident-plan` | nein |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Methode | Pfad | Auth |
@@ -335,10 +385,10 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | Methode | Pfad | Auth |
 |---|---|---|
 | POST | `/api` | ja |
-| GET | `/api/{festival_id}` | nein |
+| GET | `/api/{festival_id}` | optional |
 | GET | `/api/aggregate/{festival_id}` | nein |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | nein |
-| GET | `/api/anonymous/{festival_id}` | nein |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | ja |
+| GET | `/api/anonymous/{festival_id}` | ja |
 
 ## `keys` → `/api/users`
 
@@ -611,4 +661,4 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/validation-rule-groups/` | nein |
 | POST | `/api/validation-rule-groups/` | ja |
 
-Gesamt: 416 Endpunkte in 38 Routern.
+Gesamt: 441 Endpunkte in 39 Routern.

@@ -1,50 +1,68 @@
-# Administratzia — Clakettes
+# Administracion — Clakettes
 
-[ES](../es/ADMINISTRACION.md) · [EN](../en/ADMINISTRACION.md) · [FR](../fr/ADMINISTRACION.md) · [DE](../de/ADMINISTRACION.md) · [IT](../it/ADMINISTRACION.md) · [CA](../ca/ADMINISTRACION.md) · [EU](../eu/ADMINISTRACION.md) · [GL](../gl/ADMINISTRACION.md) · [CA](ADMINISTRACION.md) · [OC](ADMINISTRACION.md)
+[ES](../es/ADMINISTRACION.md) · [EN](../en/ADMINISTRACION.md) · [FR](../fr/ADMINISTRACION.md) · [DE](../de/ADMINISTRACION.md) · [IT](../it/ADMINISTRACION.md) · [CA](../ca/ADMINISTRACION.md) · [EU](../eu/ADMINISTRACION.md) · [GL](../gl/ADMINISTRACION.md) · [OC](ADMINISTRACION.md)
 
-Guia per a qui opera un desplegament. Infraestrutura en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md), checklist de productiu en [SEGURIDAD.md](SEGURIDAD.md).
+Guia per qual opera un desplegament. Infraestructura dins [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md), lista de contraròtle de produccion dins [SEGURIDAD.md](SEGURIDAD.md).
 
-## Compte initial
+## Compte inicial
 
-A no-productiu (`APP_ENV != production`) l'arrancada crea `admin` / `setup` (`admin@clakettes.com`, rol admin) si no existeix; a productiu **no es crea**. Canvia la contrasenya a l'entrar. L'alta usa `POST /api/users/login` (JWT 30 min + refresh 30 d, llista i revoca sessions a `/api/auth/sessions`).
+En non-prod (`APP_ENV != production`) l'arranjada crea `admin` / `setup` (`admin@clakettes.com`, ròtle admin) se existís pas; en prod **es crea pas**. Cambiat lo senhal en intrant. L'inscripcion utilize `POST /api/users/login` (JWT 30 min + refresh 30 d, lista e revoca las sessions a `/api/auth/sessions`).
 
-## Endpoints `/api/admin` (sol rol admin, 403 en altre cas)
+## Endpoints `/api/admin` (solament ròtle admin, 403 autrament)
 
-| Metode i ruta | Efecte |
-|---------------|--------|
-| `GET /api/admin/stats` | Comptadors: usagis, festivals, curts, missatges, actius |
-| `GET /api/admin/tables` | Taules (excepte `alembic_version`) amb numero de files |
-| `GET /api/admin/audit-log` | Traccia d'auditoria (filtres `action`, `actor_user_id`) |
-| `POST /api/admin/reset` `{"confirm":"yes","password":"<actual>"}` | `drop_all + create_all`. 400 si `confirm` no es `yes`, 403 si la contrasenya no verifica; limit propi 3/300s (429, omissio amb `TESTING=true`) |
+| Metòde e rota | Efecte |
+|---|---|
+| `GET /api/admin/stats` | Comptaires: usagis, festivals, corts, messatges, actius |
+| `GET /api/admin/tables` | Taulas (levat `alembic_version`) amb un nombre de linhas |
+| `GET /api/admin/audit-log` | Traça d'audit (filtres `action`, `actor_user_id`) |
+| `POST /api/admin/reset` `{"confirm":"yes","password":"<actual>"}` | `drop_all + create_all`. 400 se `confirm` es pas `yes`, 403 se lo senhal valida pas; rate-limit propi 3/300s (429, bypass amb `TESTING=true`) |
 
-## Secrets e rotacio
+## Secrets e rotacion
 
-- `SECRET_KEY`: obligatori a prod (l'arrancada falla amb l'exemple e indica `secrets.token_urlsafe(64)`). Rotarla invalida tots els JWT i refresh tokens: fes-ho en una finestra de manteniment i avisa (tots tornen a fer login).
-- `CORS_ORIGINS`: orígens explicitos a prod; `*` + credencials esta prohibit i bloqueja l'arrancada.
-- Detras de proxy: `uvicorn --proxy-headers` + `FORWARDED_ALLOW_IPS` + TLS frontal.
+- `SECRET_KEY`: obligatòria en prod (l'arranjada fracassa amb la d'exemple e indica `secrets.token_urlsafe(64)`). La rotar invalida totes los JWT e refresh tokens: faguetz-o dins una fenestra de mantenença e avisatz (totes devon tornar far login).
+- `CORS_ORIGINS`: origines explicitas en prod; `*` + credencials es interdit e bloca l'arranjada.
+- Darrièr un proxy: `uvicorn --proxy-headers` + `FORWARDED_ALLOW_IPS` + TLS frontal.
 
-## Copies de seguretat e migracions
+## Federacion
 
-- SQLite: copiar `*.db` en calent aturat (`-Kill` abans). MariaDB: `mariadb-dump` (volum `db-data`).
-- Migracions: `alembic upgrade head` des de `backend/` (36 versions; prod **solament** Alembic, mai `create_all`).
-- Canvi de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detall a [DATABASE.md](DATABASE.md).
+| Operacion | Endpoint / aisina | Efecte |
+|---|---|---|
+| Noses e politicas | `GET/POST /api/federation/nodes` | Allowlist/blocklist amb `consent_required`, `minimize_data`, `import_only`, `disable_chat`, `disable_search` (admin) |
+| Identitat del par | `GET /api/federation/whoami` | Valida lo JWT RS256 del par contra son JWKS; 401 se es pas valid |
+| Portabilitat | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Exportar/importar de bundles signats, migrar proprietat e identitat e resòlver las refs ancianas (las migracions, solament admin) |
+| Chat e moderacion | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Bridge signat, istoric deduplicat, rapòrts, silencis, filtre e limita de 10 messatges/60 s per nose e usagi |
+| Eveniments | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE amb `since` e batement, publicacion als pares e reensajos (3 ensajos, 300 ms→5 s) |
+| Resiliéncia | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Santat, batement, metricas p50/p95, revocacion immediata de claus e plan d'incident |
+| Conformitat | `python tools/federation_conformance.py <url> [--json]` | Verifica un nose tèrç; sòrt 1 se i a de fracasses critics/ausats |
 
-## Solucio de problemes
+Lo detalh del modèl de fisança e del transpòrt es dins [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) e [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md).
 
-| Sympto | Causa probable | Accio |
-|--------|----------------|-------|
-| Arrancada aborta per `SECRET_KEY` / CORS | default insegur o `*` a prod | Defineix `SECRET_KEY` i `CORS_ORIGINS` explicit |
-| `401` en endpoints public de formulari | enlace malxo generat | Revisa el token del enllac; l'accés anonima no dona 401 per si sol |
-| `403` gestionant festival/canal/comitat | cridor sense rol | Verifica membresia i rol (`GET …/members`); l'auto-join només dona `attendee` |
-| `409` al unir-se | ja es membre | Usa `leave` o gestionia des de membres |
-| `413` pujant | supera 10 MB cos / 5 MB imatge / 100 MB video / 10 MB pdf | Comprimeix o divideix l'arxiu |
-| `429` generalitzat | rate limit 100/60s per IP (ou 3/300s al reset) | Espera e reintenta; revisa `TESTING=true` residual |
-| WS non connecta | JWT sense `type=access` o sessio revocada/expirada | Torna a fer login; revisa `/api/auth/sessions` |
-| App fora de liña non sincroniza | cola amb fallos esgotats (`failed`, 3 intents + backoff) | Revisa errors en el prompt de sinc; `clear()` després de confirmar al logout |
+## Còpias de seguretat e migracions
 
-## Veure ancaus
+- SQLite: copiar `*.db` a cald arrestat (`-Kill` abans). MariaDB: `mariadb-dump` (volum `db-data`).
+- Migracions: `alembic upgrade head` dempuèi `backend/` (prod **solament** Alembic, jamai `create_all`). Lo head actual es `c1d2e3f4a5b6` (42 revisions) e aponda `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` e `chat_mutes`.
+- Cambi de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalh dins [DATABASE.md](DATABASE.md).
 
-- [USO.md](USO.md): arrancada e operacio del sistema
-- [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md): desplegament, ports e CI
-- [SEGURIDAD.md](SEGURIDAD.md): checklist d'enduriment e politicas
-- [../README.oc.md](../../README.oc.md): contexto global del projècte
+## Resolucion de problèmas
+
+| Sintòma | Causa probabla | Accion |
+|---|---|---|
+| L'arranjada s'arrèsta per `SECRET_KEY` / CORS | defaut pauc segur o `*` en prod | Definir `SECRET_KEY` e `CORS_ORIGINS` explicits |
+| `401` suls endpoints publics de formularis | ligam mal generat | Revisar lo token del ligam; l'accès anonim dona pas 401 per el meteis |
+| `403` en gestionant festival/canal/comitat | caller sens ròtle | Verificar l'adjoncion e lo ròtle (`GET …/members`); l'auto-join dona solament `attendee` |
+| `409` en s'adjonhent | ja es membre | Utilizar `leave` o gestionar dempuèi los membres |
+| `413` en montant | passa 10 MB còs / 5 MB imatge / 100 MB vidèo / 10 MB pdf | Comprimir o partejar lo fichièr |
+| `429` generalizat | rate limit 100/60s per IP (o 3/300s al reset) | Espèrar e tornar ensajar; revisar `TESTING=true` residual |
+| WS se connecta pas | JWT sens `type=access` o session revocada/expirada | Tornar far login; revisar `/api/auth/sessions` |
+| App fòra linha se sincroniza pas | còda amb de fracasses agotats (`failed`, 3 ensajos + backoff) | Revisar las errors dins l'invite de sync; `clear()` après confirmacion al logout |
+| `403` en important un bundle | `origin_domain` non autorizat dins la politica del nose | Revisar `/api/federation/nodes` e tornar importar |
+| `429` en chat federat | mai de 10 messatges/60 s per nose e usagi | Espèrar lo `Retry-After`; en tèsts se desactiva amb `TESTING=true` |
+| Eveniments SSE copats o sens donadas | token invalid o `since` davant lo replay | Tornan far login e recomençan amb `since=0` (replay de 200 eveniments) |
+| Messatges federats duplicats | reenviament del bridge | Son escartats per `message_id` dins `chat_outbox`; revisar `/api/federation/chat/messages` |
+
+## Vejatz tanben
+
+- [USO.md](USO.md): arranjada e operacion del sistèma
+- [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md): desplegament, pòrts e CI
+- [SEGURIDAD.md](SEGURIDAD.md): lista de renforçament e politicas
+- [../README.oc.md](../../README.oc.md): context general del projècte

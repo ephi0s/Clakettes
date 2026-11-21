@@ -55,6 +55,8 @@ from app.models.channel import Channel, ChannelMember
 from app.models.user_key import UserKey
 from app.models.audit_log import AuditLog
 from app.models.node_policy import NodePolicy
+from app.models.identity_redirect import IdentityRedirect
+from app.models.migration_audit import MigrationAudit
 from app.models.moderation_report import ModerationReport
 from app.models.jury_vote import JuryVote
 from app.models.trusted_node import TrustedNode, NodePeeringSession
@@ -146,6 +148,8 @@ __all__ = [
     "UserKey",
     "AuditLog",
     "NodePolicy",
+    "IdentityRedirect",
+    "MigrationAudit",
     "ModerationReport",
     "JuryVote",
     "TrustedNode",

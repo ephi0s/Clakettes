@@ -1,8 +1,17 @@
 """Federation endpoints (node policies: allowlist/blocklist)."""
 
+import base64
+import json
 import os
+from datetime import datetime, timedelta, timezone
 
+import httpx
 import jwt
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
@@ -22,6 +31,30 @@ from app.services.federation_token_service import FederationTokenService
 federation_token_service = FederationTokenService()
 
 _federation_limiter = RateLimiter()
+
+
+def _signing_key():
+    key_path = getattr(settings, "MTLS_CLIENT_KEY_PATH", None) or os.environ.get("MTLS_CLIENT_KEY_PATH")
+    if key_path and os.path.isfile(key_path):
+        with open(key_path, "rb") as fh:
+            return serialization.load_pem_private_key(fh.read(), password=None)
+    return serialization.load_pem_private_key(federation_token_service.private_pem().encode("ascii"), password=None)
+
+
+def _manifest_signature_payload(manifest: dict) -> dict:
+    return {k: v for k, v in manifest.items() if k not in ("signature", "certificate_chain")}
+
+
+def _canonical_json(payload: dict) -> bytes:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+async def _fetch_peer_jwks(issuer: str) -> dict:
+    jwks_url = f"https://{issuer}/api/federation/.well-known/jwks.json"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(jwks_url, timeout=10)
+        response.raise_for_status()
+        return response.json()
 
 
 def _check_federation_rate_limit(request: Request):
@@ -131,19 +164,24 @@ async def set_node_policy(
 
 @router.get("/manifest")
 async def federation_manifest():
-    from datetime import datetime, timezone
-
     now = datetime.now(timezone.utc)
-    return {
+    manifest = {
         "schema_version": "1",
         "node": settings.PUBLIC_BASE_URL or "primary",
         "version": "1.0.0",
         "capabilities": ["festivals", "users", "chat", "voting"],
         "issued_at": now.isoformat(),
-        "expires_at": None,
-        "signature": None,
-        "certificate_chain": [],
+        "expires_at": (now + timedelta(hours=24)).isoformat(),
     }
+    signature = _signing_key().sign(_canonical_json(manifest), padding.PKCS1v15(), hashes.SHA256())
+    manifest["signature"] = base64.b64encode(signature).decode("ascii")
+    chain = []
+    cert_path = getattr(settings, "MTLS_CLIENT_CERT_PATH", None) or os.environ.get("MTLS_CLIENT_CERT_PATH")
+    if cert_path and os.path.isfile(cert_path):
+        with open(cert_path, "r", encoding="utf-8") as fh:
+            chain.append(fh.read())
+    manifest["certificate_chain"] = chain
+    return manifest
 
 
 @router.patch("/reports/{report_id}")
@@ -360,9 +398,66 @@ async def federation_heartbeat():
     return {"alive": True}
 
 
+async def get_current_federation_peer(request: Request) -> dict | None:
+    """Valida un Bearer token de federación entrante contra la clave pública JWKS del emisor.
+
+    Extrae el ``iss`` del token sin verificar (para saber qué nodo lo firmó) y
+    valida la firma contra el JWKS de ese nodo. Retorna el payload o None.
+    """
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[7:].strip()
+    if not token:
+        return None
+    try:
+        unverified = jwt.decode(token, options={"verify_signature": False})
+    except jwt.PyJWTError:
+        return None
+    issuer = unverified.get("iss")
+    if not issuer:
+        return None
+    try:
+        jwks = await _fetch_peer_jwks(issuer)
+    except Exception:
+        return None
+    keys = jwks.get("keys", [])
+    if not keys:
+        return None
+    key = keys[0]
+    n = int.from_bytes(base64.urlsafe_b64decode(key["n"] + "=="), "big")
+    e = int.from_bytes(base64.urlsafe_b64decode(key["e"] + "=="), "big")
+    public_numbers = RSAPublicNumbers(e, n)
+    public_key = public_numbers.public_key()
+    public_pem = public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo).decode("ascii")
+    try:
+        payload = jwt.decode(
+            token,
+            public_pem,
+            algorithms=["RS256"],
+            audience="clakettes-federation",
+            issuer=issuer,
+            options={"require": ["exp", "iss", "aud", "sub", "typ"]},
+        )
+        if payload.get("typ") != "federation":
+            return None
+        return payload
+    except jwt.PyJWTError:
+        return None
+
+
 @router.get("/whoami")
-async def federation_whoami():
-    return {"node": "primary"}
+async def federation_whoami(peer: dict | None = Depends(get_current_federation_peer)):
+    if peer is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Federation peer identity required",
+        )
+    return {
+        "node": peer.get("issuer_node") or peer.get("iss"),
+        "issuer": peer.get("iss"),
+        "subject": peer.get("sub"),
+    }
 
 
 @router.get("/peers")
@@ -550,6 +645,14 @@ async def peers_verify(body: PeerVerifyIn, db: Session = Depends(get_db)):
         return {"trusted": False, "reason": "huella_cert_no_coincide", "fingerprint": fingerprint}
     if not node.allowed:
         return {"trusted": False, "reason": "nodo_no_autorizado", "fingerprint": fingerprint}
+    if body.manifest_signature is not None and body.manifest_payload is not None:
+        try:
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+            signature = base64.b64decode(body.manifest_signature)
+            canonical = _canonical_json(_manifest_signature_payload(body.manifest_payload))
+            cert.public_key().verify(signature, canonical, padding.PKCS1v15(), hashes.SHA256())
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="manifest_signature_invalid")
     return {"trusted": True, "domain": body.node_domain, "fingerprint": fingerprint}
 
 
@@ -587,61 +690,3 @@ async def federation_issue_token(body: FederationTokenIn, request: Request, db: 
         extra_claims={"issuer_node": peer.node_domain},
     )
     return {"access_token": token, "token_type": "Bearer", "expires_in": federation_token_service.ttl_seconds}
-
-
-async def get_current_federation_peer(request: Request) -> dict | None:
-    """Valida un Bearer token de federación entrante contra la clave pública JWKS del emisor.
-
-    Extrae el ``iss`` del token sin verificar (para saber qué nodo lo firmó) y
-    valida la firma contra el JWKS de ese nodo. Retorna el payload o None.
-    """
-    import base64
-    import httpx
-
-    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
-    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-
-    auth = request.headers.get("authorization", "")
-    if not auth.startswith("Bearer "):
-        return None
-    token = auth[7:].strip()
-    if not token:
-        return None
-    try:
-        unverified = jwt.decode(token, options={"verify_signature": False})
-    except jwt.PyJWTError:
-        return None
-    issuer = unverified.get("iss")
-    if not issuer:
-        return None
-    try:
-        jwks_url = f"https://{issuer}/api/federation/.well-known/jwks.json"
-        async with httpx.AsyncClient() as client:
-            r = await client.get(jwks_url, timeout=10)
-            r.raise_for_status()
-            jwks = r.json()
-    except Exception:
-        return None
-    keys = jwks.get("keys", [])
-    if not keys:
-        return None
-    key = keys[0]
-    n = int.from_bytes(base64.urlsafe_b64decode(key["n"] + "=="), "big")
-    e = int.from_bytes(base64.urlsafe_b64decode(key["e"] + "=="), "big")
-    public_numbers = RSAPublicNumbers(e, n)
-    public_key = public_numbers.public_key()
-    public_pem = public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo).decode("ascii")
-    try:
-        payload = jwt.decode(
-            token,
-            public_pem,
-            algorithms=["RS256"],
-            audience="clakettes-federation",
-            issuer=issuer,
-            options={"require": ["exp", "iss", "aud", "sub", "typ"]},
-        )
-        if payload.get("typ") != "federation":
-            return None
-        return payload
-    except jwt.PyJWTError:
-        return None

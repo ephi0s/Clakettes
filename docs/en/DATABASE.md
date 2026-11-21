@@ -25,7 +25,7 @@ By default Clakettes uses SQLite (`clakettes.db`), which requires no configurati
    # Development/local with MariaDB
    docker compose --profile db up -d
 
-   # Production (backend + frontend + MariaDB + nginx)
+   # Full production (backend + frontend + MariaDB + nginx)
    docker compose --profile prod up -d
    ```
 3. Run migrations (Alembic only, never `create_all` in production):
@@ -67,6 +67,8 @@ Important notes:
 | `Award` | `awards` | Entity |
 | `Badge` | `badges` | Entity |
 | `Calendar` | `calendars` | Entity |
+| `ChatMute` | `chat_mutes` | Entity (federation) |
+| `ChatOutbox` | `chat_outbox` | Entity (federation) |
 | `Channel` | `channels` | Entity |
 | `Committee` | `committees` | Entity |
 | `Event` | `events` | Entity |
@@ -76,7 +78,10 @@ Important notes:
 | `FestivalRulebook` | `festival_rulebooks` | Entity |
 | `FormDefinition` | `form_definitions` | Entity |
 | `Group` | `groups` | Entity |
+| `IdentityRedirect` | `identity_redirects` | Entity (federation) |
 | `JuryVote` | `jury_votes` | Entity |
+| `MessageReport` | `message_reports` | Entity (federation) |
+| `MigrationAudit` | `migration_audits` | Entity (federation) |
 | `Location` | `locations` | Entity |
 | `LocationImage` | `location_images` | Entity |
 | `LocationRelation` | `location_relations` | Entity |
@@ -108,8 +113,6 @@ Important notes:
 Association tables:
 - `user_festival` — M2M between `User` and `Festival`
 - `validation_rule_group_rules` — M2M between `ValidationRuleGroup` and `ValidationRule`
-
-
 
 ## Base model
 
@@ -272,6 +275,36 @@ Fields:
 - **Key fields:** reporter_node, target_node, target_user_ref, reason, status
 - **Relationships:** Federation entity
 
+### IdentityRedirect
+- **Table:** `identity_redirects`
+- **Class:** `IdentityRedirect`
+- **Key fields:** old_ref (unique index), new_ref, target_domain, created_at
+- **Relationships:** Federation entity; resolves the old ref after an identity migration
+
+### MigrationAudit
+- **Table:** `migration_audits`
+- **Class:** `MigrationAudit`
+- **Key fields:** entity_type, entity_id, action, source_domain, target_domain, details (JSON), created_at
+- **Relationships:** Federation entity; traces each festival or user migration
+
+### ChatOutbox
+- **Table:** `chat_outbox`
+- **Class:** `ChatOutbox`
+- **Key fields:** message_id (unique), node_origin, subject, payload (JSON), signature, status, attempts, last_error, created_at
+- **Relationships:** Durable queue of federated chat (`DurableQueueBackend`); uniqueness of `message_id` provides deduplication and `attempts`/`last_error` manage retries
+
+### MessageReport
+- **Table:** `message_reports`
+- **Class:** `MessageReport`
+- **Key fields:** reporter_id (FK), message_id (FK), reason, status
+- **Relationships:** Belongs to User (reporter) and Message
+
+### ChatMute
+- **Table:** `chat_mutes`
+- **Class:** `ChatMute`
+- **Key fields:** user_id (FK), channel_id (FK), node_domain, until, reason
+- **Relationships:** Belongs to User and Channel; the mute can apply to a channel or a federated node
+
 ### Location
 - **Table:** `locations`
 - **Class:** `Location`
@@ -373,7 +406,7 @@ This is used as a FastAPI dependency for database access from endpoints.
 
 ## SQLite to MariaDB migration notes
 
-Schema changes are managed with Alembic (`backend/alembic/versions/`; `alembic upgrade head`). In production only Alembic, never `create_all`.
+Schema changes are managed with Alembic (`backend/alembic/versions/`; `alembic upgrade head`). There are 42 revisions and the head is `c1d2e3f4a5b6`; the last three (`a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`) add the portability tables, the durable chat queue and moderation. In production only Alembic, never `create_all`.
 
 When migrating from SQLite to MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corresponds to MariaDB `INT AUTO_INCREMENT`

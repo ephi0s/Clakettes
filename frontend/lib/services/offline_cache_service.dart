@@ -9,23 +9,27 @@ class _CacheEntry {
   final String data; // JSON-encoded payload
   final String signature; // HMAC-SHA256 of data
   final int timestamp;
+  final String? nodeOrigin;
 
   _CacheEntry({
     required this.data,
     required this.signature,
     required this.timestamp,
+    this.nodeOrigin,
   });
 
   Map<String, dynamic> toJson() => {
         'data': data,
         'signature': signature,
         'timestamp': timestamp,
+        'node_origin': nodeOrigin,
       };
 
   factory _CacheEntry.fromJson(Map<String, dynamic> json) => _CacheEntry(
         data: json['data'] as String,
         signature: json['signature'] as String,
         timestamp: json['timestamp'] as int,
+        nodeOrigin: json['node_origin'] as String?,
       );
 }
 
@@ -95,8 +99,10 @@ class OfflineCacheService {
     return base64Url.encode(hmac.convert(utf8.encode(data)).bytes);
   }
 
-  bool _verify(String data, String signature) {
-    final expected = _sign(data);
+  String _signedPayload(String? nodeOrigin, String data) => '${nodeOrigin ?? ''}|$data';
+
+  bool _verify(String payload, String signature) {
+    final expected = _sign(payload);
     // Constant-time comparison to prevent timing attacks.
     if (expected.length != signature.length) return false;
     int result = 0;
@@ -104,6 +110,11 @@ class OfflineCacheService {
       result |= expected.codeUnitAt(i) ^ signature.codeUnitAt(i);
     }
     return result == 0;
+  }
+
+  bool _verifyEntry(_CacheEntry entry) {
+    if (_verify(_signedPayload(entry.nodeOrigin, entry.data), entry.signature)) return true;
+    return entry.nodeOrigin == null && _verify(entry.data, entry.signature);
   }
 
   // ---------------------------------------------------------------------------
@@ -157,12 +168,15 @@ class OfflineCacheService {
   /// [data] se codifica en JSON, se firma con HMAC-SHA256 y se almacena en Hive.
   /// [entityType] es uno de `festival`, `user`, `shortfilm`, `message` o
   /// una clave compuesta como `festival_list`.
-  Future<void> put(String entityType, dynamic data) async {
+  Future<void> put(String entityType, dynamic data) => putWithOrigin(entityType, data, '');
+
+  Future<void> putWithOrigin(String entityType, dynamic data, String nodeOrigin) async {
     final jsonStr = json.encode(data);
     final entry = _CacheEntry(
       data: jsonStr,
-      signature: _sign(jsonStr),
+      signature: _sign(_signedPayload(nodeOrigin, jsonStr)),
       timestamp: DateTime.now().millisecondsSinceEpoch,
+      nodeOrigin: nodeOrigin,
     );
     await _cacheBox.put(entityType, entry.toJson());
   }
@@ -178,7 +192,7 @@ class OfflineCacheService {
     final entry = _CacheEntry.fromJson(Map<String, dynamic>.from(raw));
 
     // Integrity check: HMAC must match.
-    if (!_verify(entry.data, entry.signature)) {
+    if (!_verifyEntry(entry)) {
       _cacheBox.delete(entityType);
       return null;
     }
@@ -208,6 +222,103 @@ class OfflineCacheService {
     }
 
     return decoded;
+  }
+
+  String? getOrigin(String entityType) {
+    final entry = _validEntry(entityType);
+    return entry?.nodeOrigin;
+  }
+
+  Map<String, dynamic>? getEnvelope(String entityType) {
+    final entry = _validEntry(entityType);
+    if (entry == null) return null;
+    return {
+      'data': json.decode(entry.data),
+      'node_origin': entry.nodeOrigin,
+      'timestamp': entry.timestamp,
+    };
+  }
+
+  Map<String, String> listOrigins() {
+    final result = <String, String>{};
+    for (final key in _cacheBox.keys) {
+      if (key is! String) continue;
+      final origin = _validEntry(key)?.nodeOrigin;
+      if (origin != null) result[key] = origin;
+    }
+    return result;
+  }
+
+  Future<void> clearOrigin(String nodeOrigin) async {
+    final keys = <String>[];
+    for (final key in _cacheBox.keys) {
+      if (key is! String) continue;
+      final raw = _cacheBox.get(key);
+      if (raw == null) continue;
+      final entry = _CacheEntry.fromJson(Map<String, dynamic>.from(raw));
+      if (entry.nodeOrigin == nodeOrigin) keys.add(key);
+    }
+    for (final key in keys) {
+      await _cacheBox.delete(key);
+    }
+  }
+
+  Map<String, dynamic> reconcile(
+    String entityType,
+    dynamic remoteData,
+    String remoteNode, {
+    int? remoteTimestamp,
+  }) {
+    final entry = _validEntry(entityType);
+    if (entry == null) {
+      return {'action': 'use_remote', 'data': remoteData, 'origin': remoteNode};
+    }
+
+    final localData = json.decode(entry.data);
+    final localOrigin = entry.nodeOrigin ?? '';
+    final remoteTs = remoteTimestamp ?? DateTime.now().millisecondsSinceEpoch;
+
+    if (localOrigin == remoteNode) {
+      if (entry.timestamp >= remoteTs) {
+        return {'action': 'use_local', 'data': localData, 'origin': localOrigin};
+      }
+      return {'action': 'use_remote', 'data': remoteData, 'origin': remoteNode};
+    }
+
+    if (json.encode(localData) == json.encode(remoteData)) {
+      return {
+        'action': 'use_remote',
+        'data': remoteData,
+        'origin': remoteNode,
+        'note': 'converged',
+      };
+    }
+
+    return {
+      'action': 'conflict',
+      'local': localData,
+      'remote': remoteData,
+      'origins': [localOrigin, remoteNode],
+    };
+  }
+
+  _CacheEntry? _validEntry(String entityType) {
+    final raw = _cacheBox.get(entityType);
+    if (raw == null) return null;
+    final entry = _CacheEntry.fromJson(Map<String, dynamic>.from(raw));
+    if (!_verifyEntry(entry)) return null;
+    final decoded = json.decode(entry.data);
+    if (decoded is Map<String, dynamic>) {
+      if (_validateEntitySchema(entityType, decoded) != null) return null;
+    }
+    if (decoded is List) {
+      for (final item in decoded) {
+        if (item is Map<String, dynamic>) {
+          if (_validateEntitySchema(entityType, item) != null) return null;
+        }
+      }
+    }
+    return entry;
   }
 
   /// Elimina una entrada de la caché.

@@ -2,15 +2,18 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user, validate_access_token
 from app.chat_backend.registry import chat_backend_registry
+from app.config import is_testing
 from app.database import get_db
 from app.models.user import User as UserModel
 from app.schemas.message import MessageCreate, MessageResponse, MessagesPage
 from app.services.message_service import MessageService
+from app.services.chat_moderation_service import ChatModerationService
+from app.services.chat_rate_limit_service import chat_rate_limit, resolve_node_domain
 from app.services.user_service import UserService
 from app.services.channel_service import ChannelService
 from app.services.group_service import GroupService
@@ -24,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 service = MessageService()
+moderation_service = ChatModerationService()
 user_service = UserService()
 channel_service = ChannelService()
 group_service = GroupService()
@@ -78,10 +82,26 @@ async def list_messages(
 @router.post("/messages", response_model=MessageResponse, status_code=201)
 async def create_message(
     message: MessageCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    # Prevent sender_id spoofing — always use the authenticated user's ID
+    node_domain = resolve_node_domain(request)
+    moderation_service.check_send_allowed(
+        db,
+        current_user.id,
+        node_domain=node_domain,
+        channel_id=message.channel_id,
+        content=message.content,
+    )
+    if not is_testing():
+        allowed, retry_after = chat_rate_limit.check(node_domain, current_user.id)
+        if not allowed:
+            raise HTTPException(
+                status_code=429,
+                detail="Chat rate limit exceeded",
+                headers={"Retry-After": str(retry_after)},
+            )
     message.sender_id = current_user.id
     if message.channel_id is not None:
         channel = get_or_404(db, Channel, message.channel_id, "Channel")

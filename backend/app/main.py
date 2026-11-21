@@ -23,11 +23,16 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.routers import (
     federation,
+    federation_chat_bridge,
+    federation_events,
+    federation_portability,
+    federation_resilience,
     festival_rulebooks,
     festivals,
     users,
     shortfilms,
     chat,
+    chat_moderation,
     auth,
     auth_sessions,
     user_festival,
@@ -62,6 +67,8 @@ from app.routers import (
     jury_votes,
 )
 from app.chat_backend import WebSocketChatBackend, chat_backend_registry
+from app.chat_backend.durable_queue_backend import DurableQueueBackend
+from app.services.message_queue_service import ChatBackendTransport, MessageQueueService
 from app.database import engine, SessionLocal
 from app.models.base import Base
 from app.models.user import User
@@ -446,8 +453,9 @@ async def lifespan(application: FastAPI):
 
     _purge_expired_sessions()
 
-    # Initialise the real-time chat backend (WebSockets by default).
-    chat_backend = WebSocketChatBackend()
+    ws_backend = WebSocketChatBackend()
+    message_queue = MessageQueueService(transport=ChatBackendTransport(ws_backend))
+    chat_backend = DurableQueueBackend(queue=message_queue, delegate=ws_backend)
     chat_backend_registry.register(chat_backend)
     await chat_backend.start()
 
@@ -533,6 +541,7 @@ app.include_router(
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(shortfilms.router, prefix="/api/shortfilms", tags=["shortfilms"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(chat_moderation.router, tags=["chat-moderation"])
 app.include_router(auth.router, prefix="/api/users", tags=["auth"])
 app.include_router(auth_sessions.router, prefix="/api/auth", tags=["auth"])
 app.include_router(user_festival.router, prefix="/api/festivals", tags=["user-festival"])
@@ -546,6 +555,10 @@ app.include_router(user_roles.router, prefix="/api", tags=["user-roles"])
 app.include_router(user_aliases.router, prefix="/api", tags=["user-aliases"])
 app.include_router(user_blocks.router, prefix="/api", tags=["user-blocks"])
 app.include_router(federation.router, prefix="/api", tags=["federation"])
+app.include_router(federation_chat_bridge.router, prefix="/api", tags=["federation-chat-bridge"])
+app.include_router(federation_events.router, tags=["federation-events"])
+app.include_router(federation_portability.router, tags=["federation-portability"])
+app.include_router(federation_resilience.router, tags=["federation-resilience"])
 app.include_router(validation_rules.router, prefix="/api", tags=["validation-rules"])
 app.include_router(registration_forms.router, prefix="/api", tags=["registration-forms"])
 app.include_router(role_groups.router, prefix="/api", tags=["role-groups"])

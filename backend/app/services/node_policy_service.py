@@ -16,6 +16,9 @@ class NodePolicyService(BaseService[NodePolicy, NodePolicy, NodePolicy]):
         allowed: bool,
         consent_required: bool = True,
         minimize_data: bool = True,
+        import_only: bool = False,
+        disable_chat: bool = False,
+        disable_search: bool = False,
         reason: str | None = None,
     ) -> NodePolicy:
         existing = db.query(NodePolicy).filter(NodePolicy.node_domain == node_domain).first()
@@ -23,6 +26,9 @@ class NodePolicyService(BaseService[NodePolicy, NodePolicy, NodePolicy]):
             existing.allowed = allowed
             existing.consent_required = consent_required
             existing.minimize_data = minimize_data
+            existing.import_only = import_only
+            existing.disable_chat = disable_chat
+            existing.disable_search = disable_search
             existing.reason = reason
             db.commit()
             db.refresh(existing)
@@ -32,6 +38,9 @@ class NodePolicyService(BaseService[NodePolicy, NodePolicy, NodePolicy]):
             allowed=allowed,
             consent_required=consent_required,
             minimize_data=minimize_data,
+            import_only=import_only,
+            disable_chat=disable_chat,
+            disable_search=disable_search,
             reason=reason,
         )
         db.add(obj)

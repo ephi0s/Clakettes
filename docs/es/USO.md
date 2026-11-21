@@ -32,6 +32,9 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 | `SECRET_KEY` | env (obligatoria en `APP_ENV=production`) | Firma JWT; default inseguro bloquea el arranque en prod |
 | `CORS_ORIGINS` | env | Orígenes explícitos en prod (`*` prohibido con credenciales) |
 | `APP_ENV` | env | `development` crea admin + `create_all`; `production` exige Alembic |
+| `PUBLIC_BASE_URL` | `backend/.env` | Dominio público del nodo; aparece en el manifiesto y en los bundles de portabilidad |
+| `MTLS_REQUIRED` | env | Obliga a peer mTLS verificado en federación (CN y PEM del certificado) |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM del certificado y clave privada que firman el manifiesto (RSA-SHA256) |
 
 ## Operación
 
@@ -40,7 +43,9 @@ Admin inicial (solo no-prod): `admin` / `setup` — cambiar al entrar.
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; vuelta con `import_mariadb_to_sqlite.py` (detalle en [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volumen `db-data` en Docker).
 - **Logs**: uvicorn stdout (tokens DAV ya redactados); errores de API en SnackBar + `debugPrint`.
-- **Límites**: cuerpos ≤10 MB (413 si mayor); rate limit con 429 + reintento.
+- **Límites**: cuerpos ≤10 MB (413 si mayor); rate limit con 429 + reintento (federation 60/60 s por IP; chat 10/60 s por nodo y usuario, desactivado con `TESTING=true`).
+- **Federación**: comprueba un nodo tercero con `python tools/federation_conformance.py <url> [--json]`; la salud del peering está en `/api/federation/resilience/health` y las métricas p50/p95 en `/metrics`.
+- **Portabilidad**: exporta/importa bundles desde `/api/federation/portability/{bundles,imports}` y consulta las redirecciones de identidad en `/redirects/{ref}`.
 
 ## Roles de usuario
 

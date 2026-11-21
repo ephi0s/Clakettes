@@ -54,6 +54,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   bool _initialized = false;
   int _unreadNotificationCount = 0;
   bool _isOffline = false;
+  int _downNodeCount = 0;
   StreamSubscription? _connectivitySubscription;
 
   @override
@@ -61,6 +62,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _isOffline = !ConnectivityMonitor.instance.isOnline;
+    _downNodeCount = ConnectivityMonitor.instance.offlineNodeCount;
     _connectivitySubscription = ConnectivityMonitor.instance.onStatusChanged.listen(_onConnectivityChanged);
   }
 
@@ -129,12 +131,22 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   /// Gestiona los cambios de conectividad del stream de ConnectivityMonitor.
   void _onConnectivityChanged(bool online) {
     if (!mounted) return;
-    setState(() => _isOffline = !online);
-    if (online) {
-      _onReconnected();
-    } else {
+    final wasOffline = _isOffline;
+    setState(() {
+      _isOffline = !online;
+      _downNodeCount = ConnectivityMonitor.instance.offlineNodeCount;
+    });
+    if (!wasOffline && !online) {
       _onDisconnected();
+    } else if (wasOffline && online) {
+      _onReconnected();
     }
+  }
+
+  Future<void> _retryNodes() async {
+    await ConnectivityMonitor.instance.checkNow();
+    if (!mounted) return;
+    setState(() => _downNodeCount = ConnectivityMonitor.instance.offlineNodeCount);
   }
 
   /// Muestra un snackbar offline cuando se pierde la conexión.
@@ -505,6 +517,13 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
               ),
             ),
           ),
+        if (!_isOffline && ConnectivityMonitor.instance.isDegraded)
+          DegradedNodesBanner(
+            downNodeCount: _downNodeCount,
+            offlineLabel: l10n.nodeOffline,
+            retryLabel: l10n.nodeReload,
+            onRetry: _retryNodes,
+          ),
         Expanded(
           child: Semantics(
             liveRegion: true,
@@ -725,4 +744,60 @@ class _NavItem {
     required this.screenIndex,
     this.badge = 0,
   });
+}
+
+class DegradedNodesBanner extends StatelessWidget {
+  final int downNodeCount;
+  final String offlineLabel;
+  final String retryLabel;
+  final VoidCallback onRetry;
+
+  const DegradedNodesBanner({
+    super.key,
+    required this.downNodeCount,
+    required this.offlineLabel,
+    required this.retryLabel,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final message = '$downNodeCount $offlineLabel';
+    return Semantics(
+      label: message,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        color: colorScheme.tertiaryContainer,
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: Row(
+            children: [
+              Icon(Icons.cloud_off_rounded, color: colorScheme.onTertiaryContainer, size: 14),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(message,
+                  style: textTheme.labelMedium?.copyWith(color: colorScheme.onTertiaryContainer, fontWeight: FontWeight.w500),
+                ),
+              ),
+              TextButton(
+                onPressed: onRetry,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(retryLabel,
+                  style: textTheme.labelSmall?.copyWith(color: colorScheme.onTertiaryContainer, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

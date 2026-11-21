@@ -1,63 +1,68 @@
-# Uso — Clakettes
+# Utilizacion — Clakettes
 
 [ES](../es/USO.md) · [EN](../en/USO.md) · [FR](../fr/USO.md) · [DE](../de/USO.md) · [IT](../it/USO.md) · [CA](../ca/USO.md) · [EU](../eu/USO.md) · [GL](../gl/USO.md) · [OC](USO.md)
 
-## Arrancada rapida
+## Arranjada rapida
 
-| Volgo | Comanda |
-|-------|---------|
-| Tot en local | `.\start.ps1` o `./start.sh` (Docker si aich, local se non) |
-| Solo backend / frontend | `-NoFrontend` / `-NoBackend` |
-| Probar en navegador | `-Web` (modo local) |
-| Productiu local | `-Final` (build web + serve) |
-| Tests | `-TestBackend` / `-TestFrontend` |
+| Vòli | Comanda |
+|---|---|
+| Tot en local | `.\start.ps1` o `./start.sh` (Docker se i a, local autrament) |
+| Solament backend / frontend | `-NoFrontend` / `-NoBackend` |
+| Ensajar dins un navegador | `-Web` (mode local) |
+| Produccion locala | `-Final` (build web + serve) |
+| Tèsts | `-TestBackend` / `-TestFrontend` |
 | Migracions / amb MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |
-| Parar tot | `-Kill` |
-| Installar dependencias que faltan | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: gestionari de SO + git clone) |
-| Revisar l'entorn sens arrancar | `-Check` (doctor: Docker, Python, Flutter, .venv, ports; sale 1 si manca algo) |
+| Arrestar tot | `-Kill` |
+| Installar las dependéncias que mancan | `-InstallMissing` (Windows: winget + git clone; Linux/macOS: gestor del SO + git clone) |
+| Revisar l'environament sens arrancar | `-Check` (doctor: Docker, Python, Flutter, .venv, pòrts; sòrt 1 se quicòm manca) |
 | Builds distribuibles | `-BuildAll` (`tools/build-all.ps1` → `builds/`) |
 
-Sens Docker, lo lanzador crea un entorno bare-metal local: detecta Python 3.12+ e Flutter, mostra coma instalalos segont lo vòstre SO e offre instalalos amb `-InstallMissing` (preguissa abans se non anatz amb lo flag).
+Sens Docker, lo lançaire crea un environament bare-metal local: detecta Python 3.12+ e Flutter, mostra còm los installar segon vòstre SO e ofrís de los installar amb `-InstallMissing` (demanda abans levat se anatz amb lo flag).
 
-URLs dev: backend `http://localhost:8000` (Swagger en `/docs`), frontend `http://localhost:3000`.
-Se lo port es ocupat se reassigna sens (mira `[PUERTO]` en la sortida).
-Admin initial (solo no-prod): `admin` / `setup` — cambiar al entrar.
+URLs dev: backend `http://localhost:8000` (Swagger a `/docs`), frontend `http://localhost:3000`.
+Se lo pòrt es ocupat se torna atribuir sol (gardatz `[PUERTO]` dins la sortida).
+Admin inicial (solament non-prod): `admin` / `setup` — cambiar en intrant.
 
 ## Configuracion
 
-| Variable / flag | On | Efecte |
-|-----------------|----|--------|
-| `BACKEND_URL` | `--dart-define` o pantalla de backend en l'app | URL de l'API (persiste en SharedPreferences) |
-| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; en Docker `./data/clakettes.db`) o `mariadb+pymysql://…?ssl_ca=…` (prod, TLS obligatari) |
-| `SECRET_KEY` | env (obligatari en `APP_ENV=production`) | Firma JWT; default insegur bloqueja l'arrancada en prod |
-| `CORS_ORIGINS` | env | Origenes explicitas en prod (`*` prohibit amb credencials) |
-| `APP_ENV` | env | `development` crea admin + `create_all`; `production` exige Alembic |
+| Variabla / flag | Ont | Efecte |
+|---|---|---|
+| `BACKEND_URL` | `--dart-define` o ecran de backend dins l'app | URL de l'API (persistís dins SharedPreferences) |
+| `DATABASE_URL` | `backend/.env` | `sqlite:///./clakettes.db` (dev; dins Docker `./data/clakettes.db`) o `mariadb+pymysql://…?ssl_ca=…` (prod, TLS obligatòri) |
+| `SECRET_KEY` | env (obligatòria amb `APP_ENV=production`) | Signatura JWT; defaut pauc segur bloca l'arranjada en prod |
+| `CORS_ORIGINS` | env | Origines explicitas en prod (`*` interdit amb credencials) |
+| `APP_ENV` | env | `development` crea admin + `create_all`; `production` exegís Alembic |
+| `PUBLIC_BASE_URL` | `backend/.env` | Domeni public del nose; apareis dins lo manifest e los bundles de portabilitat |
+| `MTLS_REQUIRED` | env | Obliga a un peer mTLS verificat en federacion (CN e PEM del certificat) |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM del certificat e clau privada que signan lo manifest (RSA-SHA256) |
 
 ## Operacion
 
-- **Migrar**: `alembic upgrade head` des de `backend/` (Docker: `-Migrate`).
-- **Migracion automatica**: l'app migra sens la DB al arrancar e sella las DB novas amb la revisión actual; `SKIP_AUTO_MIGRATE=1` per omitir-lo (DBs gestionades externament).
-- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; tornada amb `import_mariadb_to_sqlite.py` (detalle en [DATABASE.md](DATABASE.md)).
-- **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volum `db-data` en Docker).
-- **Logs**: stdout de uvicorn (tokens DAV ja redactats); errors de l'API en SnackBar + `debugPrint`.
-- **Limites**: corpos ≤10 MB (413 se mai gran); rate limit amb 429 + reedicio.
+- **Migrar**: `alembic upgrade head` dempuèi `backend/` (Docker: `-Migrate`).
+- **Migracion automatica**: l'app migra sola la DB en arrancant e sella las DB novas amb la revision actuala; `SKIP_AUTO_MIGRATE=1` per ometre (DB gestionadas exteriorament).
+- **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; retorn amb `import_mariadb_to_sqlite.py` (detalh dins [DATABASE.md](DATABASE.md)).
+- **Còpias de seguretat**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volum `db-data` dins Docker).
+- **Jornals**: stdout d'uvicorn (tokens DAV ja escafats); errors d'API dins SnackBar + `debugPrint`.
+- **Limites**: còrs ≤10 MB (413 se pus grand); rate limit amb 429 + reensaji (federacion 60/60 s per IP; chat 10/60 s per nose e usagi, desactivat amb `TESTING=true`).
+- **Federacion**: verificatz un nose tèrç amb `python tools/federation_conformance.py <url> [--json]`; la santat del peering es a `/api/federation/resilience/health` e las metricas p50/p95 a `/metrics`.
+- **Portabilitat**: exportatz/importatz de bundles dempuèi `/api/federation/portability/{bundles,imports}` e consultatz las redireccions d'identitat a `/redirects/{ref}`.
 
-## Rolis d'usagi
+## Ròtles d'usagi
 
-`admin` (tot) → `organizer` (son festival: eventos, formularis, comitots) → `attendee`/`juror`/etc. (assignats pels organizers; l'auto-join dota solament `attendee`). Canals: `admin`/`moderator`/`member`; comitots amb conte de membres en la llista.
+`admin` (tot) → `organizer` (son festival: eveniments, formularis, comitats) → `attendee`/`juror`/etc. (atribuits pels organizers; l'auto-join dona solament `attendee`). Canales: `admin`/`moderator`/`member`; comitats amb comptatge dels membres dins la lista.
 
-## Funcions en desvelupament activ
+## Fonctions en desvolopament actiu
 
-🚧 Las segundas funcions estan en desvelupament activ e poden cambiar:
+🚧 Las fonctions seguentas son en desvolopament actiu e pòdon cambiar:
 
-- **Profils socials**: murs de publications (microblogging amb Markdown e incrustats de vídeo e podcast) en profils d'usagi e festival, amb fils de resposta opcionals per publicació e moderacion per rols (administradors, gestió del festival, moderadors). Sens reaccions, stickers nin GIF per ara.
-- **Personalizacion de profils**: portada, tagline e enlaços socials en usagis e festivals.
-- **Insignias**: desactivadas per defecte; solament l'equip administratiu pot activarlas (`PUT /api/badges/settings`). Las insignias de la plataforma li otorganpels administradors; las insignias de merito de festival (veterà, popular, ròle, premi especial), lor gestion. Cada insignia porta una imatge (SVG preferit).
-- **Votacion del jurat**: puntuacion per obra, agregacio e anonimitat opcional (fasa 5 del roadmap).
+- **Perfils socials**: murs de publicacions (microblogging amb Markdown e d'integracions de vidèo e de podcast) suls perfils d'usagi e de festival, amb de fils de responsa opcionalas per publicacion e moderacion per ròtles (administrators, gestion del festival, moderators). Sens reaccions, autocolants ni GIF per ara.
+- **Personalizacion dels perfils**: couvertura, tagline e ligams socials suls usagis e festivals.
+- **Insignias**: desactivadas per defaut; solament l'equipa administrativa las pòt activar (`PUT /api/badges/settings`). Las insignias de plataforma las donan los administrators; las de meriti de festival (veteran, popular, ròtle, prèmi especial), sa gestion. Cada insignia pòrta una imatge (SVG de preferéncia).
+- **Vot del jurat**: notacion per òbra, agregacion e anonimat opcional (fasa 5 del roadmap).
 
-## Veire ancaus
+## Vejatz tanben
 
-- [README.md](../../README.oc.md): descricio general del projècte e acces rapid
-- [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts e comandes d'execucio
-- [ADMINISTRACION.md](ADMINISTRACION.md): administratzia del desplegament e rotacion de secrets
-- [SEGURIDAD.md](SEGURIDAD.md): checklist e boas practicas de productiu
+- [README.oc.md](../../README.oc.md): descripcion generala del projècte e accès rapid
+- [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts e comandas d'execucion
+- [ADMINISTRACION.md](ADMINISTRACION.md): administracion del desplegament e rotacion dels secrets
+- [SEGURIDAD.md](SEGURIDAD.md): lista de contraròtle e bonas practicas de produccion

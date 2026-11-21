@@ -20,7 +20,7 @@ Only edits/deletes their own festivals and manages their users (`require_festiva
 - Profile with craft (directing, acting, sound, writing, editing, costume, makeup, extra, dubbing, foley, press, production, distribution…), bio and awards linked to platform festivals or external via link.
 - Field-by-field privacy (email, bio, location) and public/private profiles.
 - Each user edits their profile and their shorts; the jury consults and votes according to their festival.
-- Direct and group/channel chat with end-to-end encryption: public keys are published at `POST /api/users/me/public-key`, the server only stores and forwards encrypted data, real encryption happens in the app.
+- Direct and group/channel chat with end-to-end encryption: public keys are published at `POST /api/users/me/public-key`, the server only stores and forwards encrypted data, real encryption happens in the app. Between federated nodes the message travels through the signed bridge, is deduplicated by `message_id` and ordered by date; you can report messages and administrators can mute users or filter words.
 
 ## Express team (attendee)
 
@@ -34,7 +34,7 @@ Discover festivals (`GET /api/festivals/` paginated and public), follow shorts a
 
 ## Global administrator (admin)
 
-Sees and edits everything (users, festivals, shorts, channels, forms). Operations in [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tables, reset, backups, secrets).
+Sees and edits everything (users, festivals, shorts, channels, forms). Operations in [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tables, reset, backups, secrets). In federation it registers nodes and their policies (`import_only`, `disable_chat`, `disable_search`), exports and imports bundles, migrates festivals and user identities with their redirects, publishes events, moderates chat and monitors resilience (p50/p95 metrics and key revocation).
 
 ## Jury (juror)
 

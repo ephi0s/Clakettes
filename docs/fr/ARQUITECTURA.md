@@ -5,9 +5,9 @@
 ## Carte
 
 ```
-Flutter (web/bureau/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
+Flutter (web/Desktop/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
   offline-first (Hive)                    JWT 30 min + refresh 30 d
-                                          rate limit 100/60s (?page=&size=)
+                                           rate limit 100/60s (?page=&size=)
 ```
 
 Ports (Docker) : backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3306`.
@@ -16,38 +16,49 @@ Ports (Docker) : backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3
 
 Couches : Routers → Services → Models, types via `app.enums`.
 
-| Pièce | Où | Règle |
+| Élément | Où | Règle |
 |---|---|---|
-| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Les routers ne consultent pas ; les services ne lèvent pas 404 (sauf 3 hérités) |
+| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Les routers ne requêtent pas ; les services ne lèvent pas de 404 (sauf 3 hérités) |
 | 404 uniforme | `routers/dependencies.py:get_or_404` | fetch → 404 en une ligne |
-| Auth | `app/auth.py:validate_access_token` | Signature + `type=access` + session active/non révoquée/non expirée ; `last_used_at` lazy (5 min) |
-| Auth optionnel | `routers/dependencies.py:get_current_user_optional` | Endpoints publics sans 401 |
+| Auth | `app/auth.py:validate_access_token` | Signature + `type=access` + session active/non révoquée/non expirée ; `last_used_at` paresseux (5 min) |
+| Auth optionnelle | `routers/dependencies.py:get_current_user_optional` | Endpoints publics sans 401 |
 | Permissions | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
 | Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, buckets `middleware:`/`dav:` ; instances dans `main`/`admin`/`auth`) | Désactivé avec `TESTING=true` |
-| Chat temps réel | `app/chat_backend/` (WebSocket) + REST dans `routers/chat.py` | WS valide session via `validate_access_token` |
+| Chat temps réel | `app/chat_backend/` (WebSocket) + REST dans `routers/chat.py` | Le WS valide la session via `validate_access_token` |
+| Chat fédéré | `routers/federation_chat_bridge.py`, `services/message_queue_service.py` (`chat_outbox`), `chat_backend/durable_queue_backend.py` (`DurableQueueBackend`), `services/message_federation_service.py` | Bridge signé RS256, dédup par `message_id`, tri par `timestamp`, transport interchangeable |
+| Modération du chat | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Signalements, mutes, filtre de mots, `disable_chat` et 10 messages/60 s par nœud et utilisateur (off avec `TESTING=true`) |
+| Bus d'événements | `routers/federation_events.py`, `services/event_bus_service.py` | SSE avec `since`, battement et replay (200) ; publication signée et 3 relances (300 ms→5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (préfixe `/dav`, bucket propre 600/60s) | Token bearer dans l'URL ; TLS obligatoire en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib ; PDF avec reportlab en import paresseux |
-| Migrations | `alembic/` (36 versions) | Prod seulement Alembic ; dev aussi `create_all` |
-| Fédération | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | manifest, répertoire, nœuds, rapports, webfinger, ref users |
+| Migrations | `alembic/` (42 versions, head `c1d2e3f4a5b6`) | Prod seulement Alembic ; dev aussi `create_all` |
+| Fédération | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifeste signé RSA-SHA256, répertoire, nœuds, signalements, webfinger, users ref, JWKS, `whoami`, token fédéré, peers/verify, peers/revoke, mTLS par CN/PEM |
+| Portabilité | `routers/federation_portability.py`, `services/portability_service.py`, modèles `identity_redirect`/`migration_audit` | Bundles signés, imports, migration de festivals/utilisateurs et redirects |
+| Résilience | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, heartbeat, métriques p50/p95, révocation de clés et plan d'incident |
+| Conformité | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI qui vérifie manifeste, JWKS, token, répertoire, portabilité, bridge et SSE |
+
+API générée : `python tools/gen_api.py --all` produit 441 endpoints dans 39 routers avec préfixe (voir [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
-Services singleton + `setState()` + Streams (sans Provider). Démarrage dans `main()` :
+Services singleton + `setState()` + Streams (pas de Provider). Démarrage dans `main()` :
 `DatabaseService` → `OfflineCache` → `SyncQueue` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
 
-| Pièce | Où | Règle |
+| Élément | Où | Règle |
 |---|---|---|
-| API | `services/api_service.dart` (noyau) + `services/api/` (9 domaines) | Base `BACKEND_URL` (sauvegardée > dart-define > défaut par plateforme ; émulateur Android `10.0.2.2`) |
-| Hors ligne | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-renvoi) | À la reconnexion, sync avec confirmation |
-| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en direct, REST pour l'historique ; E2EE ECDH P-256 + AES-GCM dans les isolats |
-| Notifications | `notification_service.dart` | Bureau : plugin OS ; web : Notification API ; mobile : no-op (voir [PUSH.md](PUSH.md)) |
+| API | `services/api_service.dart` (noyau) + `services/api/` (9 domaines) | Base `BACKEND_URL` (enregistrée > dart-define > défaut par plateforme ; émulateur Android `10.0.2.2`) |
+| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-renvoi) | Cache étiqueté par nœud (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`) ; health checks par nœud pour dégrader avec élégance ; à la reconnexion, sync avec confirmation |
+| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en direct, REST pour l'historique et l'historique fédéré ; E2EE ECDH P-256 + AES-GCM dans des isolates |
+| Avis | `notification_service.dart` | Bureau : plugin OS ; web : Notification API ; mobile : no-op (voir [PUSH.md](PUSH.md)) |
 | Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer toujours ; 10 écrans mis en cache |
-| i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` est le fallback ; 0 clés manquantes (vérifié avec script) |
+| i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` est le fallback ; 0 clé absente (vérifié par script) |
 | Permissions OS | `AndroidManifest.xml` / `Info.plist` | Réseau, localisation, caméra, photothèque, alarmes exactes |
 
 ## Flux clés
 
-1. **Réservation** : festival → événement → sièges en bloc (1 commit) → réservation → occupation (épinglé dans `tests/integration/test_flows.py`).
-2. **Message** : canal → membre → DM → lecture → suppression (seul l'expéditeur/admin).
-3. **Délégation** : créer → lister les actives → révoquer (seul le délégué/admin).
+1. **Réservation** : festival → événement → sièges en lot (1 commit) → réservation → occupation (pin dans `tests/integration/test_flows.py`).
+2. **Message** : canal → membre → DM → lecture → suppression (seulement expéditeur/admin).
+3. **Délégation** : créer → lister actives → révoquer (seulement délégateur/admin).
 4. **Inscription publique** : lien avec token → formulaire sans auth → approbation.
+5. **Portabilité** : bundle signé → import avec politique d'origine → migration de festival/utilisateur → redirect de l'ancienne ref.
+6. **Chat fédéré** : enveloppe signée → vérification de signature et dédup → persistance dans `chat_outbox` → diffusion et tri par `timestamp`.
+7. **Événements** : publication sur le bus → SSE avec `since` et battement → relance avec backoff si le pair échoue.

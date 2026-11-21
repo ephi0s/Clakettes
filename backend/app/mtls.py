@@ -34,8 +34,20 @@ def cert_fingerprint_sha256(cert_pem: str) -> str:
     return hashlib.sha256(der).hexdigest()
 
 
+def _cert_subject_cn(cert_pem: str) -> Optional[str]:
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+
+    try:
+        cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+        attrs = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+    except Exception:
+        return None
+    return attrs[0].value if attrs else None
+
+
 def extract_client_cert_info(request: Request) -> tuple[Optional[str], Optional[str], Optional[str]]:
-    """Extrae (domain, fingerprint_sha256, subject_cn) de los headers mTLS del proxy.
+    """Extrae (subject_cn, fingerprint_sha256, cert_pem) de los headers mTLS del proxy.
 
     Headers esperados (configurados en el reverse proxy):
     - X-SSL-Client-Cert: certificado PEM del cliente (una línea o multiline con \n)
@@ -43,6 +55,8 @@ def extract_client_cert_info(request: Request) -> tuple[Optional[str], Optional[
     - X-SSL-Client-Subject-CN: CN opcional
     - X-Forwarded-For / X-Real-IP: IP remota
 
+    El CN se usa como dominio del par. Si el proxy no expone la huella o el CN,
+    ambos se recalculan a partir del PEM del certificado.
     Retorna (None, None, None) si no hay certificado de cliente.
     """
     cert_pem = request.headers.get("x-ssl-client-cert")
@@ -54,6 +68,8 @@ def extract_client_cert_info(request: Request) -> tuple[Optional[str], Optional[
         fingerprint = cert_fingerprint_sha256(cert_pem)
 
     subject_cn = request.headers.get("x-ssl-client-subject-cn")
+    if not subject_cn:
+        subject_cn = _cert_subject_cn(cert_pem)
     return subject_cn or None, fingerprint, cert_pem
 
 
@@ -80,7 +96,8 @@ class MTLSPeerVerificationMiddleware(BaseHTTPMiddleware):
         if not self.require_mtls:
             return await call_next(request)
 
-        domain, fingerprint, _cert_pem = extract_client_cert_info(request)
+        subject_cn, fingerprint, cert_pem = extract_client_cert_info(request)
+        domain = subject_cn
         if domain is None or fingerprint is None:
             return Response(
                 content='{"detail":"mTLS client certificate required"}',

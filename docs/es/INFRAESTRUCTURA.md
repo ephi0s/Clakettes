@@ -38,12 +38,14 @@ Volúmenes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-
 | `SECRET_KEY` | Firma JWT (`HS256`); caduca access 30 min, refresh 30 d |
 | `DATABASE_URL` | `sqlite:///./clakettes.db` (dev) o `mariadb+pymysql://…` (prod) |
 | `CORS_ORIGINS` | Vacío = `*` sin credenciales (solo dev); prod exige orígenes explícitos |
-| `PUBLIC_BASE_URL`, `FORWARDED_ALLOW_IPS` | URL pública y proxies de confianza (TLS frontal obligatorio en prod: los tokens DAV viajan en URL) |
+| `PUBLIC_BASE_URL`, `FORWARDED_ALLOW_IPS` | URL pública del nodo (manifiesto y bundles) y proxies de confianza (TLS frontal obligatorio en prod: los tokens DAV viajan en URL) |
+| `MTLS_REQUIRED`, `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | mTLS federado (CN y PEM del certificado) y PEM/clave que firman el manifiesto RSA-SHA256 |
 | `BACKEND_URL` | `--dart-define` para la app Flutter (también cambiable en la pantalla de backend; persiste en SharedPreferences) |
 
 ## Salud y observables
 
-- `GET /health` → `{"status":"healthy"}`; `GET /` → versión (`0.3.0`). `ConnectivityMonitor` en la app los usa como sonda real.
+- `GET /health` → `{"status":"healthy"}`; `GET /` → versión (`0.3.0`). `ConnectivityMonitor` en la app los usa como sonda real, con health checks por nodo para degradar la caché Hive con elegancia.
+- Federación: `GET /api/federation/resilience/health` y `/metrics` (p50/p95, latencia, fallos y reintentos); `GET /api/federation/events/stream` mantiene el SSE con un latido cada 15 s; `python tools/federation_conformance.py <url> [--json]` verifica nodos terceros.
 - Logs: stdout de uvicorn (tokens DAV redactados); errores de API en SnackBar + `debugPrint`.
 - Límites: cuerpo ≤10 MB (413), avatar/imagen ≤5 MB (`jpeg/png/webp/gif` con magic-bytes), vídeo ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s por IP (429; `/dav*` 600/60s; bypass con `TESTING=true`).
 

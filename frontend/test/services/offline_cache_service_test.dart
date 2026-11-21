@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -179,6 +182,122 @@ void main() {
       final result = cache.get('festival');
       expect(result, isNotNull);
       expect(result.length, 2);
+    });
+
+    test('putWithOrigin tags entry and exposes origin APIs', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      await cache.putWithOrigin('festival', {'id': 1, 'name': 'Node F'}, 'node-a');
+      expect(cache.getOrigin('festival'), 'node-a');
+      final envelope = cache.getEnvelope('festival');
+      expect(envelope, isNotNull);
+      expect(envelope!['node_origin'], 'node-a');
+      expect(envelope['timestamp'], isA<int>());
+      expect(envelope['data'], {'id': 1, 'name': 'Node F'});
+      expect(cache.listOrigins(), {'festival': 'node-a'});
+    });
+
+    test('put uses empty origin', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      await cache.put('festival', {'id': 1, 'name': 'Local'});
+      expect(cache.getOrigin('festival'), '');
+      expect(cache.listOrigins(), {'festival': ''});
+    });
+
+    test('detects node_origin tampering', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      await cache.putWithOrigin('festival', {'id': 1, 'name': 'Original'}, 'node-a');
+      final box = await Hive.openBox('offline_cache');
+      final raw = box.get('festival');
+      raw['node_origin'] = 'attacker';
+      await box.put('festival', raw);
+      expect(cache.get('festival'), isNull);
+      expect(cache.getOrigin('festival'), isNull);
+    });
+
+    test('legacy entry without node origin stays readable', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      final prefs = await SharedPreferences.getInstance();
+      final secret = prefs.getString('cache_hmac_secret')!;
+      final data = {'id': 1, 'name': 'Legacy'};
+      final jsonStr = json.encode(data);
+      final signature = base64Url.encode(
+        Hmac(sha256, utf8.encode(secret)).convert(utf8.encode(jsonStr)).bytes,
+      );
+      final box = await Hive.openBox('offline_cache');
+      await box.put('festival', {
+        'data': jsonStr,
+        'signature': signature,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      expect(cache.get('festival')['name'], 'Legacy');
+      expect(cache.getOrigin('festival'), isNull);
+    });
+
+    test('clearOrigin removes only entries from that node', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      await cache.putWithOrigin('festival', {'id': 1, 'name': 'A'}, 'node-a');
+      await cache.putWithOrigin('user', {'id': 1, 'username': 'u', 'email': 'u@t.com'}, 'node-b');
+      await cache.clearOrigin('node-a');
+      expect(cache.get('festival'), isNull);
+      expect(cache.get('user'), isNotNull);
+      expect(cache.listOrigins(), {'user': 'node-b'});
+    });
+
+    test('reconcile uses remote when no local entry', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      final remote = {'id': 1, 'name': 'Remote'};
+      final result = cache.reconcile('festival', remote, 'node-b');
+      expect(result['action'], 'use_remote');
+      expect(result['data'], remote);
+      expect(result['origin'], 'node-b');
+    });
+
+    test('reconcile same origin keeps newer timestamp', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      final local = {'id': 1, 'name': 'Local'};
+      final remote = {'id': 1, 'name': 'Remote'};
+      await cache.putWithOrigin('festival', local, 'node-a');
+      final localTs = cache.getTimestamp('festival')!;
+
+      final localWins =
+          cache.reconcile('festival', remote, 'node-a', remoteTimestamp: localTs - 1000);
+      expect(localWins['action'], 'use_local');
+      expect(localWins['data'], local);
+
+      final remoteWins =
+          cache.reconcile('festival', remote, 'node-a', remoteTimestamp: localTs + 1000);
+      expect(remoteWins['action'], 'use_remote');
+      expect(remoteWins['data'], remote);
+    });
+
+    test('reconcile converged data from different origins', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      await cache.putWithOrigin('festival', {'id': 1, 'name': 'Same'}, 'node-a');
+      final result = cache.reconcile('festival', {'id': 1, 'name': 'Same'}, 'node-b');
+      expect(result['action'], 'use_remote');
+      expect(result['note'], 'converged');
+      expect(result['origin'], 'node-b');
+    });
+
+    test('reconcile reports conflict for divergent data', () async {
+      final cache = OfflineCacheService.instance;
+      await cache.init();
+      final local = {'id': 1, 'name': 'Local'};
+      final remote = {'id': 1, 'name': 'Remote'};
+      await cache.putWithOrigin('festival', local, 'node-a');
+      final result = cache.reconcile('festival', remote, 'node-b');
+      expect(result['action'], 'conflict');
+      expect(result['local'], local);
+      expect(result['remote'], remote);
+      expect(result['origins'], ['node-a', 'node-b']);
     });
   });
 }

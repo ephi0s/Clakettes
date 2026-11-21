@@ -20,7 +20,7 @@ Solo edita/borra sus festivales y gestiona sus usuarios (`require_festival_admin
 - Perfil con oficio (dirección, interpretación, sonido, guion, montaje, vestuario, maquillaje, figuración, doblaje, foley, prensa, producción, distribución…), bio y palmarés vinculado a festivales de la plataforma o externo por enlace.
 - Privacidad campo por campo (email, bio, ubicación) y perfiles públicos/privados.
 - Cada usuario edita su perfil y sus cortos; el jurado consulta y vota según su festival.
-- Chat directo y de grupo/canal con cifrado de extremo a extremo: las claves públicas se publican en `POST /api/users/me/public-key`, el servidor solo guarda y retransmite cifrado, el cifrado real ocurre en la app.
+- Chat directo y de grupo/canal con cifrado de extremo a extremo: las claves públicas se publican en `POST /api/users/me/public-key`, el servidor solo guarda y retransmite cifrado, el cifrado real ocurre en la app. Entre nodos federados el mensaje viaja por el bridge firmado, se deduplica por `message_id` y se ordena por fecha; puedes reportar mensajes y los administradores pueden silenciar usuarios o filtrar palabras.
 
 ## Equipo express (attendee)
 
@@ -34,7 +34,7 @@ Descubre festivales (`GET /api/festivals/` paginado y público), sigue cortos y 
 
 ## Administrador global (admin)
 
-Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tablas, reset, backups, secretos).
+Lo ve y lo edita todo (usuarios, festivales, cortos, canales, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tablas, reset, backups, secretos). En federación registra nodos y sus políticas (`import_only`, `disable_chat`, `disable_search`), exporta e importa bundles, migra festivales e identidades de usuario con sus redirecciones, publica eventos, modera el chat y vigila la resiliencia (métricas p50/p95 y revocación de claves).
 
 ## Jurado (juror)
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
-import '../services/api_service.dart';
+import '../services/connectivity_monitor.dart';
 import '../services/node_info_model.dart';
 import '../services/node_service.dart';
 
@@ -20,11 +20,9 @@ class NodeManagementScreen extends StatefulWidget {
 
 class _NodeManagementScreenState extends State<NodeManagementScreen> {
   final NodeService _nodes = NodeService();
-  final ApiService _api = ApiService();
   AppLocalizations get l10n => AppLocalizations.of(context)!;
   bool _loading = false;
   String? _status;
-  final _nodeOk = <String, bool>{};
   bool _allNodesDown = false;
   @override
   void initState() {
@@ -42,12 +40,16 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
   }
 
   Future<void> _testAll() async {
-    final ok = await _api.healthCheck();
+    final monitor = ConnectivityMonitor.instance;
+    final ok = await monitor.checkNow();
     _allNodesDown = !ok;
     _status = ok ? l10n.nodeAnyOnline : l10n.nodeNoneOnline;
-    for (final n in _nodes.nodes) {
-      _nodeOk[n.domain] = await _api.testNode(n.effectiveUrl);
-    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _retryNode(NodeInfo node) async {
+    await ConnectivityMonitor.instance.checkNow();
+    await _nodes.markSeen(node.domain);
     if (mounted) setState(() {});
   }
 
@@ -129,7 +131,6 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
 
   Widget _buildNodeTile(NodeInfo n) {
     final isActive = _nodes.activeNode?.id == n.id;
-    final ok = _nodeOk[n.domain] ?? false;
     return ListTile(
       leading: CircleAvatar(
         child: Text((n.displayName ?? n.domain).isNotEmpty
@@ -154,16 +155,15 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
               ),
               const SizedBox(width: 6),
               Text('${l10n.active}: ${isActive ? l10n.yes : l10n.no}', style: const TextStyle(fontSize: 12)),
-              const SizedBox(width: 12),
-              Icon(
-                ok ? Icons.wifi : Icons.wifi_off,
-                color: ok ? Colors.green : Colors.red,
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              Text(ok ? l10n.nodeOnline : l10n.nodeOffline,
-                  style: TextStyle(fontSize: 12, color: ok ? Colors.green : Colors.red)),
             ],
+          ),
+          const SizedBox(height: 2),
+          NodeHealthRow(
+            health: ConnectivityMonitor.instance.nodeHealth[n.domain],
+            onlineLabel: l10n.nodeOnline,
+            offlineLabel: l10n.nodeOffline,
+            retryTooltip: l10n.nodeTestConnection,
+            onRetry: () => _retryNode(n),
           ),
         ],
       ),
@@ -175,16 +175,6 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
                 color: isActive ? Colors.green : null),
             onPressed: () => _setActive(n),
             tooltip: l10n.nodeMarkActive,
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 20),
-            onPressed: () async {
-              _nodeOk[n.domain] = await _api.testNode(n.effectiveUrl);
-              await _nodes.markSeen(n.domain);
-              if (!mounted) return;
-              setState(() {});
-            },
-            tooltip: l10n.nodeTestConnection,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -203,6 +193,11 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
       appBar: AppBar(
         title: Text(l10n.nodeTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.fact_check),
+            onPressed: _loading ? null : _testAll,
+            tooltip: l10n.nodeTestConnection,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loading ? null : _refresh,
@@ -262,4 +257,55 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
       ),
     );
   }
+}
+
+class NodeHealthRow extends StatelessWidget {
+  final NodeHealth? health;
+  final String onlineLabel;
+  final String offlineLabel;
+  final String retryTooltip;
+  final VoidCallback onRetry;
+
+  const NodeHealthRow({
+    super.key,
+    this.health,
+    required this.onlineLabel,
+    required this.offlineLabel,
+    required this.retryTooltip,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ok = health?.online ?? false;
+    final details = health == null
+        ? ''
+        : '${_formatTime(health!.lastCheck)} · ${health!.latencyMs} ms';
+    return Row(
+      children: [
+        Icon(ok ? Icons.wifi : Icons.wifi_off, color: ok ? Colors.green : Colors.red, size: 16),
+        const SizedBox(width: 6),
+        Text(ok ? onlineLabel : offlineLabel,
+            style: TextStyle(fontSize: 12, color: ok ? Colors.green : Colors.red)),
+        if (details.isNotEmpty) ...[
+          const SizedBox(width: 8),
+          Text(details, style: const TextStyle(fontSize: 11)),
+        ],
+        const Spacer(),
+        SizedBox(
+          width: 32,
+          height: 32,
+          child: IconButton(
+            icon: const Icon(Icons.refresh, size: 18),
+            onPressed: onRetry,
+            tooltip: retryTooltip,
+            padding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatTime(DateTime value) =>
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}:${value.second.toString().padLeft(2, '0')}';
 }

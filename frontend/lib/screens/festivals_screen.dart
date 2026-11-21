@@ -4,6 +4,7 @@ import '../models/festival_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/offline_cache_service.dart';
+import '../services/node_service.dart';
 import '../widgets/reusable_widgets.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/error_state_widget.dart';
@@ -89,15 +90,44 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
     try {
       final result = await _apiService.getFestivals(size: 100);
       if (!mounted) return;
+      final remoteData = result.items.map((f) => f.toJson()).toList();
+      final nodeOrigin = NodeService().activeNode?.domain ?? '';
+      if (!mounted) return;
       setState(() {
         _allFestivals = result.items;
         _applyFilter();
         _isLoading = false;
       });
+      try {
+        final cache = OfflineCacheService.instance;
+        final reconciliation = cache.reconcile('festival', remoteData, nodeOrigin);
+        final action = reconciliation['action'] as String? ?? 'use_remote';
+        if (action == 'use_local') {
+          final cached = cache.get('festival');
+          if (cached is List && cached.isNotEmpty) {
+            setState(() {
+              _allFestivals = cached.map((j) => Festival.fromJson(Map<String, dynamic>.from(j))).toList();
+              _applyFilter();
+              _isOfflineData = true;
+            });
+            return;
+          }
+        } else {
+          if (action == 'conflict') _showConflictNotice();
+          await cache.putWithOrigin('festival', remoteData, nodeOrigin);
+        }
+      } catch (e) {
+        debugPrint('Cache error: $e');
+      }
     } catch (e) {
       debugPrint('Error: $e');
       if (!mounted) return;
-      final cached = OfflineCacheService.instance.get('festival');
+      dynamic cached;
+      try {
+        cached = OfflineCacheService.instance.get('festival');
+      } catch (cacheError) {
+        debugPrint('Cache error: $cacheError');
+      }
       if (cached is List && cached.isNotEmpty) {
         _allFestivals = cached.map((j) => Festival.fromJson(Map<String, dynamic>.from(j))).toList();
         _applyFilter();
@@ -109,6 +139,16 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
         _isOfflineData = _allFestivals.isNotEmpty;
       });
     }
+  }
+
+  void _showConflictNotice() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Datos en conflicto: se muestra la versión remota.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   /// Aplica la consulta de búsqueda actual a la lista de festivales cargada.

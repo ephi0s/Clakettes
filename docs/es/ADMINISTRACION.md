@@ -23,10 +23,24 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 - `CORS_ORIGINS`: orígenes explícitos en prod; `*` + credenciales está prohibido y bloquea el arranque.
 - Detrás de proxy: `uvicorn --proxy-headers` + `FORWARDED_ALLOW_IPS` + TLS frontal.
 
+## Federación
+
+| Operación | Endpoint / herramienta | Efecto |
+|---|---|---|
+| Nodos y políticas | `GET/POST /api/federation/nodes` | Allowlist/blocklist con `consent_required`, `minimize_data`, `import_only`, `disable_chat`, `disable_search` (admin) |
+| Identidad del par | `GET /api/federation/whoami` | Valida el JWT RS256 del par contra su JWKS; 401 si no es válido |
+| Portabilidad | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Exportar/importar bundles firmados, migrar propiedad e identidad y resolver refs antiguas (las migraciones, solo admin) |
+| Chat y moderación | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Bridge firmado, historial deduplicado, reportes, mutes, filtro y límite de 10 mensajes/60 s por nodo y usuario |
+| Eventos | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE con `since` y latido, publicación a pares y reintentos (3 intentos, 300 ms→5 s) |
+| Resiliencia | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Salud, latido, métricas p50/p95, revocación inmediata de claves y plan de incidente |
+| Conformidad | `python tools/federation_conformance.py <url> [--json]` | Verifica un nodo tercero; sale 1 si hay fallos críticos/altos |
+
+El detalle del modelo de confianza y del transporte está en [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) y [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md).
+
 ## Backups y migraciones
 
 - SQLite: copiar `*.db` en caliente parado (`-Kill` antes). MariaDB: `mariadb-dump` (volumen `db-data`).
-- Migraciones: `alembic upgrade head` desde `backend/` (prod **solo** Alembic, nunca `create_all`).
+- Migraciones: `alembic upgrade head` desde `backend/` (prod **solo** Alembic, nunca `create_all`). El head actual es `c1d2e3f4a5b6` (42 revisiones) y añade `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` y `chat_mutes`.
 - Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en [DATABASE.md](DATABASE.md).
 
 ## Troubleshooting
@@ -41,6 +55,10 @@ En no-prod (`APP_ENV != production`) el arranque crea `admin` / `setup` (`admin@
 | `429` generalizado | rate limit 100/60s por IP (o 3/300s en reset) | Espera y reintenta; revisa `TESTING=true` residual |
 | WS no conecta | JWT sin `type=access` o sesión revocada/expirada | Re-login; revisa `/api/auth/sessions` |
 | App offline no sincroniza | cola con fallos agotados (`failed`, 3 intentos + backoff) | Revisa errores en el prompt de sync; `clear()` tras confirmar en logout |
+| `403` importando un bundle | `origin_domain` no permitido en la política del nodo | Revisa `/api/federation/nodes` y vuelve a importar |
+| `429` en chat federado | más de 10 mensajes/60 s por nodo y usuario | Espera al `Retry-After`; en tests se desactiva con `TESTING=true` |
+| Eventos SSE cortados o sin datos | token inválido o `since` por delante del replay | Re-hacen login y reinician con `since=0` (replay de 200 eventos) |
+| Mensajes federados duplicados | reenvío del bridge | Se descartan por `message_id` en `chat_outbox`; revisa `/api/federation/chat/messages` |
 
 ## Ver también
 

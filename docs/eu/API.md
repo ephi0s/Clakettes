@@ -93,6 +93,17 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | bai |
 | WEBSOCKET | `/api/chat/ws` | token (query) |
 
+## `chat_moderation` → `/`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| POST | `/messages/{message_id}/report` | bai |
+| PATCH | `/messages/{message_id}/moderate` | bai |
+| GET | `/reports` | bai |
+| POST | `/mutes` | bai |
+| GET | `/mutes` | bai |
+| GET | `/limits` | bai |
+
 ## `committees` → `/api`
 
 | Metodoa | Ibilbidea | Auth |
@@ -166,6 +177,7 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | bai |
 | PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | bai |
 | PUT | `/api/events/{event_id}/screenings` | bai |
+| GET | `/api/festivals/{festival_id}/screenings` | ez |
 | GET | `/api/events/{event_id}/occupancy` | ez |
 | GET | `/api/events/{event_id}/ticket-types/` | ez |
 | POST | `/api/events/{event_id}/ticket-types/` | bai |
@@ -277,6 +289,44 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/.well-known/jwks.json` | ez |
 | POST | `/api/token` | ez |
 
+## `federation_chat_bridge` → `/api`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| POST | `/api/chat/bridge/inbound` | ez |
+| POST | `/api/chat/bridge/outbound` | ez |
+| GET | `/api/chat/bridge/config` | ez |
+| GET | `/api/chat/messages` | ez |
+
+## `federation_events` → `/`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| GET | `/stream` | ez |
+| POST | `/publish` | bai |
+| GET | `/retry-queue` | bai |
+
+## `federation_portability` → `/`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| POST | `/bundles` | bai |
+| POST | `/imports` | bai |
+| POST | `/festivals/{festival_id}/migrate` | ez |
+| POST | `/users/{user_ref}/migrate` | ez |
+| GET | `/redirects/{old_ref}` | bai |
+
+## `federation_resilience` → `/`
+
+| Metodoa | Ibilbidea | Auth |
+|---|---|---|
+| GET | `/health` | ez |
+| GET | `/heartbeat` | ez |
+| GET | `/metrics` | ez |
+| POST | `/keys/revoke` | bai |
+| GET | `/keys/revoked` | ez |
+| GET | `/incident-plan` | ez |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Metodoa | Ibilbidea | Auth |
@@ -335,10 +385,10 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | Metodoa | Ibilbidea | Auth |
 |---|---|---|
 | POST | `/api` | bai |
-| GET | `/api/{festival_id}` | ez |
+| GET | `/api/{festival_id}` | aukerakoa |
 | GET | `/api/aggregate/{festival_id}` | ez |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | ez |
-| GET | `/api/anonymous/{festival_id}` | ez |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | bai |
+| GET | `/api/anonymous/{festival_id}` | bai |
 
 ## `keys` → `/api/users`
 
@@ -611,4 +661,4 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/validation-rule-groups/` | ez |
 | POST | `/api/validation-rule-groups/` | bai |
 
-Guztira: 416 endpoint 38 routerretan.
+Guztira: 441 endpoint 39 routerretan.

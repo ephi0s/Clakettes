@@ -2,6 +2,7 @@
 
 [ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
+Generato da `app/routers/*.py` + prefissi di `app/main.py`.
 Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 
 ## `admin` → `/api/admin`
@@ -92,6 +93,17 @@ Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | sì |
 | WEBSOCKET | `/api/chat/ws` | token (query) |
 
+## `chat_moderation` → `/`
+
+| Metodo | Percorso | Auth |
+|---|---|---|
+| POST | `/messages/{message_id}/report` | sì |
+| PATCH | `/messages/{message_id}/moderate` | sì |
+| GET | `/reports` | sì |
+| POST | `/mutes` | sì |
+| GET | `/mutes` | sì |
+| GET | `/limits` | sì |
+
 ## `committees` → `/api`
 
 | Metodo | Percorso | Auth |
@@ -165,6 +177,7 @@ Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 | PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | sì |
 | PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | sì |
 | PUT | `/api/events/{event_id}/screenings` | sì |
+| GET | `/api/festivals/{festival_id}/screenings` | no |
 | GET | `/api/events/{event_id}/occupancy` | no |
 | GET | `/api/events/{event_id}/ticket-types/` | no |
 | POST | `/api/events/{event_id}/ticket-types/` | sì |
@@ -276,6 +289,44 @@ Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 | GET | `/api/.well-known/jwks.json` | no |
 | POST | `/api/token` | no |
 
+## `federation_chat_bridge` → `/api`
+
+| Metodo | Percorso | Auth |
+|---|---|---|
+| POST | `/api/chat/bridge/inbound` | no |
+| POST | `/api/chat/bridge/outbound` | no |
+| GET | `/api/chat/bridge/config` | no |
+| GET | `/api/chat/messages` | no |
+
+## `federation_events` → `/`
+
+| Metodo | Percorso | Auth |
+|---|---|---|
+| GET | `/stream` | no |
+| POST | `/publish` | sì |
+| GET | `/retry-queue` | sì |
+
+## `federation_portability` → `/`
+
+| Metodo | Percorso | Auth |
+|---|---|---|
+| POST | `/bundles` | sì |
+| POST | `/imports` | sì |
+| POST | `/festivals/{festival_id}/migrate` | no |
+| POST | `/users/{user_ref}/migrate` | no |
+| GET | `/redirects/{old_ref}` | sì |
+
+## `federation_resilience` → `/`
+
+| Metodo | Percorso | Auth |
+|---|---|---|
+| GET | `/health` | no |
+| GET | `/heartbeat` | no |
+| GET | `/metrics` | no |
+| POST | `/keys/revoke` | sì |
+| GET | `/keys/revoked` | no |
+| GET | `/incident-plan` | no |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Metodo | Percorso | Auth |
@@ -334,10 +385,10 @@ Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 | Metodo | Percorso | Auth |
 |---|---|---|
 | POST | `/api` | sì |
-| GET | `/api/{festival_id}` | no |
+| GET | `/api/{festival_id}` | opzionale |
 | GET | `/api/aggregate/{festival_id}` | no |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | no |
-| GET | `/api/anonymous/{festival_id}` | no |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | sì |
+| GET | `/api/anonymous/{festival_id}` | sì |
 
 ## `keys` → `/api/users`
 
@@ -609,3 +660,5 @@ Dettaglio interattivo: `/docs` (Swagger) e `/redoc` col backend avviato.
 | DELETE | `/api/validation-rules/{rule_id}` | sì |
 | GET | `/api/validation-rule-groups/` | no |
 | POST | `/api/validation-rule-groups/` | sì |
+
+Totale: 441 endpoint in 39 router.

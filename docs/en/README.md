@@ -11,7 +11,8 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 
 - **I want to use the app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **I manage a deployment** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Development** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **Development** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md) + [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+- **Reference for agents** → the commands and development conventions are in [../AGENTS.md](../../AGENTS.md)
 
 ## Documentation principles
 
@@ -37,9 +38,10 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 | [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB schema, per-model cards, ER | dev |
 | [BACKEND.md](BACKEND.md) | Backend guide (layers, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Audit report (rev. 10/10/2026) | reference |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Federation protocol between nodes (phase 4) | dev |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Federation protocol between nodes (phases 2 to 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimal federated entities) | dev |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federated trust model, mTLS, certificate rotation | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federated trust model, mTLS, signed manifest, portability, chat and resilience | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Broker decision (NATS JetStream) for chat and events between nodes; edge WebSocket and single-node fallback | dev |
 
 ## Recommended path by profile
 
@@ -64,11 +66,14 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
 6. [BACKEND.md](BACKEND.md)
+7. [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+8. [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md)
+9. [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md)
 
 ## Conventions for maintaining documentation
 
 - Update the canonical document before any summary or index.
-- If you change a startup flow, sync [README.en.md](../../README.en.md), [USO.md](USO.md) and [HERRAMIENTAS.md](HERRAMIENTAS.md).
+- If you change a startup flow, sync [README.md](../../README.md), [USO.md](USO.md) and [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - If you change a public API, update [API.md](API.md) and, where applicable, [DESARROLLO.md](DESARROLLO.md).
 - If you change the schema or persistence, review [DATABASE.md](DATABASE.md) and migrations.
 - Whenever you edit a document in `docs/es/`, replicate the change to the 8 sisters (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
@@ -77,14 +82,13 @@ All documentation exists in the 9 languages of the platform. Spanish (Canarian) 
 
 - **Where do I start?** Read [USO.md](USO.md) if you will operate the app; read [ARQUITECTURA.md](ARQUITECTURA.md) if you will develop.
 - **What is canonical and what is not?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) and [DATABASE.md](DATABASE.md) are the official reference for those topics.
-- **Where do I find a command or script?** Check [HERRAMIENTAS.md](HERRAMIENTAS.md) and [../README.md](../../README.en.md).
+- **Where do I find a command or script?** Check [HERRAMIENTAS.md](HERRAMIENTAS.md) and [../README.md](../../README.md).
 - **How do I know if a change needs documentation?** If it affects startup, permissions, infrastructure, API, or data model, it must be reflected in the relevant documentation.
 
 ## See also
 
-- [../README.md](../../README.en.md): project overview
+- [../README.md](../../README.md): project overview
 - [USO.md](USO.md): local operation and configuration
 - [ADMINISTRACION.md](ADMINISTRACION.md): deployment and administration scope
 - [ARQUITECTURA.md](ARQUITECTURA.md): technical system map
 - [API.md](API.md): endpoint reference
-

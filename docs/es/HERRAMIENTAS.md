@@ -21,6 +21,10 @@
 | iOS/iPad (requiere macOS) | `tools/build-ios.sh` | Solo en Mac con Xcode |
 | macOS / Windows / Linux | `tools/build-macos.sh` / `flutter build windows` / `flutter build linux` | Host correspondiente |
 | Docker multi-target | `tools/build-all.ps1` | Requiere Docker |
+| Verificar conformidad de un nodo | `python tools/federation_conformance.py <url> [--json]` | Raíz (`tools/`) |
+| Regenerar referencia de API | `python tools/gen_api.py --all` | Raíz (`tools/`) |
+
+El CLI de conformidad comprueba manifiesto, JWKS, token, directorio, usuarios, WebFinger, reportes, portabilidad, bridge de chat y stream de eventos; devuelve 1 si hay fallos `critical`/`high` y 0 en caso contrario, y `--json` imprime el informe completo.
 
 ## Mejoras aplicadas (09/10/2026)
 

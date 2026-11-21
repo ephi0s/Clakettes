@@ -1,55 +1,57 @@
 # Dokumentazioa — Clakettes
 
-Hau da proiektu dokumentazioaren hasierako aukera. Erabiltzaile, administrativesa edo garatzaileari gida egokiena eskaintzen du, fitxategi auzaz lerro eskuratu gabe.
+Aurkibide hau proiektuaren dokumentazioaren sarrera nagusia da. Erabiltzaile, administratzaile edo garatzaile batek gida egokia aurki dezan pentsatuta dago, ausaz fitxategiak irakurri gabe.
 
 ## Hizkuntzak
 
-Dokumentazio osoa platformaren 9 hizketan dago. Eskainera (kanarioak) kanonikoa da:
+Dokumentazio osoa plataformaren 9 hizkuntzetan dago. Espainiera (kanarioa) da kanonikoa:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
-## Dokumentazioa navegatu
+## Dokumentazioan nabigatzen
 
-- **Aplikazioa erabiltzen nahi dut** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
-- **Deploiamentua administratorratzen dut** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Garatze** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **Aplikazioa erabili nahi dut** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
+- **Inplementazio bat administratzen dut** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
+- **Garapena** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md) + [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+- **Agenteentzako erreferentzia** → garapeneko komandoak eta konbentzioak [../AGENTS.md](../../AGENTS.md) fitxategian daude
 
-## Dokumentazioen prinsipioak
+## Dokumentazioaren printzipioak
 
-- **Kanonikoko dokumentu bakarra gaiak bakoitzeko**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) eta [API.md](API.md) ofizialak dira aukerarenreferentzia.
-- **Audienten arabera eskrita dokumentazioa**: gida bakoitza leker motaentzakoa da, komando batzuen kopuru batik gabe.
-- **Erreferentzia lnkagunak**: non bai zerbitzunik aurretik badago.
-- **Ez doan duplikazioa**: dokumentazio berriak kanonikoan ekarri egiten duena, ez bakarrik alkoholitzatzea.
+- **Gai bakoitzeko dokumentu kanoniko bakarra**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) eta [API.md](API.md) dira beren arloko erreferentzia ofiziala.
+- **Publikoaren araberako dokumentazioa**: gida bakoitza irakurle mota bati zuzenduta dago, komando multzo bakar bati baino gehiago.
+- **Lotura zuzenak**: hemendik eduki garrantzitsura klik bakarrean irits daiteke.
+- **Beharrezkoa ez den bikoizketarik ez**: bigarren mailako dokumentuek kanonikora lotzen dute, errepikatu beharrean.
 
-## Dokumentazioen zerrenda
+## Dokumentuen aurkibidea
 
-| Dokumentua | Zergatik dugu | Audientzia |
-|------------|---------------|------------|
-| [FUNCIONAL.md](FUNCIONAL.md) | Balio ekonomiko rolen arabera eta bidez (festival,registrement, komitetak, saria, xat/E2EE, juradoko bota) | erabiltzailea, admin |
-| [USO.md](USO.md) | Hasi, aldagaiak, SQLite↔MariaDB migrazioa, kopak, kideak, ondorio | erabiltzailea, admin |
-| [ADMINISTRACION.md](ADMINISTRACION.md) | `/api/admin` endpoints, hasiera kontua, secret rotaketa, ondorioak, problema burutzea | admin |
-| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker-profilak, portuak, bideuak, Nginx, norabidea, CI (GitHub + GitLab) | admin, garatzailea |
-| [SEGURIDAD.md](SEGURIDAD.md) | Tokenek, `require_*`-matrizua, bihurtzea, hogoa zizketa | admin, garatzailea |
-| [ARQUITECTURA.md](ARQUITECTURA.md) | Sistemaren mapa + backend/frontend gailuak + bidez handia | garatzailea |
-| [API.md](API.md) | Endpoint-eren inkesta | garatzailea |
-| [DESARROLLO.md](DESARROLLO.md) | Konbendio endpoint/pantalla gehitzeko + CI portuak | garatzailea |
-| [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*` eskurak, konprezatutako gunoi, Docker, garatzeko fix | garatzailea |
-| [PUSH.md](PUSH.md) | Notification-akerekutzeko aukerak Firebase ellenére | garatzailea |
-| [DATABASE.md](DATABASE.md) | Dual SQLite/MariaDB esku, modelo-aren fichak, ER | garatzailea |
-| [BACKEND.md](BACKEND.md) | Backend-gidea (nazio, konfigurazioa, autentikazioa, proveek) | garatzailea |
-| [AUDITORIA.md](AUDITORIA.md) | Auditen aurkezpena (10/10/2026, rev) | ahulpen |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Noden arteko federazio protokoloa (fase 4) | garatzailea |
-| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale federatutako eskuroak) | garatzailea |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federatutako confianzaaren modeloa, mTLS, sertifikatu rotazioa | garatzailea |
+| Dokumentua | Zer estaltzen du | Publikoa |
+|---|---|---|
+| [FUNCIONAL.md](FUNCIONAL.md) | Benetako erabilgarritasuna rolaren arabera eta fluxuak (jaialdia, izena-ematea, batzordeak, sariak, txata/E2EE, epaimahaiaren botoa) | erabiltzailea, admin |
+| [USO.md](USO.md) | Abiaraztea, aldagaiak, SQLite↔MariaDB migrazioa, babeskopiak, rolak eta operazioa | erabiltzailea, admin |
+| [ADMINISTRACION.md](ADMINISTRACION.md) | `/api/admin` endpoint-ak, hasierako kontua, sekretuen birzirkulazioa, mugak, arazoak konpontzea | admin |
+| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Docker profilak, atak, bolumenak, Nginx, osasuna, CI (GitHub + GitLab) | admin, dev |
+| [SEGURIDAD.md](SEGURIDAD.md) | Tokenak, `require_*` matrizea, perimetroa, ekoizpenerako kontrol-zerrenda | admin, dev |
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Sistemaren mapa + backend/frontend arauak + fluxu giltzarriak | dev |
+| [API.md](API.md) | Endpoint-en erreferentzia | dev |
+| [DESARROLLO.md](DESARROLLO.md) | Endpoint/pantaila berria gehitzeko konbentzioa + CI ateak | dev |
+| [HERRAMIENTAS.md](HERRAMIENTAS.md) | `start.*` script-ak, banaketarako build-ak, Docker, CI konponketak | dev |
+| [PUSH.md](PUSH.md) | Firebase gabe jakinarazpenen erabakia | dev |
+| [DATABASE.md](DATABASE.md) | SQLite/MariaDB eskema duala, modelo bakoitzeko fitxak, ER | dev |
+| [BACKEND.md](BACKEND.md) | Backendaren gida (geruzak, konfigurazioa, autentifikazioa, testak) | dev |
+| [AUDITORIA.md](AUDITORIA.md) | Auditoretza txostena (berrik. 10/10/2026) | erreferentzia |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Nodoen arteko federazio-protokoloa (2tik 10erako faseak) | dev |
+| [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (gutxieneko entitate federatuak) | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federazio-confiantza eredua, mTLS, sinatutako manifestua, portabilitatea, txata eta erresilientzia | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Nodoen arteko txat eta gertaeretarako broker-erabakia (NATS JetStream); ertzeko WebSocket eta nodo bakarreko fallback-a | dev |
 
-## Bidaia garatzailearen arabera
+## Profilaren araberako ibilbide gomendatua
 
-### Erabiltzailea
+### Azken erabiltzailea
 
 1. [USO.md](USO.md)
 2. [FUNCIONAL.md](FUNCIONAL.md)
-3. [SEGURIDAD.md](SEGURIDAD.md) zizketarenהקדمة bezala
+3. [SEGURIDAD.md](SEGURIDAD.md) soilik baimenak edo ekoizpen-ingurunea berrikusi behar baditu
 
-### Deploiamentu admin
+### Inplementazioaren administratzailea
 
 1. [ADMINISTRACION.md](ADMINISTRACION.md)
 2. [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md)
@@ -64,28 +66,29 @@ Dokumentazio osoa platformaren 9 hizketan dago. Eskainera (kanarioak) kanonikoa 
 4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
 6. [BACKEND.md](BACKEND.md)
+7. [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+8. [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md)
+9. [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md)
 
-## Dokumentazioa konbendioak
+## Dokumentazioa mantentzeko konbentzioak
 
-- Aldatu dokumentazioa lehenago eta ondoren aldaketa mapa.
-- Aldaketa hazkundeari ekarri nahi baduzu, sinkronizatze [README.eu.md](../../README.eu.md), [USO.md](USO.md) eta [HERRAMIENTAS.md](HERRAMIENTAS.md).
-- Aldaketa API-ak public alderantziz nahi baduzu, alderantziz [API.md](API.md) eta, eskaintzan, [DESARROLLO.md](DESARROLLO.md).
-- Aldaketa eskupena aldatu nahi baduzu, keri [DATABASE.md](DATABASE.md) eta migrazioak.
-- Aldaketa egin baduzu `docs/es/` fitxategi batean, errepikatu aldi 8 gaztelako (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Eguneratu dokumentu kanonikoa laburpen edo aurkibide edozein baino lehen.
+- Abiarazte-fluxuren bat aldatzen baduzu, sinkronizatu [README.eu.md](../../README.eu.md), [USO.md](USO.md) eta [HERRAMIENTAS.md](HERRAMIENTAS.md).
+- API publikoren bat aldatzen baduzu, eguneratu [API.md](API.md) eta, hala badagokio, [DESARROLLO.md](DESARROLLO.md).
+- Eskema edo iraunkortasuna aldatzen baduzu, berrikusi [DATABASE.md](DATABASE.md) eta migrazioak.
+- `docs/es/` fitxategi bat editatzen duzun bakoitzean, errepikatu aldaketa 8 ahizpetan (`docs/<hizkuntza>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
-## Auzoan aurkeztuak
+## Ohiko galderak
 
-- **Hasi nora?** Erakuskite [USO.md](USO.md) aplikazioa aukeratzeko; [ARQUITECTURA.md](ARQUITECTURA.md) garatzeko.
-- **Zer da kanonikoa eta zer ez?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) eta [DATABASE.md](DATABASE.md) ofizialak dira aukerakarenreferentziak.
-- **Norkor komandoa edo eskuatea aurkitu nahi baduzu?** [HERRAMIENTAS.md](HERRAMIENTAS.md) eta [../README.eu.md](../../README.eu.md).
-- **Nola jakite nahi badut dokumentazioa behar?** Aldaketa hasi, kideketak, erlan, API edo modeloa aldatu nahi baduzu, dokumentazio egokietan aldatu beharko duzu.
+- **Non hasi?** Irakurri [USO.md](USO.md) aplikazioa operatzeko, edo [ARQUITECTURA.md](ARQUITECTURA.md) garatzeko.
+- **Zer da kanonikoa eta zer ez?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) eta [DATABASE.md](DATABASE.md) dira gai horien erreferentzia ofiziala.
+- **Non aurkitu komando edo script bat?** Berrikusi [HERRAMIENTAS.md](HERRAMIENTAS.md) eta [../README.eu.md](../../README.eu.md).
+- **Nola jakin aldaketa batek dokumentazioa behar duen?** Abiaraztea, baimenak, azpiegitura, APIa edo datu-eredua ukitzen badu, dagokion dokumentazioan jaso behar da.
 
-## Aurora berezia
+## Ikus ere
 
-- [../README.eu.md](../../README.eu.md): proiektoren oharra
-- [USO.md](USO.md): oinarrizko erlan etiketatzeko
-- [ADMINISTRACION.md](ADMINISTRACION.md): deploiamentuaren eta administrazioa
+- [../README.eu.md](../../README.eu.md): proiektuaren ikuspegi orokorra
+- [USO.md](USO.md): tokiko operazioa eta konfigurazioa
+- [ADMINISTRACION.md](ADMINISTRACION.md): inplementazioaren eta administrazioaren esparrua
 - [ARQUITECTURA.md](ARQUITECTURA.md): sistemaren mapa teknikoa
-- [API.md](API.md): endpoint-eren oharra
-
-
+- [API.md](API.md): endpoint-en erreferentzia

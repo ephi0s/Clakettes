@@ -2,46 +2,58 @@
 
 [ES](../es/FUNCIONAL.md) · [EN](../en/FUNCIONAL.md) · [FR](../fr/FUNCIONAL.md) · [DE](../de/FUNCIONAL.md) · [IT](FUNCIONAL.md) · [CA](../ca/FUNCIONAL.md) · [EU](../eu/FUNCIONAL.md) · [GL](../gl/FUNCIONAL.md) · [OC](../oc/FUNCIONAL.md)
 
-Utilità reale del progetto per ruolo, con il flusso che la sostiene. Dettaglio operativo in [USO.md](USO.md), riferimento degli endpoint in [API.md](../es/API.md).
+Utilità reale del progetto per ruolo, con il flusso che la sostiene. Dettaglio operativo in [USO.md](USO.md), riferimento degli endpoint in [API.md](API.md).
 
-## Festival (organizer)
+## Festival (organizzatore)
 
-1. Crea il festival (`POST /api/festivals/`) con descrizione, web, sede e logo.
-2. Apre bandi: form di iscrizione con sezioni, ruoli ed etichette (`RegistrationForm + Sections + Links`), esposti tramite link pubblico che chiunque può compilare senza account.
-3. Riceve corti collegati ai tuoi bandi e location di ripresa.
-4. Monta la programmazione: eventi (gala, proiezione, workshop, tavola, networking, premi, festa, masterclass, Q&A) con tipi di biglietto, posti (disponibile/prenotata/venduta/assegnata/bloccata), prenotazioni e check-in dei partecipanti; esporta partecipanti in CSV ed eventi in ICS. Ogni opera della proiezione si vaglia con stato `pending/screened/disqualified` e motivo, con filtri per stato, opere squalificate o tag del partecipante. L'organizzazione verifica i tag di eleggibilità (residente, studente) con metodi esterni, e il partecipante può richiedere la verifica allegando un certificato di residenza o il tesserino universitario.
-5. Nomina comitati con membri e pubblica premi (verificati o no, pubblici o no) per festival, corto o utente, con tag di eleggibilità e verifica del destinatario.
-6. Comunica: canali del festival (admin/moderator/member), messaggi e immagini nel profilo, rulebooks.
+1. Crea il festival (`POST /api/festivals/`) con descrizione, sito web, sede e logo.
+2. Apre le call: moduli di iscrizione con sezioni, ruoli ed etichette (`RegistrationForm + Sections + Links`), esposti tramite link pubblico che chiunque può compilare senza account.
+3. Riceve i corti legati alle tue call e le location di ripresa.
+4. Allestisce la programmazione: eventi (gala, proiezione, workshop, tavola, networking, premi, festa, masterclass, Q&A) con tipi di biglietto, posti (disponibile/prenotato/venduto/assegnato/bloccato), prenotazioni e check-in dei partecipanti; esporta i partecipanti in CSV e gli eventi in ICS. Scevera ogni opera della visionatura con stato `pending/screened/disqualified` e motivo, e filtra per stato, squalificati o etichetta del partecipante. L'organizzazione verifica le etichette di eleggibilità dei partecipanti (residente, studente) con metodi esterni, e il partecipante può richiedere la verifica allegando un certificato di residenza o di iscrizione.
+5. Nomina comitati con membri e pubblica premi (verificati o no, pubblici o no) per festival, corto o utente, con etichette di eleggibilità e verifica del destinatario.
+6. Comunica: canali del festival (admin/moderator/member), messaggi e immagini sul profilo, rulebook.
 
-Edita/cancella solo i suoi festival e gestisce i suoi utenti (`require_festival_admin`). I membri si uniscono da soli come `attendee`; il resto dei ruoli lo assegna un admin (409 se è già membro).
+Modifica/cancella solo i propri festival e gestisce i propri utenti (`require_festival_admin`). I membri si uniscono da soli come `attendee`; gli altri ruoli sono assegnati da un admin (409 se già membro).
 
-## Professionista (user, jury, resto dei mestieri)
+## Professionista (utente, giuria, altri mestieri)
 
-- Profilo con mestiere (regia, interpretazione, suono, sceneggiatura, montaggio, costumi, trucco, comparse, doppiaggio, foley, stampa, produzione, distribuzione…), bio e palmarès collegato a festival della piattaforma o esterno tramite link.
+- Profilo con mestiere (regia, recitazione, suono, sceneggiatura, montaggio, costume, trucco, comparso, doppiaggio, foley, stampa, produzione, distribuzione…), bio e palmarès legati ai festival della piattaforma o esterni tramite link.
 - Privacy campo per campo (email, bio, posizione) e profili pubblici/privati.
-- Ogni utente modifica il suo profilo e i suoi corti; la giuria consulta e vota secondo il suo festival.
-- Chat diretta e di gruppo/canale con cifratura end-to-end: le chiavi pubbliche si pubblicano in `POST /api/users/me/public-key`, il server salva e ritrasmette solo cifrato, la cifratura reale avviene nell'app.
+- Ogni utente modifica il proprio profilo e i propri corti; la giuria consulta e vota in base al proprio festival.
+- Chat diretta e di gruppo/canale con cifratura end-to-end: le chiavi pubbliche sono pubblicate su `POST /api/users/me/public-key`, il server memorizza e inoltra solo dati cifrati, la vera cifratura avviene nell'app. Tra nodi federati il messaggio passa dal bridge firmato, viene deduplicato per `message_id` e ordinato per data; puoi segnalare messaggi e gli amministratori possono silenziare utenti o filtrare parole.
 
 ## Squadra express (attendee)
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, ruolo `attendee`) e uscita libera (`leave`).
-- Geolocalizza partecipanti, coordina il gruppo via chat e presenta il corto al concorso express.
-- Prenota il posto negli eventi e invia iscrizioni tramite link pubblico (stati: pendiente/aprobada/rechazada/en espera/cancelada; pagamenti: impagado/pendiente/pagado/reembolsado/cancelado).
+- Geolocalizza i partecipanti, coordina il gruppo tramite chat e presenta il corto al concorso express.
+- Prenota un posto agli eventi e invia iscrizioni tramite link pubblico (stati: in attesa/approvato/rifiutato/in lista d'attesa/annullato; pagamenti: non pagato/in attesa/pagato/rimborsato/annullato).
 
 ## Pubblico
 
-Scopre festival (`GET /api/festivals/` paginato e pubblico), segue corti e palmarès, contatta via chat e consulta le sedi sulla mappa.
+Scopre i festival (`GET /api/festivals/` paginato e pubblico), segue corti e palmarès, contatta tramite chat e consulta le sedi sulla mappa.
 
 ## Amministratore globale (admin)
 
-Vede e modifica tutto (utenti, festival, corti, canali, form). Operatività in [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tabelle, reset, backup, segreti).
+Vede e modifica tutto (utenti, festival, corti, canali, moduli). Gestione in [ADMINISTRACION.md](ADMINISTRACION.md) (statistiche, tabelle, reset, backup, segreti). Nella federazione registra i nodi e le loro politiche (`import_only`, `disable_chat`, `disable_search`), esporta e importa bundle, migra festival e identità utente con i loro redirect, pubblica eventi, modera la chat e vigila sulla resilienza (metriche p50/p95 e revoca delle chiavi).
+
+## Giuria (juror)
+
+- Consulta le opere assegnate al proprio festival ed esprime voti per corto (`POST /api/jury-votes/`).
+- Punteggio per opera con aggregazione automatica; anonimato opzionale.
+- Consulta i risultati aggregati per gli organizzatori.
 
 ## Stati da conoscere
 
-- Membro di festival: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
+- Membro del festival: `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
 - Iscrizione: `draft → submitted → approved / rejected`; invio: `pending / approved / rejected / waitlisted / cancelled`.
 - Partecipante a evento: `registered / attended / no_show / cancelled`.
-- Criblaggio in proiezione: `pending / screened / disqualified`.
+- Sceveratura in proiezione: `pending / screened / disqualified`.
 - Note della giuria e verbali per opera, con annotazione: `special_mention / accesit / other`.
-- Verifica del tag partecipante: `unverified / pending / verified / rejected`.
+- Verifica etichetta partecipante: `unverified / pending / verified / rejected`.
 - Ambito di visibilità degli eventi: `public / festival_members / roles / attendees_only`.
+
+## Vedi anche
+
+- [USO.md](USO.md): avvio e gestione del sistema
+- [API.md](API.md): riferimento degli endpoint
+- [ADMINISTRACION.md](ADMINISTRACION.md): amministrazione del deployment

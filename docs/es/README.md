@@ -11,7 +11,7 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 
 - **Quiero usar la app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
 - **Administro un despliegue** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **Desarrollo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md) + [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
 - **Referencia para agentes** → los comandos y convenciones de desarrollo están en [../AGENTS.md](../../AGENTS.md)
 
 ## Principios de la documentación
@@ -38,9 +38,10 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 | [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev |
 | [BACKEND.md](BACKEND.md) | Guía del backend (capas, config, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fase 4) | dev |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fases 2 a 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entidades mínimas federadas) | dev |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, rotación de certificados | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, manifiesto firmado, portabilidad, chat y resiliencia | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisión de broker (NATS JetStream) para chat y eventos entre nodos; WebSocket de borde y fallback mononodo | dev |
 
 ## Ruta recomendada por perfil
 
@@ -65,6 +66,9 @@ Toda la documentación existe en las 9 lenguas de la plataforma. El español (ca
 4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
 6. [BACKEND.md](BACKEND.md)
+7. [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+8. [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md)
+9. [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md)
 
 ## Convenciones para mantener la documentación
 

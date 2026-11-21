@@ -7,34 +7,40 @@ Utilidade real do proxecto por rol, co fluxo que a sostén. Detalle operativo en
 ## Festival (organizer)
 
 1. Crea o festival (`POST /api/festivals/`) con descrición, web, sede e logo.
-2. Abre convocatorias: formularios de inscrición con seccións, roles e etiquetas (`RegistrationForm + Sections + Links`), expostos por ligazón pública que calquera pode cubrir sen conta.
-3. Recibe curtas vinculadas ás túas convocatorias e localizacións de rodaxe.
-4. Monta a programación: eventos (gala, proxección, taller, mesa, networking, premios, festa, masterclass, Q&A) con tipos de entrada, asentos (dispoñible/reservada/vendida/asignada/bloqueada), reservas e check-in de asistentes; exporta asistentes a CSV e eventos a ICS. Criba cada obra da proxección con estado `pending/screened/disqualified` e motivo, e filtra por estado, descalificadas ou etiqueta de participante. A organización verifica as etiquetas de elixibilidade (residente, estudante) con métodos externos, e o participante pode solicitar a verificación achegando certificado de residencia ou carné de estudante.
-5. Nomea comités con membros e publica premios (verificados ou non, públicos ou non) por festival, curta ou usuario, con etiquetas de elixibilidade e verificación do receptor.
-6. Comunica: canles do festival (admin/moderator/member), mensaxes e imaxes no perfil, rulebooks.
+2. Abre convocatorias: formularios de inscrición con seccións, roles e etiquetas (`RegistrationForm + Sections + Links`), expostos por ligazón pública que calquera pode encher sen conta.
+3. Recibe curtos vinculados ás túas convocatorias e localizacións de rodaxe.
+4. Monta a programación: eventos (gala, proxección, obradoiro, mesa, networking, premios, festa, masterclass, Q&A) con tipos de entrada, asentos (disponible/reservada/vendida/asignada/bloqueada), reservas e check-in de asistentes; exporta asistentes a CSV e eventos a ICS. Criba cada obra do visionado con estado `pending/screened/disqualified` e motivo, e filtra por estado, desqualificadas ou etiqueta de participante. A organización verifica as etiquetas de elegibilidade (residente, estudante) con métodos externos, e o participante pode solicitar a verificación achegando certificado de residencia ou matrícula.
+5. Nomea comités con membros e publica premios (verificados ou non, públicos ou non) por festival, curto ou usuario, con etiquetas de elegibilidade e verificación do receptor.
+6. Comunica: canais do festival (admin/moderator/member), mensaxes e imaxes no perfil, rulebooks.
 
 Só edita/borra os seus festivais e xestiona os seus usuarios (`require_festival_admin`). Os membros únense sós como `attendee`; o resto de roles asígnaos un admin (409 se xa é membro).
 
 ## Profesional (user, jury, resto de oficios)
 
-- Perfil con oficio (dirección, interpretación, son, guión, montaxe, vestiario, maquillaxe, figuración, dobraxe, foley, prensa, produción, distribución…), bio e palmarés vinculado a festivais da plataforma ou externo por ligazón.
+- Perfil con oficio (dirección, interpretación, son, guión, montaxe, vestiario, maquillaxe, figuración, dobrado, foley, prensa, produción, distribución…), bio e palmarés vinculado a festivais da plataforma ou externo por ligazón.
 - Privacidade campo por campo (email, bio, localización) e perfís públicos/privados.
-- Cada usuario edita o seu perfil e as súas curtas; o xurado consulta e vota segundo o seu festival.
-- Chat directo e de grupo/canal con cifrado de extremo a extremo: as claves públicas publícanse en `POST /api/users/me/public-key`, o servidor só garda e retransmite cifrado, o cifrado real ocorre na app.
+- Cada usuario edita o seu perfil e os seus curtos; o xurado consulta e vota segundo o seu festival.
+- Chat directo e de grupo/canal con cifrado de extremo a extremo: as claves públicas publícanse en `POST /api/users/me/public-key`, o servidor só garda e retransmite cifrado, o cifrado real ocorre na app. Entre nodos federados a mensaxe viaxa polo bridge asinado, deduplícase por `message_id` e ordénase por data; podes informar mensaxes e os administradores poden silenciar usuarios ou filtrar palabras.
 
 ## Equipo express (attendee)
 
 - Auto-join ao festival (`POST /api/festivals/{id}/join`, rol `attendee`) e saída libre (`leave`).
-- Xeolocaliza participantes, coordina o grupo por chat e presenta a curta ao concurso express.
-- Reserva asento en eventos e envía inscricións por ligazón pública (estados: pendente/aprobada/rexeita/en espera/cancelada; pagos: impagado/pendente/pagado/reembolsado/cancelado).
+- Xeolocaliza participantes, coordina o grupo por chat e presenta o curto ao concurso express.
+- Reserva asento en eventos e envía inscricións por ligazón pública (estados: pendente/aprobada/rexeitada/en espera/cancelada; pagos: impagado/pendente/pagado/reembolsado/cancelado).
 
 ## Público
 
-Descobre festivais (`GET /api/festivals/` paxinado e público), segue curtas e palmarés, contacta por chat e consulta sedes no mapa.
+Descubre festivais (`GET /api/festivals/` paginado e público), segue curtos e palmarés, contacta por chat e consulta sedes no mapa.
 
 ## Administrador global (admin)
 
-Veo e edítao todo (usuarios, festivais, curtas, canles, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, táboas, reset, backups, segredos).
+Veo e edita todo (usuarios, festivais, curtos, canais, formularios). Operativa en [ADMINISTRACION.md](ADMINISTRACION.md) (stats, táboas, reset, backups, segredos). En federación rexistra nodos e as súas políticas (`import_only`, `disable_chat`, `disable_search`), exporta e importa bundles, migra festivais e identidades de usuario coas súas redireccións, publica eventos, modera o chat e vixia a resiliencia (métricas p50/p95 e revogación de claves).
+
+## Xurado (juror)
+
+- Consulta as obras asignadas ao seu festival e emite votos por curto (`POST /api/jury-votes/`).
+- Puntuación por obra con agregación automática; anonimato opcional.
+- Consulta resultados agregados para organizadores.
 
 ## Estados que debes coñecer
 
@@ -45,3 +51,9 @@ Veo e edítao todo (usuarios, festivais, curtas, canles, formularios). Operativa
 - Notas do xurado e actas por obra, con anotación: `special_mention / accesit / other`.
 - Verificación de etiqueta de participante: `unverified / pending / verified / rejected`.
 - Alcance de visibilidade de eventos: `public / festival_members / roles / attendees_only`.
+
+## Ver tamén
+
+- [USO.md](USO.md): arranque e operación do sistema
+- [API.md](API.md): referencia de endpoints
+- [ADMINISTRACION.md](ADMINISTRACION.md): administración do despregue

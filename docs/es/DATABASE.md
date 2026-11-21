@@ -67,6 +67,8 @@ Notas importantes:
 | `Award` | `awards` | Entidad |
 | `Badge` | `badges` | Entidad |
 | `Calendar` | `calendars` | Entidad |
+| `ChatMute` | `chat_mutes` | Entidad (federación) |
+| `ChatOutbox` | `chat_outbox` | Entidad (federación) |
 | `Channel` | `channels` | Entidad |
 | `Committee` | `committees` | Entidad |
 | `Event` | `events` | Entidad |
@@ -76,7 +78,10 @@ Notas importantes:
 | `FestivalRulebook` | `festival_rulebooks` | Entidad |
 | `FormDefinition` | `form_definitions` | Entidad |
 | `Group` | `groups` | Entidad |
+| `IdentityRedirect` | `identity_redirects` | Entidad (federación) |
 | `JuryVote` | `jury_votes` | Entidad |
+| `MessageReport` | `message_reports` | Entidad (federación) |
+| `MigrationAudit` | `migration_audits` | Entidad (federación) |
 | `Location` | `locations` | Entidad |
 | `LocationImage` | `location_images` | Entidad |
 | `LocationRelation` | `location_relations` | Entidad |
@@ -270,6 +275,36 @@ Campos:
 - **Campos clave:** reporter_node, target_node, target_user_ref, reason, status
 - **Relaciones:** Entidad de federación
 
+### IdentityRedirect
+- **Tabla:** `identity_redirects`
+- **Clase:** `IdentityRedirect`
+- **Campos clave:** old_ref (índice único), new_ref, target_domain, created_at
+- **Relaciones:** Entidad de federación; resuelve la ref antigua tras una migración de identidad
+
+### MigrationAudit
+- **Tabla:** `migration_audits`
+- **Clase:** `MigrationAudit`
+- **Campos clave:** entity_type, entity_id, action, source_domain, target_domain, details (JSON), created_at
+- **Relaciones:** Entidad de federación; traza cada migración de festival o usuario
+
+### ChatOutbox
+- **Tabla:** `chat_outbox`
+- **Clase:** `ChatOutbox`
+- **Campos clave:** message_id (único), node_origin, subject, payload (JSON), signature, status, attempts, last_error, created_at
+- **Relaciones:** Cola durable del chat federado (`DurableQueueBackend`); la unicidad de `message_id` da deduplicación y `attempts`/`last_error` gestionan reintentos
+
+### MessageReport
+- **Tabla:** `message_reports`
+- **Clase:** `MessageReport`
+- **Campos clave:** reporter_id (FK), message_id (FK), reason, status
+- **Relaciones:** Pertenece a User (reportador) y a Message
+
+### ChatMute
+- **Tabla:** `chat_mutes`
+- **Clase:** `ChatMute`
+- **Campos clave:** user_id (FK), channel_id (FK), node_domain, until, reason
+- **Relaciones:** Pertenece a User y a Channel; el mute puede aplicarse a un canal o a un nodo federado
+
 ### Location
 - **Tabla:** `locations`
 - **Clase:** `Location`
@@ -371,7 +406,7 @@ Esto se utiliza como dependencia de FastAPI para el acceso a la base de datos de
 
 ## Notas de migración de SQLite a MariaDB
 
-Los cambios de esquema se gestionan con Alembic (`backend/alembic/versions/`; `alembic upgrade head`). En producción solo Alembic, nunca `create_all`.
+Los cambios de esquema se gestionan con Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Hay 42 revisiones y el head es `c1d2e3f4a5b6`; las tres últimas (`a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`) añaden las tablas de portabilidad, la cola durable de chat y la moderación. En producción solo Alembic, nunca `create_all`.
 
 Al migrar de SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` se corresponde con MariaDB `INT AUTO_INCREMENT`

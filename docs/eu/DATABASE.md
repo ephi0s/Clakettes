@@ -1,120 +1,122 @@
-# Datu-base-ko dokumentazioa
+# Datu-basearen dokumentazioa
 
-[ES](../es/DATABASE.md) · [EN](../en/DATABASE.md) · [FR](../fr/DATABASE.md) · [DE](../de/DATABASE.md) · [IT](../it/DATABASE.md) · [CA](../ca/DATABASE.md) · [CA](DATABASE.md) · [EU](DATABASE.md) · [GL](../gl/DATABASE.md) · [OC](../oc/DATABASE.md)
+[ES](../es/DATABASE.md) · [EN](../en/DATABASE.md) · [FR](../fr/DATABASE.md) · [DE](../de/DATABASE.md) · [IT](../it/DATABASE.md) · [CA](../ca/DATABASE.md) · [EU](DATABASE.md) · [GL](../gl/DATABASE.md) · [OC](../oc/DATABASE.md)
 
-## Deskripzioa
+## Ikuspegi orokorra
 
-Clakettes arraya erabiltzen du datu-baseen:
+Clakettes-ek bi datu-baseko konfigurazioa erabiltzen du:
+- **Garapena**: SQLite (`clakettes.db`) — lehenespenez, konfiguraziorik behar ez duena
+- **Ekoizpena**: MariaDB — `backend/.env` fitxategian `DATABASE_URL` bidez konfiguratuta
 
-- **Garapena**: SQLite (`clakettes.db`) — default, konfigurazioarik gabe
-- **Produktua**: MariaDB — `DATABASE_URL` bidez `backend/.env`-ean
+Inguruen artean sinkronizatzeko migrazio-tresnak daude:
+- `python export_sqlite_to_mariadb.py` — Garapenetik ekoizpenera
+- `python import_mariadb_to_sqlite.py` — Ekoizpenetik garapenera
 
-Mutil-ak eskainita:
+## MariaDB konfiguratu (ekoizpena)
 
-- `python export_sqlite_to_mariadb.py` — Garapena → Produktua
-- `python import_mariadb_to_sqlite.py` — Produktua → Garapena
+Lehenespenez Clakettes-ek SQLite (`clakettes.db`) erabiltzen du, konfiguraziorik behar ez duena. MariaDB erabiltzeko:
 
-## MariaDB-ra konfigurazioa (produktuan)
-
-Lehenezgo Clakettes SQLite-ra erabiltzen du (`clakettes.db`), konfigurazioarik gabe. MariaDB erabiltzeko:
-
-1. Kopiatu `backend/.env.example` `backend/.env`-ra eta `DATABASE_URL` lerroa MariaDB-ri deskontratu:
+1. Kopiatu `backend/.env.example` `backend/.env`-ra eta deskomentatu MariaDBaren `DATABASE_URL` lerroa:
    ```env
    DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@db:3306/clakettes_db
    ```
-2. Hasi MariaDB kontainea:
+2. Abiarazi MariaDB edukiontzia:
    ```bash
-   # Garapen/lerroa MariaDBarekin
+   # Garapena/tokikoa MariaDBrekin
    docker compose --profile db up -d
 
-   # Produkzioa (backend + frontend + MariaDB + nginx)
+   # Ekoizpen osoa (backend + frontend + MariaDB + nginx)
    docker compose --profile prod up -d
    ```
-3. Egiaztatu migrazioak (Alembic-ekin baizik, `create_all` ezerk ez produktuan):
+3. Exekutatu migrazioak (soilik Alembic, inoiz ez `create_all` ekoizpenean):
    ```bash
    cd backend
    alembic upgrade head
    ```
-   Proiektuaren skirtuak erabilita:
+   Edo proiektuaren script-ekin:
    ```bash
    start.* --migrate --mariadb
    ```
-4. (Aukeratu) Datuak SQLite-tik MariaDB-ra kopiatu:
+4. (Aukerakoa) Kopiatu datuak SQLite-tik MariaDB-ra:
    ```bash
    cd backend && python tools/export_sqlite_to_mariadb.py
    ```
 
-MariaDB erabiltzen denean `backend/.env`-ko aldagaiak beharrezkoa:
+MariaDB erabiltzean `backend/.env`-n beharrezko aldagaiak:
 
-| Aldagaia | Adibidea | Notas |
+| Aldagaia | Adibidea | Oharrak |
 |---|---|---|
-| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | SQLAlchemy konexio-arekua; Docker Compose-eko gaia `db` da |
-| `SECRET_KEY` | `change-this-in-production` | JWT zatikia |
-| `CORS_ORIGINS` | `https://your-domain.com` | Domeinu esplikutak produktuaren gaitan |
-| `PUBLIC_BASE_URL` | `https://your-domain.com` | Nodoen URL pubblica (federazioa) |
+| `DATABASE_URL` | `mariadb+pymysql://user:pass@host:3306/dbname` | SQLAlchemy katea; Docker Compose-n host-a `db` da |
+| `SECRET_KEY` | `cambia-esta-clave-en-produccion` | JWT sinadura-gakoa |
+| `CORS_ORIGINS` | `https://tu-dominio.com` | Domeinu esplizituak ekoizpenean |
+| `PUBLIC_BASE_URL` | `https://tu-dominio.com` | Nodoaren URL publikoa (federazioa) |
 
-Docker Compose-koan `db` zerbitzua (MariaDB 11) `--profile db` edo `--profile prod`-era aktibatzea da; backend-a `db`-re konektatuta dago, portua 3306.
+Docker Compose-n `db` zerbitzuak (MariaDB 11) `--profile db` edo `--profile prod` bidez aktibatzen da; backend-a `db` host gisa eta `3306` ataka erabiliz konektatzen da.
 
-Oharrak garrantzitsuak:
-- MariaDB produktuaren gaitan TLS beharrezkoa da: `DATABASE_URL`-era `?ssl_ca=...` gehitu.
-- Ez erabili `create_all` produktuaren gaitan; eskemaa Alembic-rik baskerez kudeatu (`alembic upgrade head`).
-- MariaDB-tik SQLite-ra itzuli: `python tools/import_mariadb_to_sqlite.py`.
+Ohar garrantzitsuak:
+- MariaDBk ekoizpenean TLS eskatzen du: gehitu `?ssl_ca=...` `DATABASE_URL`-ri.
+- Inoiz ez erabili `create_all` ekoizpenean; kudeatu eskema soilik Alembic bidez (`alembic upgrade head`).
+- MariaDBtik SQLite-ra itzultzeko: `python tools/import_mariadb_to_sqlite.py`.
 
-## Model-ren zerrenda
+## Modeloen laburpena
 
-| Modelo | Taula | Tipus |
-|--------|-------|-------|
-| `AppSetting` | `app_settings` | Eskura |
-| `AuditLog` | `audit_logs` | Eskura |
-| `Award` | `awards` | Eskura |
-| `Badge` | `badges` | Eskura |
-| `Calendar` | `calendars` | Eskura |
-| `Channel` | `channels` | Eskura |
-| `Committee` | `committees` | Eskura |
-| `Event` | `events` | Eskura |
-| `EventScreening` | `event_screenings` | Eskura |
-| `Festival` | `festivals` | Eskura |
-| `FestivalLocation` | `festival_locations` | Eskura |
-| `FestivalRulebook` | `festival_rulebooks` | Eskura |
-| `FormDefinition` | `form_definitions` | Eskura |
-| `Group` | `groups` | Eskura |
-| `JuryVote` | `jury_votes` | Eskura |
-| `Location` | `locations` | Eskura |
-| `LocationImage` | `location_images` | Eskura |
-| `LocationRelation` | `location_relations` | Eskura |
-| `LocationTag` | `location_tags` | Eskura |
-| `Message` | `messages` | Eskura |
-| `ModerationReport` | `moderation_reports` | Eskura |
-| `NodePolicy` | `node_policies` | Eskura |
-| `Notification` | `notifications` | Eskura |
-| `ParticipantTag` | `participant_tags` | Eskura |
-| `Payment` | `payments` | Eskura |
-| `Post` | `posts` | Eskura |
-| `Registration` | `registration_forms` | Eskura |
-| `Role` | `roles` | Eskura |
-| `RoleDelegation` | `role_delegations` | Eskura |
-| `RoleGroup` | `role_groups` | Eskura |
-| `RoleTransition` | `role_transitions` | Eskura |
-| `ShortFilm` | `shortfilms` | Eskura |
-| `ShortFilmLocation` | `shortfilm_locations` | Eskura |
-| `User` | `users` | Eskura |
-| `UserAlias` | `user_aliases` | Eskura |
-| `UserBlock` | `user_blocks` | Eskura |
-| `UserFestival` | `user_festival` | Erlazioa (taula) |
-| `UserKey` | `user_keys` | Eskura |
-| `UserRole` | `user_roles` | Eskura |
-| `UserSession` | `user_sessions` | Eskura |
-| `ValidationRule` | `validation_rules` | Eskura |
-| `ValidationRuleGroup` | `validation_rule_groups` | Eskura |
+| Modeloa | Taula | Mota |
+|---|---|---|
+| `AppSetting` | `app_settings` | Entitatea |
+| `AuditLog` | `audit_logs` | Entitatea |
+| `Award` | `awards` | Entitatea |
+| `Badge` | `badges` | Entitatea |
+| `Calendar` | `calendars` | Entitatea |
+| `ChatMute` | `chat_mutes` | Entitatea (federazioa) |
+| `ChatOutbox` | `chat_outbox` | Entitatea (federazioa) |
+| `Channel` | `channels` | Entitatea |
+| `Committee` | `committees` | Entitatea |
+| `Event` | `events` | Entitatea |
+| `EventScreening` | `event_screenings` | Entitatea |
+| `Festival` | `festivals` | Entitatea |
+| `FestivalLocation` | `festival_locations` | Entitatea |
+| `FestivalRulebook` | `festival_rulebooks` | Entitatea |
+| `FormDefinition` | `form_definitions` | Entitatea |
+| `Group` | `groups` | Entitatea |
+| `IdentityRedirect` | `identity_redirects` | Entitatea (federazioa) |
+| `JuryVote` | `jury_votes` | Entitatea |
+| `MessageReport` | `message_reports` | Entitatea (federazioa) |
+| `MigrationAudit` | `migration_audits` | Entitatea (federazioa) |
+| `Location` | `locations` | Entitatea |
+| `LocationImage` | `location_images` | Entitatea |
+| `LocationRelation` | `location_relations` | Entitatea |
+| `LocationTag` | `location_tags` | Entitatea |
+| `Message` | `messages` | Entitatea |
+| `ModerationReport` | `moderation_reports` | Entitatea |
+| `NodePolicy` | `node_policies` | Entitatea |
+| `Notification` | `notifications` | Entitatea |
+| `ParticipantTag` | `participant_tags` | Entitatea |
+| `Payment` | `payments` | Entitatea |
+| `Post` | `posts` | Entitatea |
+| `Registration` | `registration_forms` | Entitatea |
+| `Role` | `roles` | Entitatea |
+| `RoleDelegation` | `role_delegations` | Entitatea |
+| `RoleGroup` | `role_groups` | Entitatea |
+| `RoleTransition` | `role_transitions` | Entitatea |
+| `ShortFilm` | `shortfilms` | Entitatea |
+| `ShortFilmLocation` | `shortfilm_locations` | Entitatea |
+| `User` | `users` | Entitatea |
+| `UserAlias` | `user_aliases` | Entitatea |
+| `UserBlock` | `user_blocks` | Entitatea |
+| `UserFestival` | `user_festival` | Elkartea (Taula) |
+| `UserKey` | `user_keys` | Entitatea |
+| `UserRole` | `user_roles` | Entitatea |
+| `UserSession` | `user_sessions` | Entitatea |
+| `ValidationRule` | `validation_rules` | Entitatea |
+| `ValidationRuleGroup` | `validation_rule_groups` | Entitatea |
 
-Erlazioa taulak:
+Elkarte-taulak:
+- `user_festival` — M2M `User` eta `Festival` artean
+- `validation_rule_group_rules` — M2M `ValidationRuleGroup` eta `ValidationRule` artean
 
-- `user_festival` — M2M `User`-en eta `Festival`-en artean
-- `validation_rule_group_rules` — M2M `ValidationRuleGroup`-en eta `ValidationRule`-en artean
+## Oinarrizko modeloa
 
-## Base Model
-
-Modeloak guztiak `BaseModel`-etik heretan, `app/models/base.py`-ko:
+Modelo guztiek `app/models/base.py`-n definitutako `BaseModel`-etik heredatzen dute:
 
 ```python
 class BaseModel(Base):
@@ -124,280 +126,272 @@ class BaseModel(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 ```
 
-Emetsiak:
+Eremuak:
+- `id`: Gako primarioa, automatikoki handitzen den osokoa
+- `created_at`: Sortzean esleitutako denbora-marka
+- `updated_at`: Aldaketa bakoitzean eguneratzen den denbora-marka
 
-- `id`: primary key, automatikoa Izenbakia
-- `created_at`: ordu-marka sortzean
-- `updated_at`: ordu-marka aldaketan
-
-## Eskura-gabeenak
+## Modelo nagusiak
 
 ### Festival
-
 - **Taula:** `festivals`
-- **Klasse:** `Festival`
-- **Esku-menuak:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
-- **Erlazioa:** ShortFilak gehiago, User-ak (M2M `user_festival` bidez), FestivalRoles, FestivalParticipantTags, UserRoles, UserParticipantTags, RegistrationForms, FestivalRegistrations, Events, Awards
+- **Klasea:** `Festival`
+- **Gako-eremuak:** name, description, location, latitude, longitude, is_active, website, logo_url, banner_url, tagline, social_links, allow_alias_display
+- **Erlazioak:** ShortFilm, User (M2M `user_festival` bidez), FestivalRoles, FestivalParticipantTags, UserRoles, UserParticipantTags, RegistrationForms, FestivalRegistrations, Events, Awards ditu
 
 ### User
-
 - **Taula:** `users`
-- **Klasse:** `User`
-- **Esku-menuak:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active, is_public, is_public_email, is_public_bio, is_public_location, latitude, longitude, dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
-- **Erlazioa:** ShortFilm gehiago, Festival gehiago (M2M), UserRoles, UserParticipantTags, UserAliases, FestivalRegistrations, Sessions, Awards, Events (ezkutatak), EventAttendees, EventReservations
+- **Klasea:** `User`
+- **Gako-eremuak:** username, email, password_hash, full_name, role, bio, avatar_url, banner_url, tagline, social_links, is_active, is_public, is_public_email, is_public_bio, is_public_location, latitude, longitude, dav_token_hash, dav_token_expires_at, privacy_policy_version, privacy_accepted_at
+- **Errelazioak:** ShortFilm, Festival (M2M), UserRoles, UserParticipantTags, UserAliases, FestivalRegistrations, Sessions, Awards, Events (sortuak), EventAttendees, EventReservations ditu
 
 ### ShortFilm
-
 - **Taula:** `shortfilms`
-- **Klasse:** `ShortFilm`
-- **Esku-menuak:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Erlazioa:** Festival-koa, User-koa, Awards gehiago, ShortFilmLocations gehiago
+- **Klasea:** `ShortFilm`
+- **Gako-eremuak:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
+- **Errelazioak:** Festival-i dagokio, User-i dagokio, Awards ditu, ShortFilmLocations ditu
 
 ### Message
-
 - **Taula:** `messages`
-- **Klasse:** `Message`
-- **Esku-menuak:** content, sender_id (FK), receiver_id (FK), group_id, channel_id (FK), is_read, message_type, media_url, latitude, longitude, vcard_data, ical_data
-- **Erlazioa:** User-ko emisarioa, User-ko eplementaria, Channel-koa
+- **Klasea:** `Message`
+- **Gako-eremuak:** content, sender_id (FK), receiver_id (FK), group_id, channel_id (FK), is_read, message_type, media_url, latitude, longitude, vcard_data, ical_data
+- **Errelazioak:** User-i (igortzailea), User-i (hartzailea), Channel-i dagokio
 
-### User-Festival Erlazioa
-
+### User-Festival Association
 - **Taula:** `user_festival`
-- **Klasse:** None (SQLAlchemy taula)
-- **Esku-menuak:** user_id (FK, PK), festival_id (FK, PK), role, joined_at
-- **Erlazioa:** User eta Festival arteko M2M; PK batera (user_id, festival_id)
+- **Klasea:** None (SQLAlchemy Table)
+- **Gako-eremuak:** user_id (FK, PK), festival_id (FK, PK), role, joined_at
+- **Errelazioak:** User eta Festival arteko M2M zubia; PK konposatua (user_id, festival_id)-n
 
 ### Award
-
 - **Taula:** `awards`
-- **Klasse:** `Award`
-- **Esku-menuak:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
-- **Erlazioa:** Festival-koa, Event-koa, ShortFilm-koa, User-ko jariaria, User-ko argazkilaria, User-ko sortzailea
+- **Klasea:** `Award`
+- **Gako-eremuak:** festival_id (FK), event_id (FK), shortfilm_id (FK), user_id (FK), award_name, award_category, description, position, is_winner, prize_amount, currency, year, is_public, is_verified, verified_by (FK), created_by (FK)
+- **Errelazioak:** Festival-i, Event-i, ShortFilm-i, User-i (hartzailea), User-i (egiaztatzailea), User-i (sortzailea) dagokio
 
 ### Badge
-
 - **Taula:** `badges`
-- **Klasse:** `Badge`
-- **Esku-menuak:** name, description, image_url (svg-preferita), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
-- **Erlazioa:** Festival-koa, BadgeAssignments gehiago
-- **Notak:** Garapenean dagoela, default-en ez daaktibatuta (`badges.enabled`); admin-taldea aktibatzea
+- **Klasea:** `Badge`
+- **Gako-eremuak:** name, description, image_url (SVG hobetsia), scope (platform, festival), category (merit, veteran, popular, role, special), festival_id (FK), conditions (JSON), require_conditions, is_active, created_by (FK)
+- **Errelazioak:** Festival-i dagokio, BadgeAssignments ditu
+- **Oharrak:** Garapen aktiboko funtzioa, lehenespenez desaktibatuta (`badges.enabled`); soilik administrazio-taldeak aktibatzen du.
 
 ### Channel
-
 - **Taula:** `channels`
-- **Klasse:** `Channel`
-- **Esku-menuak:** name, description, channel_type, max_members, created_by (FK), is_active
-- **Erlazioa:** User-ko sortzailea, ChannelMember gehiago, Message gehiago
+- **Klasea:** `Channel`
+- **Gako-eremuak:** name, description, channel_type, max_members, created_by (FK), is_active
+- **Errelazioak:** User-i (sortzailea) dagokio, ChannelMembers ditu, Messages ditu
 
 ### Committee
-
 - **Taula:** `committees`
-- **Klasse:** `Committee`
-- **Esku-menuak:** festival_id (FK), name, description, role_id (FK), is_active, max_members, external_visible
-- **Erlazioa:** Festival-koa, Role-koa, CommitteeMember gehiago
+- **Klasea:** `Committee`
+- **Gako-eremuak:** festival_id (FK), name, description, role_id (FK), is_active, max_members, external_visible
+- **Errelazioak:** Festival-i, Role-i dagokio, CommitteeMembers ditu
 
 ### Event
-
 - **Taula:** `events`
-- **Klasse:** `Event`
-- **Esku-menuak:** festival_id (FK), title, description, short_description, event_type, start_date, end_date, location, venue, venue_latitude, venue_longitude, has_external_page, external_url, internal_page_enabled, capacity, show_seat_map, is_public, is_active, image_url, color, created_by (FK), sort_order
-- **Erlazioa:** Festival-koa, User-ko sortzailea, EventTicketType gehiago, EventSeat gehiago, EventReservation gehiago, EventAttendee gehiago, Awards, EventScreeningak
+- **Klasea:** `Event`
+- **Gako-eremuak:** festival_id (FK), title, description, short_description, event_type, start_date, end_date, location, venue, venue_latitude, venue_longitude, has_external_page, external_url, internal_page_enabled, capacity, show_seat_map, is_public, is_active, image_url, color, created_by (FK), sort_order
+- **Errelazioak:** Festival-i, User-i (sortzailea) dagokio, EventTicketTypes, EventSeats, EventReservations, EventAttendees, Awards, EventScreenings ditu
 
 ### Notification
-
 - **Taula:** `notifications`
-- **Klasse:** `Notification`
-- **Esku-menuak:** user_id (FK), title, message, notification_type, is_read, related_user_id (FK)
-- **Erlazioa:** User-ko eplementaria, User-ko erlatua
+- **Klasea:** `Notification`
+- **Gako-eremuak:** user_id (FK), title, message, notification_type, is_read, related_user_id (FK)
+- **Errelazioak:** User-i (hartzailea), User-i (erlazionatua) dagokio
 
 ### ParticipantTag
-
 - **Taula:** `participant_tags`
-- **Klasse:** `ParticipantTag`
-- **Esku-menuak:** name, display_name, description, category, is_global, is_active, sort_order
-- **Erlazioa:** UserParticipantTag gehiago, FestivalParticipantTag gehiago
+- **Klasea:** `ParticipantTag`
+- **Gako-eremuak:** name, display_name, description, category, is_global, is_active, sort_order
+- **Errelazioak:** UserParticipantTags ditu, FestivalParticipantTags ditu
 
 ### Post
-
 - **Taula:** `posts`
-- **Klasse:** `Post`
-- **Esku-menuak:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type, allow_replies, is_pinned, is_hidden
-- **Erlazioa:** User-ko sortzailea, User-ko murua, Festival-ko murua, erantzun gehiago (Post), Post-ko aita
-- **Notak:** Garapenean dagoela
+- **Klasea:** `Post`
+- **Gako-eremuak:** author_id (FK), target_user_id (FK), festival_id (FK), parent_post_id (FK), content (markdown), embed_url, embed_type, allow_replies, is_pinned, is_hidden
+- **Errelazioak:** User-i (autorea), User-i (horma), Festival-i (horma) dagokio, erantzunak (Post) ditu, Post-i (gurasoa) dagokio
+- **Oharrak:** Garapen aktiboko funtzioa.
 
 ### Registration
-
 - **Taula:** `registration_forms`
-- **Klasse:** `RegistrationForm`
-- **Esku-menuak:** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations, require_existing_account, allow_role_selection, allow_tag_selection, created_by (FK)
-- **Erlazioa:** Festival-koa, RegistrationFormSection gehiago, RegistrationFormLink gehiago, FestivalRegistration gehiago
+- **Klasea:** `RegistrationForm`
+- **Gako-eremuak:** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations, require_existing_account, allow_role_selection, allow_tag_selection, created_by (FK)
+- **Errelazioak:** Festival-i dagokio, RegistrationFormSections, RegistrationFormLinks, FestivalRegistrations ditu
 
 ### Role
-
 - **Taula:** `roles`
-- **Klasse:** `Role`
-- **Esku-menuak:** name, display_name, description, scope, hierarchy_level, parent_role_id (FK), group_id (FK), is_assignable_by_admin, requires_approval, is_active, permissions
-- **Erlazioa:** Role-ko aita, RoleGroup-a, UserRole gehiago, FestivalRole gehiago, RoleGroupMembershipak, RoleDependencyak, RoleConflictak
+- **Klasea:** `Role`
+- **Gako-eremuak:** name, display_name, description, scope, hierarchy_level, parent_role_id (FK), group_id (FK), is_assignable_by_admin, requires_approval, is_active, permissions
+- **Errelazioak:** Role-i (gurasoa), RoleGroup-i dagokio, UserRoles, FestivalRoles, RoleGroupMemberships, RoleDependencies, RoleConflicts ditu
 
 ### UserAlias
-
 - **Taula:** `user_aliases`
-- **Klasse:** `UserAlias`
-- **Esku-menuak:** user_id (FK), alias, context, context_id, is_primary, is_public, show_awards, profile_token, visibility_scope, notes
-- **Erlazioa:** User-koa
-- **Notak:** Agertzen diren izena kontestuaren arabera (global, festival, shortfilm, chat, public_profile, credits) eta eskutikak bidez
+- **Klasea:** `UserAlias`
+- **Gako-eremuak:** user_id (FK), alias, context, context_id, is_primary, is_public, show_awards, profile_token, visibility_scope, notes
+- **Errelazioak:** User-i dagokio
+- **Oharrak:** Testuinguru bakoitzeko ikusgai diren izenak onartzen ditu (global, festival, shortfilm, chat, public_profile, credits) ikusgarritasun-kontrolarekin
 
 ### UserKey
-
 - **Taula:** `user_keys`
-- **Klasse:** `UserKey`
-- **Esku-menuak:** user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
-- **Erlazioa:** User-koa
-- **Notak:** X25519 publikoa gorde, E2EE-ko, bat erabiltzailea
+- **Klasea:** `UserKey`
+- **Gako-eremuak:** user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
+- **Errelazioak:** User-i dagokio
+- **Oharrak:** E2EErako X25519 gako publikoa gordetzen du; erabiltzaile bakoitzeko gako aktibo bat
 
 ### UserSession
-
 - **Taula:** `user_sessions`
-- **Klasse:** `UserSession`
-- **Esku-menuak:** user_id (FK), token_hash, refresh_token_hash, device_name, ip_address, user_agent, last_used_at, expires_at, revoked_at, is_active
-- **Erlazioa:** User-koa
+- **Klasea:** `UserSession`
+- **Gako-eremuak:** user_id (FK), token_hash, refresh_token_hash, device_name, ip_address, user_agent, last_used_at, expires_at, revoked_at, is_active
+- **Errelazioak:** User-i dagokio
 
 ### ValidationRule
-
 - **Taula:** `validation_rules`
-- **Klasse:** `ValidationRule`
-- **Esku-menuak:** name, description, scope, scope_id, field_name, field_label, field_type, is_required, is_visible, is_editable_by_user, min_length, max_length, regex_pattern, allowed_values (JSON), default_value, help_text, display_order, depends_on_field, depends_on_value, error_message
-- **Erlazioa:** ValidationRuleGroup-arekin `validation_rule_group_rules`- bidez
+- **Klasea:** `ValidationRule`
+- **Gako-eremuak:** name, description, scope, scope_id, field_name, field_label, field_type, is_required, is_visible, is_editable_by_user, min_length, max_length, regex_pattern, allowed_values (JSON), default_value, help_text, display_order, depends_on_field, depends_on_value, error_message
+- **Errelazioak:** M2M ValidationRuleGroup-ekin `validation_rule_group_rules` bidez
 
 ### Payment
-
 - **Taula:** `payments`
-- **Klasse:** `Payment`
-- **Esku-menuak:** amount, currency, provider_ref, status, provider, registration_id (FK)
-- **Erlazioa:** Registration-koa
+- **Klasea:** `Payment`
+- **Gako-eremuak:** amount, currency, provider_ref, status, provider, registration_id (FK)
+- **Errelazioak:** Registration-i dagokio
 
 ### JuryVote
-
 - **Taula:** `jury_votes`
-- **Klasse:** `JuryVote`
-- **Esku-menuak:** festival_id (FK), shortfilm_id (FK), user_id (FK), score, is_anonymous, comment
-- **Erlazioa:** Festival-koa, ShortFilm-koa, User-ko juri
+- **Klasea:** `JuryVote`
+- **Gako-eremuak:** festival_id (FK), shortfilm_id (FK), user_id (FK), score, is_anonymous, comment
+- **Errelazioak:** Festival-i, ShortFilm-i, User-i (epaimahaia) dagokio
 
 ### NodePolicy
-
 - **Taula:** `node_policies`
-- **Klasse:** `NodePolicy`
-- **Esku-menuak:** node_id, allowlist, blocklist, rate_limit, minimize_data, consent_required, import_only
-- **Erlazioa:** Federazio-eskura
+- **Klasea:** `NodePolicy`
+- **Gako-eremuak:** node_id, allowlist, blocklist, rate_limit, minimize_data, consent_required, import_only
+- **Errelazioak:** Federazio-entitatea
 
 ### ModerationReport
-
 - **Taula:** `moderation_reports`
-- **Klasse:** `ModerationReport`
-- **Esku-menuak:** reporter_node, target_node, target_user_ref, reason, status
-- **Erlazioa:** Federazio-eskura
+- **Klasea:** `ModerationReport`
+- **Gako-eremuak:** reporter_node, target_node, target_user_ref, reason, status
+- **Errelazioak:** Federazio-entitatea
+
+### IdentityRedirect
+- **Taula:** `identity_redirects`
+- **Klasea:** `IdentityRedirect`
+- **Gako-eremuak:** old_ref (indize bakarra), new_ref, target_domain, created_at
+- **Errelazioak:** Federazio-entitatea; identitate-migrazio baten ondoren erreferentzia zaharra ebazten du
+
+### MigrationAudit
+- **Taula:** `migration_audits`
+- **Klasea:** `MigrationAudit`
+- **Gako-eremuak:** entity_type, entity_id, action, source_domain, target_domain, details (JSON), created_at
+- **Errelazioak:** Federazio-entitatea; jaialdi edo erabiltzaile bakoitzeko migrazioa jarraitzen du
+
+### ChatOutbox
+- **Taula:** `chat_outbox`
+- **Klasea:** `ChatOutbox`
+- **Gako-eremuak:** message_id (bakarrak), node_origin, subject, payload (JSON), signature, status, attempts, last_error, created_at
+- **Errelazioak:** Txat federatuaren ilara iraunkorra (`DurableQueueBackend`); `message_id`-ren bakartasunak deduplikazioa ematen du eta `attempts`/`last_error` bidez birsaioak kudeatzen dira
+
+### MessageReport
+- **Taula:** `message_reports`
+- **Klasea:** `MessageReport`
+- **Gako-eremuak:** reporter_id (FK), message_id (FK), reason, status
+- **Errelazioak:** User-i (salatzailea) eta Message-i dagokio
+
+### ChatMute
+- **Taula:** `chat_mutes`
+- **Klasea:** `ChatMute`
+- **Gako-eremuak:** user_id (FK), channel_id (FK), node_domain, until, reason
+- **Errelazioak:** User-i eta Channel-i dagokio; isiltzea kanal bati edo federazio-nodo bati aplika dakioke
 
 ### Location
-
 - **Taula:** `locations`
-- **Klasse:** `Location`
-- **Esku-menuak:** name, description, latitude, longitude, address, is_active
-- **Erlazioa:** Festival-koa (M2M), LocationImage gehiago, LocationTag gehiago, LocationRelation gehiago
+- **Klasea:** `Location`
+- **Gako-eremuak:** name, description, latitude, longitude, address, is_active
+- **Errelazioak:** Festival-i (M2M) dagokio, LocationImages, LocationTags, LocationRelations ditu
 
 ### EventScreening
-
 - **Taula:** `event_screenings`
-- **Klasse:** `EventScreening`
-- **Esku-menuak:** event_id (FK), shortfilm_id (FK), start_date, end_date, venue, notes, status
-- **Erlazioa:** Event-koa, ShortFilm-koa
+- **Klasea:** `EventScreening`
+- **Gako-eremuak:** event_id (FK), shortfilm_id (FK), start_date, end_date, venue, notes, status
+- **Errelazioak:** Event-i, ShortFilm-i dagokio
 
 ### FestivalRulebook
-
 - **Taula:** `festival_rulebooks`
-- **Klasse:** `FestivalRulebook`
-- **Esku-menuak:** festival_id (FK), title, content, file_url, is_active
-- **Erlazioa:** Festival-koa
+- **Klasea:** `FestivalRulebook`
+- **Gako-eremuak:** festival_id (FK), title, content, file_url, is_active
+- **Errelazioak:** Festival-i dagokio
 
 ### FormDefinition
-
 - **Taula:** `form_definitions`
-- **Klasse:** `FormDefinition`
-- **Esku-menuak:** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations
-- **Erlazioa:** Festival-koa, FormPage gehiago, FormLink gehiago, FormResponse gehiago
+- **Klasea:** `FormDefinition`
+- **Gako-eremuak:** festival_id (FK), title, description, is_active, starts_at, ends_at, max_registrations
+- **Errelazioak:** Festival-i dagokio, FormPages, FormLinks, FormResponses ditu
 
 ### Group
-
 - **Taula:** `groups`
-- **Klasse:** `Group`
-- **Esku-menuak:** name, display_name, description, sort_order, is_active
-- **Erlazioa:** RoleGroupMembership gehiago, Role gehiago
+- **Klasea:** `Group`
+- **Gako-eremuak:** name, display_name, description, sort_order, is_active
+- **Errelazioak:** RoleGroupMemberships, Roles ditu
 
 ### AppSetting
-
 - **Taula:** `app_settings`
-- **Klasse:** `AppSetting`
-- **Esku-menuak:** key, value, description, is_public
-- **Erlazioa:** konfigurazio-eskura
+- **Klasea:** `AppSetting`
+- **Gako-eremuak:** key, value, description, is_public
+- **Errelazioak:** Konfigurazio-entitatea
 
 ### AuditLog
-
 - **Taula:** `audit_logs`
-- **Klasse:** `AuditLog`
-- **Esku-menuak:** actor_id (FK), action, target, ip, created_at
-- **Erlazioa:** User-ko aktore, append-only
+- **Klasea:** `AuditLog`
+- **Gako-eremuak:** actor_id (FK), action, target, ip, created_at
+- **Errelazioak:** User-i (egilea) dagokio, append-only
 
 ### UserBlock
-
 - **Taula:** `user_blocks`
-- **Klasse:** `UserBlock`
-- **Esku-menuak:** blocker_id (FK), blocked_id (FK), reason, starts_at, expires_at
-- **Erlazioa:** User-ko blokeatzailea, User-ko blokeatua
+- **Klasea:** `UserBlock`
+- **Gako-eremuak:** blocker_id (FK), blocked_id (FK), reason, starts_at, expires_at
+- **Errelazioak:** User-i (blokeatzailea), User-i (blokeatua) dagokio
 
 ### RoleDelegation
-
 - **Taula:** `role_delegations`
-- **Klasse:** `RoleDelegation`
-- **Esku-menuak:** delegator_id (FK), delegate_id (FK), role_id (FK), festival_id (FK), status, starts_at, expires_at, reason, scope_limitations, revoked_by (FK), revoked_at, revoked_reason
-- **Erlazioa:** User-ko delgatzailea, User-ko delgatua, Role-a, Festival-a, User-ko errebatzailea
+- **Klasea:** `RoleDelegation`
+- **Gako-eremuak:** delegator_id (FK), delegate_id (FK), role_id (FK), festival_id (FK), status, starts_at, expires_at, reason, scope_limitations, revoked_by (FK), revoked_at, revoked_reason
+- **Errelazioak:** User-i (ordezkatzailea), User-i (ordezkatua), Role-i, Festival-i, User-i (errebokatzailea) dagokio
 
 ### RoleTransition
-
 - **Taula:** `role_transitions`
-- **Klasse:** `RoleTransition`
-- **Esku-menuak:** user_id (FK), from_role_id (FK), to_role_id (FK), from_festival_id (FK), to_festival_id (FK), transition_type, changed_by (FK), reason, transitioned_at
-- **Erlazioa:** User-a, Role-a (aurka), Role-a (hurrengoa), Festival-a (aurka), Festival-a (hurrengoa), User-ko aldaketa
+- **Klasea:** `RoleTransition`
+- **Gako-eremuak:** user_id (FK), from_role_id (FK), to_role_id (FK), from_festival_id (FK), to_festival_id (FK), transition_type, changed_by (FK), reason, transitioned_at
+- **Errelazioak:** User-i, Role-i (jatorria), Role-i (helmuga), Festival-i (jatorria), Festival-i (helmuga), User-i (aldaketaren arduraduna) dagokio
 
 ### EventTicketType
-
 - **Taula:** `event_ticket_types`
-- **Klasse:** `EventTicketType`
-- **Esku-menuak:** event_id (FK), name, description, price, currency, capacity, sold_count, reserved_count, assigned_count, is_active, is_hidden, sort_order, color
-- **Erlazioa:** Event-koa
+- **Klasea:** `EventTicketType`
+- **Gako-eremuak:** event_id (FK), name, description, price, currency, capacity, sold_count, reserved_count, assigned_count, is_active, is_hidden, sort_order, color
+- **Errelazioak:** Event-i dagokio
 
 ### EventSeat
-
 - **Taula:** `event_seats`
-- **Klasse:** `EventSeat`
-- **Esku-menuak:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
-- **Erlazioa:** Event-koa, EventTicketType-koa
+- **Klasea:** `EventSeat`
+- **Gako-eremuak:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
+- **Errelazioak:** Event-i, EventTicketType-i dagokio
 
 ### EventReservation
-
 - **Taula:** `event_reservations`
-- **Klasse:** `EventReservation`
-- **Esku-menuak:** event_id (FK), user_id (FK), status, total_quantity, notes, created_by (FK), is_hidden, confirmed_at, cancelled_at
-- **Erlazioa:** Event-koa, User-ko sortzailea, User-ko sortzailea
+- **Klasea:** `EventReservation`
+- **Gako-eremuak:** event_id (FK), user_id (FK), status, total_quantity, notes, created_by (FK), is_hidden, confirmed_at, cancelled_at
+- **Errelazioak:** Event-i, User-i (erreserbatzailea), User-i (sortzailea) dagokio
 
 ### EventAttendee
-
 - **Taula:** `event_attendees`
-- **Klasse:** `EventAttendee`
-- **Esku-menuak:** event_id (FK), reservation_id (FK), user_id (FK), seat_id (FK), ticket_type_id (FK), status, invited_by (FK), is_guest, is_hidden, guest_name, guest_email, guest_phone, checked_in_at, notes
-- **Erlazioa:** Event-koa, EventReservation-koa, User-a, EventSeat-a, EventTicketType-a, User-ko deitzailea
+- **Klasea:** `EventAttendee`
+- **Gako-eremuak:** event_id (FK), reservation_id (FK), user_id (FK), seat_id (FK), ticket_type_id (FK), status, invited_by (FK), is_guest, is_hidden, guest_name, guest_email, guest_phone, checked_in_at, notes
+- **Errelazioak:** Event-i, EventReservation-i, User-i, EventSeat-i, EventTicketType-i, User-i (gonbidatzailea) dagokio
 
-## Datutxarra sessioak
+## Datu-base-saioak
 
-Datu-texioak `get_db()` bidez kargatzen da `app/database.py`-ko:
+Datu-base-saioak `app/database.py`-n `get_db()` bidez kudeatzen dira:
 
 ```python
 def get_db():
@@ -408,15 +402,14 @@ def get_db():
         db.close()
 ```
 
-FastAPI-ek eskaintzen du endpoints-ko eskura-ko eskaintzaz.
+Hau FastAPI mendekotasun gisa erabiltzen da endpoint-etatik datu-basea atzitzeko.
 
-## SQLite → MariaDB-ko mugatu
+## SQLite-tik MariaDB-ra migrazio-oharrak
 
-Eskaerak alembic-eko `backend/alembic/versions/` (`alembic upgrade head`). Produktuan alembic-ak, `create_all` bat ez.
+Eskema-aldaketak Alembic bidez kudeatzen dira (`backend/alembic/versions/`; `alembic upgrade head`). 42 berrikuspen daude eta head-a `c1d2e3f4a5b6` da; azken hirurek (`a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`) portabilitate-taulak, txat-ilara iraunkorra eta moderazioa gehitzen dituzte. Ekoizpenean soilik Alembic, inoiz ez `create_all`.
 
-SQLite ↔ MariaDB:
-
-- SQLite `INTEGER PRIMARY KEY` → MariaDB `INT AUTO_INCREMENT`
-- SQLite `TEXT` → MariaDB `TEXT`/`VARCHAR`
-- SQLite `DATETIME` (testua bezala) → MariaDB `DATETIME` nativo
-- `export_sqlite_to_mariadb.py` eta `import_mariadb_to_sqlite.py` eskriptuak tipiru-tzake-app egiten dute
+SQLite-tik MariaDB-ra migratzean:
+- SQLite `INTEGER PRIMARY KEY` MariaDB `INT AUTO_INCREMENT`-ekin bat dator
+- SQLite `TEXT` MariaDB `TEXT` edo `VARCHAR`-ekin bat dator
+- SQLite `DATETIME` testu gisa gordetzen da; MariaDBk `DATETIME` natiboa erabiltzen du
+- `export_sqlite_to_mariadb.py` eta `import_mariadb_to_sqlite.py` migrazio-script-ek moten bihurketa automatikoki kudeatzen dute

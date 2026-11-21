@@ -14,6 +14,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/channel_service.dart';
 import '../services/chat_backend/chat_service.dart';
+import '../services/chat_backend/websocket_chat_backend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/crypto_utils.dart';
 import '../widgets/chat_bubble.dart';
@@ -27,6 +28,39 @@ class ChatScreen extends StatefulWidget {
 
   const ChatScreen({super.key, this.currentUser, this.channel});
 
+  static const String typingIndicatorLabel = 'escribiendo…';
+  static const String searchHint = 'Buscar mensajes…';
+
+  /// Elimina mensajes repetidos por id y los ordena por `(created_at, id)`.
+  static List<Message> dedupAndSort(List<Message> items) {
+    final seen = <int>{};
+    final unique = <Message>[];
+    for (final msg in items) {
+      final id = msg.id;
+      if (id != null && !seen.add(id)) continue;
+      unique.add(msg);
+    }
+    unique.sort((a, b) {
+      final aDate = a.createdAt;
+      final bDate = b.createdAt;
+      if (aDate != null && bDate != null) {
+        final byDate = aDate.compareTo(bDate);
+        if (byDate != 0) return byDate;
+      } else if (aDate != null) {
+        return 1;
+      } else if (bDate != null) {
+        return -1;
+      }
+      final aId = a.id;
+      final bId = b.id;
+      if (aId != null && bId != null) return aId.compareTo(bId);
+      if (aId != null) return 1;
+      if (bId != null) return -1;
+      return 0;
+    });
+    return unique;
+  }
+
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
@@ -36,7 +70,10 @@ class ChatScreen extends StatefulWidget {
 /// mensajes en el primer build.
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final List<Message> _messages = [];
+  final Set<String> _typingKeys = {};
   final List<ChatBubble> _bubbles = [];
   final ChatService _chatService = ChatService(api: ApiService(), auth: AuthService());
   final ImagePicker _imagePicker = ImagePicker();
@@ -52,9 +89,14 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isReconnecting = false;
   bool _initialized = false;
   bool _offlineNotified = false;
+  bool _showSearch = false;
+  Duration? _latency;
   late AppLocalizations l10n;
   StreamSubscription<Message>? _streamSub;
   StreamSubscription<bool>? _reconnectingSub;
+  StreamSubscription<TypingEvent>? _typingSub;
+  StreamSubscription<Duration>? _latencySub;
+  StreamSubscription<int>? _messageReadSub;
 
   @override
   void initState() {
@@ -74,7 +116,72 @@ class _ChatScreenState extends State<ChatScreen> {
     _reconnectingSub = _chatService.onReconnecting.listen((reconnecting) {
       if (mounted) setState(() => _isReconnecting = reconnecting);
     });
+    _typingSub = _chatService.onTyping.listen(_onTypingEvent);
+    _latencySub = _chatService.onLatency.listen((value) {
+      if (mounted) setState(() => _latency = value);
+    });
+    _messageReadSub = _chatService.onMessageRead.listen(_onMessageRead);
     await _setupE2ee();
+  }
+
+  bool _isRelevantTyping(TypingEvent event) {
+    if (_isChannelChat) return event.channelId == widget.channel?.id;
+    if (event.channelId != null) return false;
+    final recipient = widget.currentUser?.id;
+    return recipient == null || event.userId == recipient;
+  }
+
+  void _onTypingEvent(TypingEvent event) {
+    if (!mounted || !_isRelevantTyping(event)) return;
+    setState(() {
+      if (event.isTyping) {
+        _typingKeys.add(event.key);
+      } else {
+        _typingKeys.remove(event.key);
+      }
+    });
+  }
+
+  void _onMessageRead(int messageId) {
+    if (!mounted) return;
+    final index = _messages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return;
+    final original = _messages[index];
+    if (original.isRead) return;
+    setState(() {
+      _messages[index] = Message(
+        id: original.id,
+        content: original.content,
+        senderId: original.senderId,
+        receiverId: original.receiverId,
+        groupId: original.groupId,
+        channelId: original.channelId,
+        isRead: true,
+        createdAt: original.createdAt,
+        updatedAt: original.updatedAt,
+        messageType: original.messageType,
+        mediaUrl: original.mediaUrl,
+        latitude: original.latitude,
+        longitude: original.longitude,
+        vcardData: original.vcardData,
+        icalData: original.icalData,
+      );
+      _rebuildBubbles();
+    });
+  }
+
+  void _rebuildBubbles() {
+    final source = _searchController.text.trim().isEmpty
+        ? _messages
+        : _chatService.searchMessages(_searchController.text);
+    final ordered = ChatScreen.dedupAndSort(source);
+    _bubbles
+      ..clear()
+      ..addAll(ordered.map((msg) => ChatBubble(
+            message: msg,
+            isMe: msg.senderId == widget.currentUser?.id,
+            l10n: l10n,
+          )));
   }
 
   /// Restaura la clave de remitente del canal o deriva una clave E2EE por destinatario.
@@ -122,8 +229,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _streamSub?.cancel();
     _reconnectingSub?.cancel();
+    _typingSub?.cancel();
+    _latencySub?.cancel();
+    _messageReadSub?.cancel();
     _chatService.dispose();
     _messageController.dispose();
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -205,11 +316,17 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     setState(() {
-      final exists = _bubbles.any((b) => b.message.id != null && b.message.id == displayMsg.id);
-      if (!exists) {
-        _bubbles.add(ChatBubble(message: displayMsg, isMe: displayMsg.senderId == widget.currentUser?.id, l10n: l10n));
+      final index = _messages.indexWhere((m) => m.id != null && m.id == displayMsg.id);
+      if (index == -1) {
+        _messages.add(displayMsg);
+      } else {
+        _messages[index] = displayMsg;
       }
+      _rebuildBubbles();
     });
+    if (displayMsg.id != null && displayMsg.senderId != widget.currentUser?.id) {
+      _chatService.markRead(displayMsg.id!).catchError((Object _) {});
+    }
     _scrollToBottom();
   }
 
@@ -273,10 +390,10 @@ class _ChatScreenState extends State<ChatScreen> {
       await OfflineCacheService.instance.put('message_list', unpacked.map((m) => m.toJson()).toList());
       if (mounted) {
         setState(() {
-          _bubbles.clear();
-          for (final msg in unpacked) {
-            _bubbles.add(ChatBubble(message: msg, isMe: msg.senderId == widget.currentUser?.id, l10n: l10n));
-          }
+          _messages
+            ..clear()
+            ..addAll(unpacked);
+          _rebuildBubbles();
           _isLoading = false;
           _isOfflineData = false;
         });
@@ -288,10 +405,10 @@ class _ChatScreenState extends State<ChatScreen> {
       if (cached != null && mounted) {
         final items = (cached as List).map((j) => Message.fromJson(Map<String, dynamic>.from(j))).toList();
         setState(() {
-          _bubbles.clear();
-          for (final msg in items) {
-            _bubbles.add(ChatBubble(message: msg, isMe: msg.senderId == widget.currentUser?.id, l10n: l10n));
-          }
+          _messages
+            ..clear()
+            ..addAll(items);
+          _rebuildBubbles();
           _isLoading = false;
           _isOfflineData = true;
         });
@@ -473,6 +590,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final msg = await _chatService.sendMessage(
         senderId: widget.currentUser!.id!,
         content: packedContent,
+        receiverId: _isChannelChat ? null : widget.currentUser?.id,
         channelId: widget.channel?.id,
         messageType: messageType,
         mediaUrl: mediaUrl,
@@ -482,23 +600,28 @@ class _ChatScreenState extends State<ChatScreen> {
         icalData: icalData,
       );
       if (mounted) {
+        final sent = Message(
+          id: msg.id,
+          content: content,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId ?? widget.currentUser?.id,
+          channelId: msg.channelId,
+          messageType: msg.messageType,
+          mediaUrl: msg.mediaUrl,
+          latitude: msg.latitude,
+          longitude: msg.longitude,
+          vcardData: msg.vcardData,
+          icalData: msg.icalData,
+          createdAt: msg.createdAt,
+        );
         setState(() {
-          _bubbles.add(ChatBubble(
-            message: Message(
-              id: msg.id,
-              content: content,
-              senderId: msg.senderId,
-              channelId: msg.channelId,
-              messageType: msg.messageType,
-              mediaUrl: msg.mediaUrl,
-              latitude: msg.latitude,
-              longitude: msg.longitude,
-              vcardData: msg.vcardData,
-              icalData: msg.icalData,
-              createdAt: msg.createdAt,
-            ),
-            isMe: true,
-          ));
+          final index = _messages.indexWhere((m) => m.id != null && m.id == sent.id);
+          if (index == -1) {
+            _messages.add(sent);
+          } else {
+            _messages[index] = sent;
+          }
+          _rebuildBubbles();
         });
         _scrollToBottom();
       }
@@ -508,6 +631,7 @@ class _ChatScreenState extends State<ChatScreen> {
         final localMsg = Message(
           content: content,
           senderId: widget.currentUser!.id!,
+          receiverId: _isChannelChat ? null : widget.currentUser?.id,
           channelId: widget.channel?.id,
           messageType: messageType,
           mediaUrl: mediaUrl,
@@ -517,7 +641,8 @@ class _ChatScreenState extends State<ChatScreen> {
           icalData: icalData,
         );
         setState(() {
-          _bubbles.add(ChatBubble(message: localMsg, isMe: true));
+          _messages.add(localMsg);
+          _rebuildBubbles();
           _isOfflineData = true;
         });
         _scrollToBottom();
@@ -653,6 +778,57 @@ class _ChatScreenState extends State<ChatScreen> {
                   const SizedBox(width: 8),
                   Text(l10n.reconnecting, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onErrorContainer)),
                 ],
+              ),
+            ),
+          if (_typingKeys.isNotEmpty || _latency != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: Row(
+                children: [
+                  if (_typingKeys.isNotEmpty)
+                    Text(
+                      ChatScreen.typingIndicatorLabel,
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary),
+                    ),
+                  if (_typingKeys.isNotEmpty && _latency != null) const SizedBox(width: 12),
+                  if (_latency != null)
+                    Text(
+                      '${_latency!.inMilliseconds} ms',
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    ),
+                ],
+              ),
+            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: Icon(_showSearch ? Icons.close : Icons.search, size: 18),
+                tooltip: ChatScreen.searchHint,
+                onPressed: () {
+                  setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchController.clear();
+                      _rebuildBubbles();
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+          if (_showSearch)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(_rebuildBubbles),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  hintText: ChatScreen.searchHint,
+                  isDense: true,
+                  border: const OutlineInputBorder(),
+                ),
               ),
             ),
           Expanded(

@@ -32,6 +32,9 @@ Initial admin (non-prod only): `admin` / `setup` — change on first login.
 | `SECRET_KEY` | env (mandatory in `APP_ENV=production`) | Signs JWT; insecure default blocks startup in prod |
 | `CORS_ORIGINS` | env | Explicit origins in prod (`*` prohibited with credentials) |
 | `APP_ENV` | env | `development` creates admin + `create_all`; `production` requires Alembic |
+| `PUBLIC_BASE_URL` | `backend/.env` | Public domain of the node; appears in the manifest and portability bundles |
+| `MTLS_REQUIRED` | env | Forces verified peer mTLS in federation (CN and PEM of the certificate) |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM of the certificate and private key that sign the manifest (RSA-SHA256) |
 
 ## Operation
 
@@ -40,7 +43,9 @@ Initial admin (non-prod only): `admin` / `setup` — change on first login.
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; back with `import_mariadb_to_sqlite.py` (detail in [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = copy `*.db`; MariaDB = `mariadb-dump` (volume `db-data` in Docker).
 - **Logs**: uvicorn stdout (DAV tokens redacted); API errors in SnackBar + `debugPrint`.
-- **Limits**: bodies ≤10 MB (413 if larger); rate limit with 429 + retry.
+- **Limits**: bodies ≤10 MB (413 if larger); rate limit with 429 + retry (federation 60/60 s per IP; chat 10/60 s per node and user, disabled with `TESTING=true`).
+- **Federation**: check a third-party node with `python tools/federation_conformance.py <url> [--json]`; peering health is at `/api/federation/resilience/health` and p50/p95 metrics at `/metrics`.
+- **Portability**: export/import bundles from `/api/federation/portability/{bundles,imports}` and consult identity redirects at `/redirects/{ref}`.
 
 ## User roles
 
@@ -57,7 +62,7 @@ Initial admin (non-prod only): `admin` / `setup` — change on first login.
 
 ## See also
 
-- [README.md](../../README.en.md): general project description and quick access
+- [README.md](../../README.md): general project description and quick access
 - [HERRAMIENTAS.md](HERRAMIENTAS.md): scripts and execution commands
 - [ADMINISTRACION.md](ADMINISTRACION.md): deployment administration and secret rotation
 - [SEGURIDAD.md](SEGURIDAD.md): checklist and production best practices

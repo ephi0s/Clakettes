@@ -1,6 +1,6 @@
 # Documentación — Clakettes
 
-Este índice es a entrada principal da documentación do proxecto. Está pensado para que un usuario, un administrador ou un desenvolvedor atopa a guía correcta sen ler arquivos ao azar.
+Este índice é a entrada principal da documentación do proxecto. Está pensado para que un usuario, un administrador ou un desenvolvedor atope a guía correcta sen ler arquivos ao azar.
 
 ## Idiomas
 
@@ -9,37 +9,39 @@ Toda a documentación existe nas 9 linguas da plataforma. O español (canario) �
 
 ## Como navegar pola documentación
 
-- **Quiero usar a app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
-- **Administro un despliegue** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
-- **Desenvolvo** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md)
+- **Quero usar a app** → [USO.md](USO.md) + [FUNCIONAL.md](FUNCIONAL.md)
+- **Administro un despregue** → [ADMINISTRACION.md](ADMINISTRACION.md) + [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) + [SEGURIDAD.md](SEGURIDAD.md)
+- **Desenvolvemento** → [ARQUITECTURA.md](ARQUITECTURA.md) + [DESARROLLO.md](DESARROLLO.md) + [API.md](API.md) + [DATABASE.md](DATABASE.md) + [BACKEND.md](BACKEND.md) + [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+- **Referencia para axentes** → os comandos e convencións de desenvolvemento están en [../AGENTS.md](../../AGENTS.md)
 
 ## Principios da documentación
 
-- **Un so documento canónico por tema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) e [API.md](API.md) son a referencia oficial do seu ámbito.
-- **Documentación por audiencia**: cada guía está escrita para un tipo de lector, non para un so conxunto de comandos.
-- **Enlaces directos**: desde aquí se pode chegar ao contido relevante en menos dun clic.
-- **Sen duplicación innecesaria**: os documentos secundarios enlazan ao canónico en vez de repitílo.
+- **Un único documento canónico por tema**: [SEGURIDAD.md](SEGURIDAD.md), [USO.md](USO.md), [DATABASE.md](DATABASE.md) e [API.md](API.md) son a referencia oficial do seu ámbito.
+- **Documentación por audiencia**: cada guía está escrita para un tipo de lector, non para un único conxunto de comandos.
+- **Ligazóns directas**: desde aquí pódese chegar ao contido relevante en menos dun clic.
+- **Sen duplicación innecesaria**: os documentos secundarios ligan ao canónico en lugar de repetilo.
 
 ## Índice por documento
 
-| Documento | Cobre | Audiencia |
-|-----------|-------|-----------|
-| [FUNCIONAL.md](FUNCIONAL.md) | Valor real por papel e fluxos (festival, inscrición, comités, premios, xat/E2EE, votaxe do xurado) | usuario, admin |
-| [USO.md](USO.md) | Arranque, variables, migración SQLite↔MariaDB, copias, roles e operación | usuario, admin |
-| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, conta inicial, rotación de secretos, límites, troubleshooting | admin |
-| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfís Docker, portos, vols, Nginx, health, CI (GitHub + GitLab) | admin, dev |
+| Documento | Que cobre | Audiencia |
+|---|---|---|
+| [FUNCIONAL.md](FUNCIONAL.md) | Utilidade real por rol e fluxos (festival, inscrición, comités, premios, chat/E2EE, votación do xurado) | usuario, admin |
+| [USO.md](USO.md) | Arranque, variables, migración SQLite↔MariaDB, copias de seguridade, roles e operación | usuario, admin |
+| [ADMINISTRACION.md](ADMINISTRACION.md) | Endpoints `/api/admin`, conta inicial, rotación de segredos, límites, resolución de problemas | admin |
+| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | Perfis Docker, portos, volumes, Nginx, health, CI (GitHub + GitLab) | admin, dev |
 | [SEGURIDAD.md](SEGURIDAD.md) | Tokens, matriz `require_*`, perímetro, checklist de produción | admin, dev |
 | [ARQUITECTURA.md](ARQUITECTURA.md) | Mapa do sistema + regras backend/frontend + fluxos clave | dev |
 | [API.md](API.md) | Referencia de endpoints | dev |
 | [DESARROLLO.md](DESARROLLO.md) | Convención para engadir endpoint/pantalla + portas CI | dev |
-| [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuíbles, Docker, fixs CI | dev |
+| [HERRAMIENTAS.md](HERRAMIENTAS.md) | Scripts `start.*`, builds distribuíbles, Docker, correccións CI | dev |
 | [PUSH.md](PUSH.md) | Decisión de notificacións sen Firebase | dev |
 | [DATABASE.md](DATABASE.md) | Esquema dual SQLite/MariaDB, fichas por modelo, ER | dev |
-| [BACKEND.md](BACKEND.md) | Guía do backend (capas, config, auth, tests) | dev |
+| [BACKEND.md](BACKEND.md) | Guía do backend (capas, configuración, auth, tests) | dev |
 | [AUDITORIA.md](AUDITORIA.md) | Informe de auditoría (rev. 10/10/2026) | referencia |
-| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fase 4) | dev |
+| [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fases 2 a 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entidades mínimas federadas) | dev |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, rotación de certificados | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, manifesto asinado, portabilidade, chat e resiliencia | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisión de broker (NATS JetStream) para o chat e os eventos entre nodos; WebSocket de borde e fallback mononó | dev |
 
 ## Ruta recomendada por perfil
 
@@ -47,9 +49,9 @@ Toda a documentación existe nas 9 linguas da plataforma. O español (canario) �
 
 1. [USO.md](USO.md)
 2. [FUNCIONAL.md](FUNCIONAL.md)
-3. [SEGURIDAD.md](SEGURIDAD.md) solo se precisan revisar permisos ou entorno de produción
+3. [SEGURIDAD.md](SEGURIDAD.md) só se precisan revisar permisos ou o contorno de produción
 
-### Administrador de despliegue
+### Administrador de despregue
 
 1. [ADMINISTRACION.md](ADMINISTRACION.md)
 2. [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md)
@@ -64,27 +66,29 @@ Toda a documentación existe nas 9 linguas da plataforma. O español (canario) �
 4. [API.md](API.md)
 5. [DATABASE.md](DATABASE.md)
 6. [BACKEND.md](BACKEND.md)
+7. [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md)
+8. [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md)
+9. [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md)
 
 ## Convencións para manter a documentación
 
 - Actualiza o documento canónico antes que calquera resumo ou índice.
-- Se mudas un fluxo de arranque, sincroniza [README.gl.md](../../README.gl.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
-- Se mudas unha API pública, actualiza [API.md](API.md) e, se procede, [DESARROLLO.md](DESARROLLO.md).
-- Se mudas o esquema ou a persistencia, revisa [DATABASE.md](DATABASE.md) e as migracións.
-- Sempre que edites un documento en `docs/es/`, replica o cambio ás 8 irmáns (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Se cambias un fluxo de arranque, sincroniza [README.gl.md](../../README.gl.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
+- Se cambias unha API pública, actualiza [API.md](API.md) e, se procede, [DESARROLLO.md](DESARROLLO.md).
+- Se cambias o esquema ou a persistencia, revisa [DATABASE.md](DATABASE.md) e as migracións.
+- Sempre que edites un documento en `docs/es/`, replica o cambio nas 8 irmás (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## FAQ rápida
 
-- **Por onde comezo?** Lee [USO.md](USO.md) se vas operar a app; lee [ARQUITECTURA.md](ARQUITECTURA.md) se vas desenvolver.
-- **Que é canónico e que non?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) e [DATABASE.md](DATABASE.md) son a referencia oficial para esos temas.
+- **Por onde comezo?** Le [USO.md](USO.md) se vas operar a app; le [ARQUITECTURA.md](ARQUITECTURA.md) se vas desenvolver.
+- **Que é canónico e que non?** [USO.md](USO.md), [SEGURIDAD.md](SEGURIDAD.md), [API.md](API.md) e [DATABASE.md](DATABASE.md) son a referencia oficial para eses temas.
 - **Onde atopo un comando ou script?** Revisa [HERRAMIENTAS.md](HERRAMIENTAS.md) e [../README.gl.md](../../README.gl.md).
-- **Como sebo se un cambio require documentación?** Se afecta arranque, permisos, infraestrutura, API ou modelo de datos, debe reflectirse na documentación pertinente.
+- **Como sei se un cambio require documentación?** Se afecta ao arranque, permisos, infraestrutura, API ou modelo de datos, debe reflectirse na documentación pertinente.
 
 ## Ver tamén
 
-- [../README.gl.md](../../README.gl.md): visão xeral do proxecto
+- [../README.gl.md](../../README.gl.md): visión xeral do proxecto
 - [USO.md](USO.md): operación e configuración local
-- [ADMINISTRACION.md](ADMINISTRACION.md): ámbito de despliegue e administración
+- [ADMINISTRACION.md](ADMINISTRACION.md): ámbito de despregue e administración
 - [ARQUITECTURA.md](ARQUITECTURA.md): mapa técnico do sistema
 - [API.md](API.md): referencia de endpoints
-

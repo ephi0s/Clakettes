@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../services/offline_cache_service.dart';
+import '../services/node_service.dart';
 import '../widgets/reusable_widgets.dart';
 import '../services/auth_service.dart';
 import '../widgets/empty_state_widget.dart';
@@ -54,15 +55,44 @@ class _UsersScreenState extends State<UsersScreen> {
     try {
       final result = await _apiService.getUsers(size: 100);
       if (!mounted) return;
+      final remoteData = result.items.map((u) => u.toJson()).toList();
+      final nodeOrigin = NodeService().activeNode?.domain ?? '';
+      if (!mounted) return;
       setState(() {
         _allUsers = result.items;
         _applyFilter();
         _isLoading = false;
       });
+      try {
+        final cache = OfflineCacheService.instance;
+        final reconciliation = cache.reconcile('user', remoteData, nodeOrigin);
+        final action = reconciliation['action'] as String? ?? 'use_remote';
+        if (action == 'use_local') {
+          final cached = cache.get('user');
+          if (cached is List && cached.isNotEmpty) {
+            setState(() {
+              _allUsers = cached.map((j) => User.fromJson(Map<String, dynamic>.from(j))).toList();
+              _applyFilter();
+              _isOfflineData = true;
+            });
+            return;
+          }
+        } else {
+          if (action == 'conflict') _showConflictNotice();
+          await cache.putWithOrigin('user', remoteData, nodeOrigin);
+        }
+      } catch (e) {
+        debugPrint('Cache error: $e');
+      }
     } catch (e) {
       debugPrint('Error: $e');
       if (!mounted) return;
-      final cached = OfflineCacheService.instance.get('user');
+      dynamic cached;
+      try {
+        cached = OfflineCacheService.instance.get('user');
+      } catch (cacheError) {
+        debugPrint('Cache error: $cacheError');
+      }
       if (cached is List && cached.isNotEmpty) {
         _allUsers = cached.map((j) => User.fromJson(Map<String, dynamic>.from(j))).toList();
         _applyFilter();
@@ -74,6 +104,16 @@ class _UsersScreenState extends State<UsersScreen> {
         _isOfflineData = _allUsers.isNotEmpty;
       });
     }
+  }
+
+  void _showConflictNotice() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Datos en conflicto: se muestra la versión remota.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   /// Recalcula la lista filtrada a partir de la búsqueda actual.

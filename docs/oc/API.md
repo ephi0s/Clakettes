@@ -2,6 +2,7 @@
 
 [ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
+Generat dempuèi `app/routers/*.py` + prefixes de `app/main.py`.
 Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 
 ## `admin` → `/api/admin`
@@ -92,6 +93,17 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | òc |
 | WEBSOCKET | `/api/chat/ws` | token (query) |
 
+## `chat_moderation` → `/`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| POST | `/messages/{message_id}/report` | òc |
+| PATCH | `/messages/{message_id}/moderate` | òc |
+| GET | `/reports` | òc |
+| POST | `/mutes` | òc |
+| GET | `/mutes` | òc |
+| GET | `/limits` | òc |
+
 ## `committees` → `/api`
 
 | Metòde | Camin | Auth |
@@ -165,6 +177,7 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | PATCH | `/api/events/{event_id}/screenings/{shortfilm_id}` | òc |
 | PUT | `/api/events/{event_id}/screenings/{shortfilm_id}/notes` | òc |
 | PUT | `/api/events/{event_id}/screenings` | òc |
+| GET | `/api/festivals/{festival_id}/screenings` | non |
 | GET | `/api/events/{event_id}/occupancy` | non |
 | GET | `/api/events/{event_id}/ticket-types/` | non |
 | POST | `/api/events/{event_id}/ticket-types/` | òc |
@@ -276,6 +289,44 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/.well-known/jwks.json` | non |
 | POST | `/api/token` | non |
 
+## `federation_chat_bridge` → `/api`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| POST | `/api/chat/bridge/inbound` | non |
+| POST | `/api/chat/bridge/outbound` | non |
+| GET | `/api/chat/bridge/config` | non |
+| GET | `/api/chat/messages` | non |
+
+## `federation_events` → `/`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| GET | `/stream` | non |
+| POST | `/publish` | òc |
+| GET | `/retry-queue` | òc |
+
+## `federation_portability` → `/`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| POST | `/bundles` | òc |
+| POST | `/imports` | òc |
+| POST | `/festivals/{festival_id}/migrate` | non |
+| POST | `/users/{user_ref}/migrate` | non |
+| GET | `/redirects/{old_ref}` | òc |
+
+## `federation_resilience` → `/`
+
+| Metòde | Camin | Auth |
+|---|---|---|
+| GET | `/health` | non |
+| GET | `/heartbeat` | non |
+| GET | `/metrics` | non |
+| POST | `/keys/revoke` | òc |
+| GET | `/keys/revoked` | non |
+| GET | `/incident-plan` | non |
+
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Metòde | Camin | Auth |
@@ -334,10 +385,10 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | Metòde | Camin | Auth |
 |---|---|---|
 | POST | `/api` | òc |
-| GET | `/api/{festival_id}` | non |
+| GET | `/api/{festival_id}` | opcional |
 | GET | `/api/aggregate/{festival_id}` | non |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | non |
-| GET | `/api/anonymous/{festival_id}` | non |
+| GET | `/api/by-juror/{festival_id}/{juror_id}` | òc |
+| GET | `/api/anonymous/{festival_id}` | òc |
 
 ## `keys` → `/api/users`
 
@@ -610,3 +661,4 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | òc |
 
+Total: 441 endpoints en 39 routers.

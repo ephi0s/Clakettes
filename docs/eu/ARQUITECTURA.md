@@ -5,50 +5,60 @@
 ## Mapa
 
 ```
-Flutter (web/desktop/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
+Flutter (web/mahaigaina/Android/iOS) ──HTTPS──► FastAPI ──► SQLite (dev) / MariaDB (prod)
   offline-first (Hive)                    JWT 30 min + refresh 30 d
-                                          rate limit 100/60s (?page=&size=)
+                                           rate limit 100/60s (?page=&size=)
 ```
 
-Portuak (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3306`.
+Atak (Docker): backend `8000`, frontend `3000` (dev) / `80` (prod), MariaDB `3306`.
 
-## Backend (`backend/`, informazio gehiago [BACKEND.md](BACKEND.md) eta [DATABASE.md](DATABASE.md) fitxategian)
+## Backend (`backend/`, xehetasuna [BACKEND.md](BACKEND.md) eta [DATABASE.md](DATABASE.md) fitxategietan)
 
-Nazioak: Routers → Services → Models, motak `app.enums`-ekin.
+Geruzak: Routers → Services → Models, motak `app.enums` bidez.
 
-| Piesa | Non | Egiazkotasuna |
-|-------|-----|---------------|
-| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Routers-ek erasotzat egin ez dute; zerbitzariak 404-ek ez (3 errorrek ada) |
-| 404 batitzan | `routers/dependencies.py:get_or_404` | ezazu 404-ko emaitza laguntzat |
-| Autentikazioa | `app/auth.py:validate_access_token` | Sinatura + `type=access` + sessioa guztitan/no idatzita/no kadu, `last_used_at` lazy (5 min) |
-| Autentikatik gabe | `routers/dependencies.py:get_current_user_optional` | Endpoints publikoak 404-rik gabe |
-| Baimendiak | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
-| Rate-limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, bucket `middleware:`/`dav:`; `main`/`admin`/`auth` instanzioak) | `TESTING=true` duzun erasoan desaktibatzea |
-| Txat-egoitza | `app/chat_backend/` (WebSocket) + REST `routers/chat.py`-en | WS `validate_access_token`-ekin sessioa eskaintzen du |
-| CalDAV | `app/dav/` + `routers/dav.py` (`/dav` prefixikoa, buket bakarra 600/60s) | Bearer token URL-an; TLS beharrezkoa produktu batean |
-| Eskaintza | `services/export_service.py` | CSV/ICS stdlib-en; PDF reportlab-arekin eskaintza lazy bidez |
-| Migrazioak | `alembic/` (36 bertsioa) | Produktuan Alembic-ak; dev-en `create_all` gehiago |
-| Federazioa | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py` | esku-menua, direktorioa, nodoak, taldeak, webfinger, erabiltzailea ref |
+| Zatia | Non | Araua |
+|---|---|---|
+| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Router-ek ez dute kontsultatzen; zerbitzuek ez dute 404-ik jaurtitzen (3 heredatutako izan ezik) |
+| 404 uniformea | `routers/dependencies.py:get_or_404` | fetch → 404 lerro bakarrean |
+| Auth | `app/auth.py:validate_access_token` | Sinadura + `type=access` + saio aktiboa/errebokatu gabea/iraungi gabea; `last_used_at` aldekoa (5 min) |
+| Aukerako auth | `routers/dependencies.py:get_current_user_optional` | Endpoint publikoak 401 gabe |
+| Baimenak | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
+| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, `middleware:`/`dav:` deposituekin; instantziak `main`/`admin`/`auth`-en) | `TESTING=true` bidez desaktibatuta |
+| Denbora errealeko txata | `app/chat_backend/` (WebSocket) + REST `routers/chat.py`-n | WS-ak saioa `validate_access_token` bidez balioztatzen du |
+| Txat federatua | `routers/federation_chat_bridge.py`, `services/message_queue_service.py` (`chat_outbox`), `chat_backend/durable_queue_backend.py` (`DurableQueueBackend`), `services/message_federation_service.py` | RS256 sinatutako bridge-a, `message_id` bidez dedup-a, `timestamp` bidez ordena, garraio trukagarria |
+| Txat-moderazioa | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Txostenak, isiltzeak, hitz-iragazkia, `disable_chat` eta 10 mezu/60 s nodo eta erabiltzaile bakoitzeko (`TESTING=true` bidez off) |
+| Gertaera-busa | `routers/federation_events.py`, `services/event_bus_service.py` | SSE `since`, bihotz-taupada eta replay-arekin (200); sinatutako argitalpena eta 3 birsaio (300 ms→5 s) |
+| CalDAV | `app/dav/` + `routers/dav.py` (`/dav` aurrizkia, depositua 600/60s) | Bearer token URLan; TLS nahitaezkoa prod-en |
+| Export | `services/export_service.py` | CSV/ICS stdlib-en; PDF reportlab-ekin inportazio aldegarri batean |
+| Migrazioak | `alembic/` (42 bertsio, head `c1d2e3f4a5b6`) | Prod-en soilik Alembic; dev-en baita `create_all` |
+| Federazioa | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | RSA-SHA256 sinatutako manifestua, direktorioa, nodoak, txostenak, webfinger, erabiltzaile-erref., JWKS, `whoami`, federazio-tokena, peers/verify, peers/revoke, mTLS CN/PEM bidez |
+| Portabilitatea | `routers/federation_portability.py`, `services/portability_service.py`, `identity_redirect`/`migration_audit` modeloak | Sinatutako bundle-ak, inportazioak, jaialdi/erabiltzaile migrazioa eta birbideratzeak |
+| Erresilientzia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Osasuna, taupada, p50/p95 metrikak, gakoen errebokazioa eta intzidente-plana |
+| Betetzea | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLIak manifestua, JWKS, tokena, direktorioa, portabilitatea, bridge-a eta SSE egiaztatzen ditu |
+
+Sortutako APIa: `python tools/gen_api.py --all`-ek 441 endpoint sortzen ditu 39 router-etan aurrizkiarekin (ikusi [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
-Zerbitziak erakusten daitezkeena + `setState()` + Streams (ez Provider). `main()`-ean:
-
+Singleton zerbitzuak + `setState()` + Streams (Provider gabe). Abiaraztea `main()`-en:
 `DatabaseService` → `OfflineCache` → `SyncQueue` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
 
-| Piesa | Non | Egiazkotasuna |
-|-------|-----|---------------|
-| API | `services/api_service.dart` (nohia) + `services/api/` (9 domeinuak) | `BACKEND_URL` oinarria (desberrituta > dart-define > plataforma Default; Android emulatzailea `10.0.2.2`) |
-| Erasoarekin | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-merkezera) | Eraso-biderris sustainablean aurkeztzea |
-| Txat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS gorriz, REST erabiliz historiara; E2EE ECDH P-256 + AES-GCM isolatuetan |
-| Jakinik gabe | `notification_service.dart` | Desktop: SO plugina; web: Notification API; mobea: no-op ([PUSH.md](PUSH.md)-en) |
-| Navegatzea | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer бидеan; 10 pantalla-cacheatutakoak |
-| i18n | `l10n/` + `assets/l10n/` (9 localak) | `en.arb` ezarrezkoa; 0 kladiak absentak (script-ak eskaintzen du) |
-| SO-ko baimendiak | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubikazioa, kamera, fototeka, alarmak |
+| Zatia | Non | Araua |
+|---|---|---|
+| API | `services/api_service.dart` (nukleoa) + `services/api/` (9 domeinu) | Oinarria `BACKEND_URL` (gordeta > dart-define > plataformaren araberako lehenetsia; Android emulatzailea `10.0.2.2`) |
+| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 birsaio + atzerapena, birbidaltzearen aurkakoa) | Nodo-etiketadun cache-a (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); nodo bakoitzeko osasun-egiaztapenak Hive cache-a dotoreki degradatzeko; berriro konektatzean sinkronizazioa berrespenarekin |
+| Txata | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS zuzenean, REST historia eta federazio-historiarako; E2EE ECDH P-256 + AES-GCM isolate-etan |
+| Jakinarazpenak | `notification_service.dart` | Mahaigaina: SO plugina; web-a: Notification API; mugikorra: no-op (ikusi [PUSH.md](PUSH.md)) |
+| Nabigazioa | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer beti; 10 pantaila cache-etan |
+| i18n | `l10n/` + `assets/l10n/` (9 locale) | `en.arb` da fallback-a; 0 gako falta (script bidez egiaztatuta) |
+| SO baimenak | `AndroidManifest.xml` / `Info.plist` | Sarea, kokapena, kamera, argazki-liburutegia, alarma zehatzak |
 
-## Bidaia garrantzitsuak
+## Fluxu giltzarriak
 
-1. **Reserva**: festival → evento → sitting bulk (1 commit) → reserva -> ocupazioa (`tests/integration/test_flows.py`-en pin bat).
-2. **Mezua**: kanala → kidea → DM -> irakurri -> ezabatu (emendatua bakarra/adminra).
-3. **Delegazioa**: sortu -> zerrendatu -> ukatu (delegaduta/adminra).
-4. **Publiko erregistroa**: token-link -> erregistro formulario autentikazio gabe -> onartze.
+1. **Erreserba**: jaialdia → gertaera → eserleku bulk (commit 1) → erreserba → okupazioa (pin-a `tests/integration/test_flows.py`-n).
+2. **Mezua**: kanala → kidea → DM → irakurketa → ezabaketa (igortzailea/admin soilik).
+3. **Ordezkaritza**: sortu → aktiboak zerrendatu → errebokatu (ordezkatzailea/admin soilik).
+4. **Erregistro publikoa**: token-dun esteka → auth gabe formularioa → onarpena.
+5. **Portabilitatea**: sinatutako bundle-a → jatorri-politikarekin inportatu → jaialdi/erabiltzaile migrazioa → erreferentzia zaharraren birbideratzea.
+6. **Txat federatua**: sinatutako gutun-azala → sinadura eta dedup egiaztapena → `chat_outbox`-en iraunaraztea → hedapena eta `timestamp` bidezko ordena.
+7. **Gertaerak**: busean argitaratu → SSE `since` eta bihotz-taupadarekin → atzerapeneko birsaioa pareak huts egiten badu.

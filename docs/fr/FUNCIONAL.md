@@ -1,59 +1,59 @@
-# Fonctionnel — ce que l'on peut faire dans Clakettes
+# Fonctionnel — ce qu'on peut faire dans Clakettes
 
 [ES](../es/FUNCIONAL.md) · [EN](../en/FUNCIONAL.md) · [FR](FUNCIONAL.md) · [DE](../de/FUNCIONAL.md) · [IT](../it/FUNCIONAL.md) · [CA](../ca/FUNCIONAL.md) · [EU](../eu/FUNCIONAL.md) · [GL](../gl/FUNCIONAL.md) · [OC](../oc/FUNCIONAL.md)
 
-Valeur réelle du projet par rôle, avec le flux qui le soutient. Détail opérationnel dans [USO.md](USO.md), référence des endpoints dans [API.md](API.md).
+Utilité réelle du projet par rôle, avec le flux qui la soutient. Détail opérationnel dans [USO.md](USO.md), référence des endpoints dans [API.md](API.md).
 
-## Festival (organizer)
+## Festival (organisateur)
 
-1. Créez le festival (`POST /api/festivals/`) avec description, site web, lieu et logo.
-2. Ouvrez des appels : formulaires d'inscription avec sections, rôles et étiquettes (`RegistrationForm + Sections + Links`), exposés par lien public que quiconque peut remplir sans compte.
-3. Recevez des courts-métrages liés à vos appels et localisations de tournage.
-4. Montez la programmation : événements (gala, projection, atelier, table ronde, réseautage, récompenses, fête, masterclass, Q&A) avec types de billets, sièges (disponible/réservé/vendu/assigné/bloqué), réservations et check-in des participants ; exportez les participants vers CSV et les événements vers ICS. Filtrez chaque œuvre lors du visionnage avec état `pending/screened/disqualified` et motif, filtrez par état, disqualifiées ou étiquette de participant. L'organisation vérifie les étiquettes d'éligibilité des participants (résident, étudiant) par méthodes externes, et le participant peut demander la vérification en joignant un certificat de résidence ou d'inscription.
-5. Nommez des comités avec membres et publiez des récompenses (vérifiées ou non, publiques ou non) par festival, court-métrage ou utilisateur, avec étiquettes d'éligibilité et vérification du récipiendaire.
-6. Communiquez : canaux du festival (admin/moderator/member), messages et images sur le profil, livrets de règles.
+1. Crée le festival (`POST /api/festivals/`) avec description, site web, lieu et logo.
+2. Ouvre des appels : formulaires d'inscription avec sections, rôles et étiquettes (`RegistrationForm + Sections + Links`), exposés par lien public que tout le monde peut remplir sans compte.
+3. Reçoit les courts liés à vos appels et les lieux de tournage.
+4. Monte la programmation : événements (gala, projection, atelier, table, networking, prix, fête, masterclass, Q&A) avec types de billets, sièges (disponible/réservé/vendu/assigné/bloqué), réservations et check-in des participants ; exporte les participants en CSV et les événements en ICS. Crible chaque œuvre du visionnage avec statut `pending/screened/disqualified` et motif, et filtre par statut, disqualifiés ou étiquette de participant. L'organisation vérifie les étiquettes d'éligibilité (résident, étudiant) avec des méthodes externes, et le participant peut demander la vérification en joignant un certificat de résidence ou de scolarité.
+5. Nomme des comités avec membres et publie des prix (vérifiés ou non, publics ou non) par festival, court ou utilisateur, avec étiquettes d'éligibilité et vérification du destinataire.
+6. Communique : canaux du festival (admin/moderator/member), messages et images sur le profil, rulebooks.
 
-Seul édite/supprime ses propres festivals et gère ses utilisateurs (`require_festival_admin`). Les membres se joignent automatiquement comme `attendee` ; les autres rôles sont assignés par un admin (409 si déjà membre).
+Il ne modifie/supprime que ses festivals et gère ses utilisateurs (`require_festival_admin`). Les membres rejoignent seuls comme `attendee` ; les autres rôles sont assignés par un admin (409 si déjà membre).
 
 ## Professionnel (utilisateur, jury, autres métiers)
 
-- Profil avec métier (réalisation, interprétation, son, scénario, montage, costume, maquillage, figuration, doublage, foley, presse, production, distribution…), bio et palmarès lié à des festivals de la plateforme ou externe par lien.
+- Profil avec métier (réalisation, interprétation, son, scénario, montage, costumes, maquillage, figurant, doublage, foley, presse, production, distribution…), bio et palmarès liés aux festivals de la plateforme ou externes par lien.
 - Confidentialité champ par champ (email, bio, localisation) et profils publics/privés.
-- Chaque utilisateur édite son profil et ses courts-métrages ; le jury consulte et vote selon son festival.
-- Chat direct et de groupe/canal avec chiffrement de bout en bout : les clés publiques sont publiées à `POST /api/users/me/public-key`, le serveur stocke et retransmet seulement le chiffrement, le vrai chiffrement se fait dans l'app.
+- Chaque utilisateur modifie son profil et ses courts ; le jury consulte et vote selon son festival.
+- Chat direct et de groupe/canal avec chiffrement de bout en bout : les clés publiques sont publiées sur `POST /api/users/me/public-key`, le serveur ne stocke et ne relaie que du chiffré, le vrai chiffrement a lieu dans l'application. Entre nœuds fédérés, le message passe par le bridge signé, est dédupliqué par `message_id` et trié par date ; vous pouvez signaler des messages et les administrateurs peuvent réduire au silence des utilisateurs ou filtrer des mots.
 
 ## Équipe express (attendee)
 
 - Auto-join au festival (`POST /api/festivals/{id}/join`, rôle `attendee`) et sortie libre (`leave`).
-- Géolocalisez les participants, coordonnez le groupe par chat et présentez votre court-métrage au concours express.
-- Réservez un siège aux événements et envoyez des inscriptions par lien public (états : en attente/approuvée/rejetée/en liste d'attente/annulée ; paiements : impayé/en attente/payé/remboursé/annulé).
+- Géolocalise les participants, coordonne le groupe par chat et présente le court au concours express.
+- Réserve un siège aux événements et envoie des inscriptions par lien public (états : en attente/approuvé/rejeté/listé d'attente/annulé ; paiements : impayé/en attente/payé/remboursé/annulé).
 
 ## Public
 
-Découvrez les festivals (`GET /api/festivals/` paginé et public), suivez les courts-métrages et les palmarès, contactez par chat et consultez les lieux sur la carte.
+Découvre les festivals (`GET /api/festivals/` paginé et public), suit les courts et le palmarès, contacte par chat et consulte les lieux sur la carte.
 
 ## Administrateur global (admin)
 
-Voit et édite tout (utilisateurs, festivals, courts-métrages, canaux, formulaires). Opérations dans [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tables, reset, sauvegardes, secrets).
+Voit et modifie tout (utilisateurs, festivals, courts, canaux, formulaires). Exploitation dans [ADMINISTRACION.md](ADMINISTRACION.md) (stats, tables, reset, sauvegardes, secrets). En fédération, il enregistre les nœuds et leurs politiques (`import_only`, `disable_chat`, `disable_search`), exporte et importe des bundles, migre les festivals et les identités d'utilisateur avec leurs redirections, publie des événements, modère le chat et surveille la résilience (métriques p50/p95 et révocation de clés).
 
 ## Jury (juror)
 
-- Consulte les œuvres assignées à son festival et émet des votes par court-métrage (`POST /api/jury-votes/`).
+- Consulte les œuvres assignées à son festival et vote par court (`POST /api/jury-votes/`).
 - Notation par œuvre avec agrégation automatique ; anonymat optionnel.
 - Consulte les résultats agrégés pour les organisateurs.
 
 ## États à connaître
 
 - Membre de festival : `proposed → invited → under_review → pending → active → approved / rejected / revoked / expired / cancelled`.
-- Inscription : `draft → submitted → approved / rejected` ; soumission : `pending / approved / rejected / waitlisted / cancelled`.
+- Inscription : `draft → submitted → approved / rejected` ; envoi : `pending / approved / rejected / waitlisted / cancelled`.
 - Participant à un événement : `registered / attended / no_show / cancelled`.
-- Sélection en projection : `pending / screened / disqualified`.
+- Criblage en projection : `pending / screened / disqualified`.
 - Notes du jury et procès-verbaux par œuvre, avec annotation : `special_mention / accesit / other`.
-- Vérification d'étiquette de participant : `unverified / pending / verified / rejected`.
+- Vérification de l'étiquette de participant : `unverified / pending / verified / rejected`.
 - Portée de visibilité des événements : `public / festival_members / roles / attendees_only`.
 
 ## Voir aussi
 
-- [USO.md](USO.md) : démarrage et opération du système
+- [USO.md](USO.md) : démarrage et exploitation du système
 - [API.md](API.md) : référence des endpoints
 - [ADMINISTRACION.md](ADMINISTRACION.md) : administration du déploiement
