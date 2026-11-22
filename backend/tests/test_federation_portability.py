@@ -1,14 +1,9 @@
 import pytest
 
-from app.main import app
 from app.models.base import Base
 from app.models.festival import Festival
 from app.models.shortfilm import ShortFilm
-from app.routers.federation_portability import router as portability_router
 from app.services.portability_service import IdentityRedirect, MigrationAudit
-
-if not any(getattr(route, "path", "").startswith("/api/federation/portability") for route in app.routes):
-    app.include_router(portability_router)
 
 
 @pytest.fixture(autouse=True)

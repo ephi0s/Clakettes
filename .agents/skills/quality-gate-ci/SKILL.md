@@ -32,7 +32,7 @@ Fix failures before continuing. `ruff check` before `format --check` (same order
 
 Push/PR to `main,develop` on `ubuntu-26.04` (Python 3.12, Flutter 3.47.3, ruff 0.15.22). Parallel jobs `backend-lint`, `frontend-lint`, `backend-test`, `frontend-test` gate `docker-build` via `needs`.
 
-- `backend-test` runs against MariaDB 11 service (`DATABASE_URL=mariadb+pymysql://...`, `TESTING=true`, `SECRET_KEY=test-secret-key-for-ci-only`), with `alembic upgrade head` before pytest.
+- `backend-test` runs against MariaDB 11 service (`DATABASE_URL=mariadb+pymysql://...`, `TESTING=true`, `SECRET_KEY=test-secret-key-for-ci-only-32bytes!`), with `alembic upgrade head` before pytest.
 - `frontend-test` runs build_runner before `flutter test`.
 - `docker-build` builds `backend`, `frontend`, `backend-prod`, `frontend-prod` images.
 

@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime, timedelta
 
 from app import database as app_database
-from app.main import app
 from app.models.base import Base
 from app.models.message import Message
 from app.models.node_policy import NodePolicy
@@ -11,9 +10,6 @@ from app.routers import federation_chat_bridge
 from app.services.message_queue_service import ChatOutbox, MessageQueueService
 
 Base.metadata.create_all(bind=app_database.engine)
-
-if not any(getattr(r, "path", "") == "/api/federation/chat/bridge/inbound" for r in app.routes):
-    app.include_router(federation_chat_bridge.router, prefix="/api")
 
 
 class RecordingTransport:

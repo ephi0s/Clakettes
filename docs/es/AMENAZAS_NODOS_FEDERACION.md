@@ -98,7 +98,7 @@ El router `backend/app/routers/federation.py` (prefixo `/api/federation`, tag `f
 
 ### 3.3 `backend/tests/conftest.py`
 - `TESTING=true` desactiva todo rate limiting (línea 8).
-- `SECRET_KEY` por defecto `test-only-secret-key` (línea 10) — inseguro pero solo para tests.
+- `SECRET_KEY` por defecto `test-secret-key-for-ci-only-32bytes!` (línea 10) — inseguro pero solo para tests.
 - `fast_bcrypt` reduce costo a 4 rounds (líneas 49-60).
 
 ### 3.4 `backend/tests/test_dav.py:1476-1481`

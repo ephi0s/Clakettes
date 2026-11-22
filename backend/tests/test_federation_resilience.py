@@ -1,14 +1,10 @@
 import pytest
 
-from app.main import app
 from app.routers import federation_resilience as resilience_router
 from app.services.federation_metrics_service import FederationMetricsService
 from app.services.node_peering_service import NodePeeringService
 
 _PREFIX = "/api/federation/resilience"
-
-if not any(getattr(route, "path", "").startswith(_PREFIX) for route in app.routes):
-    app.include_router(resilience_router.router)
 
 
 @pytest.fixture(autouse=True)

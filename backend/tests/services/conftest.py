@@ -3,7 +3,7 @@
 import os
 
 os.environ["TESTING"] = "true"
-os.environ.setdefault("SECRET_KEY", "test-only-secret-key")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-ci-only-32bytes!")
 
 import pytest
 from sqlalchemy import create_engine

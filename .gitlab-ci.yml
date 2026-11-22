@@ -37,7 +37,7 @@ backend-test:
   stage: test
   variables:
     TESTING: "true"
-    SECRET_KEY: "test-secret-key-for-ci-only"
+    SECRET_KEY: "test-secret-key-for-ci-only-32bytes!"
   script:
     - cd backend
     - pip install -r requirements.txt -r requirements-dev.txt
