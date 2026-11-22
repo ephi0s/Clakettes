@@ -47,13 +47,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final results = await Future.wait([
         _api.getFestivals(size: 5, isActive: true),
-        _api.getShortFilms(size: 1),
+        _api.getShortFilmsCount(),
       ]);
       if (mounted) {
         setState(() {
           _featuredFestivals = (results[0] as PaginatedResult<Festival>).items;
           _festivalCount = (results[0] as PaginatedResult).total;
-          _shortFilmCount = (results[1] as PaginatedResult).total;
+          _shortFilmCount = results[1] as int;
         });
       }
     } catch (e) {

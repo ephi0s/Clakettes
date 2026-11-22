@@ -25,7 +25,7 @@ void main() {
   setUp(() async {
     await setupApiTest();
     ApiService().client = MockClient((request) async {
-      return http.Response('{"status":"ok"}', 200);
+      return http.Response('[]', 200);
     });
   });
 

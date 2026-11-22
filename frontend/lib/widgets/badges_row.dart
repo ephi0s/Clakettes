@@ -5,11 +5,7 @@ import '../services/api_service.dart';
 import 'badge_manage_sheet.dart';
 import 'reusable_widgets.dart';
 
-String badgeImageUrl(String? path) {
-  if (path == null || path.isEmpty) return '';
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return '${ApiService().rootUrl}$path';
-}
+String badgeImageUrl(String? path) => resolveMediaUrl(path);
 
 class BadgeAvatar extends StatelessWidget {
   final ProfileBadge badge;

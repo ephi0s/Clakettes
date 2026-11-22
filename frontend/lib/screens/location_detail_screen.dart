@@ -149,7 +149,7 @@ class _LocationDetailScreenState extends State<LocationDetailScreen> {
         child: InteractiveViewer(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(imageUrl, fit: BoxFit.contain, gaplessPlayback: true, filterQuality: FilterQuality.medium, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 48)),
+            child: Image.network(resolveMediaUrl(imageUrl), fit: BoxFit.contain, gaplessPlayback: true, filterQuality: FilterQuality.medium, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 48)),
           ),
         ),
       ),
@@ -354,7 +354,7 @@ class _LocationDetailScreenState extends State<LocationDetailScreen> {
                 label: '${l10n.image} ${i + 1}',
                 button: true,
                 child: Image.network(
-                  images[i].url,
+                  resolveMediaUrl(images[i].url),
                   width: 120,
                   height: 120,
                   cacheWidth: (120 * MediaQuery.devicePixelRatioOf(context)).round(),

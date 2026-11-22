@@ -29,7 +29,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Locations'), findsOneWidget);
-    expect(find.text('Film festival and express shorts management'), findsOneWidget);
+    expect(find.text('Film festivals and their express shorts'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
   });
 }

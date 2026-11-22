@@ -6,10 +6,10 @@ from app.models.base import BaseModel
 
 
 class ShortFilm(BaseModel):
-    """A short film uploaded by a user, optionally linked to a festival.
+    """A short film submitted to a festival, either in its official section or in its contest.
 
     Relationships:
-        festival: The festival this film was submitted to (optional).
+        festival: The festival this film was submitted to.
         user: The user who uploaded the film.
     """
 
@@ -20,7 +20,8 @@ class ShortFilm(BaseModel):
     duration = Column(Integer, nullable=True)
     video_url = Column(String(500), nullable=True)
     thumbnail_url = Column(String(500), nullable=True)
-    festival_id = Column(Integer, ForeignKey("festivals.id"), nullable=True)
+    festival_id = Column(Integer, ForeignKey("festivals.id", ondelete="RESTRICT"), nullable=False, index=True)
+    contest_type = Column(String(30), nullable=False, default="official_section", index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     is_public = Column(Boolean, default=True)
     tags = Column(Text, nullable=True)

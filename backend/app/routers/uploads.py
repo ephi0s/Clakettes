@@ -38,12 +38,34 @@ def _has_valid_magic(content_type: str, header: bytes) -> bool:
     return False
 
 
+def _sniff_content_type(header: bytes) -> str | None:
+    if header.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if header[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif"
+    if header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+        return "image/webp"
+    if header[:4] == b"%PDF":
+        return "application/pdf"
+    if header[4:8] == b"ftyp" or header[:4] == b"\x1a\x45\xdf\xa3":
+        return "video/mp4"
+    return None
+
+
 async def _save_file(file: UploadFile, subfolder: str, allowed_types: set, max_size: int) -> str:
     from app.services.media_sanitize_service import sanitize_file
 
-    if file.content_type not in allowed_types:
+    header = await file.read(16)
+    await file.seek(0)
+    content_type = file.content_type
+    if content_type in (None, "", "application/octet-stream"):
+        content_type = _sniff_content_type(header) or content_type
+    if content_type not in allowed_types:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"File type '{file.content_type}' not allowed"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type '{content_type}' not allowed. Use JPEG, PNG, WebP, GIF, PDF or MP4.",
         )
     if file.size is not None and file.size > max_size:
         raise HTTPException(
@@ -52,9 +74,7 @@ async def _save_file(file: UploadFile, subfolder: str, allowed_types: set, max_s
         )
     folder = UPLOAD_DIR / subfolder
     folder.mkdir(parents=True, exist_ok=True)
-    header = await file.read(16)
-    await file.seek(0)
-    if not _has_valid_magic(file.content_type, header):
+    if not _has_valid_magic(content_type, header):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File content does not match file type",

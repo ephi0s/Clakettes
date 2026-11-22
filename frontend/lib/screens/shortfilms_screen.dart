@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/shortfilm_model.dart';
 import '../services/api_service.dart';
@@ -16,10 +16,10 @@ import 'shortfilm_profile_screen.dart';
 /// Cuadrícula de cortometrajes con respaldo de caché offline, opcionalmente
 /// acotada a un festival. Crear un cortometraje requiere iniciar sesión.
 class ShortFilmsScreen extends StatefulWidget {
-  final int? festivalId;
-  final String? festivalName;
+  final int festivalId;
+  final String festivalName;
 
-  const ShortFilmsScreen({super.key, this.festivalId, this.festivalName});
+  const ShortFilmsScreen({super.key, required this.festivalId, required this.festivalName});
 
   @override
   State<ShortFilmsScreen> createState() => _ShortFilmsScreenState();
@@ -36,7 +36,10 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
   bool _isOfflineData = false;
   final String _searchQuery = '';
   bool _isLoggedIn = false;
+  String? _contestFilter;
   late AppLocalizations l10n;
+
+  String get _cacheKey => 'shortfilm:${widget.festivalId}';
 
   @override
   void initState() {
@@ -55,7 +58,7 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
     });
 
     try {
-      final result = await _apiService.getShortFilms(size: 100, festivalId: widget.festivalId);
+      final result = await _apiService.getShortFilms(size: 100, festivalId: widget.festivalId, contestType: _contestFilter);
       if (!mounted) return;
       final remoteData = result.items.map((f) => f.toJson()).toList();
       final nodeOrigin = NodeService().activeNode?.domain ?? '';
@@ -67,11 +70,11 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
       });
       try {
         final cache = OfflineCacheService.instance;
-        final reconciliation = cache.reconcile('shortfilm', remoteData, nodeOrigin);
+        final reconciliation = cache.reconcile(_cacheKey, remoteData, nodeOrigin);
         final action = reconciliation['action'] as String? ?? 'use_remote';
         if (action == 'use_local') {
-          final cached = cache.get('shortfilm');
-          if (cached is List && cached.isNotEmpty && widget.festivalId == null) {
+          final cached = cache.get(_cacheKey);
+          if (cached is List && cached.isNotEmpty) {
             setState(() {
               _allShortFilms = cached.map((j) => ShortFilm.fromJson(Map<String, dynamic>.from(j))).toList();
               _applyFilter();
@@ -81,7 +84,7 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
           }
         } else {
           if (action == 'conflict') _showConflictNotice();
-          await cache.putWithOrigin('shortfilm', remoteData, nodeOrigin);
+          await cache.putWithOrigin(_cacheKey, remoteData, nodeOrigin);
         }
       } catch (e) {
         debugPrint('Cache error: $e');
@@ -91,11 +94,11 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
       if (!mounted) return;
       dynamic cached;
       try {
-        cached = OfflineCacheService.instance.get('shortfilm');
+        cached = OfflineCacheService.instance.get(_cacheKey);
       } catch (cacheError) {
         debugPrint('Cache error: $cacheError');
       }
-      if (cached is List && cached.isNotEmpty && widget.festivalId == null) {
+      if (cached is List && cached.isNotEmpty) {
         _allShortFilms = cached.map((j) => ShortFilm.fromJson(Map<String, dynamic>.from(j))).toList();
         _applyFilter();
       }
@@ -208,12 +211,10 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: widget.festivalId != null
-          ? AppBar(
-              title: Text(widget.festivalName ?? l10n.shortFilms),
-              leading: const BackButton(),
-            )
-          : null,
+      appBar: AppBar(
+        title: Text('${l10n.shortFilms} · ${widget.festivalName}'),
+        leading: const BackButton(),
+      ),
       body: Column(
         children: [
           if (_isOfflineData)
@@ -229,6 +230,30 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
                 ],
               ),
             ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Wrap(
+              spacing: 8,
+              children: [
+                FilterChip(
+                  label: Text(l10n.officialSection),
+                  selected: _contestFilter == 'official_section',
+                  onSelected: (selected) {
+                    setState(() => _contestFilter = selected ? 'official_section' : null);
+                    _loadShortFilms();
+                  },
+                ),
+                FilterChip(
+                  label: Text(l10n.contest),
+                  selected: _contestFilter == 'contest',
+                  onSelected: (selected) {
+                    setState(() => _contestFilter = selected ? 'contest' : null);
+                    _loadShortFilms();
+                  },
+                ),
+              ],
+            ),
+          ),
           Expanded(child: _buildBody(theme, colorScheme)),
         ],
       ),
@@ -240,7 +265,9 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
             onPressed: () => _requireAuthThen(() async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CreateShortFilmScreen()),
+                MaterialPageRoute(
+                builder: (_) => CreateShortFilmScreen(festivalId: widget.festivalId),
+              ),
               );
               if (result == true) _loadShortFilms();
             }),
@@ -280,7 +307,9 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
         onAction: () => _requireAuthThen(() async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const CreateShortFilmScreen()),
+            MaterialPageRoute(
+              builder: (_) => CreateShortFilmScreen(festivalId: widget.festivalId),
+            ),
           );
           if (result == true) _loadShortFilms();
         }),
@@ -336,7 +365,7 @@ class _ShortFilmsScreenState extends State<ShortFilmsScreen> {
                           Expanded(
                             child: shortFilm.thumbnailUrl != null
                                 ? Image.network(
-                                    shortFilm.thumbnailUrl!,
+                                    resolveMediaUrl(shortFilm.thumbnailUrl),
                                     fit: BoxFit.cover,
                                     semanticLabel: '${l10n.shortFilms}: ${shortFilm.title}',
                                     cacheWidth: (400 * MediaQuery.devicePixelRatioOf(context)).round(),

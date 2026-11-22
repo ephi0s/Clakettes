@@ -148,8 +148,8 @@ Eremuak:
 ### ShortFilm
 - **Taula:** `shortfilms`
 - **Klasea:** `ShortFilm`
-- **Gako-eremuak:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Errelazioak:** Festival-i dagokio, User-i dagokio, Awards ditu, ShortFilmLocations ditu
+- **Gako-eremuak:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Errelazioak:** Festival-i dagokio, User-i dagokio, Awards ditu, ShortFilmLocations ditu Express (guerrilla) lehiaketa `contest` da; atal ofiziala `official_section` da.
 
 ### Message
 - **Taula:** `messages`

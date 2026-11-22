@@ -1,23 +1,45 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
 from app.models.festival import Festival
+from app.models.shortfilm import ShortFilm
 from app.models.location import Location
 from app.models.user_festival import user_festival
 from app.routers.dependencies import get_or_404
-from app.schemas.festival import FestivalCreate, FestivalUpdate, FestivalResponse, FestivalsPage
+from app.schemas.festival import (
+    FestivalCreate,
+    FestivalUpdate,
+    FestivalResponse,
+    FestivalDetailResponse,
+    FestivalsPage,
+)
+from app.schemas.shortfilm import (
+    FestivalShortFilmCreate,
+    ShortFilmCreate,
+    ShortFilmUpdate,
+    ShortFilmResponse,
+    ShortFilmsPage,
+)
 from app.schemas.location import LocationResponse
 from app.schemas.festival_location import FestivalLocationCreate
 from app.services.festival_service import FestivalService
 from app.services.festival_location_service import FestivalLocationService
-from app.routers.permissions import can_edit_festival, can_delete_festival
+from app.services.shortfilm_service import ShortFilmService
+from app.routers.permissions import (
+    can_edit_festival,
+    can_delete_festival,
+    can_edit_shortfilm,
+    can_delete_shortfilm,
+)
 from app.routers.uploads import _save_file, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE
 from app.models.user import User
 
 router = APIRouter()
 service = FestivalService()
 festival_location_service = FestivalLocationService()
+shortfilm_service = ShortFilmService()
 
 
 @router.get("/", response_model=FestivalsPage)
@@ -36,13 +58,84 @@ async def create_festival(
 ):
     created = service.create(db, festival)
     db.execute(user_festival.insert().values(user_id=current_user.id, festival_id=created.id, role="organizer"))
+    db.execute(update(ShortFilm).where(ShortFilm.festival_id.is_(None)).values(festival_id=created.id))
     db.commit()
     return created
 
 
-@router.get("/{festival_id}", response_model=FestivalResponse)
+@router.get("/{festival_id}", response_model=FestivalDetailResponse)
 async def get_festival(festival_id: int, db: Session = Depends(get_db)):
-    return get_or_404(db, Festival, festival_id, "Festival")
+    festival = get_or_404(db, Festival, festival_id, "Festival")
+    films = db.query(ShortFilm).filter(ShortFilm.festival_id == festival_id).order_by(ShortFilm.id).all()
+    return FestivalDetailResponse.model_validate(festival).model_copy(
+        update={"shortfilm_count": len(films), "shortfilms": films}
+    )
+
+
+@router.get("/{festival_id}/shortfilms", response_model=ShortFilmsPage)
+async def list_festival_shortfilms(
+    festival_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    contest_type: str | None = None,
+    db: Session = Depends(get_db),
+):
+    get_or_404(db, Festival, festival_id, "Festival")
+    return shortfilm_service.get_multi_paginated(
+        db, page=page, size=size, festival_id=festival_id, contest_type=contest_type
+    )
+
+
+@router.post("/{festival_id}/shortfilms", response_model=ShortFilmResponse, status_code=201)
+async def create_festival_shortfilm(
+    festival_id: int,
+    shortfilm: FestivalShortFilmCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    get_or_404(db, Festival, festival_id, "Festival")
+    payload = ShortFilmCreate(**shortfilm.model_dump(), festival_id=festival_id, user_id=current_user.id)
+    return shortfilm_service.create(db, payload)
+
+
+@router.get("/{festival_id}/shortfilms/{shortfilm_id}", response_model=ShortFilmResponse)
+async def get_festival_shortfilm(festival_id: int, shortfilm_id: int, db: Session = Depends(get_db)):
+    film = get_or_404(db, ShortFilm, shortfilm_id, "Short film")
+    if film.festival_id != festival_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Short film not found in festival")
+    return film
+
+
+@router.put("/{festival_id}/shortfilms/{shortfilm_id}", response_model=ShortFilmResponse)
+async def update_festival_shortfilm(
+    festival_id: int,
+    shortfilm_id: int,
+    shortfilm: ShortFilmUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    film = get_or_404(db, ShortFilm, shortfilm_id, "Short film")
+    if film.festival_id != festival_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Short film not found in festival")
+    if not can_edit_shortfilm(db, current_user, film):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    return shortfilm_service.update(db, shortfilm_id, shortfilm)
+
+
+@router.delete("/{festival_id}/shortfilms/{shortfilm_id}")
+async def delete_festival_shortfilm(
+    festival_id: int,
+    shortfilm_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    film = get_or_404(db, ShortFilm, shortfilm_id, "Short film")
+    if film.festival_id != festival_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Short film not found in festival")
+    if not can_delete_shortfilm(db, current_user, film):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    shortfilm_service.delete(db, shortfilm_id)
+    return {"message": "Short film deleted"}
 
 
 @router.put("/{festival_id}", response_model=FestivalResponse)

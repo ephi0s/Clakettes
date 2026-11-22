@@ -345,6 +345,11 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/festivals/` | non |
 | POST | `/api/festivals/` | òc |
 | GET | `/api/festivals/{festival_id}` | non |
+| GET | `/api/festivals/{festival_id}/shortfilms` | non |
+| POST | `/api/festivals/{festival_id}/shortfilms` | òc |
+| GET | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | non |
+| PUT | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | òc |
+| DELETE | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | òc |
 | PUT | `/api/festivals/{festival_id}` | òc |
 | DELETE | `/api/festivals/{festival_id}` | òc |
 | POST | `/api/festivals/{festival_id}/images` | òc |
@@ -593,6 +598,8 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | POST | `/api/uploads/document` | òc |
 | POST | `/api/uploads/chat-image` | òc |
 
+Totas las pujadas retornan un camin relatiu `/uploads/<dossier>/<fichièr>`, jamai una URL absoluda. Lo client la resol amb `resolveMediaUrl()`, que apond lo servidor actiu; las URL `http(s)` demoran intactas. Los camps de mèdia (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) acceptan ambedos formats.
+
 ## `user_aliases` → `/api`
 
 | Metòde | Camin | Auth |
@@ -661,4 +668,4 @@ Datalh interactiu: `/docs` (Swagger) e `/redoc` amb lo backend en marcha.
 | GET | `/api/validation-rule-groups/` | non |
 | POST | `/api/validation-rule-groups/` | òc |
 
-Total: 441 endpoints en 39 routers.
+Total: 446 endpoints en 39 routers.

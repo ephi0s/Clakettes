@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_service.dart';
 
 /// Muestra un SnackBar flotante unificado (reemplaza ~113 ScaffoldMessenger directos).
 void showAppSnack(BuildContext context, String message, {SnackBarAction? action}) {
@@ -21,7 +22,7 @@ void showAppSnack(BuildContext context, String message, {SnackBarAction? action}
 /// - ExcludeSemantics en las iniciales decorativas (los lectores de pantalla usan semanticLabel)
 /// - Envoltorio Semantics para el anuncio del lector de pantalla
 /// - Colores, radio e icono de respaldo personalizables
-class ProfileAvatar extends StatelessWidget {
+class ProfileAvatar extends StatefulWidget {
   final String? imageUrl;
   final String fallbackText;
   final double radius;
@@ -42,36 +43,56 @@ class ProfileAvatar extends StatelessWidget {
   });
 
   @override
+  State<ProfileAvatar> createState() => _ProfileAvatarState();
+}
+
+class _ProfileAvatarState extends State<ProfileAvatar> {
+  bool _failed = false;
+
+  @override
+  void didUpdateWidget(ProfileAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) _failed = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final initials = fallbackText.isNotEmpty ? fallbackText.substring(0, 1).toUpperCase() : '?';
+    final url = resolveMediaUrl(widget.imageUrl);
+    final showImage = url.isNotEmpty && !_failed;
+    final initials = widget.fallbackText.isNotEmpty ? widget.fallbackText.substring(0, 1).toUpperCase() : '?';
     final colorScheme = Theme.of(context).colorScheme;
-    final bg = backgroundColor ?? colorScheme.primaryContainer;
-    final fg = foregroundColor ?? colorScheme.onPrimaryContainer;
+    final bg = widget.backgroundColor ?? colorScheme.primaryContainer;
+    final fg = widget.foregroundColor ?? colorScheme.onPrimaryContainer;
 
     return Semantics(
-      label: semanticLabel,
+      label: widget.semanticLabel,
       child: CircleAvatar(
-        radius: radius,
-        backgroundColor: imageUrl == null ? bg : null,
-        backgroundImage: imageUrl != null
+        radius: widget.radius,
+        backgroundColor: showImage ? null : bg,
+        backgroundImage: showImage
             ? ResizeImage.resizeIfNeeded(
-                (radius * 2 * MediaQuery.devicePixelRatioOf(context)).round(),
-                (radius * 2 * MediaQuery.devicePixelRatioOf(context)).round(),
-                NetworkImage(imageUrl!),
+                (widget.radius * 2 * MediaQuery.devicePixelRatioOf(context)).round(),
+                (widget.radius * 2 * MediaQuery.devicePixelRatioOf(context)).round(),
+                NetworkImage(url),
               )
             : null,
-        child: imageUrl == null
-            ? ExcludeSemantics(
+        onBackgroundImageError: showImage
+            ? (_, __) {
+                if (mounted) setState(() => _failed = true);
+              }
+            : null,
+        child: showImage
+            ? null
+            : ExcludeSemantics(
                 child: Text(
                   initials,
                   style: TextStyle(
-                    fontSize: radius * 0.55,
+                    fontSize: widget.radius * 0.55,
                     color: fg,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              )
-            : null,
+              ),
       ),
     );
   }

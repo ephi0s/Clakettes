@@ -36,7 +36,7 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 | Resiliencia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, heartbeat, métricas p50/p95, revocación de claves y plan de incidente |
 | Conformidad | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI que verifica manifiesto, JWKS, token, directorio, portabilidad, bridge y SSE |
 
-API generada: `python tools/gen_api.py --all` produce 441 endpoints en 39 routers con prefijo (ver [API.md](API.md)).
+API generada: `python tools/gen_api.py --all` produce 446 endpoints en 39 routers con prefijo (ver [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 

@@ -39,6 +39,7 @@ class EventService(BaseService[Event, EventCreate, EventUpdate]):
         data = obj_in.model_dump()
         data.pop("visible_role_ids", None)
         screening_ids = data.pop("screening_shortfilm_ids", None) or []
+        self._assert_screenings_in_festival(db, data["festival_id"], screening_ids)
         data.update(extra_fields)
         db_obj = Event(**data)
         db.add(db_obj)
@@ -74,6 +75,21 @@ class EventService(BaseService[Event, EventCreate, EventUpdate]):
                 return cand
         return None
 
+    def _assert_screenings_in_festival(self, db: Session, festival_id: int, shortfilm_ids: list[int]) -> None:
+        from app.models.shortfilm import ShortFilm
+
+        if not shortfilm_ids:
+            return
+        valid = {
+            film_id
+            for (film_id,) in db.query(ShortFilm.id)
+            .filter(ShortFilm.id.in_(shortfilm_ids), ShortFilm.festival_id == festival_id)
+            .all()
+        }
+        invalid = [film_id for film_id in shortfilm_ids if film_id not in valid]
+        if invalid:
+            raise ValueError(f"Short films do not belong to festival {festival_id}: {invalid}")
+
     def set_screenings(self, db: Session, event: Event, shortfilm_ids: list[int]) -> Event:
         from app.models.event_screening import EventScreening
         from app.models.shortfilm import ShortFilm
@@ -81,7 +97,15 @@ class EventService(BaseService[Event, EventCreate, EventUpdate]):
 
         wanted = list(dict.fromkeys(shortfilm_ids))
         if wanted:
-            found = {s.id for s in db.query(ShortFilm).filter(ShortFilm.id.in_(wanted)).all()}
+            found = {
+                s.id
+                for s in db.query(ShortFilm)
+                .filter(ShortFilm.id.in_(wanted), ShortFilm.festival_id == event.festival_id)
+                .all()
+            }
+            invalid = [i for i in wanted if i not in found]
+            if invalid:
+                raise ValueError(f"Short films do not belong to festival {event.festival_id}: {invalid}")
             wanted = [i for i in wanted if i in found]
         previous = {
             row.shortfilm_id: {

@@ -139,8 +139,7 @@ class ChatBubbleWidget extends StatelessWidget {
   }
 
   Widget _buildImageContent(BuildContext context, Message msg) {
-    final rootUrl = ApiService().rootUrl;
-    final fullUrl = msg.mediaUrl != null ? '$rootUrl${msg.mediaUrl}' : null;
+    final fullUrl = msg.mediaUrl != null ? resolveMediaUrl(msg.mediaUrl) : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

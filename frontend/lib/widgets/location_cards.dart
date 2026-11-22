@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../l10n/app_localizations.dart';
 import '../models/location_model.dart';
+import '../services/api_service.dart';
 import 'reusable_widgets.dart';
 import 'location_badge_chip.dart';
 import 'map_picker.dart';
@@ -46,7 +47,7 @@ class LocationCard extends StatelessWidget {
                   color: theme.colorScheme.primaryContainer.withAlpha(80),
                   child: location.images.isNotEmpty
                       ? Image.network(
-                          location.images.first,
+                          resolveMediaUrl(location.images.first),
                           width: 64,
                           height: 64,
                           cacheWidth: (64 * MediaQuery.devicePixelRatioOf(context)).round(),

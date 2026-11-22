@@ -71,7 +71,7 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
   String _conditionType = 'manual';
   final _minFestivalsCtl = TextEditingController(text: '3');
   final _roleCtl = TextEditingController(text: 'organizer');
-  String? _pickedImagePath;
+  PlatformFile? _pickedImage;
 
   @override
   void initState() {
@@ -163,8 +163,8 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
       type: FileType.custom,
       allowedExtensions: ['svg', 'png', 'jpg', 'jpeg', 'webp'],
     );
-    if (files.isNotEmpty && files.single.path != null) {
-      setState(() => _pickedImagePath = files.single.path);
+    if (files.isNotEmpty) {
+      setState(() => _pickedImage = files.single);
     }
   }
 
@@ -182,14 +182,19 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
           'festival_id': widget.grantFestivalId ?? widget.festivalId,
       };
       var badge = await _api.createBadge(fields);
-      if (_pickedImagePath != null && badge.id != null) {
-        badge = await _api.uploadBadgeImage(badge.id!, _pickedImagePath!);
+      if (_pickedImage != null && badge.id != null) {
+        try {
+          badge = await _api.uploadBadgeImage(badge.id!, platformFileToXFile(_pickedImage!));
+        } catch (_) {
+          await _api.deleteBadge(badge.id!);
+          rethrow;
+        }
       }
       if (mounted) {
         setState(() {
           _nameCtl.clear();
           _descCtl.clear();
-          _pickedImagePath = null;
+          _pickedImage = null;
         });
         showAppSnack(context, l10n.badgeCreated);
       }
@@ -364,7 +369,7 @@ class _BadgeManageSheetState extends State<BadgeManageSheet> {
               OutlinedButton.icon(
                 onPressed: _pickImage,
                 icon: const Icon(Icons.upload_outlined, size: 18),
-                label: Text(_pickedImagePath == null ? l10n.badgeUploadImage : _pickedImagePath!.split('/').last),
+                label: Text(_pickedImage == null ? l10n.badgeUploadImage : _pickedImage!.name),
               ),
               const SizedBox(height: 8),
               FilledButton.icon(

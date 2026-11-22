@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/film_location_model.dart';
 import '../models/location_model.dart';
+import '../services/api_service.dart';
 
 /// Tarjeta accesible que muestra una ubicación asignada a una película con su rol y rango horario.
 ///
@@ -114,7 +115,7 @@ class FilmLocationCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: images.isNotEmpty
           ? Image.network(
-              images.first.url,
+              resolveMediaUrl(images.first.url),
               width: 48,
               height: 48,
               cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context)).round(),

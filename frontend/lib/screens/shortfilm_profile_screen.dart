@@ -38,6 +38,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
   late TextEditingController _tagsController;
 
   late bool _isPublic;
+  late String _contestType;
   final _formKey = GlobalKey<FormState>();
   bool _isEditing = false;
   bool _isSaving = false;
@@ -59,6 +60,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
         TextEditingController(text: s.thumbnailUrl ?? '');
     _tagsController = TextEditingController(text: s.tags ?? '');
     _isPublic = s.isPublic;
+    _contestType = s.contestType;
     _checkAuth();
     _loadFilmLocations();
   }
@@ -149,7 +151,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ApiService().updateShortFilm(widget.shortFilm.id!, {
+      await ApiService().updateShortFilm(widget.shortFilm.festivalId, widget.shortFilm.id!, {
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.isNotEmpty
             ? _descriptionController.text.trim()
@@ -161,6 +163,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
         'thumbnail_url': _thumbnailUrlController.text.isNotEmpty
             ? _thumbnailUrlController.text.trim()
             : null,
+        'contest_type': _contestType,
         'is_public': _isPublic,
         'tags': _tagsController.text.isNotEmpty
             ? _tagsController.text.trim()
@@ -202,7 +205,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
     if (!confirmed) return;
 
     try {
-      await ApiService().deleteShortFilm(widget.shortFilm.id!);
+      await ApiService().deleteShortFilm(widget.shortFilm.festivalId, widget.shortFilm.id!);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       debugPrint('Error: $e');
@@ -385,7 +388,7 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
             child: Semantics(
               label: '${l10n.shortFilms}: ${s.title}',
               child: Image.network(
-                s.thumbnailUrl!,
+                resolveMediaUrl(s.thumbnailUrl),
                 height: isWide ? 300 : 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -412,6 +415,11 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
             fontWeight: FontWeight.bold,
           ),
           textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Chip(
+          avatar: const Icon(Icons.category_outlined, size: 16),
+          label: Text(s.contestType == 'contest' ? l10n.contest : l10n.officialSection),
         ),
         const SizedBox(height: 8),
         StatusIndicator(
@@ -462,10 +470,10 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
                   text: s.tags!,
                 ),
               ],
-              if (s.festivalId != null) ...[
+              ...[
                 const SizedBox(height: 12),
                 GestureDetector(
-                  onTap: () => _openFestival(s.festivalId!),
+                  onTap: () => _openFestival(s.festivalId),
                   child: InfoRow(
                     icon: Icons.festival,
                     iconColor: colorScheme.primary,
@@ -572,6 +580,23 @@ class _ShortFilmProfileScreenState extends State<ShortFilmProfileScreen> {
             prefixIcon: const Icon(Icons.label),
             textInputAction: TextInputAction.done,
             maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          Semantics(
+            label: l10n.contestType,
+            child: DropdownButtonFormField<String>(
+              initialValue: _contestType,
+              decoration: InputDecoration(
+                labelText: l10n.contestType,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.category_outlined),
+              ),
+              items: [
+                DropdownMenuItem(value: 'official_section', child: Text(l10n.officialSection)),
+                DropdownMenuItem(value: 'contest', child: Text(l10n.contest)),
+              ],
+              onChanged: (v) => setState(() => _contestType = v ?? 'official_section'),
+            ),
           ),
           const SizedBox(height: 16),
           Semantics(

@@ -148,8 +148,8 @@ Fields:
 ### ShortFilm
 - **Table:** `shortfilms`
 - **Class:** `ShortFilm`
-- **Key fields:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Relationships:** Belongs to Festival, belongs to User, has many Awards, has many ShortFilmLocations
+- **Key fields:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Relationships:** Belongs to Festival, belongs to User, has many Awards, has many ShortFilmLocations The express (guerrilla) contest is `contest`; the official section is `official_section`.
 
 ### Message
 - **Table:** `messages`

@@ -6,37 +6,44 @@ extension CatalogApi on ApiService {
   Future<PaginatedResult<ShortFilm>> getShortFilms({
     int page = 1,
     int size = 20,
-    int? festivalId,
+    required int festivalId,
+    String? contestType,
     bool? isPublic,
   }) async {
     final params = <String, String>{'page': '$page', 'size': '$size'};
-    if (festivalId != null) params['festival_id'] = '$festivalId';
+    if (contestType != null) params['contest_type'] = contestType;
     if (isPublic != null) params['is_public'] = '$isPublic';
-    final data = await _get('/shortfilms/', params);
+    final data = await _get('/festivals/$festivalId/shortfilms', params);
     return _paginated(data, ShortFilm.fromJson);
   }
 
-  /// Crea un cortometraje y devuelve el [ShortFilm] creado.
+  /// Total global de cortometrajes (el listado plano sigue disponible).
+  Future<int> getShortFilmsCount() async {
+    final data = await _get('/shortfilms/', {'page': '1', 'size': '1'});
+    return _extractTotal(data);
+  }
+
+  /// Crea un cortometraje dentro de su festival.
   Future<ShortFilm> createShortFilm(ShortFilm shortFilm) async {
-    final data = await create('/shortfilms/', shortFilm.toJson());
+    final data = await create('/festivals/${shortFilm.festivalId}/shortfilms', shortFilm.toJson());
     return ShortFilm.fromJson(data);
   }
 
-  /// Obtiene un cortometraje por su id.
-  Future<ShortFilm> getShortFilm(int id) async {
-    final data = await request('GET', '/shortfilms/$id');
+  /// Obtiene un cortometraje por su id dentro de un festival.
+  Future<ShortFilm> getShortFilm(int festivalId, int id) async {
+    final data = await request('GET', '/festivals/$festivalId/shortfilms/$id');
     return ShortFilm.fromJson(data);
   }
 
   /// Actualiza los campos indicados de un cortometraje.
-  Future<ShortFilm> updateShortFilm(int id, Map<String, dynamic> fields) async {
-    final data = await _put('/shortfilms/$id', fields);
+  Future<ShortFilm> updateShortFilm(int festivalId, int id, Map<String, dynamic> fields) async {
+    final data = await _put('/festivals/$festivalId/shortfilms/$id', fields);
     return ShortFilm.fromJson(data);
   }
 
   /// Elimina un cortometraje por su id.
-  Future<void> deleteShortFilm(int id) async {
-    await request('DELETE', '/shortfilms/$id');
+  Future<void> deleteShortFilm(int festivalId, int id) async {
+    await request('DELETE', '/festivals/$festivalId/shortfilms/$id');
   }
 
   /// Obtiene los premios paginados de un festival, con filtros opcionales.
@@ -126,39 +133,25 @@ extension CatalogApi on ApiService {
   }
 
   /// Sube un PDF de bases con sus metadatos mediante multipart.
-  Future<FestivalRulebook> uploadRulebook(int festivalId, String filePath,
+  Future<FestivalRulebook> uploadRulebook(int festivalId, XFile file,
       {required String title,
       String? description,
       String category = 'official_section',
       int? eventId,
       String? externalUrl}) async {
-    final uri = Uri.parse('$baseUrl/festivals/$festivalId/rulebooks/upload');
-    final token = await _auth.getToken();
-    final req = http.MultipartRequest('POST', uri);
-    if (token != null) req.headers['Authorization'] = 'Bearer $token';
-    req.fields['title'] = title;
-    if (description != null && description.isNotEmpty) {
-      req.fields['description'] = description;
-    }
-    req.fields['category'] = category;
-    if (eventId != null) {
-      req.fields['event_id'] = '$eventId';
-    }
-    if (externalUrl != null && externalUrl.isNotEmpty) {
-      req.fields['external_url'] = externalUrl;
-    }
-    req.files.add(await http.MultipartFile.fromPath('file', filePath));
-    late http.Response response;
-    try {
-      final streamed = await req.send();
-      response = await http.Response.fromStream(streamed);
-    } catch (_) {
-      throw ApiException('Network error (upload)');
-    }
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return FestivalRulebook.fromJson(json.decode(response.body));
-    }
-    throw ApiException('Rulebook upload failed (${response.statusCode})',
-        statusCode: response.statusCode);
+    final fields = <String, String>{
+      'title': title,
+      'category': category,
+      if (description != null && description.isNotEmpty) 'description': description,
+      if (eventId != null) 'event_id': '$eventId',
+      if (externalUrl != null && externalUrl.isNotEmpty) 'external_url': externalUrl,
+    };
+    final data = await uploadFile(
+      '/festivals/$festivalId/rulebooks/upload',
+      file,
+      errorLabel: 'Rulebook upload',
+      fields: fields,
+    );
+    return FestivalRulebook.fromJson(data);
   }
 }

@@ -148,8 +148,8 @@ Felder:
 ### ShortFilm
 - **Tabelle:** `shortfilms`
 - **Klasse:** `ShortFilm`
-- **Schlüsselfelder:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Beziehungen:** Gehört zu Festival, gehört zu User, hat viele Awards, hat viele ShortFilmLocations
+- **Schlüsselfelder:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Beziehungen:** Gehört zu Festival, gehört zu User, hat viele Awards, hat viele ShortFilmLocations Der Express-Wettbewerb (Guerrilla) ist `contest`; die offizielle Sektion ist `official_section`.
 
 ### Message
 - **Tabelle:** `messages`

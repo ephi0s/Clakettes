@@ -23,6 +23,7 @@ Er bearbeitet/löscht nur seine eigenen Festivals und verwaltet seine Nutzer (`r
 - Direkt- und Gruppen-/Kanal-Chat mit Ende-zu-Ende-Verschlüsselung: öffentliche Schlüssel werden über `POST /api/users/me/public-key` veröffentlicht, der Server speichert und leitet nur Verschlüsseltes weiter, die eigentliche Verschlüsselung findet in der App statt. Zwischen föderierten Knoten läuft die Nachricht über die signierte Bridge, wird nach `message_id` dedupliziert und nach Datum sortiert; du kannst Nachrichten melden, und Administratoren können Nutzer stummschalten oder Wörter filtern.
 
 ## Express-Team (Attendee)
+- Der Express-Wettbewerb (auch Guerrilla genannt) ist der Bürgerwettbewerb **innerhalb des Festivals**: Kurzfilme werden mit `contest_type = contest` erstellt und bewertet.
 
 - Automatischer Beitritt zum Festival (`POST /api/festivals/{id}/join`, Rolle `attendee`) und freier Austritt (`leave`).
 - Geolokalisiert Teilnehmer, koordiniert die Gruppe per Chat und reicht den Kurzfilm für den Express-Wettbewerb ein.

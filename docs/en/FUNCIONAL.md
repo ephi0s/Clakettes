@@ -23,6 +23,7 @@ Only edits/deletes their own festivals and manages their users (`require_festiva
 - Direct and group/channel chat with end-to-end encryption: public keys are published at `POST /api/users/me/public-key`, the server only stores and forwards encrypted data, real encryption happens in the app. Between federated nodes the message travels through the signed bridge, is deduplicated by `message_id` and ordered by date; you can report messages and administrators can mute users or filter words.
 
 ## Express team (attendee)
+- The express contest (also called guerrilla) is the citizen contest **inside the festival**: shorts are created and voted with `contest_type = contest`.
 
 - Auto-join to festival (`POST /api/festivals/{id}/join`, role `attendee`) and free exit (`leave`).
 - Geolocate participants, coordinate the group via chat and submit the short to the express contest.

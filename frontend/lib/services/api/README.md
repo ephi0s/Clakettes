@@ -30,4 +30,10 @@
 ## Reglas
 - No duplicar lógica: el helper delega hasta el split real.
 - `dart analyze` debe pasar en cada paso.
+
+## Medios
+
+Los endpoints de subida del backend devuelven rutas relativas (`/uploads/...`), nunca URLs absolutas. `resolveMediaUrl()` las completa con el nodo activo y deja intactas las que ya son `http(s)`. Toda imagen debe pasar por ese helper, incluida `ProfileAvatar`.
+
+`uploadFile()` es el único punto de subida: envía `MultipartFile.fromBytes` con el MIME deducido de la extensión, funciona en web mediante `XFile.readAsBytes()`, refresca el token ante 401, reintenta en otros nodos y expone el `detail` del servidor en `ApiException`. `platformFileToXFile()` adapta los archivos de `file_picker`.
 - Tests existentes contra `ApiService` no deben cambiar.

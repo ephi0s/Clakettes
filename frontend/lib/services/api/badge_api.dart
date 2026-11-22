@@ -32,23 +32,9 @@ extension BadgeApi on ApiService {
     await request('DELETE', '/badges/$id');
   }
 
-  Future<ProfileBadge> uploadBadgeImage(int id, String filePath) async {
-    final uri = Uri.parse('$baseUrl/badges/$id/image');
-    final token = await _auth.getToken();
-    final req = http.MultipartRequest('POST', uri);
-    if (token != null) req.headers['Authorization'] = 'Bearer $token';
-    req.files.add(await http.MultipartFile.fromPath('file', filePath));
-    late http.Response response;
-    try {
-      final streamed = await req.send();
-      response = await http.Response.fromStream(streamed);
-    } catch (_) {
-      throw ApiException('Network error (upload)');
-    }
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return ProfileBadge.fromJson(json.decode(response.body));
-    }
-    throw ApiException('Badge image upload failed (${response.statusCode})', statusCode: response.statusCode);
+  Future<ProfileBadge> uploadBadgeImage(int id, XFile file) async {
+    final data = await uploadFile('/badges/$id/image', file, errorLabel: 'Badge image');
+    return ProfileBadge.fromJson(data);
   }
 
   Future<BadgeAssignment> assignBadge(int badgeId, Map<String, dynamic> fields) async {

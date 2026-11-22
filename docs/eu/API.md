@@ -345,6 +345,11 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/festivals/` | ez |
 | POST | `/api/festivals/` | bai |
 | GET | `/api/festivals/{festival_id}` | ez |
+| GET | `/api/festivals/{festival_id}/shortfilms` | ez |
+| POST | `/api/festivals/{festival_id}/shortfilms` | bai |
+| GET | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | ez |
+| PUT | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | bai |
+| DELETE | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | bai |
 | PUT | `/api/festivals/{festival_id}` | bai |
 | DELETE | `/api/festivals/{festival_id}` | bai |
 | POST | `/api/festivals/{festival_id}/images` | bai |
@@ -593,6 +598,8 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | POST | `/api/uploads/document` | bai |
 | POST | `/api/uploads/chat-image` | bai |
 
+Karga guztiek bide erlatiboa itzultzen dute (`/uploads/<karpeta>/<fitxategia>`), inoiz ez URL absolutura. Bezeroak `resolveMediaUrl()` bidez ebazten du, zerbitzari aktiboa aurrizkia jarriz; `http(s)` URLak aldatu gabe uzten dira. Multimedia eremuek (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) bi formatuak onartzen dituzte.
+
 ## `user_aliases` → `/api`
 
 | Metodoa | Ibilbidea | Auth |
@@ -661,4 +668,4 @@ Xehetasun interaktiboa: `/docs` (Swagger) eta `/redoc` backend-a martxan.
 | GET | `/api/validation-rule-groups/` | ez |
 | POST | `/api/validation-rule-groups/` | bai |
 
-Guztira: 441 endpoint 39 routerretan.
+Guztira: 446 endpoint 39 routerretan.

@@ -6,11 +6,11 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ## Backend (`backend/`)
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
 - Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
-- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (39 versiones). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
+- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (44 versiones). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
 - Capas: Routers (40 archivos, 38 con APIRouter) → Services (43) → Models (40). Models/Schemas via `app.enums`
 - Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s (SQLite)
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (47 archivos, ~1439 tests)
+- Tests: `pytest tests/ -x -q --tb=short` (47 archivos, ~1544 tests)
 - Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
 
 ## Frontend (`frontend/`)
@@ -61,9 +61,9 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ```bash
 cd backend
 python -m uvicorn app.main:app --reload          # entry (8000), usa .venv/ si existe
-python -m pytest tests/ -x -q --tb=short          # tests (47 archivos, ~1439)
+python -m pytest tests/ -x -q --tb=short          # tests (47 archivos, ~1544)
 ruff check . && ruff format --check .             # lint (line-length 120)
-alembic upgrade head                               # migraciones (39 versiones)
+alembic upgrade head                               # migraciones (44 versiones)
 ```
 Nota: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`. Auto-migra al arrancar (`SKIP_AUTO_MIGRATE=1` para omitir).
 

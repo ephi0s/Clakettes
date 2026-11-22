@@ -74,10 +74,7 @@ class RulebooksSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           ...preview.map((r) {
-            final url = r.documentUrl;
-            final resolved = url.startsWith('http://') || url.startsWith('https://')
-                ? url
-                : '${ApiService().rootUrl}$url';
+            final resolved = resolveMediaUrl(r.documentUrl);
             return Semantics(
               label: r.title,
               button: r.hasDocument,

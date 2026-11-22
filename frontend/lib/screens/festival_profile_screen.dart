@@ -408,12 +408,7 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
     );
   }
 
-  String _imageUrl(String path) {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
-    }
-    return '${ApiService().rootUrl}$path';
-  }
+  String _imageUrl(String path) => resolveMediaUrl(path);
 
   /// Selecciona y sube una imagen de galería para el festival.
   Future<void> _addImage() async {
@@ -423,7 +418,7 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
     try {
       final updated = await ApiService().uploadFestivalImage(
         _festival.id!,
-        picked.path,
+        picked,
       );
       if (mounted) setState(() => _images = List.from(updated.images));
     } catch (e) {
@@ -436,6 +431,26 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _pickMedia({required bool isLogo}) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600);
+    if (picked == null) return;
+    try {
+      final data = await ApiService().uploadFile('/uploads/thumbnail', picked, errorLabel: 'Festival image');
+      final url = data['url']?.toString();
+      if (url == null || url.isEmpty) return;
+      if (!mounted) return;
+      setState(() {
+        if (isLogo) {
+          _logoUrlController.text = url;
+        } else {
+          _bannerController.text = url;
+        }
+      });
+    } catch (e) {
+      if (mounted) showAppSnack(context, l10n.loadError);
     }
   }
 
@@ -594,7 +609,7 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: bannerUrl.isNotEmpty
-                      ? Image.network(bannerUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))))
+                      ? Image.network(_imageUrl(bannerUrl), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))))
                       : Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))),
                 ),
               ),
@@ -606,7 +621,7 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
                   child: Hero(
                     tag: 'festival_${f.id}',
                     child: ProfileAvatar(
-                      imageUrl: f.logoUrl,
+                      imageUrl: _imageUrl(f.logoUrl ?? ''),
                       fallbackText: f.name,
                       radius: 40,
                       backgroundColor: colorScheme.secondaryContainer,
@@ -898,8 +913,8 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
                     ),
                     ActionChip(
                       avatar: Icon(Icons.movie, size: 18, color: colorScheme.tertiary),
-                      label: Text(l10n.shortFilms),
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ShortFilmsScreen(festivalId: f.id, festivalName: f.name))),
+                      label: Text('${l10n.shortFilms} (${f.shortfilmCount})'),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ShortFilmsScreen(festivalId: f.id!, festivalName: f.name))),
                     ),
                   ]),
                 ],
@@ -1003,6 +1018,15 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
             textInputAction: TextInputAction.next,
             maxLength: 200,
           ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => _pickMedia(isLogo: true),
+              icon: const Icon(Icons.upload_rounded),
+              label: Text(l10n.logoUrl),
+            ),
+          ),
           const SizedBox(height: 16),
           SemanticTextField(
             controller: _bannerController,
@@ -1013,6 +1037,15 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.next,
             maxLength: 300,
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => _pickMedia(isLogo: false),
+              icon: const Icon(Icons.upload_rounded),
+              label: Text(l10n.profileCoverUrl),
+            ),
           ),
           const SizedBox(height: 16),
           SemanticTextField(

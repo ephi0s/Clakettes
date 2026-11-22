@@ -23,6 +23,7 @@ Bere jaialdiak soilik editatu/ezabatu eta bere erabiltzaileak kudeatzen ditu (`r
 - Zuzeneko eta talde/kanaleko txata muturretik muturrerako zifratuekin: gako publikoak `POST /api/users/me/public-key` bidez argitaratzen dira, zerbitzariak zifratuta soilik gorde eta birbidaltzen du, benetako zifratzea aplikazioan gertatzen da. Federatutako nodoen artean mezua sinatutako bridge-aren bidez bidaiatzen da, `message_id` bidez deduplikatzen da eta dataren arabera ordenatzen da; mezuak salatu ditzakezu eta administratzaileek erabiltzaileak isilarazi edo hitzak iragazi ditzakete.
 
 ## Express taldea (attendee)
+- Express lehiaketa (guerrilla ere deitua) **jaialdiaren barruko** herritar lehiaketa da: film laburrak `contest_type = contest` bidez sortu eta bozkatzen dira.
 
 - Auto-join jaialdian (`POST /api/festivals/{id}/join`, `attendee` rola) eta nahi gabe irtetea (`leave`).
 - Parte-hartzaileak geolokalizatu, taldea txat bidez koordinatu eta film laburra express lehiaketara aurkeztu.

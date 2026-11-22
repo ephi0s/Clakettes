@@ -34,7 +34,7 @@ class TestMessageService:
     def setup_method(self):
         self.svc = MessageService()
 
-    def test_create_message(self, db_session, create_user):
+    def test_create_message(self, db_session, create_user, create_festival):
         user = create_user()
         msg_in = MessageCreate(content="Hello", sender_id=user.id, receiver_id=user.id)
         msg = self.svc.create(db_session, msg_in)
@@ -42,7 +42,7 @@ class TestMessageService:
         assert msg.sender_id == user.id
         assert msg.is_read is False
 
-    def test_get_multi_paginated_default(self, db_session, create_user):
+    def test_get_multi_paginated_default(self, db_session, create_user, create_festival):
         user = create_user()
         for i in range(5):
             self.svc.create(db_session, MessageCreate(content=f"Msg {i}", sender_id=user.id, receiver_id=user.id))
@@ -50,7 +50,7 @@ class TestMessageService:
         assert result["total"] == 5
         assert len(result["items"]) == 5
 
-    def test_get_multi_paginated_sender_filter(self, db_session, create_user):
+    def test_get_multi_paginated_sender_filter(self, db_session, create_user, create_festival):
         u1 = create_user("user1", "u1@test.com")
         u2 = create_user("user2", "u2@test.com")
         for i in range(3):
@@ -60,28 +60,28 @@ class TestMessageService:
         result = self.svc.get_multi_paginated(db_session, sender_id=u1.id)
         assert result["total"] == 3
 
-    def test_get_multi_paginated_receiver_filter(self, db_session, create_user):
+    def test_get_multi_paginated_receiver_filter(self, db_session, create_user, create_festival):
         u1 = create_user("user1", "u1@test.com")
         u2 = create_user("user2", "u2@test.com")
         self.svc.create(db_session, MessageCreate(content="Msg", sender_id=u1.id, receiver_id=u2.id))
         result = self.svc.get_multi_paginated(db_session, receiver_id=u2.id)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_group_filter(self, db_session, create_user):
+    def test_get_multi_paginated_group_filter(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(db_session, MessageCreate(content="G1", sender_id=user.id, group_id=10))
         self.svc.create(db_session, MessageCreate(content="G2", sender_id=user.id, group_id=20))
         result = self.svc.get_multi_paginated(db_session, group_id=10)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_channel_filter(self, db_session, create_user):
+    def test_get_multi_paginated_channel_filter(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(db_session, MessageCreate(content="C1", sender_id=user.id, channel_id=5))
         self.svc.create(db_session, MessageCreate(content="C2", sender_id=user.id, channel_id=10))
         result = self.svc.get_multi_paginated(db_session, channel_id=5)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_unread_only(self, db_session, create_user):
+    def test_get_multi_paginated_unread_only(self, db_session, create_user, create_festival):
         user = create_user()
         m1 = self.svc.create(db_session, MessageCreate(content="Unread", sender_id=user.id, receiver_id=user.id))
         self.svc.create(db_session, MessageCreate(content="Read", sender_id=user.id, receiver_id=user.id))
@@ -90,7 +90,7 @@ class TestMessageService:
         result = self.svc.get_multi_paginated(db_session, unread_only=True)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_pagination(self, db_session, create_user):
+    def test_get_multi_paginated_pagination(self, db_session, create_user, create_festival):
         user = create_user()
         for i in range(5):
             self.svc.create(db_session, MessageCreate(content=f"M{i}", sender_id=user.id, receiver_id=user.id))
@@ -101,7 +101,7 @@ class TestMessageService:
         assert result["size"] == 2
         assert result["pages"] == 3
 
-    def test_mark_as_read(self, db_session, create_user):
+    def test_mark_as_read(self, db_session, create_user, create_festival):
         user = create_user()
         msg = self.svc.create(db_session, MessageCreate(content="Unread", sender_id=user.id, receiver_id=user.id))
         assert msg.is_read is False
@@ -113,7 +113,7 @@ class TestMessageService:
         result = self.svc.mark_as_read(db_session, 999)
         assert result is None
 
-    def test_delete_message(self, db_session, create_user):
+    def test_delete_message(self, db_session, create_user, create_festival):
         user = create_user()
         msg = self.svc.create(db_session, MessageCreate(content="Del", sender_id=user.id, receiver_id=user.id))
         deleted = self.svc.delete(db_session, msg.id)
@@ -189,17 +189,19 @@ class TestShortFilmService:
     def setup_method(self):
         self.svc = ShortFilmService()
 
-    def test_create_shortfilm(self, db_session, create_user):
+    def test_create_shortfilm(self, db_session, create_user, create_festival):
         user = create_user()
-        sf = self.svc.create(db_session, ShortFilmCreate(title="My Film", user_id=user.id))
+        festival = create_festival()
+        sf = self.svc.create(db_session, ShortFilmCreate(title="My Film", festival_id=festival.id, user_id=user.id))
         assert sf.title == "My Film"
         assert sf.user_id == user.id
         assert sf.is_public is True
 
-    def test_get_multi_paginated_default(self, db_session, create_user):
+    def test_get_multi_paginated_default(self, db_session, create_user, create_festival):
         user = create_user()
+        festival = create_festival()
         for i in range(4):
-            self.svc.create(db_session, ShortFilmCreate(title=f"F{i}", user_id=user.id))
+            self.svc.create(db_session, ShortFilmCreate(title=f"F{i}", festival_id=festival.id, user_id=user.id))
         result = self.svc.get_multi_paginated(db_session)
         assert result["total"] == 4
 
@@ -212,20 +214,22 @@ class TestShortFilmService:
         result = self.svc.get_multi_paginated(db_session, festival_id=f1.id)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_user_filter(self, db_session, create_user):
+    def test_get_multi_paginated_user_filter(self, db_session, create_user, create_festival):
         u1 = create_user("u1", "u1@t.com")
         u2 = create_user("u2", "u2@t.com")
-        self.svc.create(db_session, ShortFilmCreate(title="U1Film", user_id=u1.id))
-        self.svc.create(db_session, ShortFilmCreate(title="U2Film", user_id=u2.id))
+        festival = create_festival()
+        self.svc.create(db_session, ShortFilmCreate(title="U1Film", festival_id=festival.id, user_id=u1.id))
+        self.svc.create(db_session, ShortFilmCreate(title="U2Film", festival_id=festival.id, user_id=u2.id))
         result = self.svc.get_multi_paginated(db_session, user_id=u1.id)
         assert result["total"] == 1
 
-    def test_get_multi_paginated_public_filter(self, db_session, create_user):
+    def test_get_multi_paginated_public_filter(self, db_session, create_user, create_festival):
         user = create_user()
-        sf = self.svc.create(db_session, ShortFilmCreate(title="Private", user_id=user.id))
+        festival = create_festival()
+        sf = self.svc.create(db_session, ShortFilmCreate(title="Private", festival_id=festival.id, user_id=user.id))
         sf.is_public = False
         db_session.commit()
-        self.svc.create(db_session, ShortFilmCreate(title="Public", user_id=user.id))
+        self.svc.create(db_session, ShortFilmCreate(title="Public", festival_id=festival.id, user_id=user.id))
         result = self.svc.get_multi_paginated(db_session, is_public=True)
         assert result["total"] == 1
         result2 = self.svc.get_multi_paginated(db_session, is_public=False)
@@ -313,7 +317,7 @@ class TestAwardService:
         assert updated.is_verified is True
         assert updated.verified_by == verifier.id
 
-    def test_update_with_verification_not_found(self, db_session, create_user):
+    def test_update_with_verification_not_found(self, db_session, create_user, create_festival):
         verifier = create_user()
         result = self.svc.update_with_verification(db_session, 999, AwardUpdate(award_name="X"), verifier.id)
         assert result is None
@@ -393,7 +397,7 @@ class TestParticipantTagService:
     def test_festival_participant_tag_empty(self, db_session):
         assert self.fest_tag_svc.get_by_festival(db_session, 999) == []
 
-    def test_user_participant_tag_create(self, db_session, create_user):
+    def test_user_participant_tag_create(self, db_session, create_user, create_festival):
         user = create_user()
         tag = self.svc.create(db_session, ParticipantTagCreate(name="actor", display_name="Actor", category="acting"))
         utag_in = UserParticipantTagCreate(user_id=user.id, tag_id=tag.id, is_primary=True)
@@ -402,7 +406,7 @@ class TestParticipantTagService:
         assert utag.tag_id == tag.id
         assert utag.is_primary is True
 
-    def test_user_participant_tag_get_by_user(self, db_session, create_user):
+    def test_user_participant_tag_get_by_user(self, db_session, create_user, create_festival):
         user = create_user()
         t1 = self.svc.create(db_session, ParticipantTagCreate(name="d", display_name="D", category="direction"))
         t2 = self.svc.create(db_session, ParticipantTagCreate(name="e", display_name="E", category="editing"))
@@ -411,7 +415,7 @@ class TestParticipantTagService:
         result = self.user_tag_svc.get_by_user(db_session, user.id)
         assert len(result) == 2
 
-    def test_user_participant_tag_get_by_user_and_tag(self, db_session, create_user):
+    def test_user_participant_tag_get_by_user_and_tag(self, db_session, create_user, create_festival):
         user = create_user()
         tag = self.svc.create(db_session, ParticipantTagCreate(name="cam", display_name="Camera", category="camera"))
         self.user_tag_svc.create(db_session, UserParticipantTagCreate(user_id=user.id, tag_id=tag.id))
@@ -423,21 +427,21 @@ class TestUserAliasService:
     def setup_method(self):
         self.svc = UserAliasService()
 
-    def test_create_alias(self, db_session, create_user):
+    def test_create_alias(self, db_session, create_user, create_festival):
         user = create_user()
         alias_in = UserAliasCreate(user_id=user.id, alias="Nick", context="global")
         alias = self.svc.create(db_session, alias_in)
         assert alias.user_id == user.id
         assert alias.alias == "Nick"
 
-    def test_get_by_user(self, db_session, create_user):
+    def test_get_by_user(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(db_session, UserAliasCreate(user_id=user.id, alias="A", context="global"))
         self.svc.create(db_session, UserAliasCreate(user_id=user.id, alias="B", context="festival", context_id=1))
         result = self.svc.get_by_user(db_session, user.id)
         assert len(result) == 2
 
-    def test_get_by_user_context_filter(self, db_session, create_user):
+    def test_get_by_user_context_filter(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(db_session, UserAliasCreate(user_id=user.id, alias="Global", context="global"))
         self.svc.create(db_session, UserAliasCreate(user_id=user.id, alias="Fest", context="festival", context_id=5))
@@ -445,7 +449,7 @@ class TestUserAliasService:
         assert len(result) == 1
         assert result[0].alias == "Fest"
 
-    def test_get_by_token(self, db_session, create_user):
+    def test_get_by_token(self, db_session, create_user, create_festival):
         user = create_user()
         alias = self.svc.create(
             db_session, UserAliasCreate(user_id=user.id, alias="Public", context="global", profile_token="abc123")
@@ -454,7 +458,7 @@ class TestUserAliasService:
         assert found is not None
         assert found.id == alias.id
 
-    def test_get_by_token_private(self, db_session, create_user):
+    def test_get_by_token_private(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(
             db_session,
@@ -466,7 +470,7 @@ class TestUserAliasService:
     def test_get_by_token_not_found(self, db_session):
         assert self.svc.get_by_token(db_session, "nonexistent") is None
 
-    def test_get_by_user_and_context(self, db_session, create_user):
+    def test_get_by_user_and_context(self, db_session, create_user, create_festival):
         user = create_user()
         self.svc.create(
             db_session, UserAliasCreate(user_id=user.id, alias="FestAlias", context="festival", context_id=10)
@@ -475,7 +479,7 @@ class TestUserAliasService:
         assert found is not None
         assert found.alias == "FestAlias"
 
-    def test_get_by_user_and_context_not_found(self, db_session, create_user):
+    def test_get_by_user_and_context_not_found(self, db_session, create_user, create_festival):
         user = create_user()
         assert self.svc.get_by_user_and_context(db_session, user.id, "festival", 999) is None
 
@@ -590,7 +594,7 @@ class TestAuthSessionService:
         db.refresh(obj)
         return obj
 
-    def test_create(self, db_session, create_user):
+    def test_create(self, db_session, create_user, create_festival):
         from datetime import datetime, timedelta, timezone
 
         user = create_user()
@@ -606,25 +610,25 @@ class TestAuthSessionService:
         assert sess.user_id == user.id
         assert sess.is_active is True
 
-    def test_get_by_user(self, db_session, create_user):
+    def test_get_by_user(self, db_session, create_user, create_festival):
         user = create_user()
         self._make_session(db_session, user.id)
         self._make_session(db_session, user.id, token_hash="tok2", refresh_hash="ref2")
         sessions = self.svc.get_by_user(db_session, user.id)
         assert len(sessions) == 2
 
-    def test_get_by_user_empty(self, db_session, create_user):
+    def test_get_by_user_empty(self, db_session, create_user, create_festival):
         user = create_user()
         assert self.svc.get_by_user(db_session, user.id) == []
 
-    def test_get_by_refresh_token_hash(self, db_session, create_user):
+    def test_get_by_refresh_token_hash(self, db_session, create_user, create_festival):
         user = create_user()
         sess = self._make_session(db_session, user.id, refresh_hash="my_refresh_hash")
         found = self.svc.get_by_refresh_token_hash(db_session, "my_refresh_hash")
         assert found is not None
         assert found.id == sess.id
 
-    def test_get_by_refresh_token_hash_revoked(self, db_session, create_user):
+    def test_get_by_refresh_token_hash_revoked(self, db_session, create_user, create_festival):
         user = create_user()
         sess = self._make_session(db_session, user.id, refresh_hash="revoked_hash")
         sess.revoked_at = datetime.now(timezone.utc)
@@ -636,7 +640,7 @@ class TestAuthSessionService:
     def test_get_by_refresh_token_hash_not_found(self, db_session):
         assert self.svc.get_by_refresh_token_hash(db_session, "nonexistent") is None
 
-    def test_get_user_sessions_paginated(self, db_session, create_user):
+    def test_get_user_sessions_paginated(self, db_session, create_user, create_festival):
         user = create_user()
         for i in range(5):
             self._make_session(db_session, user.id, token_hash=f"t{i}", refresh_hash=f"r{i}")
@@ -644,7 +648,7 @@ class TestAuthSessionService:
         assert result["total"] == 5
         assert len(result["items"]) == 2
 
-    def test_revoke_session(self, db_session, create_user):
+    def test_revoke_session(self, db_session, create_user, create_festival):
         user = create_user()
         sess = self._make_session(db_session, user.id)
         assert sess.is_active is True
@@ -657,7 +661,7 @@ class TestAuthSessionService:
         result = self.svc.revoke_session(db_session, 999)
         assert result is None
 
-    def test_revoke_all_user_sessions(self, db_session, create_user):
+    def test_revoke_all_user_sessions(self, db_session, create_user, create_festival):
         user = create_user()
         self._make_session(db_session, user.id, token_hash="t1", refresh_hash="r1")
         self._make_session(db_session, user.id, token_hash="t2", refresh_hash="r2")
@@ -667,7 +671,7 @@ class TestAuthSessionService:
         for s in sessions:
             assert s.is_active is False
 
-    def test_revoke_all_user_sessions_only_active(self, db_session, create_user):
+    def test_revoke_all_user_sessions_only_active(self, db_session, create_user, create_festival):
         user = create_user()
         self._make_session(db_session, user.id, token_hash="t1", refresh_hash="r1")
         self._make_session(db_session, user.id, token_hash="t2", refresh_hash="r2", is_active=False)
@@ -679,7 +683,7 @@ class TestUserKeyService:
     def setup_method(self):
         self.svc = UserKeyService()
 
-    def test_set_or_update_public_key_create(self, db_session, create_user):
+    def test_set_or_update_public_key_create(self, db_session, create_user, create_festival):
         user = create_user()
         key_data = UserKeyUpload(public_key_x25519="base64encodedkey123")
         key = self.svc.set_or_update_public_key(db_session, user.id, key_data)
@@ -687,7 +691,7 @@ class TestUserKeyService:
         assert key.public_key_x25519 == "base64encodedkey123"
         assert len(key.key_identifier) == 16
 
-    def test_set_or_update_public_key_update(self, db_session, create_user):
+    def test_set_or_update_public_key_update(self, db_session, create_user, create_festival):
         user = create_user()
         key_data = UserKeyUpload(public_key_x25519="firstkeyvalue")
         key = self.svc.set_or_update_public_key(db_session, user.id, key_data)
@@ -699,7 +703,7 @@ class TestUserKeyService:
         assert updated.is_active == 1
         assert updated.rotated_at is not None
 
-    def test_set_or_update_public_key_fingerprint(self, db_session, create_user):
+    def test_set_or_update_public_key_fingerprint(self, db_session, create_user, create_festival):
         import hashlib
 
         user = create_user()
@@ -708,7 +712,7 @@ class TestUserKeyService:
         expected_fp = hashlib.sha256(b"testkeydata").hexdigest()[:16]
         assert key.key_identifier == expected_fp
 
-    def test_get_by_user(self, db_session, create_user):
+    def test_get_by_user(self, db_session, create_user, create_festival):
         user = create_user()
         key_data = UserKeyUpload(public_key_x25519="somekey")
         self.svc.set_or_update_public_key(db_session, user.id, key_data)
@@ -716,11 +720,11 @@ class TestUserKeyService:
         assert found is not None
         assert found.public_key_x25519 == "somekey"
 
-    def test_get_by_user_no_key(self, db_session, create_user):
+    def test_get_by_user_no_key(self, db_session, create_user, create_festival):
         user = create_user()
         assert self.svc.get_by_user(db_session, user.id) is None
 
-    def test_get_by_user_inactive(self, db_session, create_user):
+    def test_get_by_user_inactive(self, db_session, create_user, create_festival):
         user = create_user()
         key_data = UserKeyUpload(public_key_x25519="key")
         key = self.svc.set_or_update_public_key(db_session, user.id, key_data)
@@ -841,7 +845,7 @@ class TestUserFestivalService:
         assert "Fest A" in names
         assert "Fest B" in names
 
-    def test_get_user_festivals_empty(self, db_session, create_user):
+    def test_get_user_festivals_empty(self, db_session, create_user, create_festival):
         user = create_user()
         assert self.svc.get_user_festivals(db_session, user.id) == []
 

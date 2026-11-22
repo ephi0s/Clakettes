@@ -110,6 +110,8 @@ class JuryVoteService:
         shortfilm = db.query(ShortFilm).filter(ShortFilm.id == shortfilm_id).first()
         if shortfilm is None:
             raise ValueError("ShortFilm not found")
+        if shortfilm.festival_id != festival_id:
+            raise ValueError("ShortFilm does not belong to this festival")
         # Elegibilidad por cribado: no votar obras descalificadas.
         eligible, reason = self._is_eligible_for_voting(db, festival_id, shortfilm_id)
         if not eligible:

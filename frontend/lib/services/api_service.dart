@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import '../models/festival_model.dart';
 import '../models/user_model.dart';
 import '../models/shortfilm_model.dart';
@@ -47,6 +49,42 @@ part 'api/post_api.dart';
 part 'api/badge_api.dart';
 part 'api/participant_tag_api.dart';
 part 'api/jury_votes_api.dart';
+
+/// Resuelve una URL de medios: las absolutas se devuelven tal cual y las rutas
+/// relativas del servidor (/uploads/...) se completan con el nodo activo.
+String resolveMediaUrl(String? url) {
+  if (url == null || url.isEmpty) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return '${ApiService().rootUrl}$url';
+}
+
+XFile platformFileToXFile(PlatformFile file) => file.xFile;
+
+http.MediaType _uploadMediaType(String filename) {
+  switch (filename.split('.').last.toLowerCase()) {
+    case 'jpg':
+    case 'jpeg':
+      return http.MediaType('image', 'jpeg');
+    case 'png':
+      return http.MediaType('image', 'png');
+    case 'webp':
+      return http.MediaType('image', 'webp');
+    case 'gif':
+      return http.MediaType('image', 'gif');
+    case 'svg':
+      return http.MediaType('image', 'svg+xml');
+    case 'pdf':
+      return http.MediaType('application', 'pdf');
+    case 'mp4':
+      return http.MediaType('video', 'mp4');
+    case 'webm':
+      return http.MediaType('video', 'webm');
+    case 'mov':
+      return http.MediaType('video', 'quicktime');
+    default:
+      return http.MediaType('application', 'octet-stream');
+  }
+}
 
 /// Envoltorio de respuesta paginada que coincide con el envelope del backend.
 class PaginatedResult<T> {
@@ -249,32 +287,70 @@ class ApiService {
     );
   }
 
-  /// Sube [filePath] mediante multipart POST a [path]; devuelve el cuerpo JSON
-  /// decodificado y lanza [ApiException] en respuestas no 2xx.
-  Future<dynamic> _uploadFile(String path, String filePath,
-      {String? errorLabel}) async {
-    final uri = Uri.parse('$baseUrl$path');
-    final token = await _auth.getToken();
-    final request = http.MultipartRequest('POST', uri);
-    if (token != null) {
-      request.headers['Authorization'] = 'Bearer $token';
+  Future<dynamic> uploadFile(String path, XFile file,
+      {String? errorLabel, Map<String, String> fields = const {}}) async {
+    final bytes = await file.readAsBytes();
+    final filename = file.name.split(RegExp(r'[\\/]')).last;
+    final candidates = _nodes.fallbackOrder();
+    final bases = candidates.isEmpty
+        ? [baseUrl]
+        : candidates.map((node) => '${node.effectiveUrl}/api').toList();
+    ApiException? lastError;
+
+    for (final base in bases) {
+      for (int attempt = 0; attempt < 2; attempt++) {
+        final token = await _auth.getToken();
+        final request = http.MultipartRequest('POST', Uri.parse('$base$path'));
+        if (token != null) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
+        request.fields.addAll(fields);
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: filename,
+          contentType: _uploadMediaType(filename),
+        ));
+
+        late http.Response response;
+        try {
+          final streamed = await client.send(request).timeout(const Duration(seconds: 30));
+          response = await http.Response.fromStream(streamed);
+        } on TimeoutException {
+          throw ApiException('Upload timed out', timedOut: true);
+        } catch (e) {
+          lastError = ApiException('Network error (upload): $e');
+          break;
+        }
+
+        if (response.statusCode == 401 && attempt == 0) {
+          if (await refreshToken()) continue;
+          await _auth.clear();
+          throw UnauthorizedException();
+        }
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return response.body.isEmpty ? null : json.decode(response.body);
+        }
+
+        String? detail;
+        try {
+          final body = json.decode(response.body);
+          if (body is Map && body['detail'] != null) detail = body['detail'].toString();
+        } catch (_) {}
+        final error = ApiException(
+          '${errorLabel ?? 'Upload'} failed (${response.statusCode})',
+          statusCode: response.statusCode,
+          detail: detail,
+        );
+        if (response.statusCode >= 500 || response.statusCode == 429) {
+          lastError = error;
+          break;
+        }
+        throw error;
+      }
     }
-    request.files.add(await http.MultipartFile.fromPath('file', filePath));
-    late http.Response response;
-    try {
-      final streamedResponse = await request.send();
-      response = await http.Response.fromStream(streamedResponse);
-    } on TimeoutException {
-      throw ApiException('Upload timed out', timedOut: true);
-    } catch (_) {
-      throw ApiException('Network error (upload)');
-    }
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return json.decode(response.body);
-    }
-    throw ApiException(
-        '${errorLabel ?? 'Upload'} failed (${response.statusCode})',
-        statusCode: response.statusCode);
+    throw lastError ?? ApiException('Upload failed');
   }
 
   /// Ejecuta una petición HTTP contra el backend con fallback entre nodos.

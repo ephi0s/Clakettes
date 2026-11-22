@@ -44,6 +44,8 @@ class Festival {
   final String? tagline;
   @HiveField(16)
   final Map<String, String>? socialLinks;
+  @HiveField(17)
+  final int shortfilmCount;
 
   Festival({
     this.id,
@@ -63,6 +65,7 @@ class Festival {
     this.bannerUrl,
     this.tagline,
     this.socialLinks,
+    this.shortfilmCount = 0,
   });
 
   /// Crea un [Festival] a partir de un mapa JSON (claves snake_case del backend).
@@ -84,6 +87,7 @@ class Festival {
       showInCalendar: json['show_in_calendar'] ?? true,
       bannerUrl: json['banner_url'],
       tagline: json['tagline'],
+      shortfilmCount: json['shortfilm_count'] ?? 0,
       socialLinks: json['social_links'] != null
           ? Map<String, String>.from(
               (json['social_links'] as Map).map((k, v) => MapEntry(k.toString(), v.toString())))
@@ -109,6 +113,7 @@ class Festival {
       'banner_url': bannerUrl,
       'tagline': tagline,
       'social_links': socialLinks,
+      'shortfilm_count': shortfilmCount,
     };
   }
 }

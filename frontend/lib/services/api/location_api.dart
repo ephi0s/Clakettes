@@ -60,10 +60,8 @@ extension LocationApi on ApiService {
   }
 
   /// Sube una imagen para una localización.
-  Future<LocationImage> uploadLocationImage(
-      int locationId, String filePath) async {
-    final data = await _uploadFile('/locations/$locationId/images/upload',
-        filePath,
+  Future<LocationImage> uploadLocationImage(int locationId, XFile file) async {
+    final data = await uploadFile('/locations/$locationId/images/upload', file,
         errorLabel: 'Location image');
     return LocationImage.fromJson(data);
   }
@@ -178,7 +176,8 @@ class ApiException implements Exception {
   final String message;
   final int? statusCode;
   final bool timedOut;
-  ApiException(this.message, {this.statusCode, this.timedOut = false});
+  final String? detail;
+  ApiException(this.message, {this.statusCode, this.timedOut = false, this.detail});
   @override
   String toString() => message;
 }

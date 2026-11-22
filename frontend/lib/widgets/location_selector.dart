@@ -286,7 +286,7 @@ class _LocationPreviewTile extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: location.locationImages.isNotEmpty
               ? Image.network(
-                  location.locationImages.first.url,
+                  resolveMediaUrl(location.locationImages.first.url),
                   width: 44,
                   height: 44,
                   cacheWidth: (44 * MediaQuery.devicePixelRatioOf(context)).round(),

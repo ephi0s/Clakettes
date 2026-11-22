@@ -22,7 +22,7 @@ class ShortFilm {
   @HiveField(5)
   final String? thumbnailUrl;
   @HiveField(6)
-  final int? festivalId;
+  final int festivalId;
   @HiveField(7)
   final int userId;
   @HiveField(8)
@@ -36,6 +36,8 @@ class ShortFilm {
   final DateTime? updatedAt;
   @HiveField(12)
   final List<FilmLocation> filmLocations;
+  @HiveField(13)
+  final String contestType;
 
   ShortFilm({
     this.id,
@@ -44,13 +46,14 @@ class ShortFilm {
     this.duration,
     this.videoUrl,
     this.thumbnailUrl,
-    this.festivalId,
+    required this.festivalId,
     required this.userId,
     this.isPublic = true,
     this.tags,
     this.createdAt,
     this.updatedAt,
     this.filmLocations = const [],
+    this.contestType = 'official_section',
   });
 
   /// Crea un [ShortFilm] a partir de un mapa JSON (claves snake_case del backend).
@@ -63,6 +66,7 @@ class ShortFilm {
       videoUrl: json['video_url'],
       thumbnailUrl: json['thumbnail_url'],
       festivalId: json['festival_id'],
+      contestType: json['contest_type'] ?? 'official_section',
       userId: json['user_id'],
       isPublic: json['is_public'] ?? true,
       tags: json['tags'],
@@ -84,6 +88,7 @@ class ShortFilm {
       'video_url': videoUrl,
       'thumbnail_url': thumbnailUrl,
       'festival_id': festivalId,
+      'contest_type': contestType,
       'user_id': userId,
       'is_public': isPublic,
       'tags': tags,

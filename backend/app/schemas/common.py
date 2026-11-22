@@ -1,6 +1,8 @@
-"""Shared pagination base schema."""
+"""Shared pagination base schema and media URL type."""
 
-from pydantic import BaseModel
+from typing import Annotated
+
+from pydantic import AfterValidator, BaseModel, HttpUrl
 
 
 class PageBase(BaseModel):
@@ -8,3 +10,13 @@ class PageBase(BaseModel):
     page: int
     size: int
     pages: int
+
+
+def _validate_media_url(value: str) -> str:
+    if not value or value.startswith("/"):
+        return value
+    HttpUrl(value)
+    return value
+
+
+MediaUrl = Annotated[str, AfterValidator(_validate_media_url)]

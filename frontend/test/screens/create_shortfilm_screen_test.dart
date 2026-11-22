@@ -7,7 +7,7 @@ import 'package:clakettes/services/api_service.dart';
 import 'test_helper.dart';
 
 Widget _createScreen() {
-  return wrapWithLocalization(const CreateShortFilmScreen());
+  return wrapWithLocalization(const CreateShortFilmScreen(festivalId: 1));
 }
 
 void main() {

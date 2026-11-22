@@ -53,8 +53,8 @@ extension ChannelApi on ApiService {
     return Message.fromJson(data);
   }
 
-  Future<String> uploadChatImage(String filePath) async {
-    final data = await _uploadFile('/uploads/chat-image', filePath);
+  Future<String> uploadChatImage(XFile file) async {
+    final data = await uploadFile('/uploads/chat-image', file);
     return data['url']?.toString() ?? '';
   }
 

@@ -345,6 +345,11 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | GET | `/api/festivals/` | no |
 | POST | `/api/festivals/` | sí |
 | GET | `/api/festivals/{festival_id}` | no |
+| GET | `/api/festivals/{festival_id}/shortfilms` | no |
+| POST | `/api/festivals/{festival_id}/shortfilms` | sí |
+| GET | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | no |
+| PUT | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | sí |
+| DELETE | `/api/festivals/{festival_id}/shortfilms/{shortfilm_id}` | sí |
 | PUT | `/api/festivals/{festival_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}` | sí |
 | POST | `/api/festivals/{festival_id}/images` | sí |
@@ -593,6 +598,8 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | POST | `/api/uploads/document` | sí |
 | POST | `/api/uploads/chat-image` | sí |
 
+Todas las subidas devuelven una ruta relativa `/uploads/<carpeta>/<archivo>`, nunca una URL absoluta. El cliente la resuelve con `resolveMediaUrl()`, que antepone el servidor activo; las URLs `http(s)` se dejan intactas. Los campos de medios (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) aceptan ambos formatos.
+
 ## `user_aliases` → `/api`
 
 | Método | Ruta | Auth |
@@ -661,4 +668,4 @@ Detalle interactivo: `/docs` (Swagger) y `/redoc` con el backend en marcha.
 | GET | `/api/validation-rule-groups/` | no |
 | POST | `/api/validation-rule-groups/` | sí |
 
-Total: 441 endpoints en 39 routers.
+Total: 446 endpoints en 39 routers.

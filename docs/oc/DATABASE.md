@@ -148,8 +148,8 @@ Camps:
 ### ShortFilm
 - **Taula:** `shortfilms`
 - **Classe:** `ShortFilm`
-- **Camps claus:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Relacions:** Apartén a Festival, apartén a User, a fòrça Awards, a fòrça ShortFilmLocations
+- **Camps claus:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Relacions:** Apartén a Festival, apartén a User, a fòrça Awards, a fòrça ShortFilmLocations Lo concors express (guerrilla) es `contest`; la seccion oficiala es `official_section`.
 
 ### Message
 - **Taula:** `messages`

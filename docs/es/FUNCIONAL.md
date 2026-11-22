@@ -23,6 +23,7 @@ Solo edita/borra sus festivales y gestiona sus usuarios (`require_festival_admin
 - Chat directo y de grupo/canal con cifrado de extremo a extremo: las claves públicas se publican en `POST /api/users/me/public-key`, el servidor solo guarda y retransmite cifrado, el cifrado real ocurre en la app. Entre nodos federados el mensaje viaja por el bridge firmado, se deduplica por `message_id` y se ordena por fecha; puedes reportar mensajes y los administradores pueden silenciar usuarios o filtrar palabras.
 
 ## Equipo express (attendee)
+- El concurso express (también llamado guerrilla) es el concurso ciudadano **dentro del festival**: se crea y se votan cortos con `contest_type = contest`.
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, rol `attendee`) y salida libre (`leave`).
 - Geolocaliza participantes, coordina el grupo por chat y presenta el corto al concurso express.

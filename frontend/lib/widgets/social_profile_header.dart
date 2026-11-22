@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'reusable_widgets.dart';
 
@@ -62,7 +63,7 @@ class SocialProfileHeader extends StatelessWidget {
                     : null,
                 image: bannerUrl != null
                     ? DecorationImage(
-                        image: NetworkImage(bannerUrl!),
+                        image: NetworkImage(resolveMediaUrl(bannerUrl)),
                         fit: BoxFit.cover,
                       )
                     : null,

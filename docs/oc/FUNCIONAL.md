@@ -23,6 +23,7 @@ Solament edita/escafa sos festivals e gestiona sos usagis (`require_festival_adm
 - Chat dirècte e de grop/canal amb chiframent de cap a cap: las claus publicas son publicadas a `POST /api/users/me/public-key`, lo servidor serva e retransmet solament lo chifrat, lo chiframent real se passa dins l'app. Ente noses federats lo messatge viatja pel bridge signat, es deduplicat per `message_id` e ordenat per data; podetz senhalar de messatges e los administrators pòdon silenciar d'usagis o filtrar de mots.
 
 ## Equipa express (attendee)
+- Lo concors express (tanben dich guerrilla) es lo concors ciutadan **dins lo festival** : los corts son creats e votats amb `contest_type = contest`.
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, ròtle `attendee`) e sortida liura (`leave`).
 - Ge-localiza los participants, coordona lo grop per chat e presenta lo cort al concors express.

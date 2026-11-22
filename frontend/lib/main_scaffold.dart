@@ -8,7 +8,6 @@ import 'services/connectivity_monitor.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/festivals_screen.dart';
 import 'screens/users_screen.dart';
-import 'screens/shortfilms_screen.dart';
 import 'screens/channels_screen.dart';
 import 'screens/locations_screen.dart';
 import 'screens/admin_screen.dart';
@@ -407,7 +406,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   }
 
   /// Fábrica de pantallas diferida: crea los widgets de pantalla en el primer acceso y los cachea.
-  /// Mapa de índices: 0=Dashboard, 1=Festivals, 2=Users, 3=ShortFilms, 4=Chat,
+  /// Mapa de índices: 0=Dashboard, 1=Festivals, 2=Users, 3=(sin destino), 4=Chat,
   /// 5=Locations, 6=Admin, 7=Notifications, 8=FormDefinitions, 9=Calendar
   Widget _getScreenWidget(int index) {
     if (index < 0 || index >= _screens.length) return const DashboardScreen();
@@ -415,7 +414,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
       0 => DashboardScreen(onNavigateToTab: (i) => _navigateToScreen(i)),
       1 => const FestivalsScreen(),
       2 => const UsersScreen(),
-      3 => const ShortFilmsScreen(),
+      3 => const DashboardScreen(),
       4 => ChannelsScreen(currentUser: _currentUser),
       5 => const LocationsScreen(),
       6 => const AdminScreen(),
@@ -429,13 +428,12 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
   }
 
   /// Construye los items de navegación según el estado de autenticación y el rol del usuario.
-  /// Públicas: Dashboard, Festivals, ShortFilms
+  /// Públicas: Dashboard, Festivals
   /// Autenticadas: Calendar, Users, Chat, Locations, Notifications, Forms
   /// Solo admin: Admin
   List<_NavItem> get _visibleNavItems => [
         _NavItem(icon: Icons.dashboard_rounded, label: l10n.dashboard, semanticLabel: l10n.dashboard, screenIndex: 0),
         _NavItem(icon: Icons.festival_rounded, label: l10n.festivals, semanticLabel: l10n.festivals, screenIndex: 1),
-        _NavItem(icon: Icons.movie_rounded, label: l10n.shortFilms, semanticLabel: l10n.shortFilms, screenIndex: 3),
         if (_currentUser != null)
           _NavItem(icon: Icons.calendar_month_outlined, label: l10n.calendar, semanticLabel: l10n.calendar, screenIndex: 9),
         if (_currentUser != null)

@@ -208,7 +208,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         secondary: CircleAvatar(
-          backgroundImage: festival.logoUrl != null ? NetworkImage(festival.logoUrl!) : null,
+          backgroundImage: festival.logoUrl != null ? NetworkImage(resolveMediaUrl(festival.logoUrl)) : null,
           child: festival.logoUrl != null
               ? null
               : ExcludeSemantics(child: Text(festival.name.substring(0, 1).toUpperCase())),

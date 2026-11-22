@@ -499,7 +499,7 @@ class _JuryVotingScreenState extends State<JuryVotingScreen> {
                   itemBuilder: (ctx, i) {
                     final r = _aggregate[i];
                     final film =
-                        _shortFilms.firstWhere((f) => f.id == r['shortfilm_id'], orElse: () => ShortFilm(id: r['shortfilm_id'], title: '', userId: 0));
+                        _shortFilms.firstWhere((f) => f.id == r['shortfilm_id'], orElse: () => ShortFilm(id: r['shortfilm_id'], title: '', festivalId: 0, userId: 0));
                     final scores = r['scores'] as List<double>;
                     return ListItemCard(
                       leading: CircleAvatar(

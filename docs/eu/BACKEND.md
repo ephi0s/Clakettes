@@ -191,7 +191,7 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profila, avatar eskaintzea |
 | `auth` | `/api/users` | auth | Hasi saioa, berritzea, erregistroa |
 | `auth_sessions` | `/api/auth` | auth | sesio-zerrenda / ukatu |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, festival-ko aukera |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, festival-ko aukera  CRUD `/api/festivals/{id}/shortfilms` azpian; zerrenda laua zaharkituta dago |
 | `chat` | `/api/chat` | chat | mezuak, WS endpoint |
 | `user_festival` | `/api/festivals` | user-festival | sarbidea / irten, kideak |
 | `uploads` | `/api/uploads` | uploads | avatar eskaintza |

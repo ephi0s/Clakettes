@@ -179,3 +179,95 @@ class TestFestivalLocations:
 
         list_resp = client.get(f"/api/festivals/{fest_id}/locations")
         assert list_resp.json() == []
+
+
+class TestFestivalMediaUrls:
+    """Relative upload paths and absolute URLs must both round-trip."""
+
+    def test_create_with_relative_media(self, client, admin_headers):
+        headers, _ = admin_headers
+        response = client.post(
+            "/api/festivals/",
+            json={
+                "name": "Media Fest",
+                "logo_url": "/uploads/festivals/logo.png",
+                "banner_url": "/uploads/festivals/banner.png",
+                "website": "https://example.com",
+            },
+            headers=headers,
+        )
+        assert response.status_code == 201
+        assert response.json()["logo_url"] == "/uploads/festivals/logo.png"
+        assert response.json()["banner_url"] == "/uploads/festivals/banner.png"
+
+    def test_update_and_read_relative_media(self, client, admin_headers):
+        headers, _ = admin_headers
+        fest_id = client.post("/api/festivals/", json={"name": "Media Fest"}, headers=headers).json()["id"]
+        updated = client.put(
+            f"/api/festivals/{fest_id}",
+            json={"banner_url": "/uploads/festivals/banner.png"},
+            headers=headers,
+        )
+        assert updated.status_code == 200
+        assert client.get(f"/api/festivals/{fest_id}").json()["banner_url"] == "/uploads/festivals/banner.png"
+
+    def test_rejects_invalid_url(self, client, admin_headers):
+        headers, _ = admin_headers
+        response = client.put(
+            f"/api/festivals/{client.post('/api/festivals/', json={'name': 'F'}, headers=headers).json()['id']}",
+            json={"logo_url": "not-a-url"},
+            headers=headers,
+        )
+        assert response.status_code == 422
+
+
+class TestFestivalShortFilms:
+    """Short films live inside their festival."""
+
+    def test_create_and_list_nested(self, client, auth_headers, festival_id):
+        headers, _ = auth_headers
+        created = client.post(
+            f"/api/festivals/{festival_id}/shortfilms",
+            json={"title": "Express Film", "contest_type": "contest"},
+            headers=headers,
+        )
+        assert created.status_code == 201
+        assert created.json()["festival_id"] == festival_id
+        assert created.json()["contest_type"] == "contest"
+        listed = client.get(f"/api/festivals/{festival_id}/shortfilms")
+        assert listed.status_code == 200
+        assert [film["title"] for film in listed.json()["items"]] == ["Express Film"]
+
+    def test_filter_by_contest_type(self, client, auth_headers, festival_id):
+        headers, _ = auth_headers
+        client.post(f"/api/festivals/{festival_id}/shortfilms", json={"title": "Official"}, headers=headers)
+        client.post(
+            f"/api/festivals/{festival_id}/shortfilms",
+            json={"title": "Contest", "contest_type": "contest"},
+            headers=headers,
+        )
+        response = client.get(f"/api/festivals/{festival_id}/shortfilms?contest_type=contest")
+        assert response.status_code == 200
+        assert [film["title"] for film in response.json()["items"]] == ["Contest"]
+
+    def test_detail_includes_shortfilms(self, client, auth_headers, festival_id):
+        headers, _ = auth_headers
+        client.post(f"/api/festivals/{festival_id}/shortfilms", json={"title": "Film"}, headers=headers)
+        detail = client.get(f"/api/festivals/{festival_id}").json()
+        assert detail["shortfilm_count"] == 1
+        assert [film["title"] for film in detail["shortfilms"]] == ["Film"]
+
+    def test_cross_festival_shortfilm_is_not_found(self, client, auth_headers, festival_id, db_session):
+        from app.models.festival import Festival
+
+        headers, _ = auth_headers
+        other = Festival(name="Other Festival")
+        db_session.add(other)
+        db_session.commit()
+        film = client.post(f"/api/festivals/{festival_id}/shortfilms", json={"title": "Film"}, headers=headers).json()
+        assert client.get(f"/api/festivals/{other.id}/shortfilms/{film['id']}").status_code == 404
+
+    def test_create_festival_without_shortfilms_is_fine(self, client, admin_headers):
+        headers, _ = admin_headers
+        festival = client.post("/api/festivals/", json={"name": "First Festival"}, headers=headers).json()
+        assert client.get(f"/api/festivals/{festival['id']}").json()["shortfilm_count"] == 0

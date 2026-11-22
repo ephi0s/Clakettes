@@ -5,9 +5,12 @@ import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from pydantic import TypeAdapter, ValidationError
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.enums import ShortFilmContestType
+from app.schemas.common import MediaUrl
 from app.models.festival import Festival
 from app.models.identity_redirect import IdentityRedirect
 from app.models.message import Message
@@ -16,6 +19,22 @@ from app.models.node_policy import NodePolicy
 from app.models.shortfilm import ShortFilm
 from app.models.user import User
 from app.services.node_policy_service import NodePolicyService
+
+_media_url = TypeAdapter(MediaUrl)
+
+
+def _import_media_url(value):
+    if value is None:
+        return None
+    try:
+        return _media_url.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _import_contest_type(value):
+    valid = {t.value for t in ShortFilmContestType}
+    return value if value in valid else ShortFilmContestType.OFFICIAL_SECTION.value
 
 
 def _canonical(value: dict) -> bytes:
@@ -77,6 +96,7 @@ class PortabilityService:
                     "video_url": sf.video_url,
                     "thumbnail_url": sf.thumbnail_url,
                     "festival_id": sf.festival_id,
+                    "contest_type": sf.contest_type,
                     "tags": sf.tags,
                     "is_public": sf.is_public,
                 }
@@ -202,8 +222,9 @@ class PortabilityService:
                     title=title,
                     description=item.get("description"),
                     duration=item.get("duration"),
-                    video_url=item.get("video_url"),
-                    thumbnail_url=item.get("thumbnail_url"),
+                    video_url=_import_media_url(item.get("video_url")),
+                    thumbnail_url=_import_media_url(item.get("thumbnail_url")),
+                    contest_type=_import_contest_type(item.get("contest_type")),
                     tags=item.get("tags"),
                     is_public=bool(item.get("is_public", True)),
                     user_id=user.id if user else None,
@@ -223,7 +244,7 @@ class PortabilityService:
                     name=name,
                     description=item.get("description"),
                     location=item.get("location"),
-                    website=item.get("website"),
+                    website=_import_media_url(item.get("website")),
                     tagline=item.get("tagline"),
                 )
             )
@@ -271,6 +292,7 @@ class PortabilityService:
                     "tags": sf.tags,
                     "is_public": sf.is_public,
                     "festival_id": sf.festival_id,
+                    "contest_type": sf.contest_type,
                 }
                 for sf in sorted(shortfilms, key=lambda item: item.id or 0)
             ],

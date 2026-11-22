@@ -14,12 +14,15 @@ class ShortFilmService(BaseService[ShortFilm, ShortFilmCreate, ShortFilmUpdate])
         page: int = 1,
         size: int = 20,
         festival_id: int | None = None,
+        contest_type: str | None = None,
         user_id: int | None = None,
         is_public: bool | None = None,
     ):
         filters = []
         if festival_id:
             filters.append(ShortFilm.festival_id == festival_id)
+        if contest_type:
+            filters.append(ShortFilm.contest_type == contest_type)
         if user_id:
             filters.append(ShortFilm.user_id == user_id)
         if is_public is not None:

@@ -9,7 +9,7 @@ import 'package:clakettes/services/api_service.dart';
 import 'test_helper.dart';
 
 Widget _createScreen() {
-  return wrapWithLocalization(const ShortFilmsScreen());
+  return wrapWithLocalization(const ShortFilmsScreen(festivalId: 1, festivalName: 'Fest'));
 }
 
 Future<void> _pump(WidgetTester tester) async {
@@ -42,7 +42,7 @@ void main() {
     ApiService().client = MockClient((request) async {
       return http.Response(json.encode({
         'items': [
-          {'id': 1, 'title': 'The Last Frame', 'description': 'A great short film', 'duration': 15, 'user_id': 1, 'tags': null, 'is_public': true, 'video_url': null, 'thumbnail_url': null, 'festival_id': null, 'created_at': '2026-01-01T00:00:00.000Z', 'updated_at': '2026-06-01T00:00:00.000Z'},
+          {'id': 1, 'title': 'The Last Frame', 'description': 'A great short film', 'duration': 15, 'user_id': 1, 'tags': null, 'is_public': true, 'video_url': null, 'thumbnail_url': null, 'festival_id': 1, 'contest_type': 'official_section', 'created_at': '2026-01-01T00:00:00.000Z', 'updated_at': '2026-06-01T00:00:00.000Z'},
         ],
         'total': 1,
         'pages': 1,

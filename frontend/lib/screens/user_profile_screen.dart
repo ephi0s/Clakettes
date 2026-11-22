@@ -720,7 +720,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               height: 180,
               width: double.infinity,
               child: banner.isNotEmpty
-                  ? Image.network(banner, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))))
+                  ? Image.network(resolveMediaUrl(banner), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))))
                   : Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [colorScheme.primaryContainer, colorScheme.tertiaryContainer]))),
             ),
             if (_canEdit)
@@ -1094,7 +1094,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (tag.id == null || _user.id == null) return;
     String method = 'document';
     final notesCtl = TextEditingController();
-    String? documentPath;
+    PlatformFile? documentFile;
     String? documentUrl;
     final saved = await showDialog<bool>(
       context: context,
@@ -1126,23 +1126,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.upload_file_outlined),
-                  label: Text(documentPath != null
-                      ? l10n.uploadDocument
-                      : l10n.uploadDocument),
+                  label: Text(l10n.uploadDocument),
                   onPressed: () async {
                     final files = await FilePicker.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
                     );
-                    if (files.isNotEmpty && files.single.path != null) {
-                      setDialog(() => documentPath = files.single.path);
+                    if (files.isNotEmpty) {
+                      setDialog(() => documentFile = files.single);
                     }
                   },
                 ),
-                if (documentPath != null)
+                if (documentFile != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(documentPath!,
+                    child: Text(documentFile!.name,
                         style: Theme.of(ctx).textTheme.bodySmall),
                   ),
               ],
@@ -1161,8 +1159,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
     if (saved != true) return;
     try {
-      if (method == 'document' && documentPath != null) {
-        documentUrl = await ApiService().uploadDocument(documentPath!);
+      if (method == 'document' && documentFile != null) {
+        documentUrl = await ApiService().uploadDocument(platformFileToXFile(documentFile!));
       }
       await ApiService().requestTagVerification(
         _user.id!,

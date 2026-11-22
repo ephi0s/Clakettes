@@ -36,7 +36,7 @@ Cachas: Routers → Services → Models, tipes via `app.enums`.
 | Resiliéncia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Santat, batement, metricas p50/p95, revocacion de claus e plan d'incident |
 | Conformitat | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI que verifica manifest, JWKS, token, directòri, portabilitat, bridge e SSE |
 
-API generada: `python tools/gen_api.py --all` produís 441 endpoints dins 39 routers amb prefix (vejatz [API.md](API.md)).
+API generada: `python tools/gen_api.py --all` produís 446 endpoints dins 39 routers amb prefix (vejatz [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 

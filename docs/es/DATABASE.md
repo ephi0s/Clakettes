@@ -148,8 +148,8 @@ Campos:
 ### ShortFilm
 - **Tabla:** `shortfilms`
 - **Clase:** `ShortFilm`
-- **Campos clave:** title, description, duration, video_url, thumbnail_url, festival_id (FK), user_id (FK), is_public, tags
-- **Relaciones:** Pertenece a Festival, pertenece a User, tiene muchos Awards, tiene muchas ShortFilmLocations
+- **Campos clave:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Relaciones:** Pertenece a Festival, pertenece a User, tiene muchos Awards, tiene muchas ShortFilmLocations El concurso express (guerrilla) es `contest`; la sección oficial es `official_section`.
 
 ### Message
 - **Tabla:** `messages`

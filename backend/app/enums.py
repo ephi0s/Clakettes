@@ -245,3 +245,8 @@ class FestivalRulebookCategory(enum.Enum):
     CONTEST = "contest"
     ACTIVITY = "activity"
     OTHER = "other"
+
+
+class ShortFilmContestType(enum.Enum):
+    OFFICIAL_SECTION = "official_section"
+    CONTEST = "contest"

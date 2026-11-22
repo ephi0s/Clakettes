@@ -78,11 +78,7 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
     }
   }
 
-  String _resolveUrl(FestivalRulebook r) {
-    final url = r.documentUrl;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return '${api.rootUrl}$url';
-  }
+  String _resolveUrl(FestivalRulebook r) => resolveMediaUrl(r.documentUrl);
 
   Future<void> _openDocument(FestivalRulebook r) async {
     if (!r.hasDocument) return;
@@ -123,7 +119,7 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
     final descCtl = TextEditingController(text: existing?.description ?? '');
     final urlCtl = TextEditingController(text: existing?.externalUrl ?? '');
     String category = existing?.category ?? 'official_section';
-    String? pickedPdfPath;
+    PlatformFile? pickedPdf;
     String? pickedPdfName;
     final formKey = GlobalKey<FormState>();
 
@@ -179,9 +175,9 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
                     );
-                    if (files.isNotEmpty && files.single.path != null) {
+                    if (files.isNotEmpty) {
                       setDialogState(() {
-                        pickedPdfPath = files.single.path;
+                        pickedPdf = files.single;
                         pickedPdfName = files.single.name;
                       });
                     }
@@ -200,7 +196,7 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
             FilledButton(
               onPressed: () {
                 if (!(formKey.currentState?.validate() ?? false)) return;
-                if (existing == null && pickedPdfPath == null && urlCtl.text.trim().isEmpty) {
+                if (existing == null && pickedPdf == null && urlCtl.text.trim().isEmpty) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
                     SnackBar(content: Text(l10n.rulebookDocumentRequired), behavior: SnackBarBehavior.floating),
                   );
@@ -217,10 +213,10 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
     if (saved != true) return;
     try {
       if (existing == null) {
-        if (pickedPdfPath != null) {
+        if (pickedPdf != null) {
           await api.uploadRulebook(
             widget.festivalId,
-            pickedPdfPath!,
+            platformFileToXFile(pickedPdf!),
             title: titleCtl.text.trim(),
             description: descCtl.text.trim().isEmpty ? null : descCtl.text.trim(),
             category: category,
@@ -245,10 +241,10 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
           'category': category,
           'external_url': urlCtl.text.trim().isEmpty ? null : urlCtl.text.trim(),
         });
-        if (pickedPdfPath != null) {
+        if (pickedPdf != null) {
           await api.uploadRulebook(
             widget.festivalId,
-            pickedPdfPath!,
+            platformFileToXFile(pickedPdf!),
             title: titleCtl.text.trim(),
             description: descCtl.text.trim().isEmpty ? null : descCtl.text.trim(),
             category: category,

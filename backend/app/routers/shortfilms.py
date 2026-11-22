@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth import get_current_user
 from app.models.shortfilm import ShortFilm
+from app.models.festival import Festival
 from app.routers.dependencies import get_or_404
 from app.schemas.shortfilm import ShortFilmCreate, ShortFilmUpdate, ShortFilmResponse, ShortFilmsPage
 from app.services.shortfilm_service import ShortFilmService
@@ -13,34 +14,42 @@ router = APIRouter()
 service = ShortFilmService()
 
 
-@router.get("/", response_model=ShortFilmsPage)
+@router.get("/", response_model=ShortFilmsPage, deprecated=True)
 async def list_shortfilms(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     festival_id: int | None = None,
+    contest_type: str | None = None,
     user_id: int | None = None,
     is_public: bool | None = None,
     db: Session = Depends(get_db),
 ):
     return service.get_multi_paginated(
-        db, page=page, size=size, festival_id=festival_id, user_id=user_id, is_public=is_public
+        db,
+        page=page,
+        size=size,
+        festival_id=festival_id,
+        contest_type=contest_type,
+        user_id=user_id,
+        is_public=is_public,
     )
 
 
-@router.post("/", response_model=ShortFilmResponse, status_code=201)
+@router.post("/", response_model=ShortFilmResponse, status_code=201, deprecated=True)
 async def create_shortfilm(
     shortfilm: ShortFilmCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
+    get_or_404(db, Festival, shortfilm.festival_id, "Festival")
     shortfilm = shortfilm.model_copy(update={"user_id": current_user.id})
     return service.create(db, shortfilm)
 
 
-@router.get("/{shortfilm_id}", response_model=ShortFilmResponse)
+@router.get("/{shortfilm_id}", response_model=ShortFilmResponse, deprecated=True)
 async def get_shortfilm(shortfilm_id: int, db: Session = Depends(get_db)):
     return get_or_404(db, ShortFilm, shortfilm_id, "Short film")
 
 
-@router.put("/{shortfilm_id}", response_model=ShortFilmResponse)
+@router.put("/{shortfilm_id}", response_model=ShortFilmResponse, deprecated=True)
 async def update_shortfilm(
     shortfilm_id: int,
     shortfilm: ShortFilmUpdate,
@@ -56,7 +65,7 @@ async def update_shortfilm(
     return updated
 
 
-@router.delete("/{shortfilm_id}")
+@router.delete("/{shortfilm_id}", deprecated=True)
 async def delete_shortfilm(
     shortfilm_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):

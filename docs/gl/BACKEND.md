@@ -191,7 +191,7 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, perfil, subida de avatar |
 | `auth` | `/api/users` | auth | Login, refresh, rexistro |
 | `auth_sessions` | `/api/auth` | auth | Lista/revocación de sesións |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, vinculación festival |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, vinculación festival  CRUD baixo `/api/festivals/{id}/shortfilms`; a listaxe plana está obsoleta |
 | `chat` | `/api/chat` | chat | Mensaxes, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Unirse/sair, membros |
 | `uploads` | `/api/uploads` | uploads | Subida de avatar |

@@ -34,13 +34,14 @@ class FestivalAdapter extends TypeAdapter<Festival> {
       bannerUrl: fields[14] as String?,
       tagline: fields[15] as String?,
       socialLinks: (fields[16] as Map?)?.cast<String, String>(),
+      shortfilmCount: fields[17] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, Festival obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +75,9 @@ class FestivalAdapter extends TypeAdapter<Festival> {
       ..writeByte(15)
       ..write(obj.tagline)
       ..writeByte(16)
-      ..write(obj.socialLinks);
+      ..write(obj.socialLinks)
+      ..writeByte(17)
+      ..write(obj.shortfilmCount);
   }
 
   @override

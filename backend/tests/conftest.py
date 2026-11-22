@@ -187,6 +187,17 @@ def create_user(db_session):
 
 
 @pytest.fixture
+def festival_id(db_session):
+    from app.models.festival import Festival
+
+    festival = Festival(name="Fixture Festival")
+    db_session.add(festival)
+    db_session.commit()
+    db_session.refresh(festival)
+    return festival.id
+
+
+@pytest.fixture
 def auth_headers(create_user, db_session):
     """Return Authorization headers for an authenticated user."""
     from app.auth import create_session

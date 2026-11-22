@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/shortfilm_model.dart';
-import '../models/festival_model.dart';
 import '../models/location_model.dart';
 import '../models/film_location_model.dart';
 import '../services/api_service.dart';
@@ -12,12 +11,11 @@ import '../widgets/reusable_widgets.dart';
 import '../widgets/film_location_card.dart';
 import '../widgets/location_selector.dart';
 
-/// Formulario a pantalla completa para crear un nuevo cortometraje.
-///
-/// Valida los campos obligatorios (título) y carga la lista de festivales
-/// para el desplegable. Al tener éxito se cierra con `true`.
+/// Formulario a pantalla completa para crear un cortometraje dentro de un festival.
 class CreateShortFilmScreen extends StatefulWidget {
-  const CreateShortFilmScreen({super.key});
+  final int festivalId;
+
+  const CreateShortFilmScreen({super.key, required this.festivalId});
 
   @override
   State<CreateShortFilmScreen> createState() => _CreateShortFilmScreenState();
@@ -35,12 +33,9 @@ class _CreateShortFilmScreenState extends State<CreateShortFilmScreen> {
   final _thumbnailUrlController = TextEditingController();
   final _tagsController = TextEditingController();
 
-  int? _selectedFestivalId;
+  String _contestType = 'official_section';
   bool _isPublic = true;
   bool _isLoading = false;
-  bool _isLoadingFestivals = true;
-  bool _initialized = false;
-  List<Festival> _festivals = [];
   final List<_FilmLocationEntry> _filmLocations = [];
   final Map<int, Location> _locationCache = {};
   late AppLocalizations l10n;
@@ -49,26 +44,6 @@ class _CreateShortFilmScreenState extends State<CreateShortFilmScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     l10n = AppLocalizations.of(context)!;
-    if (!_initialized) {
-      _initialized = true;
-      _loadFestivals();
-    }
-  }
-
-  /// Carga los festivales disponibles para el desplegable de selección.
-  Future<void> _loadFestivals() async {
-    try {
-      final result = await ApiService().getFestivals();
-      if (mounted) {
-        setState(() {
-          _festivals = result.items;
-          _isLoadingFestivals = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error: $e');
-      if (mounted) setState(() => _isLoadingFestivals = false);
-    }
   }
 
   /// Abre el selector de localizaciones y añade la localización de rodaje elegida.
@@ -137,7 +112,8 @@ class _CreateShortFilmScreenState extends State<CreateShortFilmScreen> {
       thumbnailUrl: _thumbnailUrlController.text.isNotEmpty
           ? _thumbnailUrlController.text.trim()
           : null,
-      festivalId: _selectedFestivalId,
+      festivalId: widget.festivalId,
+      contestType: _contestType,
       userId: 0,
       isPublic: _isPublic,
       tags: _tagsController.text.isNotEmpty
@@ -253,32 +229,28 @@ class _CreateShortFilmScreenState extends State<CreateShortFilmScreen> {
                         textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 16),
-                      if (_isLoadingFestivals)
-                        const LinearProgressIndicator()
-                      else
-                        Semantics(
-                          label: l10n.festivals,
-                          child: DropdownButtonFormField<int>(
-                            initialValue: _selectedFestivalId,
-                            decoration: InputDecoration(
-                              labelText: l10n.festivals,
-                              border: const OutlineInputBorder(),
-                              prefixIcon: const Icon(Icons.festival),
-                            ),
-                            items: [
-                              DropdownMenuItem<int>(
-                                value: null,
-                                child: Text(l10n.optional),
-                              ),
-                              ..._festivals.map((f) => DropdownMenuItem(
-                                    value: f.id,
-                                    child: Text(f.name),
-                                  )),
-                            ],
-                            onChanged: (v) =>
-                                setState(() => _selectedFestivalId = v),
+                      Semantics(
+                        label: l10n.contestType,
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _contestType,
+                          decoration: InputDecoration(
+                            labelText: l10n.contestType,
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const Icon(Icons.festival),
                           ),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'official_section',
+                              child: Text(l10n.officialSection),
+                            ),
+                            DropdownMenuItem(
+                              value: 'contest',
+                              child: Text(l10n.contest),
+                            ),
+                          ],
+                          onChanged: (v) => setState(() => _contestType = v ?? 'official_section'),
                         ),
+                      ),
                       const SizedBox(height: 16),
                       SemanticTextField(
                         controller: _videoUrlController,

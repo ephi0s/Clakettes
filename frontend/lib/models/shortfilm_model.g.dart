@@ -23,20 +23,21 @@ class ShortFilmAdapter extends TypeAdapter<ShortFilm> {
       duration: fields[3] as int?,
       videoUrl: fields[4] as String?,
       thumbnailUrl: fields[5] as String?,
-      festivalId: fields[6] as int?,
+      festivalId: fields[6] as int,
       userId: fields[7] as int,
       isPublic: fields[8] as bool,
       tags: fields[9] as String?,
       createdAt: fields[10] as DateTime?,
       updatedAt: fields[11] as DateTime?,
       filmLocations: (fields[12] as List).cast<FilmLocation>(),
+      contestType: fields[13] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, ShortFilm obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class ShortFilmAdapter extends TypeAdapter<ShortFilm> {
       ..writeByte(11)
       ..write(obj.updatedAt)
       ..writeByte(12)
-      ..write(obj.filmLocations);
+      ..write(obj.filmLocations)
+      ..writeByte(13)
+      ..write(obj.contestType);
   }
 
   @override

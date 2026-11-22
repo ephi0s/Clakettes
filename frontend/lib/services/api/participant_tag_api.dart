@@ -74,9 +74,8 @@ extension ParticipantTagApi on ApiService {
   }
 
   /// Sube un documento (PDF) y devuelve su URL.
-  Future<String> uploadDocument(String filePath) async {
-    final data =
-        await _uploadFile('/uploads/document', filePath, errorLabel: 'Document');
+  Future<String> uploadDocument(XFile file) async {
+    final data = await uploadFile('/uploads/document', file, errorLabel: 'Document');
     return Map<String, dynamic>.from(data as Map)['url'] as String;
   }
 }

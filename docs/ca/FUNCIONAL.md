@@ -23,6 +23,7 @@ Només edita/borra els seus festivals i gestiona els seus usuaris (`require_fest
 - Xat directe i de grup/canal amb xifrat d'extrem a extrem: les claus públiques es publiquen a `POST /api/users/me/public-key`, el servidor només desa i retransmet xifrat, el xifrat real occorre a l'app. Entre nodes federats el missatge viatja pel bridge signat, es deduplica per `message_id` i s'ordena per data; pots reportar missatges i els administradors poden silenciar usuaris o filtrar paraules.
 
 ## Equip express (attendee)
+- El concurs express (també anomenat guerrilla) és el concurs ciutadà **dins del festival**: els curts es creen i es voten amb `contest_type = contest`.
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, rol `attendee`) i sortida lliure (`leave`).
 - Geolocalitza participants, coordina el grup per xat i presenta el curt al concurs express.

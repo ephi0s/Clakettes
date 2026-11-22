@@ -1,5 +1,6 @@
 """Tests for audiovisual metadata stripping (RGPD art. 5/25)."""
 
+import base64
 import io
 
 import pytest
@@ -102,6 +103,20 @@ class TestUploadEndpoint:
         assert response.status_code == 200
         stored = tmp_path / "uploads" / response.json()["url"].split("/uploads/")[1]
         assert not Image.open(stored).getexif()
+
+    def test_upload_octet_stream_is_sniffed(self, client, auth_headers, tmp_path, monkeypatch):
+        headers, _ = auth_headers
+        monkeypatch.chdir(tmp_path)
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+        )
+        response = client.post(
+            "/api/uploads/avatar",
+            headers=headers,
+            files={"file": ("pixel.png", io.BytesIO(png), "application/octet-stream")},
+        )
+        assert response.status_code == 200
+        assert response.json()["url"].startswith("/uploads/avatars/")
 
     def test_upload_rejects_bad_magic(self, client, auth_headers):
         headers, _ = auth_headers

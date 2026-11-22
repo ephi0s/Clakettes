@@ -64,6 +64,9 @@ class AppLocalizations {
   String get festivals => translate('festivals');
   String get users => translate('users');
   String get shortFilms => translate('shortFilms');
+  String get contestType => translate('contestType');
+  String get officialSection => translate('officialSection');
+  String get contest => translate('contest');
   String get chat => translate('chat');
   String get locations => translate('locations');
   String get profile => translate('profile');

@@ -468,7 +468,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (picked == null) return;
       if (!mounted) return;
       setState(() => _isSending = true);
-      final url = await _chatService.api.uploadChatImage(picked.path);
+      final url = await _chatService.api.uploadChatImage(picked);
       await _doSend(content: '', messageType: 'image', mediaUrl: url);
     } catch (e) {
       debugPrint('Error: $e');

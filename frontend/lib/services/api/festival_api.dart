@@ -43,8 +43,8 @@ extension FestivalApi on ApiService {
     await request('DELETE', '/festivals/$id');
   }
 
-  Future<Festival> uploadFestivalImage(int festivalId, String filePath) async {
-    final data = await _uploadFile('/festivals/$festivalId/images', filePath,
+  Future<Festival> uploadFestivalImage(int festivalId, XFile file) async {
+    final data = await uploadFile('/festivals/$festivalId/images', file,
         errorLabel: 'Festival image');
     return Festival.fromJson(data);
   }

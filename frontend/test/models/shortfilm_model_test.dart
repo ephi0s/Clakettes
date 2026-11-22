@@ -11,6 +11,7 @@ void main() {
       'video_url': 'http://example.com/video.mp4',
       'thumbnail_url': 'http://example.com/thumb.png',
       'festival_id': 1,
+      'contest_type': 'contest',
       'user_id': 1,
       'is_public': true,
       'tags': 'drama, comedy',
@@ -44,6 +45,7 @@ void main() {
         videoUrl: 'http://example.com/video.mp4',
         thumbnailUrl: 'http://example.com/thumb.png',
         festivalId: 1,
+        contestType: 'contest',
         userId: 1,
         isPublic: true,
         tags: 'drama, comedy',
@@ -60,6 +62,7 @@ void main() {
       expect(map['video_url'], equals('http://example.com/video.mp4'));
       expect(map['thumbnail_url'], equals('http://example.com/thumb.png'));
       expect(map['festival_id'], equals(1));
+      expect(map['contest_type'], equals('contest'));
       expect(map['user_id'], equals(1));
       expect(map['is_public'], isTrue);
       expect(map['tags'], equals('drama, comedy'));
@@ -68,6 +71,7 @@ void main() {
     test('fromJson handles null values', () {
       final minimal = <String, dynamic>{
         'title': 'No ID Film',
+        'festival_id': 1,
         'user_id': 2,
       };
 
@@ -79,7 +83,8 @@ void main() {
       expect(film.duration, isNull);
       expect(film.videoUrl, isNull);
       expect(film.thumbnailUrl, isNull);
-      expect(film.festivalId, isNull);
+      expect(film.festivalId, equals(1));
+      expect(film.contestType, equals('official_section'));
       expect(film.userId, equals(2));
       expect(film.isPublic, isTrue);
       expect(film.tags, isNull);

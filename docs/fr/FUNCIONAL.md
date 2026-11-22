@@ -23,6 +23,7 @@ Il ne modifie/supprime que ses festivals et gère ses utilisateurs (`require_fes
 - Chat direct et de groupe/canal avec chiffrement de bout en bout : les clés publiques sont publiées sur `POST /api/users/me/public-key`, le serveur ne stocke et ne relaie que du chiffré, le vrai chiffrement a lieu dans l'application. Entre nœuds fédérés, le message passe par le bridge signé, est dédupliqué par `message_id` et trié par date ; vous pouvez signaler des messages et les administrateurs peuvent réduire au silence des utilisateurs ou filtrer des mots.
 
 ## Équipe express (attendee)
+- Le concours express (aussi appelé guerrilla) est le concours citoyen **dans le festival** : les courts sont créés et votés avec `contest_type = contest`.
 
 - Auto-join au festival (`POST /api/festivals/{id}/join`, rôle `attendee`) et sortie libre (`leave`).
 - Géolocalise les participants, coordonne le groupe par chat et présente le court au concours express.
