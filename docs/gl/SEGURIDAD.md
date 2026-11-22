@@ -1,6 +1,6 @@
 # Seguridade — modelo e checklist
 
-[ES](../es/SEGURIDAD.md) · [EN](../en/SEGURIDAD.md) · [FR](../fr/SEGURIDAD.md) · [DE](../de/SEGURIDAD.md) · [IT](../it/SEGURIDAD.md) · [CA](../ca/SEGURIDAD.md) · [EU](../eu/SEGURIDAD.md) · [CA](SEGURIDAD.md) · [OC](../oc/SEGURIDAD.md)
+[ES](../es/SEGURIDAD.md) · [EN](../en/SEGURIDAD.md) · [FR](../fr/SEGURIDAD.md) · [DE](../de/SEGURIDAD.md) · [IT](../it/SEGURIDAD.md) · [CA](../ca/SEGURIDAD.md) · [EU](../eu/SEGURIDAD.md) · [GL](SEGURIDAD.md) · [OC](../oc/SEGURIDAD.md)
 
 ## Tokens e sesións
 
@@ -27,19 +27,24 @@
 | Grupo de chat | rol `admin` do grupo para borrar; membro para ler |
 | Formulario | `require_form_admin` (creador/admin/organizador) |
 | Delegación | delegador ou admin para editar/revocar |
-| Roles globais | `is_admin`; auto-join solo con rol `attendee` |
+| Roles globais | `require_admin(user, db)` unificado: rol legacy `admin` (case-insensitive) ou `UserRole` con estado `ACTIVE`/`APPROVED`; auto-join só con rol `attendee` |
+| Alias de usuario | `require_self_or_admin` (propietario ou admin) en create/update/delete |
+| Bloqueos de usuario | `require_owner_or_admin` (propietario ou `can_edit_user`) en block/unblock/list/status |
 | Roles de canal | `Literal[admin,moderator,member]` (422 fóra da lista) |
 | Pagos | doente vía inscripción, admin do festival ou global; webhook mock con `MOCK_WEBHOOK_SECRET` |
 
 ## Pagos
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sen PAN/IBAN na BD: só importe, moeda, `provider_ref` e estado.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` por defecto en `backend/app/config.py`). Sen PAN/IBAN na BD: só importe, moeda, `provider_ref` e estado.
 - Stripe: SDK preguizoso + verificación de firma (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: firma HMAC_SHA256_V1 sen SDK; Bizum con `pay_methods="z"` (alta previa no comercio). Validar no sandbox antes de prod.
+- `confirm` e `refund` sincronizan `FestivalRegistration.payment_status` (`paid`/`refunded`) e, en paid, `paid_at`/`payment_method`/`transaction_id`; o `provider` do Payment tómao do provider activo, non de `PAYMENTS_PROVIDER`.
+- **Estado real**: Stripe e Redsys NON están operativos aínda; falta cablear os seus webhooks (`POST /api/payments/webhook/{stripe,redsys}`). Hoxe só funciona o webhook simulado (`POST /api/payments/webhook/mock`).
+- O `confirm` de Redsys devolve sempre `"pending"`: non confirma cobros reais ata que se cablee o webhook.
 
 ## Perímetro
 
-- Rate limit SQLite 100/60s por IP (`/dav` 600/60s); `TESTING=true` desactívalo.
+- Rate limit SQLite 100/60 s por IP global, 600/60 s en `/dav`, 5/300 s login, 20/60 s refresh e 3/300 s reset e 60/60 s en federación. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) apaga todos os límites e a auto-migración.
 - Cabeceras: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` estrita na API (relaxada só en `/docs`), `HSTS` só en produción.
 - Corpos ≤10 MB (413). CORS con credenciais e oríxenes explícitas.
 - MariaDB en produción exige TLS (`?ssl_ca=…` en `DATABASE_URL`).
@@ -51,10 +56,14 @@
 3. TLS con proxy + `FORWARDED_ALLOW_IPS`; sen admin `setup` (só créase fóra de prod).
 4. Cambiar `appUserModelId`/GUID de notificacións Windows se se renomea a app.
 
-## Federación (fase 2)
+## Federación (fases 2-10)
 
-- Identidade de nodo = dominio + certificado TLS.
-- Peering mutuo vía mTLS con certificados de dominio (CA pública ou privada).
-- TLS obrigatorio entre nodos; validación estrita (sen self-signed en prod).
-- A rotación/revocación xestionase por renovación do certificado. Un nodo comprometido revócase invalidando o seu certificado e a súa entrada no directorio.
-- `allowlist`/`blocklist` por nodo (`node_policies`). Rate limiting e anti-inundación no borde de federación. Propagación de informes de moderación entre nodos.
+Detalle completo en [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controles vixentes:
+
+- Identidade de nodo = dominio + certificado TLS. Peering mutuo vía mTLS con certificados de dominio (CA pública ou privada); TLS obrigatorio, sen self-signed en prod.
+- Manifesto asinado RSA-SHA256 con PEM/clave propios e `expires_at` de 24 h; `whoami` esixe JWT federado; JWKS para verificar tokens dos pares; `peers/verify` e `peers/revoke`.
+- `allowlist`/`blocklist` por nodo (`node_policies`), con `import_only`, `disable_chat` e `disable_search`. Rate limiting e anti-inundación no borde; propagación de informes de moderación.
+- Portabilidade: bundles asinados con HMAC e checksum; a importación valida/sanea `MediaUrl` e normaliza `contest_type`; migración de festivais e identidades con `identity_redirects` e auditoría en `migration_audits`; os endpoints de migración esixen admin.
+- Chat federado: bridge asinado RS256, dedup por `message_id` en `chat_outbox`, orde por `timestamp`; informes e silenciamentos, filtro de palabras e límite de 10 mensaxes/60 s por nodo e usuario.
+- Eventos: publicación asinada con HMAC (`X-Clakettes-Signature`), SSE con `token` obrigatorio na query, `since` e `limit` opcionais, replay de 200 e 3 reintentos con backoff.
+- Resiliencia: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), revogación de claves (`keys/revoke`) e plan de incidente en 8 pasos. Rotación/revocación por renovación do certificado; un nodo comprometido invalídase no directorio.

@@ -6,7 +6,13 @@ from app.models.user import User
 from app.routers.permissions import is_admin, require_festival_admin
 from app.routers.dependencies import get_or_404
 from app.models.payment import Payment
-from app.schemas.payment import PaymentCheckoutRequest, PaymentPage, PaymentResponse
+from app.schemas.payment import PaymentCheckoutRequest, PaymentPage, PaymentResponse, WebhookResponse
+from app.services.payment_providers import (
+    PaymentConfirmationError,
+    ProviderNotConfigured,
+    RedsysPaymentProvider,
+    StripePaymentProvider,
+)
 from app.services.payment_service import PaymentService
 
 router = APIRouter()
@@ -80,11 +86,19 @@ async def get_payment(payment_id: int, db: Session = Depends(get_db), current_us
 
 @router.post("/payments/{payment_id}/confirm", response_model=PaymentResponse)
 async def confirm_payment(
-    payment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    payment_id: int,
+    body: dict | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     obj = get_or_404(db, Payment, payment_id, "Payment")
     _require_payment_access(db, current_user, obj)
-    return payment_service.confirm(db, obj)
+    try:
+        return payment_service.confirm(db, obj, response=body)
+    except PaymentConfirmationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except ProviderNotConfigured as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
 
 @router.post("/payments/{payment_id}/refund", response_model=PaymentResponse)
@@ -125,3 +139,55 @@ async def mock_webhook(body: dict, request: Request, db: Session = Depends(get_d
     db.commit()
     db.refresh(obj)
     return obj
+
+
+@router.post("/payments/webhook/stripe", response_model=WebhookResponse)
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    payload = await request.body()
+    signature = request.headers.get("stripe-signature", "")
+    stripe = StripePaymentProvider()
+    try:
+        event = stripe.verify_webhook(payload, signature)
+    except ProviderNotConfigured as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+    if event is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Stripe webhook signature")
+    obj = event.get("object") or {}
+    ref = str(obj.get("id") or "")
+    payment = (
+        db.query(Payment).filter(Payment.provider == "stripe", Payment.provider_ref == ref).first() if ref else None
+    )
+    if payment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
+    new_status = "paid" if obj.get("payment_status") == "paid" else "pending"
+    payment = payment_service.apply_webhook_status(db, payment, new_status)
+    return WebhookResponse(received=True, status=payment.status)
+
+
+@router.post("/payments/webhook/redsys", response_model=WebhookResponse)
+async def redsys_webhook(request: Request, db: Session = Depends(get_db)):
+    form = dict(await request.form())
+    if not form:
+        try:
+            form = await request.json()
+        except ValueError:
+            form = {}
+    params_b64 = str(form.get("Ds_MerchantParameters") or form.get("ds_merchant_parameters") or "")
+    signature_b64 = str(form.get("Ds_Signature") or form.get("ds_signature") or "")
+    signature_version = str(form.get("Ds_SignatureVersion") or form.get("ds_signature_version") or "")
+    redsys = RedsysPaymentProvider()
+    try:
+        payload = redsys.verify_response(params_b64, signature_b64, signature_version)
+    except ProviderNotConfigured as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Redsys webhook signature")
+    order = str(payload.get("Ds_Order") or payload.get("DS_MERCHANT_ORDER") or "")
+    payment = (
+        db.query(Payment).filter(Payment.provider == "redsys", Payment.provider_ref == order).first() if order else None
+    )
+    if payment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
+    new_status = "paid" if redsys.is_paid(payload) else "pending"
+    payment = payment_service.apply_webhook_status(db, payment, new_status)
+    return WebhookResponse(received=True, status=payment.status)

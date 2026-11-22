@@ -8,8 +8,8 @@ Real project value by role, with the flow that supports it. Operational detail i
 
 1. Create the festival (`POST /api/festivals/`) with description, website, venue and logo.
 2. Open calls: registration forms with sections, roles and tags (`RegistrationForm + Sections + Links`), exposed via public link that anyone can fill without an account.
-3. Receive shorts linked to your calls and shooting locations.
-4. Set up programming: events (gala, screening, workshop, panel, networking, awards, party, masterclass, Q&A) with ticket types, seats (available/reserved/sold/assigned/blocked), reservations and attendee check-in; export attendees to CSV and events to ICS. Screen each work with status `pending/screened/disqualified` and reason, filter by status, disqualified or participant tag. The organization verifies participant eligibility tags (resident, student) with external methods, and the participant can request verification by attaching a residency or enrollment certificate.
+3. Receive shorts linked to your calls and shooting locations, managed in `/api/festivals/{id}/shortfilms` and classified as `official_section` (by default) or `contest`; the festival profile shows the count and the app lets you filter by type.
+4. Set up programming: events (gala, screening, workshop, panel, networking, awards, party, masterclass, Q&A) with ticket types, seats (available/reserved/sold/assigned/blocked), reservations and attendee check-in; export attendees to CSV and events to ICS. Screen each work with status `pending/screened/disqualified` and reason, filter by status, disqualified or participant tag. Only screenings with shorts from the same festival can be programmed (`EventService` rejects foreign ids). The organization verifies participant eligibility tags (resident, student) with external methods, and the participant can request verification by attaching a residency or enrollment certificate.
 5. Appoint committees with members and publish awards (verified or not, public or not) per festival, short or user, with eligibility tags and recipient verification.
 6. Communicate: festival channels (admin/moderator/member), messages and images on the profile, rulebooks.
 
@@ -19,11 +19,11 @@ Only edits/deletes their own festivals and manages their users (`require_festiva
 
 - Profile with craft (directing, acting, sound, writing, editing, costume, makeup, extra, dubbing, foley, press, production, distribution…), bio and awards linked to platform festivals or external via link.
 - Field-by-field privacy (email, bio, location) and public/private profiles.
-- Each user edits their profile and their shorts; the jury consults and votes according to their festival.
-- Direct and group/channel chat with end-to-end encryption: public keys are published at `POST /api/users/me/public-key`, the server only stores and forwards encrypted data, real encryption happens in the app. Between federated nodes the message travels through the signed bridge, is deduplicated by `message_id` and ordered by date; you can report messages and administrators can mute users or filter words.
+- Each user edits their profile and their shorts; the jury consults and votes according to their festival and can only vote shorts from it.
+- Direct and group/channel chat with end-to-end encryption: public keys are published at `POST /api/users/me/public-key`, the server only stores and forwards encrypted data, real encryption happens in the app. Between federated nodes the message travels through the signed bridge, is deduplicated by `message_id` and ordered by date; you can report messages and administrators can mute users or filter words. The app shows typing indicator, latency and read receipts, lets you search the history and durably queues offline messages with the same `message_id`.
 
 ## Express team (attendee)
-- The express contest (also called guerrilla) is the citizen contest **inside the festival**: shorts are created and voted with `contest_type = contest`.
+- The express contest (also called guerrilla) is the citizen contest **inside the festival**: shorts are created and voted with `contest_type = contest` (the default value is `official_section`; express and guerrilla are the same contest).
 
 - Auto-join to festival (`POST /api/festivals/{id}/join`, role `attendee`) and free exit (`leave`).
 - Geolocate participants, coordinate the group via chat and submit the short to the express contest.

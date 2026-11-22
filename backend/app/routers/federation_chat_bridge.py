@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.chat_backend.registry import chat_backend_registry
@@ -11,11 +12,10 @@ from app.config import settings
 from app.database import get_db
 from app.models.message import Message
 from app.models.user import User
-from app.schemas.user import UserCreate
 from app.services.channel_service import ChannelService
 from app.services.message_federation_service import SIGNED_FIELDS, message_federation_service
 from app.services.message_queue_service import ChatOutbox, MessageQueueService
-from app.services.user_service import UserService
+from app.services.user_service import PRIVACY_POLICY_VERSION, hash_password
 
 router = APIRouter(prefix="/federation", tags=["federation-chat-bridge"])
 queue = MessageQueueService()
@@ -43,20 +43,42 @@ def _resolve_sender(db: Session, node_origin: str) -> User:
     sender = db.query(User).filter((User.handle == node_origin) | (User.username == node_origin)).first()
     if sender is not None:
         return sender
-    sender = db.query(User).first()
+    if not node_origin or not node_origin.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="sender_unresolved")
+    peer_uuid = str(uuid.uuid5(uuid.NAMESPACE_URL, f"clakettes://federated-node/{node_origin}"))
+    digest = peer_uuid.replace("-", "")
+    sender = db.query(User).filter(User.uuid == peer_uuid).first()
     if sender is not None:
         return sender
-    safe = "".join(c if c.isalnum() or c in ".-" else "-" for c in node_origin)[:40] or "peer"
-    return UserService().create(
-        db,
-        UserCreate(
-            username=f"fed-{safe}",
-            email=f"fed-{safe}@federated.local",
-            full_name=node_origin,
-            role="user",
-            password=uuid.uuid4().hex,
-        ),
+    safe = "".join(c if c.isalnum() or c in ".-" else "-" for c in node_origin)[:30] or "peer"
+    username = f"fed-{safe}-{digest[:12]}"
+    sender = User(
+        username=username,
+        email=f"fed-{digest[:16]}@federated.local",
+        full_name=node_origin,
+        role="user",
+        password_hash=hash_password(uuid.uuid4().hex),
+        handle=node_origin,
+        did=f"did:clakettes:node:{peer_uuid}",
+        uuid=peer_uuid,
+        privacy_policy_version=PRIVACY_POLICY_VERSION,
+        privacy_accepted_at=datetime.now(timezone.utc),
     )
+    db.add(sender)
+    try:
+        db.commit()
+        db.refresh(sender)
+        return sender
+    except IntegrityError:
+        db.rollback()
+        sender = (
+            db.query(User)
+            .filter((User.uuid == peer_uuid) | (User.handle == node_origin) | (User.username == username))
+            .first()
+        )
+        if sender is not None:
+            return sender
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="sender_unresolved")
 
 
 async def _broadcast(db: Session, envelope: dict[str, Any], sender_id: int) -> None:

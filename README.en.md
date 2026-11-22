@@ -8,6 +8,8 @@ The platform where film festivals live all year: calls, shorts, teams, venues an
 [![WCAG](https://img.shields.io/badge/Accessibility-WCAG%202.1-success)](https://www.w3.org/WAI/WCAG21/quickref/)
 [![i18n](https://img.shields.io/badge/i18n-9%20languages-blue)](frontend/assets/l10n/)
 
+[ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
+
 Works on web, Android, iOS and desktop (Windows, macOS, Linux), in 9 languages and offline too.
 
 ---
@@ -26,8 +28,9 @@ Works on web, Android, iOS and desktop (Windows, macOS, Linux), in 9 languages a
 - **Profiles with awards**: awards linked to platform festivals or external via links, with field-by-field privacy control.
 - **Chat**: direct and group/channel messages per festival, with end-to-end encryption.
 - **Maps**: venues and shooting locations on interactive maps, open in your favorite maps app.
-- **Offline**: the app keeps working offline and syncs your changes when back online.
-- **In your language**: Spanish, English, French, German, Italian, Catalan, Basque, Galician and Occitan, with auto-detection.
+- **Offline**: the app keeps working offline, stores each node's origin in the cache and syncs your changes when back online.
+- **Federation**: trusted nodes with mTLS, identity portability, chat and events between nodes, moderation, metrics and resilience.
+- **In your language**: Spanish, English, French, German, Italian, Catalan, Basque, Galician and Occitan (823 keys per language), with automatic OS locale detection.
 
 ## Requirements and startup
 
@@ -55,17 +58,6 @@ On Linux/macOS:
 
 This starts the backend at `http://localhost:8000` and the app locally; the API exposes Swagger/OpenAPI at `/docs`. You can disable either part with `--no-backend` or `--no-frontend`.
 
-### Other useful options
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-See the full startup and deployment reference in [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md) and [docs/en/USO.md](docs/en/USO.md).
-
 ## Environment variables and configuration
 
 ### Backend
@@ -76,6 +68,15 @@ Create or adjust `backend/.env` with at least:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=your-secret-key
 CORS_ORIGINS=https://your-domain.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://your-domain.com
+# Federation with mTLS (production)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Payments (mock by default; Stripe/Redsys on demand)
+PAYMENTS_PROVIDER=mock
 ```
 
 For production, MariaDB is used; scripts and deployment docs manage it with Docker.
@@ -90,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 The project's automatic startup configures this when using `start.*`.
 
-## Project status
-
-🚧 **Active development** — Festivals, shorts, E2EE chat, maps, offline mode and 9 languages working.
-
-**Next roadmap:**
-
-- [ ] Push notifications (Firebase/APNs)
-- [ ] Signed Linux AppImage
-- [ ] Windows MSI installer
-- [x] Exportable OpenAPI documentation (`/openapi.json` without duplicate operationIds + regenerated `docs/en/API.md`)
-
 ## Project documentation
 
 The documentation map is in [docs/en/README.md](docs/en/README.md). It is the best entry point for each user type:
@@ -114,10 +104,10 @@ The documentation map is in [docs/en/README.md](docs/en/README.md). It is the be
 - [docs/en/DESARROLLO.md](docs/en/DESARROLLO.md): how to add endpoints or screens
 - [docs/en/BACKEND.md](docs/en/BACKEND.md): backend guide (layers, config, auth, tests)
 - [docs/en/DATABASE.md](docs/en/DATABASE.md): schema and migrations
-- [docs/en/FEDERATION_PROTOCOL.md](docs/en/FEDERATION_PROTOCOL.md): federation protocol (phase 4)
-- [docs/en/FEDERATION_SCHEMA.md](docs/en/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/en/FEDERATION_SECURITY.md](docs/en/FEDERATION_SECURITY.md): federated trust model
-- [docs/en/PUSH.md](docs/en/PUSH.md): push notification decision
+- [docs/en/FEDERATION_PROTOCOL.md](docs/en/FEDERATION_PROTOCOL.md): protocol between nodes (phases 2-10)
+- [docs/en/FEDERATION_SECURITY.md](docs/en/FEDERATION_SECURITY.md): trust, mTLS, portability and resilience
+- [docs/en/FEDERATION_SCHEMA.md](docs/en/FEDERATION_SCHEMA.md): federated entities and checksum
+- [docs/en/FEDERATION_CHAT_BROKER.md](docs/en/FEDERATION_CHAT_BROKER.md): transport decision and implemented status
 
 Also, the starting point for development and project convention is [AGENTS.md](AGENTS.md).
 
@@ -126,7 +116,6 @@ Also, the starting point for development and project convention is [AGENTS.md](A
 - [docs/en/README.md](docs/en/README.md): general index by audience
 - [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md): build, test and startup commands
 - [docs/en/FUNCIONAL.md](docs/en/FUNCIONAL.md): real product usage by role
-- [docs/en/PUSH.md](docs/en/PUSH.md): push notification decision
 
 ### Quick FAQ
 
@@ -134,50 +123,6 @@ Also, the starting point for development and project convention is [AGENTS.md](A
 - **What if the API doesn't respond?** Check that the backend is running at `http://localhost:8000` and that `/docs` responds.
 - **Which document should I read first?** If you are a user, [docs/en/USO.md](docs/en/USO.md); if you are a developer, [docs/en/ARQUITECTURA.md](docs/en/ARQUITECTURA.md).
 - **How do I know if a change requires updating documentation?** If startup, API, roles, permissions, environment variables or schema change, update the corresponding documentation too.
-
-## Local development
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
-## Deployment
-
-```bash
-docker compose --profile prod up -d
-```
-
-Backend + frontend (nginx) + MariaDB. Distributed builds (web, Windows, Linux, Android) are managed with `./start.ps1 --build-all` and the script set in [docs/en/HERRAMIENTAS.md](docs/en/HERRAMIENTAS.md).
-
-## Troubleshooting
-
-### Backend won't start
-
-- Verify Python 3.12+ is installed.
-- Check that `backend/.env` exists and is valid.
-- Run `cd backend && python -m uvicorn app.main:app --reload` to see the real error.
-
-### App doesn't connect to the API
-
-- Make sure the backend is at `http://localhost:8000`.
-- Check whether `BACKEND_URL` is passed with `--dart-define`.
-- Verify the API responds at `/docs`.
-
-### Database or migration problems
-
-- Use `cd backend && alembic upgrade head`.
-- If switching from SQLite to MariaDB, review [docs/en/USO.md](docs/en/USO.md) and [docs/en/DATABASE.md](docs/en/DATABASE.md).
-
-### Frontend Flutter errors
-
-- Run `cd frontend && flutter pub get`.
-- If there are code generation issues, follow the Hive and build_runner documentation in [docs/en/ARQUITECTURA.md](docs/en/ARQUITECTURA.md).
 
 ## Contributing
 
@@ -187,7 +132,7 @@ Backend + frontend (nginx) + MariaDB. Distributed builds (web, Windows, Linux, A
 4. Push the branch (`git push origin feature/new-feature`).
 5. Open a Pull Request with context, changes and validation.
 
-**Quality conventions:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` and `flutter test` must pass before merging.
+**Quality conventions:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` and `flutter test` must pass before merging. GitHub Actions runs these gates in parallel and Dependabot opens grouped weekly PRs: patch/minor merge themselves with green CI, major stays for manual review (detail in [docs/en/INFRAESTRUCTURA.md](docs/en/INFRAESTRUCTURA.md)).
 
 ## License
 

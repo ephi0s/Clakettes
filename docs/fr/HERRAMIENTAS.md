@@ -22,7 +22,7 @@
 | macOS / Windows / Linux | `tools/build-macos.sh` / `flutter build windows` / `flutter build linux` | Hôte correspondant |
 | Docker multi-cible | `tools/build-all.ps1` | Nécessite Docker |
 | Vérifier la conformité d'un nœud | `python tools/federation_conformance.py <url> [--json]` | Racine (`tools/`) |
-| Régénérer la référence d'API | `python tools/gen_api.py --all` | Racine (`tools/`) |
+| Régénérer la référence d'API | `python tools/gen_api.py --all` | Racine (`tools/`) ; combine les préfixes de `main.py` et de chaque `APIRouter` et détecte les dépendances d'auth |
 
 Le CLI de conformité vérifie manifeste, JWKS, token, répertoire, utilisateurs, WebFinger, signalements, portabilité, bridge de chat et flux d'événements ; il renvoie 1 en cas d'échecs `critical`/`high` et 0 sinon, et `--json` imprime le rapport complet.
 
@@ -31,15 +31,15 @@ Le CLI de conformité vérifie manifeste, JWKS, token, répertoire, utilisateurs
 1. **`.dockerignore` dans les contextes de build** (`backend/`, `frontend/`). Auparavant, ils n'existaient que dans `backend/docker/` et `frontend/docker/`, qui NE sont PAS le contexte de `docker-compose.yml` (`./backend`, `./frontend`). Chaque `docker compose build` envoyait `.venv/` (des centaines de MB), `.dart_tool/`, `build/`, `*.db` et `*.hive` au daemon. Désormais le contexte est minimal. Exception : `!pubspec.lock` est conservé pour des builds reproductibles.
 2. **Config pytest unifiée** : suppression de `backend/pytest.ini` (dupliquait et éclipsait `pyproject.toml`) ; toute la config vit dans `[tool.pytest.ini_options]` (testpaths, motifs, markers).
 3. **CI cohérente** :
-   - GitHub : Flutter `3.22.0` → `3.24.0` (identique au Dockerfile) ; `flutter pub run` (obsolète) → `dart run build_runner`.
-   - GitLab `backend-test` : ajout de `TESTING=true` et `SECRET_KEY` (auparavant le rate limiter restait actif dans les tests → 429 sporadiques).
+   - GitHub : Flutter épinglé sur `3.47.3` (identique au Dockerfile) ; `flutter pub run` (obsolète) → `dart run build_runner`.
+   - GitHub et GitLab `backend-test` : `TESTING=true` et `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 octets, évite `InsecureKeyLengthWarning` ; auparavant le rate limiter restait actif dans les tests → 429 sporadiques).
    - GitLab `frontend-test` : ajout de la génération des adaptateurs Hive avant `flutter test` (parité avec GitHub).
-   - `pip install ruff` → `pip install "ruff>=0.5.0"` (identique à `requirements-dev.txt`).
+   - `pip install ruff` → `pip install "ruff==0.15.22"` dans GitHub Actions ; GitLab utilise `pip install "ruff>=0.5.0"` et `requirements-dev.txt` épingle `ruff==0.17.5` pour le développement local.
 4. **Lints multiplateformes** (`analysis_options.yaml`) : `avoid_print` et `avoid_web_libraries_in_flutter`. Vérifié : `flutter analyze` propre (l'import conditionnel web/io est le motif accepté).
 5. **Correction de `onReorder` obsolète** → `onReorderItem` (pas d'ajustement manuel d'index) ; `flutter analyze` passe de 1 info à 0 problème.
 
 ## Propositions (non appliquées, avec motif)
 
-1. **Gate `ruff format --check` en CI** : bloqué par ~249 violations E501/W292 existantes. Étapes : `ruff format .`, examiner le diff, `ruff check --fix`, puis ajouter le gate.
+1. ~~**Gate `ruff format --check` en CI**~~ : déjà appliqué dans GitHub et GitLab après la correction de ~249 violations E501/W292 historiques.
 2. **Unifier `.ps1`/`.sh`** : ils dupliquent la logique ports/processus. La voie réaliste est d'extraire la matrice de ports vers `tools/ports.*` ou de documenter un seul point d'entrée par OS, pas de réécrire les deux à la fois.
 3. **Couverture en CI** (`pytest --cov`, `flutter test --coverage` + lcov) : utile quand les tests de `syncAll` et des routers non couverts seront étendus (voir roadmap dans [../README.md](../../README.md)).

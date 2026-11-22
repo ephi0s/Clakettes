@@ -28,18 +28,19 @@ Läuft auf Web, Android, iOS und Desktop (Windows, macOS, Linux), in 9 Sprachen 
 - **Profile mit Palmarès**: Palmarès verknüpft mit Plattform-Festivals oder extern via Links, mit feldweiser Privatsphärenkontrolle.
 - **Chat**: Direkt- und Gruppen-/Kanal-Nachrichten pro Festival, mit Ende-zu-Ende-Verschlüsselung.
 - **Karten**: Spielstätten und Drehorte auf interaktiven Karten, mit Öffnen in deiner Lieblings-Kartenapp.
-- **Offline**: die App läuft weiter offline und synchronisiert deine Änderungen bei Wiederverbindung.
-- **In deiner Sprache**: Spanisch, Englisch, Französisch, Deutsch, Italienisch, Katalanisch, Baskisch, Galicisch und Okzitanisch, mit automatischer Erkennung.
+- **Offline**: die App läuft weiter offline, speichert die Herkunft jedes Knotens im Cache und synchronisiert deine Änderungen bei Wiederverbindung.
+- **Föderation**: vertrauenswürdige Knoten mit mTLS, Portabilität von Identitäten, Chat und Ereignisse zwischen Knoten, Moderation, Metriken und Resilienz.
+- **In deiner Sprache**: Spanisch, Englisch, Französisch, Deutsch, Italienisch, Katalanisch, Baskisch, Galicisch und Okzitanisch (823 Schlüssel pro Sprache), mit automatischer Erkennung des System-Locale.
 
 ## Anforderungen und Start
 
 ### Mindestanforderungen
 
 - Python 3.12+
-- Flutter SDK >= 3.0.0 y < 4.0.0
+- Flutter SDK >= 3.0.0 und < 4.0.0
 - Git
-- Docker y Docker Compose para despliegue/entorno productivo
-- Navegador con soporte para web (recomendado Chrome/Brave)
+- Docker und Docker Compose für Deployment/Produktionsumgebung
+- Browser mit Web-Unterstützung (Chrome/Brave empfohlen)
 
 ### Schnellstart
 
@@ -57,17 +58,6 @@ En Linux/macOS:
 
 Dies startet das Backend auf `http://localhost:8000` und die App im lokalen Modus; die API exponiert Swagger/OpenAPI unter `/docs`. Du kannst jede Seite mit `--no-backend` oder `--no-frontend` deaktivieren.
 
-### Weitere nützliche Optionen
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Die vollständige Start- und Deployment-Referenz in [docs/de/HERRAMIENTAS.md](docs/de/HERRAMIENTAS.md) und [docs/de/USO.md](docs/de/USO.md).
-
 ## Umgebungsvariablen und Konfiguration
 
 ### Backend
@@ -78,6 +68,15 @@ Erstelle oder passe `backend/.env` mit mindestens an:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Föderation mit mTLS (Produktion)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Zahlungen (Standard: Mock; Stripe/Redsys auf Anfrage)
+PAYMENTS_PROVIDER=mock
 ```
 
 Für die Produktionsumgebung wird MariaDB genutzt; Skripte und Deployment-Doku verwalten es mit Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 Der automatische Projektstart konfiguriert dies bereits, wenn `start.*` genutzt wird.
 
-## Projektstatus
-
-🚧 **In aktiver Entwicklung** — Festivals, Kurzfilme, Chat mit E2EE, Karten, Offline-Modus und 9 Sprachen lauffähig.
-
-**Nächste Roadmap:**
-
-- [ ] Push-Benachrichtigungen (Firebase/APNs)
-- [ ] Signiertes Linux AppImage
-- [ ] Windows MSI-Installer
-- [x] Exportierbare OpenAPI-Dokumentation (`/openapi.json` ohne duplizierte operationIds + `docs/de/API.md` regeneriert)
-
 ## Projektdokumentation
 
 Die Dok-Landkarte liegt in [docs/de/README.md](docs/de/README.md). Sie ist der beste Einstieg für jeden Nutzertyp:
@@ -116,10 +104,10 @@ Die Dok-Landkarte liegt in [docs/de/README.md](docs/de/README.md). Sie ist der b
 - [docs/de/DESARROLLO.md](docs/de/DESARROLLO.md): wie man Endpoints oder Bildschirme hinzufügt
 - [docs/de/BACKEND.md](docs/de/BACKEND.md): Backend-Anleitung (Ebenen, Konfiguration, Auth, Tests)
 - [docs/de/DATABASE.md](docs/de/DATABASE.md): Schema und Migrationen
-- [docs/de/FEDERATION_PROTOCOL.md](docs/de/FEDERATION_PROTOCOL.md): Föderationsprotokoll (Phase 4)
-- [docs/de/FEDERATION_SCHEMA.md](docs/de/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/de/FEDERATION_SECURITY.md](docs/de/FEDERATION_SECURITY.md): federiertes Vertrauensmodell
-- [docs/de/PUSH.md](docs/de/PUSH.md): Push-Benachrichtigungsentscheidung
+- [docs/de/FEDERATION_PROTOCOL.md](docs/de/FEDERATION_PROTOCOL.md): Föderationsprotokoll zwischen Knoten (Phasen 2-10)
+- [docs/de/FEDERATION_SECURITY.md](docs/de/FEDERATION_SECURITY.md): Vertrauen, mTLS, Portabilität und Resilienz
+- [docs/de/FEDERATION_SCHEMA.md](docs/de/FEDERATION_SCHEMA.md): föderierte Entitäten und Checksum
+- [docs/de/FEDERATION_CHAT_BROKER.md](docs/de/FEDERATION_CHAT_BROKER.md): Transportentscheidung und Implementierungsstatus
 
 Außerdem ist der Startpunkt für Entwicklung und Projektkonvention [AGENTS.md](AGENTS.md).
 
@@ -136,18 +124,6 @@ Außerdem ist der Startpunkt für Entwicklung und Projektkonvention [AGENTS.md](
 - **Welches Dokument soll ich zuerst lesen?** Als Nutzer [docs/de/USO.md](docs/de/USO.md); als Entwickler [docs/de/ARQUITECTURA.md](docs/de/ARQUITECTURA.md).
 - **Woran erkenne ich, ob eine Änderung Doku-Update braucht?** Wenn sie Start, API, Rollen, Berechtigungen, Env-Variablen oder Schema ändert, aktualisiere auch die entsprechende Dokumentation.
 
-## Lokale Entwicklung
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
 ## Beitragen
 
 1. Forke das Repository.
@@ -156,7 +132,7 @@ flutter run
 4. Pushe den Branch (`git push origin feature/neue-funktion`).
 5. Öffne einen Pull Request mit Kontext, Änderungen und Validierung.
 
-**Qualitätskonventionen:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Qualitätskonventionen:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` und `flutter test` müssen vor dem Merge bestehen. GitHub Actions führt diese Gates parallel aus und Dependabot öffnet wöchentlich gruppierte PRs: Patch/Minor wird bei grünem CI automatisch gemergt, Major bleibt zur manuellen Prüfung (Details in [docs/de/INFRAESTRUCTURA.md](docs/de/INFRAESTRUCTURA.md)).
 
 ## Lizenz
 

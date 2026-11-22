@@ -18,15 +18,16 @@ Invocar este skill antes de cerrar cualquier cambio que afecte a `docs/` o a los
 - [ ] Los enlaces intra-documento apuntan a los archivos correctos dentro de cada carpeta de idioma (no a `es/` salvo cuando se cite el canónico explícitamente).
 - [ ] El bloque de idiomas al inicio de cada archivo lista las 9 lenguas con el idioma actual marcado como enlace activo (sin `../` hacia sí mismo).
 - [ ] Las cifras citadas coinciden con el estado real del repositorio:
-  - Routers: 40 archivos (38 con `APIRouter`)
-  - Servicios: 43
-  - Modelos de entidad: 40 (+ `base.py`, `__init__.py`)
+  - Routers: 45 archivos (43 con `APIRouter`, 39 registrados con prefijo en `main.py`)
+  - Servicios: 53
+  - Modelos de entidad: 43 (+ `base.py`, `__init__.py`)
   - Schemas: 37
-  - Migraciones Alembic: 36 (+ `__init__.py`)
-  - Tests backend: 47 archivos `test_*.py`, ~1439 `def test_`
-  - Widgets frontend: 32 en `lib/widgets/`
-  - Pantallas frontend: 36 en `lib/screens/`
-  - Tests frontend: 75 archivos `*_test.dart`
+  - Migraciones Alembic: 45 (+ `__init__.py`), head `d1e2f3a4b5c6`
+  - Tests backend: 54 archivos `test_*.py`, 1544 tests recogidos (1541 con `-m "not interop"`)
+  - Widgets frontend: 33 en `lib/widgets/`
+  - Pantallas frontend: 38 en `lib/screens/`
+  - Tests frontend: 77 archivos `*_test.dart`
+  - ARB: 823 claves por locale en 9 idiomas (paridad con `test/l10n/arb_parity_test.dart`)
 - [ ] Si cambió un flujo de arranque, se sincronizó `README.<lang>.md`, `USO.md` y `HERRAMIENTAS.md` en todos los idiomas.
 - [ ] Si cambió una API pública, se actualizó `API.md` y, si procede, `DESARROLLO.md` en todos los idiomas.
 - [ ] Si cambió el esquema o la persistencia, se revisó `DATABASE.md` y las migraciones en todos los idiomas.
@@ -56,4 +57,4 @@ cat .gitlab-ci.yml | grep -E "stage:|script:|ruff|flutter|pytest|docker-build"
 ## Excepciones
 
 - `AUDITORIA.md` es un informe histórico (rev. 10/10/2026); sus cifras son fijas y no se actualizan salvo nueva revisión de auditoría.
-- `API.md` es regenerable con `python tools/gen_api.py --all`; no editar a mano salvo que el script falle.
+- `API.md` es regenerable con `python tools/gen_api.py --all`; no editar a mano salvo que el script falle. El generador combina el prefijo de `main.py` con el de cada `APIRouter` y detecta dependencias de auth; las notas comunes (p. ej. `resolveMediaUrl()`) viven en la constante `media` de `tools/gen_api.py` para sobrevivir a la regeneración.

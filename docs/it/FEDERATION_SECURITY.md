@@ -1,5 +1,7 @@
 # Sicurezza federata (fasi 2 a 10)
 
+[ES](../es/FEDERATION_SECURITY.md) · [EN](../en/FEDERATION_SECURITY.md) · [FR](../fr/FEDERATION_SECURITY.md) · [DE](../de/FEDERATION_SECURITY.md) · [IT](FEDERATION_SECURITY.md) · [CA](../ca/FEDERATION_SECURITY.md) · [EU](../eu/FEDERATION_SECURITY.md) · [GL](../gl/FEDERATION_SECURITY.md) · [OC](../oc/FEDERATION_SECURITY.md)
+
 ## Modello di fiducia
 
 - Identità del nodo = dominio + certificato TLS X.509.

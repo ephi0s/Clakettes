@@ -15,6 +15,18 @@
 1. Servicio: método en el fichero de `lib/services/api/` de su dominio.
 2. Pantalla en `lib/screens/` <600 líneas: extraer a `lib/widgets/` la UI reutilizable (burbujas, tarjetas, barras, secciones).
 3. Avisos con `showAppSnack`; borrados con `showConfirmDialog`; errores con `ErrorStateWidget` y reintento.
-4. Textos en `assets/l10n/en.arb` primero (fallback) + resto de locales; 0 claves ausentes verificado.
+4. Textos en `assets/l10n/app_en.arb` primero (fallback) + resto de locales (823 claves); ejecuta `flutter test test/l10n/arb_parity_test.dart`: exige las mismas claves y placeholders en los 9 ARB (referencia `es`).
 5. Test en `test/screens/` o `test/widgets/` (los widgets con `l10n` necesitan un `pump()` extra tras `pumpWidget`).
+
+## Dependencias (Dependabot)
+
+- pip en `/backend` y pub en `/frontend`, semanales (lunes), agrupados en `backend-deps`/`frontend-deps`; se ignoran actualizaciones `version-update:semver-major`.
+- Patch/minor: `.github/workflows/dependabot-automerge.yml` activa `gh pr merge --auto --squash` solo para `dependabot[bot]`; el merge efectivo exige CI verde. Major: revisión manual.
+- `.github/workflows/dependabot-rebase.yml` rebasea los PRs abiertos los lunes 04:17 UTC y bajo `workflow_dispatch`. Detalle en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md).
+
+## Puertas de calidad
+
+- Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
+- Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
+- Tras cambiar endpoints o rutas, regenera la referencia con `python tools/gen_api.py --all` (combina prefijos de `main.py` y de cada `APIRouter`).
 

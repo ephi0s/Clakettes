@@ -100,9 +100,11 @@ Note importanti:
 | `RoleTransition` | `role_transitions` | Entità |
 | `ShortFilm` | `shortfilms` | Entità |
 | `ShortFilmLocation` | `shortfilm_locations` | Entità |
+| `TrustedNode` | `trusted_nodes` | Entità (federazione) |
 | `User` | `users` | Entità |
 | `UserAlias` | `user_aliases` | Entità |
 | `UserBlock` | `user_blocks` | Entità |
+| `UserFollow` | `user_follows` | Entità |
 | `UserFestival` | `user_festival` | Associazione (Tabella) |
 | `UserKey` | `user_keys` | Entità |
 | `UserRole` | `user_roles` | Entità |
@@ -148,8 +150,8 @@ Campi:
 ### ShortFilm
 - **Tabella:** `shortfilms`
 - **Classe:** `ShortFilm`
-- **Campi chiave:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
-- **Relazioni:** Appartiene a Festival, appartiene a User, ha molti Awards, ha molte ShortFilmLocations Il concorso express (guerrilla) è `contest`; la sezione ufficiale è `official_section`.
+- **Campi chiave:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obbligatorio), contest_type (official_section|contest), user_id (FK), is_public, tags
+- **Relazioni:** Appartiene a Festival, appartiene a User, ha molti Awards, ha molte ShortFilmLocations. Il concorso express (guerrilla) è `contest`; la sezione ufficiale è `official_section`; `festival_id` è obbligatorio con FK `RESTRICT` e indicizzato, e anche `contest_type` è indicizzato (migrazione `b9c0d1e2f3a4`).
 
 ### Message
 - **Tabella:** `messages`
@@ -237,7 +239,7 @@ Campi:
 - **Classe:** `UserKey`
 - **Campi chiave:** user_id (FK, unique), public_key_x25519, key_identifier (unique), is_active, rotated_at
 - **Relazioni:** Appartiene a User
-- **Note:** Memorizza la chiave pubblica X25519 per E2EE; una chiave attiva per utente
+- **Note:** Memorizza la chiave pubblica ECDH P-256 per E2EE; una chiave attiva per utente
 
 ### UserSession
 - **Tabella:** `user_sessions`
@@ -284,7 +286,7 @@ Campi:
 ### MigrationAudit
 - **Tabella:** `migration_audits`
 - **Classe:** `MigrationAudit`
-- **Campi chiave:** entity_type, entity_id, action, source_domain, target_domain, details (JSON), created_at
+- **Campi chiave:** entity_type, entity_id, action, source_domain, target_domain, details (testo JSON), created_at
 - **Relazioni:** Entità di federazione; traccia ogni migrazione di festival o utente
 
 ### ChatOutbox
@@ -304,6 +306,12 @@ Campi:
 - **Classe:** `ChatMute`
 - **Campi chiave:** user_id (FK), channel_id (FK), node_domain, until, reason
 - **Relazioni:** Appartiene a User e a Channel; il mute può applicarsi a un canale o a un nodo federato
+
+### TrustedNode
+- **Tabella:** `trusted_nodes`
+- **Classe:** `TrustedNode`
+- **Campi chiave:** node_domain (unico, indice), cert_fingerprint_sha256 (unico, indice), allowed, revoked_at (DateTime, nullable), revocation_reason (Text, nullable), revoked_by (String(255), nullable)
+- **Relazioni:** Entità di federazione; `revoked_at`, `revocation_reason` e `revoked_by` registrano la revoca del nodo (migrazione `c0d1e2f3a4b5`)
 
 ### Location
 - **Tabella:** `locations`
@@ -353,6 +361,11 @@ Campi:
 - **Campi chiave:** blocker_id (FK), blocked_id (FK), reason, starts_at, expires_at
 - **Relazioni:** Appartiene a User (bloccante), appartiene a User (bloccato)
 
+### UserFollow
+- **Tabella:** `user_follows`
+- **Classe:** `UserFollow`
+- **Campi chiave:** `follower_id` (FK), `followed_id` (FK), created_at, updated_at
+
 ### RoleDelegation
 - **Tabella:** `role_delegations`
 - **Classe:** `RoleDelegation`
@@ -376,6 +389,7 @@ Campi:
 - **Classe:** `EventSeat`
 - **Campi chiave:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
 - **Relazioni:** Appartiene a Event, appartiene a EventTicketType
+- **Vincolo:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (migrazione `a8b9c0d1e2f3`; sostituisce l'inoperante `Meta.unique_together` di SQLAlchemy)
 
 ### EventReservation
 - **Tabella:** `event_reservations`
@@ -406,7 +420,8 @@ Questo viene usato come dipendenza FastAPI per l'accesso al database dagli endpo
 
 ## Note sulla migrazione da SQLite a MariaDB
 
-Le modifiche dello schema sono gestite con Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Ci sono 42 revisioni e l'head è `c1d2e3f4a5b6`; le ultime tre (`a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`) aggiungono le tabelle di portabilità, la coda durable della chat e la moderazione. In produzione solo Alembic, mai `create_all`.
+Le modifiche dello schema sono gestite con Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Ci sono 45 revisioni e l'head è `d1e2f3a4b5c6`; le ultime sette (`a8b9c0d1e2f3`, `a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`, `b9c0d1e2f3a4`, `c0d1e2f3a4b5`, `d1e2f3a4b5c6`) aggiungono l'unicità del posto, le tabelle di portabilità, la coda durable della chat, la moderazione, `contest_type` in `shortfilms` con indice e `festival_id` obbligatorio con FK `RESTRICT`, e i metadati di revoca in `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`). In produzione solo Alembic, mai `create_all`.
+La revisione `d1e2f3a4b5c6` aggiunge la tabella `user_follows` (coppia univoca `follower_id`, `followed_id`).
 
 Quando si migra da SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corrisponde a MariaDB `INT AUTO_INCREMENT`

@@ -20,8 +20,21 @@
    berrerabilgarria (burbuilak, txartelak, barrak, sekzioak).
 3. Abisuak `showAppSnack`-ekin; ezabaketak `showConfirmDialog`-ekin; erroreak
    `ErrorStateWidget`-ekin eta saiakera-errepikapenarekin.
-4. Testuak `assets/l10n/en.arb`-n lehenik (fallback) + gainerako locale-ak;
-   0 giltza falta egiaztatuta.
+4. Testuak `assets/l10n/app_en.arb`-n lehenik (fallback) + gainerako locale-ak (823 gako);
+   exekutatu `flutter test test/l10n/arb_parity_test.dart`: 9 ARB-ek gako eta placeholder
+   berberak izatea exigitzen du (erreferentzia `es`).
 5. Test-a `test/screens/` edo `test/widgets/`-n (`l10n`-dun widget-ek
    `pump()` gehigarri bat behar dute `pumpWidget` ondoren).
+
+## Mendekotasunak (Dependabot)
+
+- pip `/backend`-n eta pub `/frontend`-n, astero (astelehena), `backend-deps`/`frontend-deps` taldeetan; `version-update:semver-major` eguneraketak baztertzen dira.
+- Patch/minor: `.github/workflows/dependabot-automerge.yml`-ek `gh pr merge --auto --squash` aktibatzen du `dependabot[bot]`-entzat soilik; benetako merge-a CI berdea eskatzen du. Major: eskuzko berrikuspena.
+- `.github/workflows/dependabot-rebase.yml`-ek irekitako PRak astelehenetan 04:17 UTC-n rebaseatzen ditu eta `workflow_dispatch` bidez. Xehetasuna [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) fitxategian.
+
+## Kalitate-ateak
+
+- Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
+- Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
+- Endpoint edo ibilbideak aldatu ondoren, birsortu erreferentzia `python tools/gen_api.py --all` bidez (`main.py`-ko eta `APIRouter` bakoitzeko aurrizkiak konbinatzen ditu).
 

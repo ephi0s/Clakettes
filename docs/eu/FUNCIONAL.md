@@ -8,8 +8,8 @@ Proiektuaren benetako erabilgarritasuna rolaren arabera, harentzako fluxuarekin.
 
 1. Sortu jaialdia (`POST /api/festivals/`) deskribapena, webgunea, egoitza eta logoarekin.
 2. Ireki deialdiak: izena-emateko formularioak atal, rol eta etiketekin (`RegistrationForm + Sections + Links`), edonork konturik gabe bete dezakeen esteka publiko bidez erakutsita.
-3. Jaso zure deialdiei eta errodatze-kokapenei lotutako film laburrak.
-4. Antolatu programazioa: gertaerak (gala, proiekzioa, tailerra, mahingaia, networking-a, sariak, festa, masterclass-a, Q&A) sarrera-motak, eserlekuak (disponible/reservada/vendida/asignada/bloqueada), erreserbak eta bertaratuen check-in-arekin; esportatu bertatuak CSV-ra eta gertaerak ICS-ra. Proiekzioko lan bakoitza `pending/screened/disqualified` egoerarekin eta arrazoiarekin bahetu, eta egoera, deskalifikatuak edo parte-hartzailearen etiketaren arabera iragazi. Erakundeak elegibilitate-etiketak (bizilaguna, ikaslea) kanpoko metodoen bidez egiaztatzen ditu, eta parte-hartzaileak egiaztapena eska dezake bizileku edo matrikula ziurtagiria erantsiz.
+3. Jaso zure deialdiei eta errodatze-kokapenei lotutako film laburrak, `/api/festivals/{id}/shortfilms`-en kudeatuak eta `official_section` (lehenespenez) edo `contest` gisa sailkatuta; jaialdiaren profilak kopurua erakusten du eta app-ek motaren arabera iragaztea ahalbidetzen du.
+4. Antolatu programazioa: gertaerak (gala, proiekzioa, tailerra, mahingaia, networking-a, sariak, festa, masterclass-a, Q&A) sarrera-motak, eserlekuak (disponible/reservada/vendida/asignada/bloqueada), erreserbak eta bertaratuen check-in-arekin; esportatu bertatuak CSV-ra eta gertaerak ICS-ra. Proiekzioko lan bakoitza `pending/screened/disqualified` egoerarekin eta arrazoiarekin bahetu, eta egoera, deskalifikatuak edo parte-hartzailearen etiketaren arabera iragazi. Erakundeak elegibilitate-etiketak (bizilaguna, ikaslea) kanpoko metodoen bidez egiaztatzen ditu, eta parte-hartzaileak egiaztapena eska dezake bizileku edo matrikula ziurtagiria erantsiz. Proiekzioak jaialdi bereko laburrekin soilik programatu daitezke (`EventService`-ek kanpoko id-ak baztertzen ditu).
 5. Izendatu batzordeak kideekin eta argitaratu sariak (egiaztatuta edo ez, publikoak edo ez) jaialdi, film labur edo erabiltzaile bakoitzeko, elegibilitate-etiketekin eta hartzailearen egiaztapenarekin.
 6. Komunikatu: jaialdiaren kanalak (admin/moderator/member), mezuak eta irudiak profilaren rulebook-ak.
 
@@ -19,11 +19,11 @@ Bere jaialdiak soilik editatu/ezabatu eta bere erabiltzaileak kudeatzen ditu (`r
 
 - Ofizioarekin profila (zuzendaritza, interpretazioa, soinua, gidoia, muntaketa, jantziak, makillajea, figurazioa, bikoizketa, foley, prentsa, ekoizpena, banaketa…), bioa eta plataformako jaialdiekin edo kanpoko estekarekin lotutako palmaresa.
 - Eremuz eremuko pribatutasuna (email, bio, kokapena) eta profil publikoak/pribatuak.
-- Erabiltzaile bakoitzak bere profila eta film laburrak editatzen ditu; epaimahaiak bere jaialdiaren arabera kontsultatu eta bozkatzen du.
-- Zuzeneko eta talde/kanaleko txata muturretik muturrerako zifratuekin: gako publikoak `POST /api/users/me/public-key` bidez argitaratzen dira, zerbitzariak zifratuta soilik gorde eta birbidaltzen du, benetako zifratzea aplikazioan gertatzen da. Federatutako nodoen artean mezua sinatutako bridge-aren bidez bidaiatzen da, `message_id` bidez deduplikatzen da eta dataren arabera ordenatzen da; mezuak salatu ditzakezu eta administratzaileek erabiltzaileak isilarazi edo hitzak iragazi ditzakete.
+- Erabiltzaile bakoitzak bere profila eta film laburrak editatzen ditu; epaimahaiak bere jaialdiaren arabera kontsultatu eta bozkatzen du, eta jaialdi horretako laburrak soilik bozkatu ditzake.
+- Zuzeneko eta talde/kanaleko txata muturretik muturrerako zifratuekin: gako publikoak `POST /api/users/me/public-key` bidez argitaratzen dira, zerbitzariak zifratuta soilik gorde eta birbidaltzen du, benetako zifratzea aplikazioan gertatzen da. Federatutako nodoen artean mezua sinatutako bridge-aren bidez bidaiatzen da, `message_id` bidez deduplikatzen da eta dataren arabera ordenatzen da; mezuak salatu ditzakezu eta administratzaileek erabiltzaileak isilarazi edo hitzak iragazi ditzakete. App-ek idazketa-adierazlea, latentzia eta irakurketa-berrespenak erakusten ditu, historian bilatzea ahalbidetzen du eta offline mezuak modu iraunkorrean ilaratzen ditu `message_id` berarekin.
 
 ## Express taldea (attendee)
-- Express lehiaketa (guerrilla ere deitua) **jaialdiaren barruko** herritar lehiaketa da: film laburrak `contest_type = contest` bidez sortu eta bozkatzen dira.
+- Express lehiaketa (guerrilla ere deitua) **jaialdiaren barruko** herritar lehiaketa da: film laburrak `contest_type = contest` bidez sortu eta bozkatzen dira (lehenetsia `official_section` da; express eta guerrilla lehiaketa bera dira).
 
 - Auto-join jaialdian (`POST /api/festivals/{id}/join`, `attendee` rola) eta nahi gabe irtetea (`leave`).
 - Parte-hartzaileak geolokalizatu, taldea txat bidez koordinatu eta film laburra express lehiaketara aurkeztu.

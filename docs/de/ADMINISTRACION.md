@@ -31,7 +31,7 @@ In Non-Prod (`APP_ENV != production`) erstellt der Start `admin` / `setup` (`adm
 | Peer-Identität | `GET /api/federation/whoami` | Validiert das RS256-JWT des Peers gegen sein JWKS; 401, wenn ungültig |
 | Portabilität | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Bundles signiert exportieren/importieren, Eigentum und Identität migrieren und alte Refs auflösen (Migrationen nur Admin) |
 | Chat und Moderation | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Signierte Bridge, deduplizierter Verlauf, Meldungen, Mutes, Wortfilter und Limit von 10 Nachrichten/60 s pro Knoten und Nutzer |
-| Ereignisse | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE mit `since` und Herzschlag, Veröffentlichung an Peers und Wiederholungen (3 Versuche, 300 ms→5 s) |
+| Ereignisse | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE mit `since` und Herzschlag, Veröffentlichung an Peers und Wiederholungen (3 Versuche, 300 ms → 1,5 s → 5 s) |
 | Resilienz | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Health, Heartbeat, p50/p95-Metriken, sofortiger Schlüssel-Widerruf und Incident-Plan |
 | Konformität | `python tools/federation_conformance.py <url> [--json]` | Prüft einen Drittknoten; Exit 1 bei kritischen/hohen Fehlern |
 
@@ -40,7 +40,7 @@ Das Detail des Vertrauensmodells und des Transports steht in [FEDERATION_SECURIT
 ## Backups und Migrationen
 
 - SQLite: `*.db` im gestoppten Zustand kopieren (zuerst `-Kill`). MariaDB: `mariadb-dump` (Volume `db-data`).
-- Migrationen: `alembic upgrade head` aus `backend/` (Prod **nur** Alembic, nie `create_all`). Der aktuelle Head ist `c1d2e3f4a5b6` (42 Revisionen) und fügt `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` und `chat_mutes` hinzu.
+- Migrationen: `alembic upgrade head` aus `backend/` (Prod **nur** Alembic, nie `create_all`). Der aktuelle Head ist `d1e2f3a4b5c6` (45 Revisionen); die letzten fügen `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, die Sitzplatz-Eindeutigkeit (`uq_event_seat_location`) und `contest_type` in Kurzfilmen mit obligatorischem `festival_id` hinzu.
 - Engine-Wechsel: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); Details in [DATABASE.md](DATABASE.md).
 
 ## Fehlerbehebung

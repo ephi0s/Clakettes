@@ -4,7 +4,7 @@ Este índice é a entrada principal da documentación do proxecto. Está pensado
 
 ## Idiomas
 
-Toda a documentación existe nas 9 linguas da plataforma. O español (canario) é o canónico:
+Os 18 documentos comúns existen nas 9 linguas da plataforma; en `docs/es/` hai ademais dous análisis específicos (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). O español (canario) é o canónico:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](README.md) · [OC](../oc/README.md)
 
 ## Como navegar pola documentación
@@ -41,7 +41,9 @@ Toda a documentación existe nas 9 linguas da plataforma. O español (canario) �
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocolo de federación entre nodos (fases 2 a 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entidades mínimas federadas) | dev |
 | [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modelo de confianza federado, mTLS, manifesto asinado, portabilidade, chat e resiliencia | dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisión de broker (NATS JetStream) para o chat e os eventos entre nodos; WebSocket de borde e fallback mononó | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisión de broker (NATS JetStream) para o chat e os eventos entre nodos; transporte implementado hoxe: `DurableQueueBackend` sobre `chat_outbox` con WebSocket de borde | dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Modelo de ameazas de nodos federados (só en español) | dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Modelo de confianza entre nodos (só en español) | dev |
 
 ## Ruta recomendada por perfil
 

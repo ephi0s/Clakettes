@@ -48,6 +48,7 @@ from app.routers import (
     user_roles,
     user_aliases,
     user_blocks,
+    user_follows,
     validation_rules,
     registration_forms,
     role_groups,
@@ -554,6 +555,7 @@ app.include_router(participant_tags.router, prefix="/api", tags=["participant-ta
 app.include_router(user_roles.router, prefix="/api", tags=["user-roles"])
 app.include_router(user_aliases.router, prefix="/api", tags=["user-aliases"])
 app.include_router(user_blocks.router, prefix="/api", tags=["user-blocks"])
+app.include_router(user_follows.router, prefix="/api", tags=["user-follows"])
 app.include_router(federation.router, prefix="/api", tags=["federation"])
 app.include_router(federation_chat_bridge.router, prefix="/api", tags=["federation-chat-bridge"])
 app.include_router(federation_events.router, tags=["federation-events"])

@@ -63,26 +63,34 @@
 
 ## 2. Endpoints de federación — estado real de implementación
 
-El router `backend/app/routers/federation.py` (prefixo `/api/federation`, tag `federation`) expone ~60 endpoints. La mayoría son **placeholders que devuelven respuestas estáticas sin autenticación, autorización ni validación real**:
+El router `backend/app/routers/federation.py` (prefijo `/api/federation`, tag `federation`) expone ~60 endpoints. Tras las fases 6-10, el manifiesto está firmado, el directorio usa políticas reales, `whoami` exige JWT de par y existe mTLS opcional. La mayoría de los antiguos placeholders ya ejecutan operaciones reales (incluido el borrado propagado); solo quedan como **placeholder** los endpoints de sondeo, ahora marcados `deprecated=True` en OpenAPI:
 
 | Endpoint | Método | Auth real | Comportamiento |
 |---|---|---|---|
 | `/nodes` | GET | Sí (admin) | Lista políticas reales (`NodePolicyService`) |
 | `/nodes` | POST | Sí (admin) | Crea/actualiza política real |
-| `/manifest` | GET | **No** | Devuelve `{"schema_version":"1","node":"primary",...}` estático |
-| `/directory` | GET | **No** | Devuelve nodo `primary` estático |
+| `/manifest` | GET | **No** | Manifiesto firmado RSA-SHA256 (`signature`, `certificate_chain`, `issued_at`, `expires_at` 24 h) |
+| `/directory` | GET | **No** | Nodos permitidos reales vía `NodePeeringService().list_allowed(db)` |
 | `/reports` | POST | **No** | Crea reporte real (`ModerationReportService`) |
 | `/reports` | GET | **No** (filtra por `node` query) | Lista reportes reales |
 | `/reports/{id}` | PATCH | **No** | Actualiza estado real |
-| `/users/{ref}` | DELETE | **No** | `{"message":"erase propagated",...}` — placeholder, sin borrado real |
-| `/export/{ref}` | GET | **No** | `{"bundle":"pending"}` — placeholder |
-| `/verify` | POST | **No** | `{"valid":True}` — placeholder, sin verificación de checksum/firma |
-| `/health`, `/status`, `/info`, `/ping`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/whoami`, `/peers`, `/links` | GET | **No** | Respuestas estáticas |
-| `/publish`, `/bridge`, `/recover`, `/recover-node`, `/sync`, `/reconcile`, `/import`, `/dedup`, `/retry`, `/notify`, `/subscribe`, `/unsubscribe`, `/discover`, `/register`, `/unregister`, `/echo`, `/checksum`, `/time`, `/aggregate-nodes`, `/fallback`, `/integrity`, `/degrade`, `/metrics`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` | GET/POST | **No** | Respuestas estáticas `True`/`[]`/`{}` |
+| `/users/{ref}` | DELETE | **Sí** (propietario, admin o par verificado con el dominio en el ref) | Borrado RGPD real vía `UserService.erase_personal_data` + emisión `user.erase` en el bus y a los pares permitidos; 400/403/404/503; responde `{"erased":true,"ref":...,"user_id":...,"summary":...,"propagated":[...],"failed":[...]}` |
+| `/export/{ref}` | GET | **No** | Genera el bundle real con `PortabilityService.create_bundle`; 404 si el ref no existe |
+| `/verify` | POST | **No** | Verifica checksum canónico, HMAC/RSA y huella del certificado; `valid: false` si falta material criptográfico |
+| `/checksum` | POST | **No** | SHA-256 del payload canónico (`canonical_json`) |
+| `/publish`, `/bridge` | POST | JWT/mTLS de par | Publican en `EventBusService` / envían por `federation_chat_bridge.outbound`; sin suplantación de nodo |
+| `/recover`, `/recover-node` | POST | JWT/mTLS de par | Reactivan al nodo vía resiliencia; estados `recovered`/`recovering`, nunca `revoked` |
+| `/unregister`, `/sync`, `/reconcile`, `/import`, `/dedup`, `/retry` | POST | JWT/mTLS de par | Operaciones reales: revocación, replay del bus, políticas, importación de bundles, deduplicación y cola de reintentos |
+| `/integrity`, `/metrics` | GET | **No** | Integridad real de `trusted_nodes` (certificados, huellas, firma del manifiesto) y snapshot de `FederationMetricsService` |
+| `/health`, `/status`, `/info`, `/ping`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/notify`, `/subscribe`, `/unsubscribe`, `/discover`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` | GET/POST | **No** | Respuestas estáticas, marcadas `deprecated=True`; no reflejan estado real |
+| `/whoami` | GET | JWT federado | Valida el token RS256 del par contra su JWKS; 401 si no es válido |
+| `/echo`, `/time`, `/register` | GET/POST | **No** | Reales (no deprecados) |
 | `/users/{ref}` | GET | **No** (solo `db` dep) | Resuelve usuario por `uuid`/`did`/`handle` — expone datos de usuario sin auth |
 | `/.well-known/webfinger` | GET | **No** (solo `db` dep) | Resuelve `acct:user@domain` vía handle/username — expone existencia de usuario sin auth |
 
-**Conclusión:** hasta Fase 3 (validación de tokens de pares/JWKS) y Fase 2 (mTLS), estos endpoints no son seguros para peering real. Cualquiera puede consultar `/users/{ref}` y `/.well-known/webfinger` para enumerar usuarios.
+Nota: `/fallback` y `/degrade` se eliminaron porque no existía backend real de degradación; `/metrics` e `/integrity` sí exponen datos reales.
+
+**Conclusión:** el peering real ya cuenta con mTLS, manifiesto firmado, JWKS, token federado, verificación criptográfica, portabilidad, borrado RGPD autorizado (`DELETE /api/federation/users/{ref}`), bus de eventos, bridge de chat y métricas reales. Quedan como superficie de riesgo los endpoints de sondeo obsoletos, que devuelven respuestas fijas. `/users/{ref}` (GET) y `/.well-known/webfinger` siguen exponiendo existencia de usuario sin auth de usuario (mitigable con `MTLS_REQUIRED=true`).
 
 ## 3. Tests de seguridad existentes
 
@@ -109,7 +117,7 @@ El router `backend/app/routers/federation.py` (prefixo `/api/federation`, tag `f
 
 | ID | Amenaza | Vector | Endpoints / código afectado | Control actual | Residual | Fase para cerrar |
 |---|---------|--------|----------------------------|----------------|--------|----------|
-| A1 | **Suplantación de nodo** | Nodo atacante se hace pasar por otro en peering | `/api/federation/*`, `.well-known/webfinger` | Allowlist/blocklist (`NodePolicyService`), manifest público sin firma | **Alta** | Fase 2 (mTLS) + Fase 3 (JWKS/tokens de pares) |
+| A1 | **Suplantación de nodo** | Nodo atacante se hace pasar por otro en peering | `/api/federation/*`, `.well-known/webfinger` | Allowlist/blocklist (`NodePolicyService`), manifiesto firmado RSA-SHA256, mTLS y JWKS | **Media** | Rotación de claves y verificación de CertChain |
 | A2 | **Intercepción de credenciales DAV** | Bearer token en URL/path sobre HTTP sin TLS terminante | `/dav/*` | Redactado de logs (`RedactDavTokenMiddleware`), caducidad 180 días | **Alta** en prod sin proxy TLS | Fase 2 (TLS obligatorio) |
 | A3 | **CORS abierto en desarrollo** | `CORS_ORIGINS` unset → `["*"]` acepta cualquier origen | Todos los endpoints API | `TrustedHostMiddleware` solo con orígenes explícitos | **Media** en dev; bloqueada en prod por `_validate_secret_key` | Fase 2 (forzar `CORS_ORIGINS` explícito) |
 | A4 | **Fuerza bruta en login** | Repetición de credenciales por IP | `POST /api/users/login` | 5 intentos / 300 s por IP (`routers/auth.py:23`) | **Media** (sin bloqueo progresivo, sin CAPTCHA, sin bloqueo por usuario) | Fase 2 |
@@ -117,18 +125,18 @@ El router `backend/app/routers/federation.py` (prefixo `/api/federation`, tag `f
 | A6 | **Flood de federation** | Saturación de peering/directorio por IP | `/api/federation/*` | 60 req / 60 s por IP | **Baja** | — |
 | A7 | **JWT con secreto débil** | Firma de tokens predecible | Todos endpoints con Bearer | `_validate_secret_key` falla en prod si `SECRET_KEY` insegura o < 32 chars | **Baja** si se respeta el env | Fase 2 |
 | A8 | **Escalado / secuestro de sesión** | Uso de sesión ajena | `GET/DELETE /api/auth/sessions/*` | Propiedad de usuario verificada (`auth_sessions.py:78`) | **Baja** | — |
-| A9 | **Erasure propagada sin verificación** | Borrado de usuario ajeno entre nodos | `DELETE /api/federation/users/{ref}` | Placeholder, sin auth, sin verificación de propiedad | **Alta** | Fase 7 (portabilidad) |
-| A10 | **Export/verificación sin integridad** | Bundles aceptados sin firma/checksum real | `GET /api/federation/export/*`, `POST /api/federation/verify` | Placeholder (`valid: True`, `bundle: pending`) | **Alta** | Fase 7 |
-| A11 | **Enumeración de usuarios** | Consulta sin auth de existencia de usuario | `GET /api/federation/users/{ref}`, `GET /.well-known/webfinger` | Ninguna (solo `get_db` dep) | **Media** | Fase 2/3 |
+| A9 | **Erasure propagada sin verificación** | Borrado de usuario ajeno entre nodos | `DELETE /api/federation/users/{ref}` | Borrado RGPD real; exige propietario/admin (JWT de app) o par verificado (mTLS/JWT) cuyo dominio coincida con el ámbito del ref y no esté bloqueado | **Baja** | Implementado |
+| A10 | **Export/verificación sin integridad** | Bundles aceptados sin firma/checksum real | `GET /api/federation/export/{user_ref}`, `POST /api/federation/verify` | Bundle real vía `PortabilityService`; verificación de checksum canónico, HMAC/RSA y huella; `valid: false` si falta material | **Baja** | Implementado |
+| A11 | **Enumeración de usuarios** | Consulta sin auth de existencia de usuario | `GET /api/federation/users/{ref}`, `GET /.well-known/webfinger` | Sin auth de usuario; mTLS de par si `MTLS_REQUIRED=true` | **Media** | Exigir mTLS en producción |
 | A12 | **Rate limiting eludible por IP** | Ataque distribuido desde muchas IPs | Middleware global + endpoints sensibles | Límite por IP, no por usuario ni por endpoint | **Media** | Fase 2 |
 | A13 | **Falta de bloqueo progresivo** | Fuerza bruta lenta por debajo del umbral 5/300s | Login | Solo límite fijo 5/300s, reset tras éxito | **Media** | Fase 2 |
 | A14 | **DAV token sin rotación forzada** | Token largo vida (180 días) robado reutilizable | `/dav/*` | Caducidad 180 días, hash SHA-256 | **Media** | Fase 2 |
 
 ## 5. Brechas de implementación (falsos controles)
 
-1. **Placeholder endpoints de federation (~50 endpoints)** devuelven `True`/`[]`/`{}` estáticos sin autenticación ni validación. Expone la superficie de ataque de peering antes de que exista peering real.
+1. **Endpoints de sondeo de federation (~25)** siguen devolviendo `True`/`[]`/`{}` estáticos sin autenticación ni validación; están marcados `deprecated=True` para que los clientes no confíen en ellos. El resto de antiguos placeholders ya ejecutan operaciones reales, aunque muchas sin autenticación de usuario.
 2. **`/users/{ref}` y `/.well-known/webfinger` expone datos de usuario sin autenticación** (solo dependen de `get_db`). Un nodo remoto (o cualquier cliente) puede enumerar usuarios por handle/username/uuid/did.
-3. **No hay `.env.example` en `backend/`** (búsqueda infructuosa), por lo que las variables de producción requeridas (`SECRET_KEY`, `DATABASE_URL`, `CORS_ORIGINS`, `APP_ENV`, `PUBLIC_BASE_URL`) no están documentadas en un archivo de ejemplo.
+3. **`.env.example` ya existe en `backend/`** y documenta `SECRET_KEY`, `DATABASE_URL`, `CORS_ORIGINS`, `APP_ENV`, `PUBLIC_BASE_URL`, mTLS, JWT y pagos; conviene mantenerlo sincronizado con `config.py`.
 4. **`RateLimitMiddleware` es por IP global**; no distingue endpoints sensibles (login ya tiene límite propio, pero otros endpoints de escritura no tienen límite por usuario autenticado).
 5. **`create_session` almacena `ip_address` y `user_agent` pero nunca se usan para detección de anomalías** (imposible viajar, IP nueva, etc.).
 6. **`last_used_at` se toca con `db.commit()` en cada request > 5 min** (`auth.py:230`), lo que es un punto de contención en tráfico alto y escribe en DB en el path de lectura de autenticación.
@@ -145,7 +153,7 @@ El router `backend/app/routers/federation.py` (prefixo `/api/federation`, tag `f
 1. Forzar `CORS_ORIGINS` explícito en producción (ya validado al arrancar en `main.py:99-103`).
 2. No exponer `/dav` sin terminación TLS en un proxy de confianza; definir `FORWARDED_ALLOW_IPS` y ejecutar uvicorn con `--proxy-headers` (`main.py:279-284`).
 3. Implementar mTLS entre nodos antes de aceptar peering real (`FEDERATION_SECURITY.md`).
-4. Revisar y proteger los placeholder endpoints de federation antes de exponerlos a nodos externos.
+4. Revisar y proteger los placeholder endpoints de federation antes de exponerlos a nodos externos (el borrado propagado ya está protegido).
 5. Añadir bloqueo progresivo / CAPTCHA tras fallos repetidos de login más allá del límite 5/300s.
 6. Considerar rate limiting por usuario autenticado (no solo por IP) en endpoints sensibles de escritura.
 7. Crear `backend/.env.example` documentando todas las variables de producción.

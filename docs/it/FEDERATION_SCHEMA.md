@@ -1,5 +1,7 @@
 # Clakettes Schema v1
 
+[ES](../es/FEDERATION_SCHEMA.md) · [EN](../en/FEDERATION_SCHEMA.md) · [FR](../fr/FEDERATION_SCHEMA.md) · [DE](../de/FEDERATION_SCHEMA.md) · [IT](FEDERATION_SCHEMA.md) · [CA](../ca/FEDERATION_SCHEMA.md) · [EU](../eu/FEDERATION_SCHEMA.md) · [GL](../gl/FEDERATION_SCHEMA.md) · [OC](../oc/FEDERATION_SCHEMA.md)
+
 Versione iniziale dello schema di federazione. Definisce le entità minime scambiabili tra nodi, versionate tramite `schema_version` nel manifesto di ogni nodo.
 
 ## Modello di fiducia (Fase 2)
@@ -50,7 +52,7 @@ L'identità di un nodo è la tupla **(dominio, certificato TLS X.509)**. Il peer
 ### Portabilità (Fase 7)
 
 - `POST /api/federation/portability/bundles` — genera un bundle dell'utente con `bundle_version`, `origin_domain`, `payload`, `signature` (HMAC-SHA256 con `SECRET_KEY`) e `checksum` (SHA-256 del payload canonico).
-- `POST /api/federation/portability/imports` — valida firma e checksum, controlla la politica di origine (403 se non consentito), applica `minimize_data` e registra ciò che è stato importato (utente, corti, festival, messaggi).
+- `POST /api/federation/portability/imports` — valida firma e checksum, controlla la politica di origine (403 se non consentito), applica `minimize_data` e registra ciò che è stato importato (utente, corti, festival, messaggi). I bundle includono `contest_type` in ogni corto: si valida/sanea `MediaUrl` (URL non valido → `null`), si normalizza `contest_type` a `official_section` se non è valido e il checksum del festival lo include.
 - `POST /api/federation/portability/festivals/{festival_id}/migrate` — trasferisce la proprietà del festival e i suoi corti a `new_owner_id` di `target_domain` con verifica del checksum; solo admin.
 - `POST /api/federation/portability/users/{user_ref}/migrate` — riscrive `handle` e `did` sul dominio di destinazione e crea il redirect; solo admin.
 - `GET /api/federation/portability/redirects/{old_ref}` — risolve la vecchia ref (`old_ref`, `new_ref`, `target_domain`, `created_at`).
@@ -61,7 +63,7 @@ L'identità di un nodo è la tupla **(dominio, certificato TLS X.509)**. Il peer
 - `POST /api/federation/chat/bridge/outbound` — firma la busta, la accoda in `chat_outbox` con soggetto `clakettes.chat.node.{target_node}` e pubblica tramite il trasporto configurato (`DurableQueueBackend`); `config` restituisce trasporto, stream, algoritmo e subject mapping.
 - `GET /api/federation/chat/messages` — cronologia federata deduplicata per `message_id` e ordinata per `timestamp` + `message_id` (filtro `node` opzionale).
 - `POST /api/chat/moderation/messages/{message_id}/report`, `PATCH /moderate`, `GET /reports`, `POST/GET /mutes`, `GET /limits` — segnalazioni, nascondi/cancella, mute per utente/canale/nodo, filtro parole bloccate, `disable_chat` per nodo e rate limit di 10 messaggi/60 s per nodo e utente (disattivato con `TESTING=true`).
-- `GET /api/federation/events/stream` — SSE con `since`, `token`, `limit` opzionali, replay degli ultimi 200 eventi e battito `: ping` ogni 15 s.
+- `GET /api/federation/events/stream` — SSE con `token` obbligatorio in query (`since` e `limit` opzionali), replay degli ultimi 200 eventi e battito `: ping` ogni 15 s.
 - `POST /api/federation/events/publish` — pubblica su un tema derivato da `node`/`entity` (o `topic` esplicito), firma l'invio ai peer con HMAC (`X-Clakettes-Signature`) e omette i nodi con `disable_chat`/`disable_search`; solo admin.
 - `GET /api/federation/events/retry-queue` — tentativi in attesa; 3 tentativi con backoff 300 ms → 1,5 s → 5 s.
 
@@ -75,7 +77,9 @@ L'identità di un nodo è la tupla **(dominio, certificato TLS X.509)**. Il peer
 
 ### Health e utilità
 
-- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — endpoint di sondaggio e diagnostica.
+- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — placeholder con risposte statiche che non riflettono lo stato reale; non sono endpoint di sondaggio o diagnostica operativi.
+
+> **Avviso:** restituiscono risposte fisse e possono dare una falsa sensazione di sicurezza; per una diagnostica reale, usare gli endpoint di resilienza descritti sopra.
 
 ## Regolabilità
 

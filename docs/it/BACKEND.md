@@ -59,6 +59,17 @@ Tutta la configurazione avviene tramite `backend/.env` (caricato da `pydantic-se
 | `JWT_AUDIENCE` | `clakettes-api` | Rivendicazione audience JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | TTL token di accesso |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Origini consentite separate da virgola |
+| `APP_ENV` | `development` | `production` esige `SECRET_KEY` robusta, CORS espliciti e schema tramite Alembic |
+| `TESTING` | disattivato | `1/true/yes/on` disattiva rate limits e auto-migrazione (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Origine pubblica del nodo (manifesto, bundle, ICS assoluto) |
+| `MTLS_REQUIRED` | `False` | Esige mTLS verificato in `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | CA radice per validare i certificati dei client |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Certificato e chiave propri (firma del manifesto RSA-SHA256) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | File SQLite per il limitatore di richieste |
+| `SKIP_AUTO_MIGRATE` | disattivato | `1/true/yes/on` omette `alembic upgrade head` all'avvio |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, vuoto, `False` | Provider di pagamento mock e segreto webhook |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | vuoto | Credenziali Stripe (SDK pigro) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, vuoto, `True`, `978` | Firma HMAC Redsys e sandbox |
 | `PORT_BACKEND` | `8000` | Porta del server (usata da Docker/script di avvio) |
 
 **Esempio `.env` per produzione:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Hash delle password
 
-- **bcrypt** tramite `passlib` (rounds=12)
+- **bcrypt** diretto (`bcrypt.hashpw` + `bcrypt.gensalt()`), senza `passlib`
 - Hash memorizzato in `User.password_hash`
-- Verificato tramite `pwd_context.verify(plain, hash)`
+- Verificato tramite `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Limite di richieste
 
 - **100 richieste / 60 secondi** per IP (backup SQLite)
 - Applicato tramite `RateLimitMiddleware` in `main.py`
-- Disattivato quando si imposta la variabile d'ambiente `TESTING=true`
+- Disattivato con `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), incluso il limitatore di refresh 20/60 s in `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profilo, caricamento avatar |
 | `auth` | `/api/users` | auth | Login, refresh, registrazione |
 | `auth_sessions` | `/api/auth` | auth | Lista/revoca sessioni |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, collegamento festival  CRUD sotto `/api/festivals/{id}/shortfilms`; elenco piatto deprecato |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD annidato in `/api/festivals/{festival_id}/shortfilms` (GET/POST di lista e GET/PUT/DELETE di dettaglio, filtro `?contest_type=`); i 5 endpoint piatti restano disponibili ma marcati `deprecated=True` |
 | `chat` | `/api/chat` | chat | Messaggi, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Iscrizione/uscita, membri |
-| `uploads` | `/api/uploads` | uploads | Caricamento avatar |
+| `uploads` | `/api/uploads` | uploads | Caricamento multipart di avatar, thumbnail, video, documento e immagine chat; restituisce percorsi relativi `/uploads/...` |
 | `search` | `/api/search` | search | Ricerca globale |
 | `admin` | `/api/admin` | admin | Statistiche, tabelle, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, conteggio non letti |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Relazioni posizione |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Posizioni cortometraggio |
 | `form_definitions` | `/api` | forms | Builder form |
-| `federation` | `/api/federation` | federation | manifest, directory, nodi, report, webfinger |
+| `federation` | `/api/federation` | federation | manifesto, directory, nodi, segnalazioni, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | Bridge chat firmato RS256, config e messaggi |
+| `federation_events` | `/api/federation/events` | federation-events | SSE con `token` obbligatorio, pubblicazione e ripetizione |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundle, import, migrazione e redirect |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, heartbeat, metriche, revoca e incidente |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Segnalazioni, mute, moderazione e limiti |
 | `jury_votes` | `/api` | jury-votes | Voto giuria (fase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, impostazioni |
 | `badges` | `/api` | badges | Badge, assegnazioni, idoneità |
 | `posts` | `/api` | posts | Post social, risposte, moderazione |
 | `payments` | `/api` | payments | Checkout, conferma, rimborso, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Regolamenti festival |
-| `user_blocks` | `/api` | user-blocks | Blocco utente |
-| `moderation_reports` | `/api` | moderation-reports | Report moderazione |
-| `node_policies` | `/api` | node-policies | Politiche nodi federazione |
+| `user_blocks` | `/api` | user-blocks | Blocco utente (proprietario o admin) |
 
 ### Paginazione e filtraggio
 
@@ -266,7 +280,7 @@ Busta di risposta:
 | `GET` | `/api/chat/ws` | Connessione WebSocket (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Invia messaggio (fallback REST) |
 | `GET` | `/api/chat/messages` | Cronologia paginata |
-| `PATCH` | `/api/chat/messages/{id}/read` | Segna come letto |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Segna come letto |
 
 ### Tipi di messaggio
 
@@ -284,9 +298,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- Scambio chiavi X25519 tramite `/api/users/{id}/keys`
+- Scambio chiavi ECDH P-256 tramite `POST /api/users/me/public-key` e `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Chiavi pubbliche memorizzate in `UserKey` (una chiave attiva per utente)
-- Cifratura/decifratura nel frontend (`e2ee_service.dart`)
+- Cifratura/decifratura AES-GCM nel frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -304,7 +318,13 @@ file: <image/*>
 
 - Salvato in `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Servito staticamente in `/uploads/avatars/...`
-- Dimensione massima: 10 MB (applicato da `RequestSizeLimitMiddleware`)
+- Dimensione massima: 5 MB per le immagini (`MAX_IMAGE_SIZE` in `routers/uploads.py`); il limite globale del corpo resta 10 MB
+
+### Tutti i caricamenti
+
+- Gli endpoint `avatar`, `thumbnail`, `video`, `document` e `chat-image` restituiscono un percorso relativo `/uploads/<carpeta>/<archivo>`; il client lo risolve con `resolveMediaUrl()` contro il nodo attivo.
+- Se manca il content-type o arriva `application/octet-stream`, `uploads._sniff_content_type()` rileva il tipo dai magic bytes (JPEG, PNG, GIF, WebP, PDF e MP4); l'errore 400 indica `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` e `thumbnail_url` usano il tipo `MediaUrl`: accettano percorsi relativi (e stringa vuota) o URL http(s) validi; un URL non valido restituisce 422.
 
 ---
 
@@ -336,15 +356,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Configurazione test** (`pyproject.toml` / `pytest.ini`):
+**Configurazione test** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+I test asincroni usano `pytest.mark.asyncio`; non c'è `asyncio_mode` globale.
 
 **Fixture** (`tests/conftest.py`):
 - `db_session` — sessione SQLite in memoria
@@ -371,9 +392,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -462,7 +483,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -527,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

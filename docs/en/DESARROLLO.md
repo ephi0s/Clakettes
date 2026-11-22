@@ -15,6 +15,18 @@
 1. Service: method in the file of `lib/services/api/` for its domain.
 2. Screen in `lib/screens/` <600 lines: extract to `lib/widgets/` the reusable UI (bubbles, cards, bars, sections).
 3. Notices with `showAppSnack`; deletions with `showConfirmDialog`; errors with `ErrorStateWidget` and retry.
-4. Texts in `assets/l10n/en.arb` first (fallback) + remaining locales; 0 missing keys verified.
+4. Texts in `assets/l10n/app_en.arb` first (fallback) + remaining locales (823 keys); run `flutter test test/l10n/arb_parity_test.dart`: it requires the same keys and placeholders in the 9 ARBs (`es` reference).
 5. Test in `test/screens/` or `test/widgets/` (widgets with `l10n` need an extra `pump()` after `pumpWidget`).
+
+## Dependencies (Dependabot)
+
+- pip in `/backend` and pub in `/frontend`, weekly (Monday), grouped in `backend-deps`/`frontend-deps`; `version-update:semver-major` updates are ignored.
+- Patch/minor: `.github/workflows/dependabot-automerge.yml` enables `gh pr merge --auto --squash` only for `dependabot[bot]`; the actual merge requires green CI. Major: manual review.
+- `.github/workflows/dependabot-rebase.yml` rebases open PRs on Monday 04:17 UTC and on `workflow_dispatch`. Detail in [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md).
+
+## Quality gates
+
+- Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
+- Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
+- After changing endpoints or routes, regenerate the reference with `python tools/gen_api.py --all` (combines prefixes from `main.py` and each `APIRouter`).
 

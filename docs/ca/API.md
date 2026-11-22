@@ -1,18 +1,20 @@
 # API — referència d'endpoints
 
-[ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
+[ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
-Generat des de `app/routers/*.py` + prefixos de `app/main.py`.
+Generat des de `app/routers/*.py` (prefix de cada `APIRouter` més el de `app/main.py`) i les dependències de cada endpoint.
 Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
+
+Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai una URL absoluta. El client la resol amb `resolveMediaUrl()`, que anteposa el servidor actiu; les URL `http(s)` es deixen intactes. Els camps de mitjans (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) accepten ambdós formats.
 
 ## `admin` → `/api/admin`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/admin/stats` | sí |
-| GET | `/api/admin/tables` | sí |
-| GET | `/api/admin/audit-log` | sí |
-| POST | `/api/admin/reset` | sí |
+| GET | `/api/admin/stats` | sí (admin) |
+| GET | `/api/admin/tables` | sí (admin) |
+| GET | `/api/admin/audit-log` | sí (admin) |
+| POST | `/api/admin/reset` | sí (admin) |
 
 ## `auth` → `/api/users`
 
@@ -34,18 +36,18 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | Mètode | Ruta | Auth |
 |---|---|---|
 | GET | `/api/badges/status` | no |
-| PUT | `/api/badges/settings` | sí |
-| GET | `/api/badges/` | opcional |
-| POST | `/api/badges/` | sí |
+| PUT | `/api/badges/settings` | sí (admin) |
+| GET | `/api/badges` | opcional |
+| POST | `/api/badges` | sí (admin) |
 | GET | `/api/badges/{badge_id}` | opcional |
-| PUT | `/api/badges/{badge_id}` | sí |
-| DELETE | `/api/badges/{badge_id}` | sí |
-| POST | `/api/badges/{badge_id}/image` | sí |
+| PUT | `/api/badges/{badge_id}` | sí (admin) |
+| DELETE | `/api/badges/{badge_id}` | sí (admin) |
+| POST | `/api/badges/{badge_id}/image` | sí (admin) |
 | GET | `/api/badges/{badge_id}/eligibility` | opcional |
-| POST | `/api/badges/{badge_id}/assign` | sí |
+| POST | `/api/badges/{badge_id}/assign` | sí (admin) |
 | DELETE | `/api/badge-assignments/{assignment_id}` | sí |
-| GET | `/api/users/{user_id}/badges/` | opcional |
-| GET | `/api/festivals/{festival_id}/badges/` | opcional |
+| GET | `/api/users/{user_id}/badges` | opcional |
+| GET | `/api/festivals/{festival_id}/badges` | opcional |
 
 ## `calendar` → `/api/calendar`
 
@@ -54,8 +56,8 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | GET | `/api/calendar/agenda` | opcional |
 | GET | `/api/calendar/agenda/export/ics` | opcional |
 | GET | `/api/calendar/settings` | no |
-| GET | `/api/calendar/admin/settings` | sí |
-| PUT | `/api/calendar/admin/settings` | sí |
+| GET | `/api/calendar/admin/settings` | sí (admin) |
+| PUT | `/api/calendar/admin/settings` | sí (admin) |
 | POST | `/api/calendar/dav/token` | sí |
 | GET | `/api/calendar/dav/token` | sí |
 | DELETE | `/api/calendar/dav/token` | sí |
@@ -91,30 +93,30 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | POST | `/api/chat/groups/{group_id}/members` | sí |
 | DELETE | `/api/chat/groups/{group_id}/members/{user_id}` | sí |
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | sí |
-| WEBSOCKET | `/api/chat/ws` | token (query) |
+| WEBSOCKET | `/api/chat/ws` | token (query, obligatori) |
 
-## `chat_moderation` → `/`
+## `chat_moderation` → `/api/chat/moderation`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| POST | `/messages/{message_id}/report` | sí |
-| PATCH | `/messages/{message_id}/moderate` | sí |
-| GET | `/reports` | sí |
-| POST | `/mutes` | sí |
-| GET | `/mutes` | sí |
-| GET | `/limits` | sí |
+| POST | `/api/chat/moderation/messages/{message_id}/report` | sí |
+| PATCH | `/api/chat/moderation/messages/{message_id}/moderate` | sí |
+| GET | `/api/chat/moderation/reports` | sí (admin) |
+| POST | `/api/chat/moderation/mutes` | sí |
+| GET | `/api/chat/moderation/mutes` | sí (admin) |
+| GET | `/api/chat/moderation/limits` | sí (admin) |
 
 ## `committees` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/committees/` | opcional |
-| POST | `/api/festivals/{festival_id}/committees/` | sí |
+| GET | `/api/festivals/{festival_id}/committees` | opcional |
+| POST | `/api/festivals/{festival_id}/committees` | sí |
 | GET | `/api/committees/{committee_id}` | opcional |
 | PUT | `/api/committees/{committee_id}` | sí |
 | DELETE | `/api/committees/{committee_id}` | sí |
-| GET | `/api/committees/{committee_id}/members/` | opcional |
-| POST | `/api/committees/{committee_id}/members/` | sí |
+| GET | `/api/committees/{committee_id}/members` | opcional |
+| POST | `/api/committees/{committee_id}/members` | sí |
 | PUT | `/api/committee-members/{member_id}` | sí |
 | DELETE | `/api/committee-members/{member_id}` | sí |
 
@@ -122,42 +124,42 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| OPTIONS | `/dav/` | no |
+| OPTIONS | `/dav` | no |
 | OPTIONS | `/dav/{dav_path:path}` | no |
-| PROPFIND | `/dav/` | no |
+| PROPFIND | `/dav` | no |
 | GET | `/dav/{principal}/calendars/{collection}.ics` | no |
 | HEAD | `/dav/{principal}/calendars/{collection}.ics` | no |
 | GET | `/dav/{principal}/calendars/{collection}/{resource}` | no |
 | HEAD | `/dav/{principal}/calendars/{collection}/{resource}` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | no |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | no |
-| PROPFIND | `/dav/{principal}/calendars/{collection}/` | no |
+| GET/HEAD | `/dav/{principal}/calendars/{collection}/{resource}` | no |
+| PROPFIND | `/dav/{principal}/calendars/{collection}/{resource}` | no |
+| REPORT | `/dav/{principal}/calendars/{collection}/{resource}` | no |
+| PROPFIND/REPORT | `/dav/{principal}/calendars/{collection}/{resource}` | no |
 | PROPFIND | `/dav/{principal}/calendars/{collection}` | no |
-| REPORT | `/dav/{principal}/calendars/{collection}/` | no |
+| PROPFIND | `/dav/{principal}/calendars/{collection}` | no |
 | REPORT | `/dav/{principal}/calendars/{collection}` | no |
-| PROPFIND | `/dav/{principal}/calendars/` | no |
+| REPORT | `/dav/{principal}/calendars/{collection}` | no |
 | PROPFIND | `/dav/{principal}/calendars` | no |
-| PROPFIND | `/dav/{principal}/` | no |
+| PROPFIND | `/dav/{principal}/calendars` | no |
 | PROPFIND | `/dav/{principal}` | no |
-| REPORT | `/dav/{principal}/calendars/` | no |
+| PROPFIND | `/dav/{principal}` | no |
 | REPORT | `/dav/{principal}/calendars` | no |
-| REPORT | `/dav/{principal}/` | no |
+| REPORT | `/dav/{principal}/calendars` | no |
 | REPORT | `/dav/{principal}` | no |
-| API_ROUTE | `/dav/{write_path:path}` | no |
+| REPORT | `/dav/{principal}` | no |
+| PUT/POST/DELETE/PATCH/MOVE/COPY/LOCK/UNLOCK/PROPPATCH | `/dav/{write_path:path}` | no |
 
 ## `delegations` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/delegations/` | opcional |
-| POST | `/api/delegations/` | sí |
+| GET | `/api/delegations` | opcional |
+| POST | `/api/delegations` | sí |
 | PUT | `/api/delegations/{delegation_id}` | sí |
 | POST | `/api/delegations/{delegation_id}/revoke` | sí |
 | GET | `/api/users/{user_id}/active-delegations` | opcional |
-| GET | `/api/role-transitions/` | sí |
-| POST | `/api/role-transitions/` | sí |
+| GET | `/api/role-transitions` | sí |
+| POST | `/api/role-transitions` | sí |
 | GET | `/api/users/{user_id}/role-transitions` | sí |
 | GET | `/api/users/{user_id}/role-check` | sí |
 
@@ -165,9 +167,9 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/events/` | no |
+| GET | `/api/festivals/{festival_id}/events` | no |
 | GET | `/api/festivals/{festival_id}/events/export/ics` | sí |
-| POST | `/api/festivals/{festival_id}/events/` | sí |
+| POST | `/api/festivals/{festival_id}/events` | sí |
 | GET | `/api/events/{event_id}` | no |
 | PUT | `/api/events/{event_id}` | sí |
 | DELETE | `/api/events/{event_id}` | sí |
@@ -179,25 +181,25 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | PUT | `/api/events/{event_id}/screenings` | sí |
 | GET | `/api/festivals/{festival_id}/screenings` | no |
 | GET | `/api/events/{event_id}/occupancy` | no |
-| GET | `/api/events/{event_id}/ticket-types/` | no |
-| POST | `/api/events/{event_id}/ticket-types/` | sí |
+| GET | `/api/events/{event_id}/ticket-types` | no |
+| POST | `/api/events/{event_id}/ticket-types` | sí |
 | PUT | `/api/ticket-types/{tt_id}` | sí |
 | DELETE | `/api/ticket-types/{tt_id}` | sí |
-| GET | `/api/events/{event_id}/seats/` | no |
+| GET | `/api/events/{event_id}/seats` | no |
 | POST | `/api/events/{event_id}/seats/bulk` | sí |
 | GET | `/api/events/{event_id}/seats/sections` | no |
 | GET | `/api/events/{event_id}/seats/counts` | no |
 | PUT | `/api/seats/{seat_id}` | sí |
 | POST | `/api/seats/{seat_id}/release` | sí |
 | DELETE | `/api/seats/{seat_id}` | sí |
-| GET | `/api/events/{event_id}/reservations/` | sí |
-| POST | `/api/events/{event_id}/reservations/` | sí |
+| GET | `/api/events/{event_id}/reservations` | sí |
+| POST | `/api/events/{event_id}/reservations` | sí |
 | PUT | `/api/reservations/{reservation_id}` | sí |
 | POST | `/api/reservations/{reservation_id}/confirm` | sí |
 | POST | `/api/reservations/{reservation_id}/cancel` | sí |
 | DELETE | `/api/reservations/{reservation_id}` | sí |
-| GET | `/api/events/{event_id}/attendees/` | sí |
-| POST | `/api/events/{event_id}/attendees/` | sí |
+| GET | `/api/events/{event_id}/attendees` | sí |
+| POST | `/api/events/{event_id}/attendees` | sí |
 | GET | `/api/attendees/{attendee_id}` | no |
 | PUT | `/api/attendees/{attendee_id}` | sí |
 | POST | `/api/attendees/{attendee_id}/check-in` | sí |
@@ -205,135 +207,133 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | GET | `/api/events/{event_id}/attendees/export/csv` | sí |
 | DELETE | `/api/attendees/{attendee_id}` | sí |
 | POST | `/api/events/{event_id}/assign-vip` | sí |
-| GET | `/api/users/me/events/` | sí |
+| GET | `/api/users/me/events` | sí |
 | GET | `/api/users/me/events/{event_id}/reservation` | sí |
-| GET | `/api/festivals/{festival_id}/awards/` | no |
-| POST | `/api/festivals/{festival_id}/awards/` | sí |
+| GET | `/api/festivals/{festival_id}/awards` | no |
+| POST | `/api/festivals/{festival_id}/awards` | sí |
 | PUT | `/api/awards/{award_id}` | sí |
 | DELETE | `/api/awards/{award_id}` | sí |
 | PATCH | `/api/awards/{award_id}/recipient-verification` | sí |
-| GET | `/api/users/{user_id}/awards/` | no |
+| GET | `/api/users/{user_id}/awards` | no |
 | GET | `/api/public/profile/{token}` | no |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | no |
 
-## `federation` → `/api`
+## `federation` → `/api/federation`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/nodes` | sí |
-| POST | `/api/nodes` | sí |
-| GET | `/api/manifest` | no |
-| PATCH | `/api/reports/{report_id}` | no |
-| GET | `/api/directory` | no |
-| POST | `/api/reports` | no |
-| GET | `/api/reports` | no |
-| DELETE | `/api/users/{user_ref}` | no |
-| GET | `/api/export/{user_ref}` | no |
-| GET | `/api/health` | no |
-| POST | `/api/verify` | no |
-| POST | `/api/publish` | no |
-| POST | `/api/recover` | no |
-| POST | `/api/bridge` | no |
-| GET | `/api/aggregate-nodes` | no |
-| GET | `/api/keys` | no |
-| GET | `/api/events` | no |
-| GET | `/api/capabilities` | no |
-| GET | `/api/status` | no |
-| GET | `/api/info` | no |
-| GET | `/api/ping` | no |
-| POST | `/api/echo` | no |
-| GET | `/api/time` | no |
-| GET | `/api/version` | no |
-| POST | `/api/checksum` | no |
-| POST | `/api/notify` | no |
-| POST | `/api/subscribe` | no |
-| POST | `/api/unsubscribe` | no |
-| GET | `/api/discover` | no |
-| POST | `/api/register` | no |
-| POST | `/api/unregister` | no |
-| POST | `/api/sync` | no |
-| POST | `/api/reconcile` | no |
-| GET | `/api/heartbeat` | no |
-| GET | `/api/whoami` | no |
-| GET | `/api/peers` | no |
-| GET | `/api/links` | no |
-| GET | `/api/stats` | no |
-| GET | `/api/config` | no |
-| GET | `/api/status-check` | no |
-| GET | `/api/ready` | no |
-| GET | `/api/live` | no |
-| GET | `/api/alive` | no |
-| GET | `/api/down` | no |
-| GET | `/api/maintenance` | no |
-| GET | `/api/readyz` | no |
-| GET | `/api/livez` | no |
-| GET | `/api/healthz` | no |
-| GET | `/api/ok` | no |
-| GET | `/api/yes` | no |
-| GET | `/api/no` | no |
-| GET | `/api/maybe` | no |
-| GET | `/api/always` | no |
-| GET | `/api/never` | no |
-| POST | `/api/import` | no |
-| POST | `/api/dedup` | no |
-| POST | `/api/retry` | no |
-| POST | `/api/recover-node` | no |
-| GET | `/api/fallback` | no |
-| GET | `/api/integrity` | no |
-| GET | `/api/degrade` | no |
-| GET | `/api/metrics` | no |
-| GET | `/api/users/{ref}` | no |
-| GET | `/api/.well-known/webfinger` | no |
-| POST | `/api/peers/verify` | no |
-| POST | `/api/peers/{domain}/revoke` | sí |
-| GET | `/api/.well-known/jwks.json` | no |
-| POST | `/api/token` | no |
+| GET | `/api/federation/nodes` | sí (admin) |
+| POST | `/api/federation/nodes` | sí (admin) |
+| GET | `/api/federation/manifest` | no |
+| PATCH | `/api/federation/reports/{report_id}` | no |
+| GET | `/api/federation/directory` | no |
+| POST | `/api/federation/reports` | no |
+| GET | `/api/federation/reports` | no |
+| DELETE | `/api/federation/users/{user_ref}` | JWT de federació |
+| GET | `/api/federation/export/{user_ref}` | no |
+| GET | `/api/federation/health` (obsolet) | no |
+| POST | `/api/federation/verify` | no |
+| POST | `/api/federation/publish` | JWT de federació |
+| POST | `/api/federation/recover` | no |
+| POST | `/api/federation/bridge` | JWT de federació |
+| GET | `/api/federation/aggregate-nodes` (obsolet) | no |
+| GET | `/api/federation/keys` (obsolet) | no |
+| GET | `/api/federation/events` (obsolet) | no |
+| GET | `/api/federation/capabilities` (obsolet) | no |
+| GET | `/api/federation/status` (obsolet) | no |
+| GET | `/api/federation/info` (obsolet) | no |
+| GET | `/api/federation/ping` (obsolet) | no |
+| POST | `/api/federation/echo` | no |
+| GET | `/api/federation/time` | no |
+| GET | `/api/federation/version` (obsolet) | no |
+| POST | `/api/federation/checksum` | no |
+| POST | `/api/federation/notify` (obsolet) | no |
+| POST | `/api/federation/subscribe` (obsolet) | no |
+| POST | `/api/federation/unsubscribe` (obsolet) | no |
+| GET | `/api/federation/discover` (obsolet) | no |
+| POST | `/api/federation/register` | no |
+| POST | `/api/federation/unregister` | no |
+| POST | `/api/federation/sync` | no |
+| POST | `/api/federation/reconcile` | no |
+| GET | `/api/federation/heartbeat` (obsolet) | no |
+| GET | `/api/federation/whoami` | JWT de federació |
+| GET | `/api/federation/peers` (obsolet) | no |
+| GET | `/api/federation/links` (obsolet) | no |
+| GET | `/api/federation/stats` (obsolet) | no |
+| GET | `/api/federation/config` (obsolet) | no |
+| GET | `/api/federation/status-check` (obsolet) | no |
+| GET | `/api/federation/ready` (obsolet) | no |
+| GET | `/api/federation/live` (obsolet) | no |
+| GET | `/api/federation/alive` (obsolet) | no |
+| GET | `/api/federation/down` (obsolet) | no |
+| GET | `/api/federation/maintenance` (obsolet) | no |
+| GET | `/api/federation/readyz` (obsolet) | no |
+| GET | `/api/federation/livez` (obsolet) | no |
+| GET | `/api/federation/healthz` (obsolet) | no |
+| GET | `/api/federation/ok` (obsolet) | no |
+| GET | `/api/federation/yes` (obsolet) | no |
+| GET | `/api/federation/no` (obsolet) | no |
+| GET | `/api/federation/maybe` (obsolet) | no |
+| GET | `/api/federation/always` (obsolet) | no |
+| GET | `/api/federation/never` (obsolet) | no |
+| POST | `/api/federation/import` | no |
+| POST | `/api/federation/dedup` | no |
+| POST | `/api/federation/retry` | no |
+| POST | `/api/federation/recover-node` | no |
+| GET | `/api/federation/integrity` | no |
+| GET | `/api/federation/metrics` | no |
+| GET | `/api/federation/users/{ref}` | no |
+| GET | `/api/federation/.well-known/webfinger` | no |
+| POST | `/api/federation/peers/verify` | no |
+| POST | `/api/federation/peers/{domain}/revoke` | sí (admin) |
+| GET | `/api/federation/.well-known/jwks.json` | no |
+| POST | `/api/federation/token` | no |
 
-## `federation_chat_bridge` → `/api`
+## `federation_chat_bridge` → `/api/federation`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| POST | `/api/chat/bridge/inbound` | no |
-| POST | `/api/chat/bridge/outbound` | no |
-| GET | `/api/chat/bridge/config` | no |
-| GET | `/api/chat/messages` | no |
+| POST | `/api/federation/chat/bridge/inbound` | no |
+| POST | `/api/federation/chat/bridge/outbound` | no |
+| GET | `/api/federation/chat/bridge/config` | no |
+| GET | `/api/federation/chat/messages` | no |
 
-## `federation_events` → `/`
-
-| Mètode | Ruta | Auth |
-|---|---|---|
-| GET | `/stream` | no |
-| POST | `/publish` | sí |
-| GET | `/retry-queue` | sí |
-
-## `federation_portability` → `/`
+## `federation_events` → `/api/federation/events`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| POST | `/bundles` | sí |
-| POST | `/imports` | sí |
-| POST | `/festivals/{festival_id}/migrate` | no |
-| POST | `/users/{user_ref}/migrate` | no |
-| GET | `/redirects/{old_ref}` | sí |
+| GET | `/api/federation/events/stream` | token (query, obligatori) |
+| POST | `/api/federation/events/publish` | sí (admin) |
+| GET | `/api/federation/events/retry-queue` | sí (admin) |
 
-## `federation_resilience` → `/`
+## `federation_portability` → `/api/federation/portability`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/health` | no |
-| GET | `/heartbeat` | no |
-| GET | `/metrics` | no |
-| POST | `/keys/revoke` | sí |
-| GET | `/keys/revoked` | no |
-| GET | `/incident-plan` | no |
+| POST | `/api/federation/portability/bundles` | sí |
+| POST | `/api/federation/portability/imports` | sí |
+| POST | `/api/federation/portability/festivals/{festival_id}/migrate` | sí (admin) |
+| POST | `/api/federation/portability/users/{user_ref}/migrate` | sí (admin) |
+| GET | `/api/federation/portability/redirects/{old_ref}` | sí |
+
+## `federation_resilience` → `/api/federation/resilience`
+
+| Mètode | Ruta | Auth |
+|---|---|---|
+| GET | `/api/federation/resilience/health` | no |
+| GET | `/api/federation/resilience/heartbeat` | no |
+| GET | `/api/federation/resilience/metrics` | no |
+| POST | `/api/federation/resilience/keys/revoke` | sí (admin) |
+| GET | `/api/federation/resilience/keys/revoked` | no |
+| GET | `/api/federation/resilience/incident-plan` | no |
 
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/rulebooks/` | no |
+| GET | `/api/festivals/{festival_id}/rulebooks` | no |
 | GET | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | no |
-| POST | `/api/festivals/{festival_id}/rulebooks/` | sí |
+| POST | `/api/festivals/{festival_id}/rulebooks` | sí |
 | POST | `/api/festivals/{festival_id}/rulebooks/upload` | sí |
 | PUT | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | sí |
@@ -342,8 +342,8 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/festivals/` | no |
-| POST | `/api/festivals/` | sí |
+| GET | `/api/festivals` | no |
+| POST | `/api/festivals` | sí |
 | GET | `/api/festivals/{festival_id}` | no |
 | GET | `/api/festivals/{festival_id}/shortfilms` | no |
 | POST | `/api/festivals/{festival_id}/shortfilms` | sí |
@@ -362,38 +362,38 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/forms/` | sí |
-| POST | `/api/forms/` | sí |
+| GET | `/api/forms` | sí |
+| POST | `/api/forms` | sí |
 | GET | `/api/forms/{form_id}` | sí |
 | PUT | `/api/forms/{form_id}` | sí |
 | DELETE | `/api/forms/{form_id}` | sí |
 | POST | `/api/forms/{form_id}/clone` | sí |
-| POST | `/api/forms/{form_id}/pages/` | sí |
+| POST | `/api/forms/{form_id}/pages` | sí |
 | PUT | `/api/forms/{form_id}/pages/{page_id}` | sí |
 | DELETE | `/api/forms/{form_id}/pages/{page_id}` | sí |
-| POST | `/api/forms/{form_id}/pages/{page_id}/fields/` | sí |
+| POST | `/api/forms/{form_id}/pages/{page_id}/fields` | sí |
 | PUT | `/api/forms/{form_id}/fields/{field_id}` | sí |
 | DELETE | `/api/forms/{form_id}/fields/{field_id}` | sí |
-| GET | `/api/forms/{form_id}/links/` | sí |
-| POST | `/api/forms/{form_id}/links/` | sí |
+| GET | `/api/forms/{form_id}/links` | sí |
+| POST | `/api/forms/{form_id}/links` | sí |
 | DELETE | `/api/forms/{form_id}/links/{link_id}` | sí |
 | GET | `/api/forms/public/{token}` | no |
 | POST | `/api/forms/public/{token}/submit` | opcional |
-| GET | `/api/forms/{form_id}/responses/` | sí |
+| GET | `/api/forms/{form_id}/responses` | sí |
 | GET | `/api/forms/{form_id}/responses/export/csv` | sí |
 | PUT | `/api/forms/responses/{response_id}` | sí |
 | POST | `/api/forms/responses/{response_id}/approve` | sí |
 | POST | `/api/forms/responses/{response_id}/reject` | sí |
 
-## `jury_votes` → `/api`
+## `jury_votes` → `/api/jury-votes`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| POST | `/api` | sí |
-| GET | `/api/{festival_id}` | opcional |
-| GET | `/api/aggregate/{festival_id}` | no |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | sí |
-| GET | `/api/anonymous/{festival_id}` | sí |
+| POST | `/api/jury-votes` | sí |
+| GET | `/api/jury-votes/{festival_id}` | opcional |
+| GET | `/api/jury-votes/aggregate/{festival_id}` | no |
+| GET | `/api/jury-votes/by-juror/{festival_id}/{juror_id}` | sí |
+| GET | `/api/jury-votes/anonymous/{festival_id}` | sí |
 
 ## `keys` → `/api/users`
 
@@ -406,7 +406,7 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/images/` | no |
+| GET | `/api/locations/{location_id}/images` | no |
 | POST | `/api/locations/{location_id}/images/upload` | sí |
 | POST | `/api/locations/{location_id}/images/url` | sí |
 | DELETE | `/api/locations/{location_id}/images/{image_id}` | sí |
@@ -415,8 +415,8 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/relations/` | no |
-| POST | `/api/locations/{location_id}/relations/` | sí |
+| GET | `/api/locations/{location_id}/relations` | no |
+| POST | `/api/locations/{location_id}/relations` | sí |
 | DELETE | `/api/locations/{location_id}/relations/{relation_id}` | sí |
 | POST | `/api/locations/{location_id}/relations/suggest` | sí |
 
@@ -424,16 +424,16 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/tags/` | no |
-| POST | `/api/locations/{location_id}/tags/` | sí |
+| GET | `/api/locations/{location_id}/tags` | no |
+| POST | `/api/locations/{location_id}/tags` | sí |
 | DELETE | `/api/locations/{location_id}/tags/{tag_id}` | sí |
 
 ## `locations` → `/api/locations`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/locations/` | no |
-| POST | `/api/locations/` | sí |
+| GET | `/api/locations` | no |
+| POST | `/api/locations` | sí |
 | GET | `/api/locations/{location_id}` | no |
 | PUT | `/api/locations/{location_id}` | sí |
 | PUT | `/api/locations/{location_id}/badge` | sí |
@@ -443,7 +443,7 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/notifications/` | sí |
+| GET | `/api/notifications` | sí |
 | GET | `/api/notifications/unread-count` | sí |
 | PUT | `/api/notifications/{notification_id}/read` | sí |
 | PUT | `/api/notifications/read-all` | sí |
@@ -453,13 +453,13 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/participant-tags/` | no |
-| POST | `/api/participant-tags/` | sí |
+| GET | `/api/participant-tags` | no |
+| POST | `/api/participant-tags` | sí (admin) |
 | GET | `/api/participant-tags/{tag_id}` | no |
-| PUT | `/api/participant-tags/{tag_id}` | sí |
-| DELETE | `/api/participant-tags/{tag_id}` | sí |
-| GET | `/api/festivals/{festival_id}/participant-tags/` | no |
-| POST | `/api/festivals/{festival_id}/participant-tags/` | sí |
+| PUT | `/api/participant-tags/{tag_id}` | sí (admin) |
+| DELETE | `/api/participant-tags/{tag_id}` | sí (admin) |
+| GET | `/api/festivals/{festival_id}/participant-tags` | no |
+| POST | `/api/festivals/{festival_id}/participant-tags` | sí |
 | PUT | `/api/festivals/{festival_id}/participant-tags/{fpt_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}/participant-tags/{fpt_id}` | sí |
 
@@ -468,61 +468,63 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | Mètode | Ruta | Auth |
 |---|---|---|
 | POST | `/api/payments/checkout` | sí |
-| GET | `/api/payments/` | sí |
+| GET | `/api/payments` | sí |
 | GET | `/api/payments/{payment_id}` | sí |
 | POST | `/api/payments/{payment_id}/confirm` | sí |
 | POST | `/api/payments/{payment_id}/refund` | sí |
 | POST | `/api/payments/webhook/mock` | no |
+| POST | `/api/payments/webhook/stripe` | no |
+| POST | `/api/payments/webhook/redsys` | no |
 
 ## `posts` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/posts/` | opcional |
-| POST | `/api/users/{user_id}/posts/` | sí |
-| GET | `/api/festivals/{festival_id}/posts/` | opcional |
-| POST | `/api/festivals/{festival_id}/posts/` | sí |
+| GET | `/api/users/{user_id}/posts` | opcional |
+| POST | `/api/users/{user_id}/posts` | sí |
+| GET | `/api/festivals/{festival_id}/posts` | opcional |
+| POST | `/api/festivals/{festival_id}/posts` | sí |
 | GET | `/api/posts/{post_id}` | opcional |
 | PUT | `/api/posts/{post_id}` | sí |
 | DELETE | `/api/posts/{post_id}` | sí |
-| GET | `/api/posts/{post_id}/replies/` | opcional |
-| POST | `/api/posts/{post_id}/replies/` | sí |
+| GET | `/api/posts/{post_id}/replies` | opcional |
+| POST | `/api/posts/{post_id}/replies` | sí |
 | POST | `/api/posts/{post_id}/moderate` | sí |
 
 ## `registration_forms` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/registration-forms/` | sí |
-| POST | `/api/festivals/{festival_id}/registration-forms/` | sí |
+| GET | `/api/festivals/{festival_id}/registration-forms` | sí |
+| POST | `/api/festivals/{festival_id}/registration-forms` | sí |
 | GET | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
 | GET | `/api/registration-forms/{form_id}` | sí |
 | PUT | `/api/registration-forms/{form_id}` | sí |
 | DELETE | `/api/registration-forms/{form_id}` | sí |
-| GET | `/api/registration-forms/{form_id}/registrations/` | sí |
+| GET | `/api/registration-forms/{form_id}/registrations` | sí |
 | PUT | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}` | sí |
 | GET | `/api/public/forms/{token}` | no |
 | POST | `/api/public/forms/{token}/register` | opcional |
-| GET | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | sí |
-| POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | sí |
+| GET | `/api/festivals/{festival_id}/registration-forms/{form_id}/links` | sí |
+| POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links` | sí |
 | DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}` | sí |
 | POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}/regenerate` | sí |
-| GET | `/api/registration-forms/{form_id}/links/` | sí |
-| POST | `/api/registration-forms/{form_id}/links/` | sí |
+| GET | `/api/registration-forms/{form_id}/links` | sí |
+| POST | `/api/registration-forms/{form_id}/links` | sí |
 | DELETE | `/api/registration-form-links/{link_id}` | sí |
 | POST | `/api/registration-form-links/{link_id}/regenerate` | sí |
-| GET | `/api/festivals/{festival_id}/registrations/` | sí |
+| GET | `/api/festivals/{festival_id}/registrations` | sí |
 | GET | `/api/festivals/{festival_id}/registrations/export/csv` | sí |
 | GET | `/api/festivals/{festival_id}/registrations/export/pdf` | sí |
-| GET | `/api/users/{user_id}/registrations/` | sí |
+| GET | `/api/users/{user_id}/registrations` | sí |
 | PUT | `/api/registrations/{registration_id}` | sí |
 | POST | `/api/registrations/{registration_id}/approve` | sí |
 | POST | `/api/registrations/{registration_id}/reject` | sí |
 | POST | `/api/registrations/{registration_id}/payment/mark-paid` | sí |
 | POST | `/api/registrations/{registration_id}/payment/mark-refunded` | sí |
 | DELETE | `/api/registrations/{registration_id}` | sí |
-| POST | `/api/registration-forms/{form_id}/sections/` | sí |
+| POST | `/api/registration-forms/{form_id}/sections` | sí |
 | PUT | `/api/registration-forms/{form_id}/sections/{section_id}` | sí |
 | DELETE | `/api/registration-forms/{form_id}/sections/{section_id}` | sí |
 
@@ -530,51 +532,51 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/role-groups/` | no |
-| POST | `/api/role-groups/` | sí |
+| GET | `/api/role-groups` | no |
+| POST | `/api/role-groups` | sí (admin) |
 | GET | `/api/role-groups/{group_id}` | no |
-| PUT | `/api/role-groups/{group_id}` | sí |
-| DELETE | `/api/role-groups/{group_id}` | sí |
-| GET | `/api/role-groups/{group_id}/memberships/` | no |
-| POST | `/api/role-groups/{group_id}/memberships/` | sí |
-| PUT | `/api/role-group-memberships/{membership_id}` | sí |
-| DELETE | `/api/role-group-memberships/{membership_id}` | sí |
+| PUT | `/api/role-groups/{group_id}` | sí (admin) |
+| DELETE | `/api/role-groups/{group_id}` | sí (admin) |
+| GET | `/api/role-groups/{group_id}/memberships` | no |
+| POST | `/api/role-groups/{group_id}/memberships` | sí (admin) |
+| PUT | `/api/role-group-memberships/{membership_id}` | sí (admin) |
+| DELETE | `/api/role-group-memberships/{membership_id}` | sí (admin) |
 
 ## `roles` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/roles/` | sí |
-| POST | `/api/roles/` | sí |
-| GET | `/api/roles/hierarchy/` | opcional |
+| GET | `/api/roles` | sí |
+| POST | `/api/roles` | sí (admin) |
+| GET | `/api/roles/hierarchy` | opcional |
 | GET | `/api/roles/{role_id}` | opcional |
-| PUT | `/api/roles/{role_id}` | sí |
-| DELETE | `/api/roles/{role_id}` | sí |
-| GET | `/api/festivals/{festival_id}/roles/` | opcional |
-| POST | `/api/festivals/{festival_id}/roles/` | sí |
-| POST | `/api/festivals/{festival_id}/roles/initialize` | sí |
+| PUT | `/api/roles/{role_id}` | sí (admin) |
+| DELETE | `/api/roles/{role_id}` | sí (admin) |
+| GET | `/api/festivals/{festival_id}/roles` | opcional |
+| POST | `/api/festivals/{festival_id}/roles` | sí |
+| POST | `/api/festivals/{festival_id}/roles/initialize` | sí (admin) |
 | PUT | `/api/festivals/{festival_id}/roles/{fr_id}` | sí |
 | DELETE | `/api/festivals/{festival_id}/roles/{fr_id}` | sí |
 | GET | `/api/roles/{role_id}/dependencies` | opcional |
-| POST | `/api/role-dependencies/` | sí |
-| DELETE | `/api/role-dependencies/{dependency_id}` | sí |
+| POST | `/api/role-dependencies` | sí (admin) |
+| DELETE | `/api/role-dependencies/{dependency_id}` | sí (admin) |
 | GET | `/api/roles/{role_id}/conflicts` | opcional |
-| POST | `/api/role-conflicts/` | sí |
-| DELETE | `/api/role-conflicts/{conflict_id}` | sí |
+| POST | `/api/role-conflicts` | sí (admin) |
+| DELETE | `/api/role-conflicts/{conflict_id}` | sí (admin) |
 | GET | `/api/roles/{role_id}/check-conflicts` | opcional |
 
 ## `search` → `/api/search`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/search/` | sí |
+| GET | `/api/search` | sí |
 
 ## `shortfilm_locations` → `/api/shortfilms/{shortfilm_id}/locations`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/shortfilms/{shortfilm_id}/locations/` | no |
-| POST | `/api/shortfilms/{shortfilm_id}/locations/` | sí |
+| GET | `/api/shortfilms/{shortfilm_id}/locations` | no |
+| POST | `/api/shortfilms/{shortfilm_id}/locations` | sí |
 | PUT | `/api/shortfilms/{shortfilm_id}/locations/{sfloc_id}` | sí |
 | DELETE | `/api/shortfilms/{shortfilm_id}/locations/{sfloc_id}` | sí |
 
@@ -582,11 +584,11 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/shortfilms/` | no |
-| POST | `/api/shortfilms/` | sí |
-| GET | `/api/shortfilms/{shortfilm_id}` | no |
-| PUT | `/api/shortfilms/{shortfilm_id}` | sí |
-| DELETE | `/api/shortfilms/{shortfilm_id}` | sí |
+| GET | `/api/shortfilms` (obsolet) | no |
+| POST | `/api/shortfilms` (obsolet) | sí |
+| GET | `/api/shortfilms/{shortfilm_id}` (obsolet) | no |
+| PUT | `/api/shortfilms/{shortfilm_id}` (obsolet) | sí |
+| DELETE | `/api/shortfilms/{shortfilm_id}` (obsolet) | sí |
 
 ## `uploads` → `/api/uploads`
 
@@ -598,14 +600,12 @@ Detall interactiu: `/docs` (Swagger) i `/redoc` amb el backend en marxa.
 | POST | `/api/uploads/document` | sí |
 | POST | `/api/uploads/chat-image` | sí |
 
-Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai una URL absoluta. El client la resol amb `resolveMediaUrl()`, que anteposa el servidor actiu; les URL `http(s)` es deixen intactes. Els camps de mitjans (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) accepten ambdós formats.
-
 ## `user_aliases` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/aliases/` | no |
-| POST | `/api/users/{user_id}/aliases/` | sí |
+| GET | `/api/users/{user_id}/aliases` | no |
+| POST | `/api/users/{user_id}/aliases` | sí |
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | sí |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | sí |
 
@@ -613,9 +613,9 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| POST | `/api/users/{user_id}/blocks/` | sí |
+| POST | `/api/users/{user_id}/blocks` | sí |
 | DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | sí |
-| GET | `/api/users/{user_id}/blocks/` | sí |
+| GET | `/api/users/{user_id}/blocks` | sí |
 | GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | sí |
 
 ## `user_festival` → `/api/festivals`
@@ -627,30 +627,40 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 | GET | `/api/festivals/{festival_id}/members` | sí |
 | GET | `/api/festivals/user/{user_id}/festivals` | sí |
 
+## `user_follows` → `/api`
+
+| Mètode | Ruta | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/follow` | sí |
+| DELETE | `/api/users/{user_id}/follow` | sí |
+| GET | `/api/users/{user_id}/follow/status` | sí |
+| GET | `/api/users/{user_id}/followers` | sí |
+| GET | `/api/users/{user_id}/following` | sí |
+
 ## `user_roles` → `/api`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/roles/` | sí |
-| POST | `/api/users/{user_id}/roles/` | sí |
+| GET | `/api/users/{user_id}/roles` | sí |
+| POST | `/api/users/{user_id}/roles` | sí |
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | sí |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | sí |
-| GET | `/api/users/{user_id}/participant-tags/` | sí |
+| GET | `/api/users/{user_id}/participant-tags` | sí |
 | PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | sí |
 | POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | sí |
-| POST | `/api/users/{user_id}/participant-tags/` | sí |
+| POST | `/api/users/{user_id}/participant-tags` | sí |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | sí |
 
 ## `users` → `/api/users`
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/users/` | sí |
+| GET | `/api/users` | sí |
 | GET | `/api/users/public` | no |
 | GET | `/api/users/me` | sí |
 | GET | `/api/users/me/export` | sí |
 | DELETE | `/api/users/me` | sí |
-| POST | `/api/users/` | sí |
+| POST | `/api/users` | sí |
 | GET | `/api/users/{user_id}` | sí |
 | GET | `/api/users/{user_id}/public` | no |
 | PUT | `/api/users/{user_id}` | sí |
@@ -660,12 +670,12 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/validation-rules/` | no |
-| POST | `/api/validation-rules/` | sí |
+| GET | `/api/validation-rules` | no |
+| POST | `/api/validation-rules` | sí (admin) |
 | GET | `/api/validation-rules/{rule_id}` | no |
-| PUT | `/api/validation-rules/{rule_id}` | sí |
-| DELETE | `/api/validation-rules/{rule_id}` | sí |
-| GET | `/api/validation-rule-groups/` | no |
-| POST | `/api/validation-rule-groups/` | sí |
+| PUT | `/api/validation-rules/{rule_id}` | sí (admin) |
+| DELETE | `/api/validation-rules/{rule_id}` | sí (admin) |
+| GET | `/api/validation-rule-groups` | no |
+| POST | `/api/validation-rule-groups` | sí (admin) |
 
-Total: 446 endpoints en 39 routers.
+Total: 451 endpoints en 44 routers (40 amb prefix en `main.py`).

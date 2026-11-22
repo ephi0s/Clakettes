@@ -16,6 +16,10 @@ class ProviderNotConfigured(Exception):
     """Raised when a provider is selected but its credentials/SDK are missing."""
 
 
+class PaymentConfirmationError(Exception):
+    """Raised when a provider cannot validate a confirmation response."""
+
+
 class PaymentProvider(ABC):
     """Checkout + confirmation contract every gateway must implement."""
 
@@ -26,7 +30,7 @@ class PaymentProvider(ABC):
         """Create a checkout and return ``(provider_ref, checkout_url)``."""
 
     @abstractmethod
-    def confirm(self, payment: Payment) -> str:
+    def confirm(self, payment: Payment, response: dict | None = None) -> str:
         """Return the canonical status: ``paid``, ``failed`` or ``pending``."""
 
 
@@ -37,7 +41,7 @@ class MockPaymentProvider(PaymentProvider):
         ref = f"mock_{secrets.token_hex(8)}"
         return ref, f"mock://pay/{ref}"
 
-    def confirm(self, payment: Payment) -> str:
+    def confirm(self, payment: Payment, response: dict | None = None) -> str:
         if (payment.amount or 0) <= 0:
             return "failed"
         if getattr(settings, "MOCK_PAYMENTS_FORCE_FAIL", False):
@@ -67,6 +71,7 @@ class StripePaymentProvider(PaymentProvider):
 
     def create_checkout(self, amount: float, currency: str) -> tuple[str, str]:
         stripe = self._client()
+        base = (settings.PUBLIC_BASE_URL or "").strip().rstrip("/") or "http://localhost:8000"
         session = stripe.checkout.Session.create(
             mode="payment",
             line_items=[
@@ -79,12 +84,12 @@ class StripePaymentProvider(PaymentProvider):
                     "quantity": 1,
                 }
             ],
-            success_url="{CHECKOUT_SESSION_ID}",
-            cancel_url="{CHECKOUT_SESSION_ID}",
+            success_url=f"{base}/payments/success/{{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base}/payments/cancel",
         )
         return session.id, session.url
 
-    def confirm(self, payment: Payment) -> str:
+    def confirm(self, payment: Payment, response: dict | None = None) -> str:
         stripe = self._client()
         session = stripe.checkout.Session.retrieve(payment.provider_ref)
         return "paid" if session.payment_status == "paid" else "pending"
@@ -181,8 +186,19 @@ class RedsysPaymentProvider(PaymentProvider):
         )
         return order, url + query
 
-    def confirm(self, payment: Payment) -> str:
-        return "pending"
+    def confirm(self, payment: Payment, response: dict | None = None) -> str:
+        if not response:
+            return "pending"
+        params_b64 = str(response.get("Ds_MerchantParameters") or response.get("ds_merchant_parameters") or "")
+        signature_b64 = str(response.get("Ds_Signature") or response.get("ds_signature") or "")
+        signature_version = str(response.get("Ds_SignatureVersion") or response.get("ds_signature_version") or "")
+        payload = self.verify_response(params_b64, signature_b64, signature_version)
+        if payload is None:
+            raise PaymentConfirmationError("Invalid Redsys response signature")
+        order = str(payload.get("Ds_Order", payload.get("DS_MERCHANT_ORDER", "")))
+        if payment.provider_ref and order != payment.provider_ref:
+            raise PaymentConfirmationError("Redsys response order does not match the payment")
+        return "paid" if self.is_paid(payload) else "pending"
 
     def verify_response(self, params_b64: str, signature_b64: str, signature_version: str) -> dict | None:
         """Validate a Redsys notification; return payload dict, or None if invalid."""

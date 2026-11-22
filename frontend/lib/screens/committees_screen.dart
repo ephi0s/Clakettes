@@ -92,6 +92,16 @@ class _CommitteesScreenState extends State<CommitteesScreen> {
     }
   }
 
+  /// Abre el diálogo de miembros y recarga el comité al cerrarlo.
+  Future<void> _manageMembers(Committee c) async {
+    if (c.id == null) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _CommitteeMembersDialog(committee: c, api: api),
+    );
+    _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     l10n = AppLocalizations.of(context)!;
@@ -119,7 +129,7 @@ class _CommitteesScreenState extends State<CommitteesScreen> {
                                 subtitle: Text('${c.description ?? ""}  ${l10n.memberCount(c.memberCount)}', style: Theme.of(context).textTheme.bodySmall),
                                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                                   StatusIndicator(isActive: c.isActive, activeLabel: l10n.active, inactiveLabel: l10n.inactive),
-                                  IconButton(icon: const Icon(Icons.group_add_outlined, size: 20), tooltip: l10n.manageMembers, onPressed: () {}),
+                                  IconButton(icon: const Icon(Icons.group_add_outlined, size: 20), tooltip: l10n.manageMembers, onPressed: () => _manageMembers(c)),
                                   IconButton(icon: const Icon(Icons.delete_outline, size: 20), tooltip: l10n.delete, onPressed: () => _deleteCommittee(c)),
                                 ]),
                               ),
@@ -128,6 +138,175 @@ class _CommitteesScreenState extends State<CommitteesScreen> {
                         ),
                 ),
       floatingActionButton: FloatingActionButton(onPressed: _createCommittee, tooltip: l10n.createCommittee, child: const Icon(Icons.add)),
+    );
+  }
+}
+
+/// Diálogo que lista los miembros de un comité y permite añadirlos y eliminarlos.
+class _CommitteeMembersDialog extends StatefulWidget {
+  final Committee committee;
+  final ApiService api;
+
+  const _CommitteeMembersDialog({required this.committee, required this.api});
+
+  @override
+  State<_CommitteeMembersDialog> createState() => _CommitteeMembersDialogState();
+}
+
+class _CommitteeMembersDialogState extends State<_CommitteeMembersDialog> {
+  List<CommitteeMember> _members = [];
+  bool _isLoading = true;
+  bool _busy = false;
+  String? _error;
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMembers();
+  }
+
+  Future<void> _loadMembers() async {
+    if (!mounted) return;
+    setState(() { _isLoading = true; _error = null; });
+    try {
+      final result = await widget.api.getCommitteeMembers(widget.committee.id!, size: 100);
+      if (!mounted) return;
+      setState(() { _members = result.items; _isLoading = false; });
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (!mounted) return;
+      setState(() { _isLoading = false; _error = l10n.errorFor(e); });
+    }
+  }
+
+  Future<void> _addMember() async {
+    final userIdCtl = TextEditingController();
+    final notesCtl = TextEditingController();
+    String role = 'member';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('${l10n.add} ${l10n.members}'),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              SemanticTextField(
+                controller: userIdCtl,
+                label: l10n.users,
+                semanticLabel: l10n.users,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: role,
+                decoration: InputDecoration(labelText: l10n.role),
+                items: committeeRoles
+                    .map((r) => DropdownMenuItem<String>(value: r, child: Text(r.replaceAll('_', ' '))))
+                    .toList(),
+                onChanged: (v) => setDialogState(() => role = v ?? 'member'),
+              ),
+              const SizedBox(height: 12),
+              SemanticTextField(
+                controller: notesCtl,
+                label: l10n.notes,
+                semanticLabel: l10n.notes,
+                helperText: l10n.optional,
+              ),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.add)),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final userId = int.tryParse(userIdCtl.text.trim());
+    if (userId == null) {
+      showAppSnack(context, l10n.invalidValue);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await widget.api.addCommitteeMember(
+        widget.committee.id!,
+        CommitteeMember(
+          committeeId: widget.committee.id!,
+          userId: userId,
+          roleInCommittee: role,
+          notes: notesCtl.text.trim().isEmpty ? null : notesCtl.text.trim(),
+        ),
+      );
+      if (mounted) showAppSnack(context, l10n.saved);
+      _loadMembers();
+    } catch (e) {
+      if (mounted) showAppSnack(context, l10n.errorFor(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _removeMember(CommitteeMember m) async {
+    if (m.id == null) return;
+    final confirm = await showConfirmDialog(
+      context,
+      title: l10n.delete,
+      message: '${m.userName ?? l10n.users} #${m.userId}',
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await widget.api.removeCommitteeMember(m.id!);
+      _loadMembers();
+    } catch (e) {
+      if (mounted) showAppSnack(context, l10n.errorFor(e));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('${l10n.manageMembers} — ${widget.committee.name}'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: _isLoading
+            ? const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
+            : _error != null
+                ? Text(_error!)
+                : _members.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(l10n.noMembersFound, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _members.length,
+                        itemBuilder: (ctx, i) {
+                          final m = _members[i];
+                          final displayName = m.userName ?? '${l10n.users} #${m.userId}';
+                          return ListTile(
+                            leading: CircleAvatar(child: Text(displayName.substring(0, 1).toUpperCase())),
+                            title: Text(displayName),
+                            subtitle: Text('${m.roleInCommittee.replaceAll('_', ' ')} • ${l10n.users} #${m.userId}'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              tooltip: l10n.delete,
+                              onPressed: _busy ? null : () => _removeMember(m),
+                            ),
+                          );
+                        },
+                      ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.close)),
+        FilledButton.icon(
+          onPressed: _busy ? null : _addMember,
+          icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+          label: Text(l10n.add),
+        ),
+      ],
     );
   }
 }

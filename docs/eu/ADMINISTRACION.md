@@ -31,7 +31,7 @@ Ekoizpenean ez denean (`APP_ENV != production`), abiarazteak `admin` / `setup` s
 | Parearen identitatea | `GET /api/federation/whoami` | Parearen RS256 JWTa bere JWKSen kontra balioztatzen du; 401 baliozkoa ez bada |
 | Portabilitatea | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Sinatutako bundle-ak esportatu/inportatu, jabetza eta identitatea migratu eta erreferentzia zaharrak ebaztu (migrazioak soilik admin) |
 | Txata eta moderazioa | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Sinatutako bridge-a, deduplikatutako historia, txostenak, isiltzeak, iragazkia eta 10 mezu/60 s nodo eta erabiltzaile bakoitzeko |
-| Gertaerak | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE `since` eta bihotz-taupadarekin, pareei argitaratzea eta birsaioak (3 saiakera, 300 ms→5 s) |
+| Gertaerak | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE `since` eta bihotz-taupadarekin, pareei argitaratzea eta birsaioak (3 saiakera, 300 ms → 1,5 s → 5 s) |
 | Erresilientzia | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Osasuna, taupada, p50/p95 metrikak, gakoen berehalako errebokazioa eta intzidente-plana |
 | Betetzea | `python tools/federation_conformance.py <url> [--json]` | Hirugarren nodo bat egiaztatzen du; 1 itzultzen du hutsegite kritiko edo altuak badaude |
 
@@ -40,7 +40,7 @@ Konfiantza-ereduaren eta garraioaren xehetasuna [FEDERATION_SECURITY.md](FEDERAT
 ## Babeskopiak eta migrazioak
 
 - SQLite: kopiatu `*.db` beroa geldituta (`-Kill` lehenago). MariaDB: `mariadb-dump` (`db-data` bolumena).
-- Migrazioak: `alembic upgrade head` `backend/`-tik (prod-en **soilik** Alembic, inoiz ez `create_all`). Uneko head-a `c1d2e3f4a5b6` da (42 berrikuspen) eta `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` eta `chat_mutes` gehitzen ditu.
+- Migrazioak: `alembic upgrade head` `backend/`-tik (prod-en **soilik** Alembic, inoiz ez `create_all`). Uneko head-a `d1e2f3a4b5c6` da (45 berrikuspen); azkenek `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, eserlekuaren bakartasuna (`uq_event_seat_location`) eta `festival_id` nahitaezkoarekin `contest_type` laburretan gehitzen dituzte.
 - Motor-aldaketa: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); xehetasuna [DATABASE.md](DATABASE.md) fitxategian.
 
 ## Arazoak konpontzen

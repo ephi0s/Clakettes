@@ -6,23 +6,23 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ## Backend (`backend/`)
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
 - Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
-- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (44 versiones). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
-- Capas: Routers (40 archivos, 38 con APIRouter) → Services (43) → Models (40). Models/Schemas via `app.enums`
-- Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s (SQLite)
+- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (45 versiones, head `d1e2f3a4b5c6`). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
+- Capas: Routers (45 archivos, 43 con APIRouter) → Services (53) → Models (44, incluye `base.py`; 37 schemas). Models/Schemas via `app.enums`
+- Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s global, 600/60s en `/dav`, 5/300s login, 20/60s refresh, 3/300s reset; `TESTING` ∈ {1,true,yes,on} (helper `app.config.is_testing()`) desactiva todos los límites y la auto-migración
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (47 archivos, ~1544 tests)
+- Tests: `pytest tests/ -x -q --tb=short` (54 archivos, 1544 tests; 1541 con `-m "not interop"` en CI)
 - Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
 
 ## Frontend (`frontend/`)
 - Flutter web/desktop/Android/iOS/macOS/Linux. SDK >=3.0.0 <4.0.0
-- Entry: `main()` → `DatabaseService.init()` (boxes: festivals, users, shortfilms, messages). Luego OfflineCache, SyncQueue, ConnectivityMonitor, LocaleService.
+- Entry: `main()` → `DatabaseService.init()` (boxes: festivals, users, shortfilms, messages). Luego OfflineCache, SyncQueue, NodeService, ConnectivityMonitor, LocaleService, NotificationService.
 - API: `api_service.dart` base `http://localhost:8000/api`. Config: `--dart-define=BACKEND_URL=...`
 - Estado: singletons + setState() + streams. Hive + SharedPreferences offline.
-- i18n: 9 locales (en,es,fr,de,it,ca,eu,gl,oc) ARB + `app_localizations.dart` manual (sin gen-l10n)
+- i18n: 9 locales (en,es,fr,de,it,ca,eu,gl,oc) ARB (823 claves por locale), `app_localizations.dart` manual (~1028 líneas); paridad con `test/l10n/arb_parity_test.dart`; `LocaleService` detecta el locale del SO y persiste el resuelto
 - Navegación: NavigationRail (>800px) / NavigationBar (<800px) + Drawer en `main_scaffold.dart`
-- Widgets: `reusable_widgets.dart` (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField) + 31 más (32 en `lib/widgets/`)
+- Widgets: `reusable_widgets.dart` (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField) + 32 más (33 en `lib/widgets/`)
 - Code gen Hive: `flutter pub run build_runner build --delete-conflicting-outputs`
-- Tests: `flutter test` (75 archivos) | Lint: `flutter analyze`
+- Tests: `flutter test` (77 archivos) | Lint: `flutter analyze`
 
 ## Inicio (`.ps1` / `.sh`)
 - `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
@@ -43,7 +43,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 - `graphify-out/` está en `.gitignore`; no se sube al repositorio
 
 ## Docs ([docs/es/README.md](docs/es/README.md))
-- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md), [docs/es/USO.md](docs/es/USO.md), [docs/es/DATABASE.md](docs/es/DATABASE.md), [docs/es/API.md](docs/es/API.md), [docs/es/BACKEND.md](docs/es/BACKEND.md), [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md), [docs/es/FUNCIONAL.md](docs/es/FUNCIONAL.md), [docs/es/FEDERATION_PROTOCOL.md](docs/es/FEDERATION_PROTOCOL.md), [docs/es/FEDERATION_SCHEMA.md](docs/es/FEDERATION_SCHEMA.md), [docs/es/FEDERATION_SECURITY.md](docs/es/FEDERATION_SECURITY.md), [docs/es/PUSH.md](docs/es/PUSH.md), [docs/es/AUDITORIA.md](docs/es/AUDITORIA.md), [docs/es/ADMINISTRACION.md](docs/es/ADMINISTRACION.md), [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md), [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md), [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md).
+- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md), [docs/es/USO.md](docs/es/USO.md), [docs/es/DATABASE.md](docs/es/DATABASE.md), [docs/es/API.md](docs/es/API.md), [docs/es/BACKEND.md](docs/es/BACKEND.md), [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md), [docs/es/FUNCIONAL.md](docs/es/FUNCIONAL.md), [docs/es/FEDERATION_PROTOCOL.md](docs/es/FEDERATION_PROTOCOL.md), [docs/es/FEDERATION_SCHEMA.md](docs/es/FEDERATION_SCHEMA.md), [docs/es/FEDERATION_SECURITY.md](docs/es/FEDERATION_SECURITY.md), [docs/es/PUSH.md](docs/es/PUSH.md), [docs/es/AUDITORIA.md](docs/es/AUDITORIA.md), [docs/es/ADMINISTRACION.md](docs/es/ADMINISTRACION.md), [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md), [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md), [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md), [docs/es/FEDERATION_CHAT_BROKER.md](docs/es/FEDERATION_CHAT_BROKER.md).
 - La documentación es oro y va en español (estilo canario, ustedes): al cambiar
   código que la afecte, actualiza TODA la info pertinente en el mismo cambio —
   cifras (routers/servicios/modelos/migraciones/tests), endpoints nuevos o
@@ -53,7 +53,7 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
   `docs/de/`, `docs/it/`, `docs/ca/`, `docs/eu/`, `docs/gl/` y `docs/oc/`.
   El español es canónico: todo cambio en una doc en español se replica a sus
   8 hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
-  Los 17 documentos existen traducidos en las 9 lenguas.
+  Los 18 documentos comunes existen en las 9 lenguas (20 en `docs/es/`, que añade `AMENAZAS_NODOS_FEDERACION.md` y `MODELO_CONFIANZA_NODOS.md`).
 
 ## Operación y referencia rápida para agentes
 
@@ -61,16 +61,16 @@ Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cin
 ```bash
 cd backend
 python -m uvicorn app.main:app --reload          # entry (8000), usa .venv/ si existe
-python -m pytest tests/ -x -q --tb=short          # tests (47 archivos, ~1544)
+python -m pytest tests/ -x -q --tb=short          # tests (54 archivos, 1544)
 ruff check . && ruff format --check .             # lint (line-length 120)
-alembic upgrade head                               # migraciones (44 versiones)
+alembic upgrade head                               # migraciones (45 versiones, head d1e2f3a4b5c6)
 ```
 Nota: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`. Auto-migra al arrancar (`SKIP_AUTO_MIGRATE=1` para omitir).
 
 ### Comandos de frontend
 ```bash
 cd frontend
-flutter test                                       # 75 archivos
+flutter test                                       # 77 archivos
 flutter analyze                                    # lint
 flutter pub run build_runner build --delete-conflicting-outputs  # code gen Hive
 ```

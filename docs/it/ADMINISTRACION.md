@@ -31,7 +31,7 @@ In non-prod (`APP_ENV != production`) all'avvio vengono creati `admin` / `setup`
 | Identità del peer | `GET /api/federation/whoami` | Valida il JWT RS256 del peer contro il suo JWKS; 401 se non valido |
 | Portabilità | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Esporta/importa bundle firmati, migra proprietà e identità e risolve le vecchie ref (migrazioni, solo admin) |
 | Chat e moderazione | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Bridge firmato, cronologia deduplicata, segnalazioni, mute, filtro e limite di 10 messaggi/60 s per nodo e utente |
-| Eventi | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE con `since` e battito, pubblicazione ai peer e ripetizioni (3 tentativi, 300 ms→5 s) |
+| Eventi | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE con `since` e battito, pubblicazione ai peer e ripetizioni (3 tentativi, 300 ms → 1,5 s → 5 s) |
 | Resilienza | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Health, heartbeat, metriche p50/p95, revoca immediata delle chiavi e piano incidente |
 | Conformità | `python tools/federation_conformance.py <url> [--json]` | Verifica un nodo terzo; esce 1 in caso di errori critici/alti |
 
@@ -40,7 +40,7 @@ Il dettaglio del modello di fiducia e del trasporto è in [FEDERATION_SECURITY.m
 ## Backup e migrazioni
 
 - SQLite: copiare `*.db` a fermo (`-Kill` prima). MariaDB: `mariadb-dump` (volume `db-data`).
-- Migrazioni: `alembic upgrade head` da `backend/` (prod **solo** Alembic, mai `create_all`). L'head attuale è `c1d2e3f4a5b6` (42 revisioni) e aggiunge `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` e `chat_mutes`.
+- Migrazioni: `alembic upgrade head` da `backend/` (prod **solo** Alembic, mai `create_all`). L'head attuale è `d1e2f3a4b5c6` (45 revisioni); le ultime aggiungono `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicità del posto (`uq_event_seat_location`) e `contest_type` nei corti con `festival_id` obbligatorio.
 - Cambio motore: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); dettaglio in [DATABASE.md](DATABASE.md).
 
 ## Risoluzione problemi

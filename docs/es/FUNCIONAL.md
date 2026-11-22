@@ -8,8 +8,8 @@ Utilidad real del proyecto por rol, con el flujo que la sostiene. Detalle operat
 
 1. Crea el festival (`POST /api/festivals/`) con descripción, web, sede y logo.
 2. Abre convocatorias: formularios de inscripción con secciones, roles y etiquetas (`RegistrationForm + Sections + Links`), expuestos por enlace público que cualquiera puede rellenar sin cuenta.
-3. Recibe cortos vinculados a tus convocatorias y localizaciones de rodaje.
-4. Monta la programación: eventos (gala, proyección, taller, mesa, networking, premios, fiesta, masterclass, Q&A) con tipos de entrada, asientos (disponible/reservada/vendida/asignada/bloqueada), reservas y check-in de asistentes; exporta asistentes a CSV y eventos a ICS. Criba cada obra del visionado con estado `pending/screened/disqualified` y motivo, y filtra por estado, descalificadas o etiqueta de participante. La organización verifica las etiquetas de elegibilidad (residente, estudiante) con métodos externos, y el participante puede solicitar la verificación adjuntando certificado de residencia o matrícula.
+3. Recibe cortos vinculados a tus convocatorias y localizaciones de rodaje, gestionados en `/api/festivals/{id}/shortfilms` y clasificados como `official_section` (por defecto) o `contest`; el perfil del festival muestra el recuento y la app permite filtrar por tipo.
+4. Monta la programación: eventos (gala, proyección, taller, mesa, networking, premios, fiesta, masterclass, Q&A) con tipos de entrada, asientos (disponible/reservada/vendida/asignada/bloqueada), reservas y check-in de asistentes; exporta asistentes a CSV y eventos a ICS. Criba cada obra del visionado con estado `pending/screened/disqualified` y motivo, y filtra por estado, descalificadas o etiqueta de participante. Solo se pueden programar proyecciones con cortos del mismo festival (`EventService` rechaza ids ajenos). La organización verifica las etiquetas de elegibilidad (residente, estudiante) con métodos externos, y el participante puede solicitar la verificación adjuntando certificado de residencia o matrícula.
 5. Nombra comités con miembros y publica premios (verificados o no, públicos o no) por festival, corto o usuario, con etiquetas de elegibilidad y verificación del receptor.
 6. Comunica: canales del festival (admin/moderator/member), mensajes e imágenes en el perfil, rulebooks.
 
@@ -19,11 +19,11 @@ Solo edita/borra sus festivales y gestiona sus usuarios (`require_festival_admin
 
 - Perfil con oficio (dirección, interpretación, sonido, guion, montaje, vestuario, maquillaje, figuración, doblaje, foley, prensa, producción, distribución…), bio y palmarés vinculado a festivales de la plataforma o externo por enlace.
 - Privacidad campo por campo (email, bio, ubicación) y perfiles públicos/privados.
-- Cada usuario edita su perfil y sus cortos; el jurado consulta y vota según su festival.
-- Chat directo y de grupo/canal con cifrado de extremo a extremo: las claves públicas se publican en `POST /api/users/me/public-key`, el servidor solo guarda y retransmite cifrado, el cifrado real ocurre en la app. Entre nodos federados el mensaje viaja por el bridge firmado, se deduplica por `message_id` y se ordena por fecha; puedes reportar mensajes y los administradores pueden silenciar usuarios o filtrar palabras.
+- Cada usuario edita su perfil y sus cortos; el jurado consulta y vota según su festival y solo puede votar cortos de él.
+- Chat directo y de grupo/canal con cifrado de extremo a extremo: las claves públicas se publican en `POST /api/users/me/public-key`, el servidor solo guarda y retransmite cifrado, el cifrado real ocurre en la app. Entre nodos federados el mensaje viaja por el bridge firmado, se deduplica por `message_id` y se ordena por fecha; puedes reportar mensajes y los administradores pueden silenciar usuarios o filtrar palabras. La app muestra indicador de escritura, latencia y confirmaciones de lectura, permite buscar en el historial y encola los mensajes offline de forma duradera con el mismo `message_id`.
 
 ## Equipo express (attendee)
-- El concurso express (también llamado guerrilla) es el concurso ciudadano **dentro del festival**: se crea y se votan cortos con `contest_type = contest`.
+- El concurso express (también llamado guerrilla) es el concurso ciudadano **dentro del festival**: se crea y se votan cortos con `contest_type = contest` (el valor por defecto es `official_section`; express y guerrilla son el mismo concurso).
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, rol `attendee`) y salida libre (`leave`).
 - Geolocaliza participantes, coordina el grupo por chat y presenta el corto al concurso express.

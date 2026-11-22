@@ -51,10 +51,24 @@ class PaymentService(BaseService[Payment, PaymentCheckoutRequest, PaymentCheckou
             reg.payment_method = payment.provider
             reg.transaction_id = payment.provider_ref
 
-    def confirm(self, db: Session, payment: Payment) -> Payment:
-        payment.status = self.provider.confirm(payment)
+    def confirm(self, db: Session, payment: Payment, response: dict | None = None) -> Payment:
+        payment.status = self.provider.confirm(payment, response=response)
         if payment.status == "paid":
             self._sync_registration(db, payment, "paid")
+        db.commit()
+        db.refresh(payment)
+        return payment
+
+    def apply_webhook_status(self, db: Session, payment: Payment, status: str) -> Payment:
+        if status == "paid":
+            if payment.status in ("paid", "refunded"):
+                return payment
+            payment.status = "paid"
+            self._sync_registration(db, payment, "paid")
+        elif payment.status not in (None, "", "pending"):
+            return payment
+        else:
+            payment.status = status
         db.commit()
         db.refresh(payment)
         return payment

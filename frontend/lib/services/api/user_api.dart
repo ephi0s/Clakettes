@@ -139,4 +139,18 @@ extension UserApi on ApiService {
   Future<void> removeUserRole(int userId, int userRoleId) async {
     await request('DELETE', '/users/$userId/roles/$userRoleId');
   }
+
+  Future<Map<String, dynamic>> followUser(int userId) async {
+    final data = await request('POST', '/users/$userId/follow');
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<void> unfollowUser(int userId) async {
+    await request('DELETE', '/users/$userId/follow');
+  }
+
+  Future<Map<String, dynamic>> getFollowStatus(int userId) async {
+    final data = await request('GET', '/users/$userId/follow/status');
+    return Map<String, dynamic>.from(data as Map);
+  }
 }

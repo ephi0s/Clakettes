@@ -1,5 +1,7 @@
 # Clakettes Schema v1
 
+[ES](../es/FEDERATION_SCHEMA.md) · [EN](../en/FEDERATION_SCHEMA.md) · [FR](../fr/FEDERATION_SCHEMA.md) · [DE](../de/FEDERATION_SCHEMA.md) · [IT](../it/FEDERATION_SCHEMA.md) · [CA](../ca/FEDERATION_SCHEMA.md) · [EU](FEDERATION_SCHEMA.md) · [GL](../gl/FEDERATION_SCHEMA.md) · [OC](../oc/FEDERATION_SCHEMA.md)
+
 Federazio-eskemaren hasierako bertsioa. Nodoen artean trukagarriak diren gutxieneko entitateak definitzen ditu, nodo bakoitzaren manifestuan `schema_version` bidez bertsionatuta.
 
 ## Konfiantza-eredua (2. Fasea)
@@ -50,7 +52,7 @@ Nodo baten identitatea **(domeinua, X.509 TLS ziurtagiria)** tupla da. Nodoen ar
 ### Portabilitatea (7. Fasea)
 
 - `POST /api/federation/portability/bundles` — erabiltzailearen bundle-a sortzen du `bundle_version`, `origin_domain`, `payload`, `signature` (HMAC-SHA256 `SECRET_KEY` erabiliz) eta `checksum` (payload kanonikoaren SHA-256) eremuekin.
-- `POST /api/federation/portability/imports` — sinadura eta checksum balioztatzen ditu, jatorri-politika egiaztatzen du (baimenduta ez badago 403), `minimize_data` aplikatzen du eta inportatutakoa erregistratzen du (erabiltzailea, film laburrak, jaialdiak, mezuak).
+- `POST /api/federation/portability/imports` — sinadura eta checksum balioztatzen ditu, jatorri-politika egiaztatzen du (baimenduta ez badago 403), `minimize_data` aplikatzen du eta inportatutakoa erregistratzen du (erabiltzailea, film laburrak, jaialdiak, mezuak). Bundle-ek `contest_type` dute labur bakoitzean: `MediaUrl` balioztatu/saneatzen da (URL baliogabea → `null`), `contest_type` `official_section`-era normalizatzen da baliozkoa ez bada eta jaialdiaren checksum-ak barne hartzen du.
 - `POST /api/federation/portability/festivals/{festival_id}/migrate` — jaialdiaren eta haren film laburren jabetza `target_domain`-eko `new_owner_id`-ri transferitzen dio checksum egiaztatuta; soilik admin.
 - `POST /api/federation/portability/users/{user_ref}/migrate` — `handle` eta `did` helmugako domeinura berridatzi eta birbideratzea sortzen du; soilik admin.
 - `GET /api/federation/portability/redirects/{old_ref}` — erreferentzia zaharra ebazten du (`old_ref`, `new_ref`, `target_domain`, `created_at`).
@@ -61,7 +63,7 @@ Nodo baten identitatea **(domeinua, X.509 TLS ziurtagiria)** tupla da. Nodoen ar
 - `POST /api/federation/chat/bridge/outbound` — gutun-azala sinatu, `chat_outbox`-en ilaratu `clakettes.chat.node.{target_node}` gaiarekin eta konfiguratutako garraioaren bidez argitaratu (`DurableQueueBackend`); `config`-ek garraioa, stream-a, algoritmoa eta gaien mapaketa itzultzen ditu.
 - `GET /api/federation/chat/messages` — federatutako historia, `message_id` bidez deduplikatuta eta `timestamp` + `message_id` bidez ordenatuta (aukerako `node` iragazkia).
 - `POST /api/chat/moderation/messages/{message_id}/report`, `PATCH /moderate`, `GET /reports`, `POST/GET /mutes`, `GET /limits` — txostenak, ezkutatu/ezabatu, erabiltzaile/kanal/nodo bidezko isiltzeak, blokeatutako hitzen iragazkia, nodo bidezko `disable_chat` eta 10 mezu/60 s nodo eta erabiltzaile bakoitzeko (`TESTING=true` bidez desaktibatuta).
-- `GET /api/federation/events/stream` — SSE `since`, `token`, `limit` aukerakoekin, azken 200 gertaeren replay-a eta `: ping` bihotz-taupada 15 s an.
+- `GET /api/federation/events/stream` — SSE query-n `token` nahitaezkoarekin (`since` eta `limit` aukerakoak), azken 200 gertaeren replay-a eta `: ping` bihotz-taupada 15 s an.
 - `POST /api/federation/events/publish` — `node`/`entity`-tik eratorritako gai batean argitaratzen du (edo `topic` esplizitua), pareei bidalitakoa HMAC bidez sinatzen du (`X-Clakettes-Signature`) eta `disable_chat`/`disable_search` duten nodoak saltzen ditu; soilik admin.
 - `GET /api/federation/events/retry-queue` — birsaio zain daudenak; 3 saiakera 300 ms → 1,5 s → 5 s atzerapenarekin.
 
@@ -75,7 +77,9 @@ Nodo baten identitatea **(domeinua, X.509 TLS ziurtagiria)** tupla da. Nodoen ar
 
 ### Osasuna eta utilitateak
 
-- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — zundaketa eta diagnostiko endpoint-ak.
+- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — egoera erreala islatzen ez duten erantzun estatikoak dituzten leku-markatzaileak (placeholders); ez dira zundaketa edo diagnostiko endpoint operatiboak.
+
+> **Oharra:** erantzun finkoak itzultzen dituzte eta segurtasun-sentsazio faltsua eman dezakete; benetako diagnostikorako, erabili goian deskribatutako erresilientzia-endpoint-ak.
 
 ## Egokitzapena
 

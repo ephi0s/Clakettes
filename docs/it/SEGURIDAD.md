@@ -39,19 +39,24 @@
 | Grupo de chat | rol `admin` del grupo para borrar; miembro para leer |
 | Formulario | `require_form_admin` (creador/admin/organizer) |
 | Delegación | delegador o admin para editar/revocar |
-| Roles globales | `is_admin`; auto-join solo con rol `attendee` |
+| Roles globales | `require_admin(user, db)` unificato: ruolo legacy `admin` (case-insensitive) o `UserRole` con stato `ACTIVE`/`APPROVED`; auto-join solo con ruolo `attendee` |
+| Alias de usuario | `require_self_or_admin` (proprietario o admin) in create/update/delete |
+| Bloqueos de usuario | `require_owner_or_admin` (proprietario o `can_edit_user`) in block/unblock/list/status |
 | Roles de canal | `Literal[admin,moderator,member]` (422 fuera de lista) |
 | Pagos | dueño vía inscripción, admin de festival o global; webhook mock con `MOCK_WEBHOOK_SECRET` |
 
 ## Pagamenti
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Senza PAN/IBAN nel DB: solo importo, valuta, `provider_ref` e stato.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` per impostazione predefinita in `backend/app/config.py`). Senza PAN/IBAN nel DB: solo importo, valuta, `provider_ref` e stato.
 - Stripe: SDK pigro + verifica della firma (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: firma HMAC_SHA256_V1 senza SDK; Bizum con `pay_methods="z"` (attivazione previa nel commercio). Validare contro il sandbox prima di prod.
+- `confirm` e `refund` sincronizzano `FestivalRegistration.payment_status` (`paid`/`refunded`) e, in paid, `paid_at`/`payment_method`/`transaction_id`; il `provider` del Payment è preso dal provider attivo, non da `PAYMENTS_PROVIDER`.
+- **Stato reale**: Stripe e Redsys NON sono ancora operativi; manca il collegamento dei loro webhook (`POST /api/payments/webhook/{stripe,redsys}`). Oggi funziona solo il webhook simulato (`POST /api/payments/webhook/mock`).
+- Il `confirm` di Redsys restituisce sempre `"pending"`: non conferma pagamenti reali finché il webhook non è collegato.
 
 ## Perimetro
 
-- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` lo spegne.
+- Rate limit SQLite 100/60 s per IP globale, 600/60 s su `/dav`, 5/300 s login, 20/60 s refresh e 3/300 s reset e 60/60 s in federazione. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) disattiva tutti i limiti e l'auto-migrazione.
 - Header: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`,
   `Content-Security-Policy` stretta nell'API (rilassata solo in `/docs`),
   `HSTS` solo in produzione.
@@ -64,3 +69,15 @@
 2. `CORS_ORIGINS` con domini espliciti; `DATABASE_URL` MariaDB + `alembic upgrade head`.
 3. TLS con proxy + `FORWARDED_ALLOW_IPS`; senza admin `setup` (si crea solo fuori prod).
 4. Cambiare `appUserModelId`/GUID delle notifiche Windows se si rinomina l'app.
+
+## Federazione (fasi 2-10)
+
+Dettaglio completo in [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controlli attivi:
+
+- Identità del nodo = dominio + certificato TLS. Peering reciproco via mTLS con certificati di dominio (CA pubblica o privata); TLS obbligatorio, nessun self-signed in prod.
+- Manifesto firmato RSA-SHA256 con PEM/chiave propri e `expires_at` di 24 h; `whoami` richiede JWT federato; JWKS per verificare i token dei peer; `peers/verify` e `peers/revoke`.
+- `allowlist`/`blocklist` per nodo (`node_policies`), con `import_only`, `disable_chat` e `disable_search`. Rate limiting e anti-flood al bordo; propagazione delle segnalazioni di moderazione.
+- Portabilità: bundle firmati con HMAC e checksum; l'import valida/sanea `MediaUrl` e normalizza `contest_type`; migrazione di festival e identità con `identity_redirects` e audit in `migration_audits`; gli endpoint di migrazione richiedono admin.
+- Chat federata: bridge firmato RS256, dedup per `message_id` in `chat_outbox`, ordinamento per `timestamp`; segnalazioni e mute, filtro parole e limite di 10 messaggi/60 s per nodo e utente.
+- Eventi: pubblicazione firmata con HMAC (`X-Clakettes-Signature`), SSE con `token` obbligatorio in query, `since` e `limit` opzionali, replay di 200 e 3 ripetizioni con backoff.
+- Resilienza: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), revoca delle chiavi (`keys/revoke`) e piano incidente in 8 passi. Rotazione/revoca tramite rinnovo del certificato; un nodo compromesso viene invalidato nella directory.

@@ -42,17 +42,18 @@ Stages `lint → test → build`, same commands (pytest via `python -m pytest`).
 
 ## Scale
 
-37 backend test files (~1400 tests), 69 frontend test files, 18 Alembic migrations. Never skip the gate on changes touching `backend/app/` or `frontend/lib/`.
+54 backend test files (1544 tests, 1541 con `-m "not interop"`), 77 frontend test files, 45 Alembic migrations (head `d1e2f3a4b5c6`). Never skip the gate on changes touching `backend/app/` or `frontend/lib/`.
 
 ## Docs de oro (anti-desfase)
 
 La documentación va en español (estilo canario, ustedes) y nunca queda desfasada:
 todo cambio que la afecte actualiza TODA la info pertinente en el mismo cambio.
 
-- Cifras: routers (36 ficheros, 33 con `APIRouter`), servicios (36), modelos (34),
-  schemas (33), migraciones (18), tests backend (37 ficheros, ~1400) y frontend
-  (69 ficheros). Están en `AGENTS.md`, `README.md`, `docs/es/BACKEND.md`,
-  `docs/es/ARQUITECTURA.md`, `docs/es/ADMINISTRACION.md` y `docs/es/AUDITORIA.md` (addendum, sin reescribir).
+- Cifras: routers (45 ficheros, 43 con `APIRouter`), servicios (53), modelos (44
+  incluye `base.py`), schemas (37), migraciones (45, head `d1e2f3a4b5c6`), tests
+  backend (54 ficheros, 1544) y frontend (77 ficheros). Están en `AGENTS.md`,
+  `README.md`, `docs/es/BACKEND.md`, `docs/es/ARQUITECTURA.md`,
+  `docs/es/ADMINISTRACION.md` y `docs/es/AUDITORIA.md` (addendum, sin reescribir).
 - Endpoints nuevos/movidos: regenera `docs/es/API.md` con `python tools/gen_api.py`
   y revisa `docs/es/USO.md` + `docs/es/SEGURIDAD.md` (auth, pagos, RGPD).
 - Flags de arranque: ayuda de `./start.ps1`/`./start.sh` + `docs/es/USO.md` +

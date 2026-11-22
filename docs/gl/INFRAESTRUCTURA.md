@@ -39,20 +39,32 @@ Volumes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-dat
 | `DATABASE_URL` | `sqlite:///./clakettes.db` (dev) ou `mariadb+pymysql://…` (prod) |
 | `CORS_ORIGINS` | Baleiro = `*` sen credenciais (só dev); prod esixe orixes explícitos |
 | `PUBLIC_BASE_URL`, `FORWARDED_ALLOW_IPS` | URL pública do nodo (manifesto e bundles) e proxies de confianza (TLS frontal obrigatorio en prod: os tokens DAV viaxan na URL) |
-| `MTLS_REQUIRED`, `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | mTLS federado (CN e PEM do certificado) e PEM/clave que asinan o manifesto RSA-SHA256 |
+| `MTLS_REQUIRED`, `MTLS_CA_BUNDLE_PATH`, `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | mTLS federado (CN e PEM do certificado), CA raíz para validar os pares e PEM/clave que asinan o manifesto RSA-SHA256 |
+| `TESTING` | `1/true/yes/on` (case-insensitive, `app.config.is_testing()`): desactiva todos os rate limits (global 100/60 s, `/dav` 600/60 s, login 5/300 s, refresh 20/60 s, reset 3/300 s, federación 60/60 s) e a auto-migración |
+| `SKIP_AUTO_MIGRATE` | `1/true/yes/on`: omite `alembic upgrade head` no lifespan (BD xestionada externamente) |
+| `RATE_LIMITS_DB_PATH` | Ruta da BD SQLite do limitador de taxa (por defecto `backend/rate_limits.db`) |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `ACCESS_TOKEN_EXPIRE_MINUTES` | Claims validados e TTL do token de acceso (`clakettes`, `clakettes-api`, 30 min) |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | Provedor (`mock` por defecto) e segredo do webhook simulado |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | Credenciais Stripe/Redsys (sandbox por defecto, moeda `978`) |
 | `BACKEND_URL` | `--dart-define` para a app Flutter (tamén cambiables na pantalla de backend; persiste en SharedPreferences) |
 
 ## Saúde e observables
 
-- `GET /health` → `{"status":"healthy"}`; `GET /` → versión (`0.3.0`). O `ConnectivityMonitor` da app úsaos como sonda real, con health checks por nodo para degradar a caché Hive con elegancia.
+- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → versión (`0.3.0`, constante `APP_VERSION`). O `ConnectivityMonitor` da app úsaos como sonda real: `NodeHealth` por nodo (`testNode()`, latencia, `offlineNodeCount`, `isDegraded`) degrada a caché Hive con elegancia e mostra `DegradedNodesBanner` co recuento e un botón de reintento.
 - Federación: `GET /api/federation/resilience/health` e `/metrics` (p50/p95, latencia, fallos e reintentos); `GET /api/federation/events/stream` mantén o SSE cun latido cada 15 s; `python tools/federation_conformance.py <url> [--json]` verifica nodos terceiros.
 - Logs: stdout de uvicorn (tokens DAV redactados); erros de API en SnackBar + `debugPrint`.
-- Límites: corpo ≤10 MB (413), avatar/imaxe ≤5 MB (`jpeg/png/webp/gif` con magic-bytes), vídeo ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s por IP (429; `/dav*` 600/60s; bypass con `TESTING=true`).
+- Límites: corpo ≤10 MB (413), avatar/imaxe ≤5 MB (`jpeg/png/webp/gif` con magic-bytes), vídeo ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s por IP (429; `/dav*` 600/60s; bypass con `TESTING` ∈ {1,true,yes,on}).
 
 ## CI
 
-- **GitHub** (push/PR a `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (MariaDB 11 + `alembic upgrade head` + pytest) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 imaxes).
+- **GitHub** (push/PR a `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (SQLite, `TESTING=true`, pytest con `-m "not interop"`) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 imaxes).
 - **GitLab**: etapas `lint → test → build`; `docker-build` só en `main` con push ao registry.
+
+### Actualización de dependencias
+
+- `.github/dependabot.yml`: pip en `/backend` e pub en `/frontend`, semanais (luns), grupos `backend-deps`/`frontend-deps`, ata 10 PRs abertos, etiquetas `backend`/`frontend` + `dependencies`, assignee `ephi0s` e prefixos `build(backend):`/`build(frontend):`. Ignóranse actualizacións `version-update:semver-major`.
+- `.github/workflows/dependabot-automerge.yml`: `pull_request_target`, só para `dependabot[bot]`; usa `dependabot/fetch-metadata@v2` e activa `gh pr merge --auto --squash` unicamente en patch/minor. As majors quedan a revisión manual e o merge efectivo esixe CI verde.
+- `.github/workflows/dependabot-rebase.yml`: luns 04:17 UTC (`17 4 * * 1`) e `workflow_dispatch`; actualiza as ramas dos PRs abertos de Dependabot vía `PUT /repos/{repo}/pulls/{n}/update-branch`.
 
 ## Ver tamén
 

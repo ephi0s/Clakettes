@@ -2,18 +2,24 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](AUDITORIA.md)
 
+## 0. Resumit executiu
+
+Revista de las dependéncias, de las optimizacions aplicadas e de la dèta tecnica en espèra del projècte Clakettes.
+
 ## 1. Dependéncias extèrnas: çò que se pòt eliminar e çò que non
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
 
 | Dep | Veredicto | Motivo |
 | --- | --- | --- |
-| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Mantener | Núcleo del stack |
-| python-jose[cryptography] | Mantener por ahora, migrar a PyJWT en el futuro | Abandonado desde 2016, pero el cambio toca `app/auth.py` + `routers/dependencies.py` + tests; hacerlo en PR separado con tests de tokens |
-| python-dotenv | Mantener | Requerido por `pydantic-settings>=2` y `uvicorn[standard]` (`--env-file`); solo 2 scripts lo importan directamente, pero quitarlo rompería la carga de `.env` |
-| pymysql | Mantener como driver prod | Solo se usa con MariaDB; no cargarlo en dev no ahorra nada (import perezoso ya en SQLAlchemy) |
-| python-multipart, email-validator, bcrypt | Mantener | Uploads, validación email, hash passwords |
-| reportlab 5.1.0 | Mantener, pero con import perezoso (hecho) | Solo `export_service._build_pdf`; antes se importaba a nivel de módulo (~200 ms + memoria en cada worker). Ahora import dentro de la función. Además se sincronizó `pyproject.toml` (faltaba) y se pineó `==5.1.0` |
+| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Manténer | Nucli de la pila |
+| PyJWT==2.15.1 | Migracion acabada | `python-jose` eliminat; `app/auth.py` e `routers/dependencies.py` utilizan PyJWT (bump 2.10.1 → 2.15.0 → 2.15.1) |
+| python-dotenv | Non inclusa | Figura pas dins `pyproject.toml`/`requirements*.txt` ni es importa dins `backend/`; `pydantic-settings` carga `.env` dirèctament |
+| pymysql | Manténer coma pilòt prod | Utilizat sonque amb MariaDB; lo cargar pas en dev non estalvia res (import peresós ja dins SQLAlchemy) |
+| python-multipart, email-validator, bcrypt | Manténer | Mandadís, validacion de l'email, hash dels senhals |
+| reportlab 5.1.0 | Manténer, mas amb import peresós (fait) | Sonque `export_service._build_pdf`; abans importat al nivèl del modul (~200 ms + memòria per cada worker). Ara importat dedins la foncion. En mai `pyproject.toml` foguèt sincronizat (manquava) e fixat `==5.1.0` |
+
+**Versiones fixadas dins `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major dempuèi 6.21.x); desvolopament: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 
@@ -22,17 +28,17 @@ Totas las dependéncias son en usatge reau; cap se poguèt levar sens rompre fon
 - `archive`: utilizat en `crypto_utils.dart` (ZLib/GZip). `dart:io` non vai perque rompe web.
 - `path_provider`: utilizat en `file_downloader_io.dart` (mobil/desktop).
 - `web`: utilizat en `file_downloader_web.dart`.
-- `pointycastle` + `crypto` + `uuid`: E2EE del chat (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher`: mapas.
+- `pointycastle` + `crypto`: E2EE del chat (ECDH P-256 + AES-GCM; lo nom `X25519` apareis sonque dins un camp eretat).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher`: mapas.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker`: cada un amb 1-2 usatges, mas los levar trairiá foncionalitat.
 
 ## 2. Optimizacions aplicadas
 
 1. `export_service.py`: import reportlab peresós en `_build_pdf` + docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 instàncias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300s e `login`); non unificar sens pèrdre limits distints.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py`: 5 instàncias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s e federacion 60/60 s); non unificar sens pèrdre limits distints. Lo bypass passa per `app.config.is_testing()` (`1/true/yes/on`).
 3. `base_service.py`: `paginate` fixa `page>=1`, `size` en `[1,100]`; nòu `paginate_filtered()` definit amb 0 usatges (pendent migrar los `get_all_paginated` clonats).
 4. `routers/dependencies.py`: `get_current_user_optional` reutiliza `validate_access_token` (elimina ~30 linhas duplicadas JWT+session); fix `__import__("datetime")` → import normau; nòu `get_or_404()` per remplaçar ~100 `HTTPException(404)` inline.
-5. `dav/auth.py`: documentada la relacion amb `app.auth._hash_token`.
+5. `dav/auth.py`: documentada la relacion amb `app.auth.hash_token` (abans `_hash_token`; se consèrva l'alias per compatibilitat).
 6. `pyproject.toml`/`requirements.txt` sincronizats (reportlab).
 7. `reusable_widgets.dart`: nòu `showAppSnack()` (1 def + 8 usatges; demòran 115 `ScaffoldMessenger` dirèctes).
 
@@ -80,8 +86,10 @@ Totas las dependéncias son en usatge reau; cap se poguèt levar sens rompre fon
     i18n (0 claus absentas), `locations` (didChangeDependencies amb garda).
 12. `get_or_404` estendut a `committees.py` (10), `events.py` (58, via script
     amb revision + 17 existéncias sens assignar per evitar F841), `delegations`
-    (2) e 5 routers de localizacions (12). Sens cambiaments d'esquèma: i a pas
-    migracion Alembic pendenta per aqueste lòt.
+    (2) e 5 routers de localizacions (12). Aqueste lòt introduís pas de migracion;
+    de revisions posterioras apondèron `a8b9c0d1e2f3` (unicitat de sètge) e
+    `b9c0d1e2f3a4` (`contest_type` dins los corts), ambedas ja aplicadas al head
+    `b9c0d1e2f3a4`.
 13. Rendiment: filtre `venue` de programacion davalat cap a SQL (abans filtrava
     la pagina en Python e rompiá `total`/`pages`).
 14. Frontend: gardas anti-doble-mandadís en crear festivau/utilizaire/cort +
@@ -130,11 +138,3 @@ Totas las dependéncias son en usatge reau; cap se poguèt levar sens rompre fon
     `docs/oc/BACKEND.md` + `docs/oc/DATABASE.md` (mogudas dempuèi `backend/` lo 10/10/2026).
     READMEs e `AGENTS.md` amb chifras realas; admin dev `admin`/`setup`
     (sens `ADMIN_PASSWORD` en `.env.example`; seed sonque non-prod en `app/main.py:257`).
-
-## 4. Revision 10/10/2026 (correccions a §2–§3)
-
-1. Docs backend consolidadas: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/oc/BACKEND.md` + `docs/oc/DATABASE.md`; ligams actualizats en `README.oc.md`, `AGENTS.md`, `docs/oc/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-4. Correccions a §2: `RateLimiter` son 3 instàncias (`main.py`, `admin.py`, `auth.py`), non 1; `ADMIN_PASSWORD` existís pas en `backend/.env.example` (sonque comentari `admin/setup`); `ruff format` cubrís 216 fichièrs (non 215).
-5. `tools/gen_api.py` regenera `API.md` idempotent mas amb rota absoluda hardcodeada e sens shebang (non portable).
-
-

@@ -29,84 +29,84 @@ Consulta `../start.ps1` für die Launcher mit Flags `--dev`, `--final`, `--web`.
 
 ```
 lib/
-├── screens/           # pantallas UI
+├── screens/           # UI-Bildschirme
 │   ├── auth/          # Login
-│   ├── festivals/     # Lista, perfil, crear festival
-│   ├── users/         # Perfil, directorio, crear usuario, roles
-│   ├── shortfilms/    # Lista, perfil, crear cortometraje
-│   ├── chat/          # Chat, canales, crear canal
-│   ├── events/        # Gestión y detalle de eventos, asientos/reservas
+│   ├── festivals/     # Liste, Profil, Festival erstellen
+│   ├── users/         # Profil, Verzeichnis, Benutzer erstellen, Rollen
+│   ├── shortfilms/    # Liste, Profil, Kurzfilm erstellen
+│   ├── chat/          # Chat, Kanäle, Kanal erstellen
+│   ├── events/        # Event-Verwaltung und -Detail, Sitze/Buchungen
 │   ├── awards/        # Palmarés
-│   ├── notifications/ # Centro de notificaciones
-│   ├── locations/     # Mapa, detalle de localización
-│   ├── forms/         # Formularios de registro, editor de páginas, respuestas, formularios públicos
-│   ├── admin/         # Panel de administración
-│   ├── committees/    # Comités
-│   └── settings/      # Configuración del backend, miembro del directorio, dashboard
-├── services/          # servicios + api/ (dominios) + chat_backend (clases)
-│   ├── api_service.dart              # Fachada + núcleo (auth, transporte, admin, búsqueda)
-│   ├── api/                          # Métodos por dominio (part of api_service.dart)
+│   ├── notifications/ # Benachrichtigungszentrale
+│   ├── locations/     # Karte, Standortdetail
+│   ├── forms/         # Anmeldeformulare, Seiten-Editor, Antworten, öffentliche Formulare
+│   ├── admin/         # Admin-Bereich
+│   ├── committees/    # Komitees
+│   └── settings/      # Backend-Konfiguration, Verzeichnismitglied, Dashboard
+├── services/          # Dienste + api/ (Domänen) + chat_backend (Klassen)
+│   ├── api_service.dart              # Fassade + Kern (Auth, Transport, Admin, Suche)
+│   ├── api/                          # Methoden pro Domäne (part of api_service.dart)
 │   │   ├── user_api.dart, festival_api.dart, channel_api.dart, form_api.dart
 │   │   ├── calendar_api.dart, catalog_api.dart, org_api.dart
 │   │   ├── event_api.dart, location_api.dart
-│   ├── auth_service.dart             # JWT, persistencia de sesión
-│   ├── backend_config.dart           # URL del backend (guardada > dart-define > default por plataforma)
-│   ├── channel_service.dart          # Canales de chat + claves E2EE
-│   ├── connectivity_monitor.dart     # Detección online/offline
-│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + compresión, con isolates async
-│   ├── database_service.dart         # Inicialización de Hive + adaptadores de tipos
-│   ├── file_downloader.dart          # Descarga nativa (condicional web/io)
-│   ├── locale_service.dart           # Persistencia de idioma (SharedPreferences)
-│   ├── notification_service.dart     # Recordatorios: plugin en escritorio, Notification API en web, no-op en móvil
-│   ├── notification_platform.dart    # Export condicional web/stub (sin Firebase)
-│   ├── offline_cache_service.dart    # Cajas Hive (festivals, users, shortfilms, messages)
-│   ├── sync_queue_service.dart       # Cola offline con retry + backoff (max 3 intentos)
-│   └── chat_backend/                 # Abstracción WS + REST del chat
+│   ├── auth_service.dart             # JWT, Sitzungspersistenz
+│   ├── backend_config.dart           # Backend-URL (gespeichert > dart-define > Plattform-Standard)
+│   ├── channel_service.dart          # Chat-Kanäle + E2EE-Schlüssel
+│   ├── connectivity_monitor.dart     # Online/Offline-Erkennung
+│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + Kompression, mit async Isolates
+│   ├── database_service.dart         # Hive-Initialisierung + Typadapter
+│   ├── file_downloader.dart          # Nativer Download (web/io-bedingt)
+│   ├── locale_service.dart           # Sprachpersistenz (SharedPreferences)
+│   ├── notification_service.dart     # Erinnerungen: Plugin auf Desktop, Notification API im Web, No-op auf Mobil
+│   ├── notification_platform.dart    # Bedingter web/stub-Export (ohne Firebase)
+│   ├── offline_cache_service.dart    # Hive-Boxen (festivals, users, shortfilms, messages)
+│   ├── sync_queue_service.dart       # Offline-Queue mit Retry + Backoff (max. 3 Versuche)
+│   └── chat_backend/                 # Chat-WS + REST-Abstraktion
 │       ├── abstract_chat_backend.dart
-│       ├── chat_service.dart         # Fachada WS/REST/E2EE
-│       ├── rest_chat_backend.dart    # Historial/sync vía REST (usado como fake en tests)
-│       └── websocket_chat_backend.dart  # Tiempo real vía WebSocket
-├── models/            # modelos Dart (manuales fromJson/toJson + Hive codegen)
-├── widgets/           # widgets reutilizables accesibles
+│       ├── chat_service.dart         # WS/REST/E2EE-Fassade
+│       ├── rest_chat_backend.dart    # Historie/Sync via REST (in Tests als Fake genutzt)
+│       └── websocket_chat_backend.dart  # Echtzeit via WebSocket
+├── models/            # Dart-Modelle (manuelles fromJson/toJson + Hive-Codegen)
+├── widgets/           # barrierefreie wiederverwendbare Widgets
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
-│   ├── chat_bubble.dart          # Burbuja de mensaje + contenido enriquecido
-│   ├── chat_input_bar.dart       # Barra de entrada del chat
-│   ├── confirm_dialog.dart       # Diálogo de confirmación accesible
+│   ├── chat_bubble.dart          # Nachrichtenblase + Rich Content
+│   ├── chat_input_bar.dart       # Chat-Eingabeleiste
+│   ├── confirm_dialog.dart       # Barrierefreier Bestätigungsdialog
 │   ├── dav_subscription_section.dart
-│   ├── emoji_picker.dart         # Selector de emojis en bottom sheet
-│   ├── empty_state_widget.dart   # Estado vacío accesible
-│   ├── error_state_widget.dart   # Estado de error con reintento
+│   ├── emoji_picker.dart         # Emoji-Auswahl im Bottom Sheet
+│   ├── empty_state_widget.dart   # Barrierefreier Leerzustand
+│   ├── error_state_widget.dart   # Fehlerzustand mit Wiederholung
 │   ├── event_visibility_picker.dart
-│   ├── festival_sections.dart    # Secciones de bases y localizaciones del festival
-│   ├── film_location_card.dart   # Tarjeta de rodaje en localización
+│   ├── festival_sections.dart    # Festival-Regeln und -Standorte Abschnitte
+│   ├── film_location_card.dart   # Drehort-Karte
 │   ├── language_picker.dart
-│   ├── list_item_animation.dart  # Animación de entrada de filas
-│   ├── loading_skeleton.dart     # Skeleton de carga (shimmer)
-│   ├── location_badge_chip.dart  # Chip con localización
+│   ├── list_item_animation.dart  # Zeilen-Eingangsanimation
+│   ├── loading_skeleton.dart     # Lade-Skeleton (Shimmer)
+│   ├── location_badge_chip.dart  # Standort-Chip
 │   ├── location_cards.dart       # LocationCard, LegacyCard, LocationFormScreen
-│   ├── location_selector.dart    # Selector de localizaciones
-│   ├── location_tag_editor.dart  # Editor de etiquetas de localización
+│   ├── location_selector.dart    # Standortauswahl
+│   ├── location_tag_editor.dart  # Standort-Tag-Editor
 │   ├── login_prompt_sheet.dart
-│   ├── map_picker.dart           # Mapa de selección de punto
+│   ├── map_picker.dart           # Punktauswahl-Karte
 │   ├── open_in_maps_action.dart
-│   ├── seat_map_widget.dart      # Mapa de asientos interactivo
+│   ├── seat_map_widget.dart      # Interaktiver Sitzplan
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
 ├── l10n/              # AppLocalizations + 9 ARB
-├── main.dart          # Entry point, tema Material 3, orden de init de servicios
+├── main.dart          # Einstiegspunkt, Material-3-Theme, Reihenfolge der Dienst-Initialisierung
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
-└── auth_wrapper.dart  # Gate de autenticación (splash → login / home)
+└── auth_wrapper.dart  # Auth-Gate (Splash → Login / Home)
 ```
 
 ## Dienst-Initialisierungsreihenfolge (main.dart)
 
 ```dart
-await DatabaseService.init();           // Cajas Hive
-await OfflineCacheService.init();       // Cargar datos en caché
-await SyncQueueService.init();          // Mutaciones pendientes
-await ConnectivityMonitor.start();      // Empezar a escuchar la red
-await LocaleService.load();             // Cargar idioma guardado
-// Después runApp()
+await DatabaseService.init();           // Hive-Boxen
+await OfflineCacheService.init();       // Zwischengespeicherte Daten laden
+await SyncQueueService.init();          // Ausstehende Mutationen
+await ConnectivityMonitor.start();      // Netzwerküberwachung starten
+await LocaleService.load();             // Gespeicherte Sprache laden
+// Danach runApp()
 ```
 
 ## State-Management-Muster
@@ -139,10 +139,11 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 3. **Schreiben**: Mutationen werden in `SyncQueueService` eingereiht (HMAC-signiert)
 4. **Sync**: bei wiederhergestellter Konnektivität spielt `SyncQueueService` die Queue sequenziell ab
 5. **Konfliktlösung**: Server gewinnt (Last-Write-Wins mit Timestamp)
+6. **Herkunft**: der Hive-Cache speichert die Herkunft jedes Knotens (`putWithOrigin`, `getOrigin`, `reconcile`, `clearOrigin`); nicht antwortende Knoten meldet `DegradedNodesBanner` mit Zähler und Neuladen-Schaltfläche
 
 ## Internationalisierung (i18n)
 
-- **9 Locales**: en, es, fr, de, it, ca, eu, gl, oc
+- **9 Locales**: en, es, fr, de, it, ca, eu, gl, oc (823 Schlüssel pro ARB, Parität geprüft mit `test/l10n/arb_parity_test.dart`)
 - **Manuelle Implementierung**: `lib/l10n/app_localizations.dart` (ohne gen-l10n)
 - **ARB-Dateien**: `assets/l10n/app_<locale>.arb`
 - **Auto-Erkennung**: `LocaleService` liest die Systemsprache, mit Fallback auf `en`
@@ -165,16 +166,16 @@ AppLocalizations.of(context)!.roles['admin']
 
 ## Barrierefreiheit (WCAG 2.1 AA)
 
-| Patrón | Uso |
+| Muster | Verwendung |
 |---------|-------|
-| `Semantics` | instancias para lectores de pantalla |
-| `SemanticHeader` | Encabezados de sección (`header: true`) |
-| `SemanticTextField` | Campos de formulario con semántica de validación |
-| `ExcludeSemantics` | iconos decorativos |
-| `Tooltip` | elementos interactivos |
+| `Semantics` | Instanzen für Screenreader |
+| `SemanticHeader` | Abschnittsüberschriften (`header: true`) |
+| `SemanticTextField` | Formularfelder mit Validierungssemantik |
+| `ExcludeSemantics` | dekorative Icons |
+| `Tooltip` | interaktive Elemente |
 | `SnackBarBehavior.floating` | snackbars |
-| `autovalidateMode: onUserInteraction` | Formularios |
-| `TextInputAction.next/done` + `onSubmitted` | Navegación por teclado |
+| `autovalidateMode: onUserInteraction` | Formulare |
+| `TextInputAction.next/done` + `onSubmitted` | Tastaturnavigation |
 
 ### Wiederverwendbare barrierefreie Widgets
 
@@ -220,32 +221,32 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 # Web
 flutter build web --dart-define=BACKEND_URL=https://api.clakettes.com/api
 
-# Escritorio
+# Desktop
 flutter build windows
 flutter build linux
 flutter build macos
 
-# Móvil
+# Mobil
 flutter build apk        # APK Android
 flutter build appbundle  # AAB Android (Play Store)
-flutter build ios        # iOS (requiere macOS + Xcode)
+flutter build ios        # iOS (benötigt macOS + Xcode)
 ```
 
 ## Schlüsselabhängigkeiten
 
-| Paquete | Propósito |
+| Paket | Zweck |
 |---------|-----------|
-| `http` | Cliente REST API |
-| `hive_flutter` | Caché offline |
-| `shared_preferences` | Persistencia de locale y token de auth |
-| `connectivity_plus` | Detección de red |
-| `web_socket_channel` | Chat en tiempo real |
+| `http` | REST-API-Client |
+| `hive_flutter` | Offline-Cache |
+| `shared_preferences` | Persistenz von Locale und Auth-Token |
+| `connectivity_plus` | Netzwerkerkennung |
+| `web_socket_channel` | Echtzeit-Chat |
 | `pointycastle` | E2EE X25519/AES-GCM |
-| `flutter_map` + `latlong2` | Mapas |
+| `flutter_map` + `latlong2` | Karten |
 | `geolocator` | GPS |
-| `flutter_local_notifications` | Notificaciones locales |
-| `url_launcher` | Enlaces externos (mapas, web) |
-| `uuid` | IDs del lado del cliente |
+| `flutter_local_notifications` | Lokale Benachrichtigungen |
+| `url_launcher` | Externe Links (Karten, Web) |
+| `uuid` | Client-seitige IDs |
 
 ## Codegenerierung (Hive)
 
@@ -258,10 +259,10 @@ Generiert `*_adapter.dart` für die mit `@HiveType` annotierten Modelle.
 ## Testing
 
 ```bash
-# Tests unitarios + de widgets
+# Unit- + Widget-Tests
 flutter test
 
-# Tests de integración (requiere dispositivo/emulador)
+# Integrationstests (benötigt Gerät/Emulator)
 flutter test integration_test/
 ```
 
@@ -284,14 +285,14 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 archivos ARB
+│   ├── l10n/                # 9 ARB-Dateien
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # modelos Dart (Hive + codegen)
-│   ├── screens/             # pantallas
-│   ├── widgets/             # widgets reutilizables
-│   ├── services/            # servicios + api/ + chat_backend
+│   ├── models/              # Dart-Modelle (Hive + Codegen)
+│   ├── screens/             # Bildschirme
+│   ├── widgets/             # wiederverwendbare Widgets
+│   ├── services/            # Dienste + api/ + chat_backend
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart
@@ -305,8 +306,8 @@ frontend/
 
 ```powershell
 cd frontend/docker
-.\build.ps1 -Target all      # Todas las plataformas
-.\build.ps1 -Target web      # Solo web
+.\build.ps1 -Target all      # Alle Plattformen
+.\build.ps1 -Target web      # Nur Web
 ```
 
 Multi-Stage-Dockerfile:
@@ -315,20 +316,20 @@ Multi-Stage-Dockerfile:
 
 ## Umgebungsvariablen
 
-| Variable | Descripción | Default |
+| Variable | Beschreibung | Standard |
 |----------|-------------|---------|
-| `BACKEND_URL` | URL base de la API (vía `--dart-define`) | `http://localhost:8000/api` |
-| `CHROME_EXECUTABLE` | Navegador para `flutter run -d chrome` | Auto-detectado (Brave/Chrome) |
+| `BACKEND_URL` | API-Basis-URL (via `--dart-define`) | `http://localhost:8000/api` |
+| `CHROME_EXECUTABLE` | Browser für `flutter run -d chrome` | Automatisch erkannt (Brave/Chrome) |
 
 ## Fehlerbehebung
 
-| Problema | Solución |
+| Problem | Lösung |
 |----------|----------|
-| `flutter pub get` falla | Borra `.dart_tool`, `pubspec.lock` y repite |
-| Conflictos de tipos Hive | `flutter pub run build_runner build --delete-conflicting-outputs` |
-| Fallo de conexión WebSocket | Comprueba `BACKEND_URL`; asegúrate de que el backend expone `/ws/chat` |
-| El idioma no persiste | Limpia `SharedPreferences`, comprueba `LocaleService.load()` |
-| El modo oscuro no aplica | Asegúrate de `ThemeMode.system` o `ThemeMode.dark` explícito en `MaterialApp` |
+| `flutter pub get` schlägt fehl | `.dart_tool`, `pubspec.lock` löschen und erneut versuchen |
+| Hive-Typkonflikte | `flutter pub run build_runner build --delete-conflicting-outputs` |
+| WebSocket-Verbindungsfehler | Prüfe `BACKEND_URL`; stelle sicher, dass das Backend `/ws/chat` bereitstellt |
+| Sprache bleibt nicht erhalten | `SharedPreferences` löschen, `LocaleService.load()` prüfen |
+| Dark Mode wird nicht angewendet | Explizites `ThemeMode.system` oder `ThemeMode.dark` in `MaterialApp` sicherstellen |
 
 ## Beitragen
 

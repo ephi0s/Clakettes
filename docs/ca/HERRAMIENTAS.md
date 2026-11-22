@@ -22,7 +22,7 @@
 | macOS / Windows / Linux | `tools/build-macos.sh` / `flutter build windows` / `flutter build linux` | Host corresponent |
 | Docker multi-target | `tools/build-all.ps1` | Requereix Docker |
 | Verificar conformitat d'un node | `python tools/federation_conformance.py <url> [--json]` | Arrel (`tools/`) |
-| Regenerar referència d'API | `python tools/gen_api.py --all` | Arrel (`tools/`) |
+| Regenerar referència d'API | `python tools/gen_api.py --all` | Arrel (`tools/`); combina prefixos de `main.py` i de cada `APIRouter` i detecta dependències d'auth |
 
 El CLI de conformitat comprova manifest, JWKS, token, directori, usuaris, WebFinger, reportes, portabilitat, bridge de xat i stream d'esdeveniments; retorna 1 si hi ha fallades `critical`/`high` i 0 en cas contrari, i `--json` imprimeix l'informe complet.
 
@@ -31,15 +31,15 @@ El CLI de conformitat comprova manifest, JWKS, token, directori, usuaris, WebFin
 1. **`.dockerignore` en els contextos de build** (`backend/`, `frontend/`). Abans només existien a `backend/docker/` i `frontend/docker/`, que NO són el context de `docker-compose.yml` (`./backend`, `./frontend`). Cada `docker compose build` enviava `.venv/` (centenars de MB), `.dart_tool/`, `build/`, `*.db` i `*.hive` al dimoni. Ara el context és mínim. Excepció: `!pubspec.lock` es conserva per a builds reproducibles.
 2. **Config pytest unificada**: eliminat `backend/pytest.ini` (duplicava i eclipsava `pyproject.toml`); tota la config viu a `[tool.pytest.ini_options]` (testpaths, patrons, markers).
 3. **CI coherent**:
-   - GitHub: Flutter `3.22.0` → `3.24.0` (igual que el Dockerfile); `flutter pub run` (obsolet) → `dart run build_runner`.
-   - GitLab `backend-test`: afegits `TESTING=true` i `SECRET_KEY` (abans el rate limiter seguia actiu en tests → 429 esporàdics).
+   - GitHub: Flutter fixat a `3.47.3` (igual que el Dockerfile); `flutter pub run` (obsolet) → `dart run build_runner`.
+   - GitHub i GitLab `backend-test`: `TESTING=true` i `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 bytes, evita `InsecureKeyLengthWarning`; abans el rate limiter seguia actiu en tests → 429 esporàdics).
    - GitLab `frontend-test`: afegida generació d'adaptadors Hive abans de `flutter test` (paritat amb GitHub).
-   - `pip install ruff` → `pip install "ruff>=0.5.0"` (igual que `requirements-dev.txt`).
+   - `pip install ruff` → `pip install "ruff==0.15.22"` a GitHub Actions; GitLab fa servir `pip install "ruff>=0.5.0"` i `requirements-dev.txt` fixa `ruff==0.17.5` per al desenvolupament local.
 4. **Lints multiplataforma** (`analysis_options.yaml`): `avoid_print` i `avoid_web_libraries_in_flutter`. Verificat: `flutter analyze` net (l'import condicional web/io és el patró acceptat).
 5. **Fix `onReorder` obsolet** → `onReorderItem` (sense ajust manual d'índex); `flutter analyze` passa d'1 info a 0 issues.
 
 ## Propostes (no aplicades, amb motiu)
 
-1. **Gate `ruff format --check` a CI**: bloquejat per ~249 violacions E501/W292 existents. Passos: `ruff format .`, revisar diff, `ruff check --fix`, i llavors afegir el gate.
+1. ~~**Gate `ruff format --check` a CI**~~: ja aplicat a GitHub i GitLab després de corregir ~249 violacions E501/W292 històriques.
 2. **Unificar `.ps1`/`.sh`**: dupliquen la lògica de ports/processos. La via realista és extreure la matriu de ports a `tools/ports.*` o documentar un únic entrypoint per SO, no reescriure tots dos alhora.
 3. **Cobertura a CI** (`pytest --cov`, `flutter test --coverage` + lcov): útil quan s'ampliïn els tests de `syncAll` i routers sense cobrir (vegeu roadmap a [../README.ca.md](../../README.ca.md)).

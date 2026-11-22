@@ -31,7 +31,7 @@ En non-prod (`APP_ENV != production`) le démarrage crée `admin` / `setup` (`ad
 | Identité du pair | `GET /api/federation/whoami` | Valide le JWT RS256 du pair contre son JWKS ; 401 si non valide |
 | Portabilité | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Exporter/importer des bundles signés, migrer propriété et identité et résoudre les anciennes refs (migrations, admin uniquement) |
 | Chat et modération | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Bridge signé, historique dédupliqué, signalements, mutes, filtre et limite de 10 messages/60 s par nœud et utilisateur |
-| Événements | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE avec `since` et battement, publication aux pairs et relances (3 tentatives, 300 ms→5 s) |
+| Événements | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE avec `since` et battement, publication aux pairs et relances (3 tentatives, 300 ms → 1,5 s → 5 s) |
 | Résilience | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Health, heartbeat, métriques p50/p95, révocation immédiate de clés et plan d'incident |
 | Conformité | `python tools/federation_conformance.py <url> [--json]` | Vérifie un nœud tiers ; sort 1 en cas d'échecs critiques/élevés |
 
@@ -40,7 +40,7 @@ Le détail du modèle de confiance et du transport est dans [FEDERATION_SECURITY
 ## Sauvegardes et migrations
 
 - SQLite : copier `*.db` à l'arrêt (`-Kill` d'abord). MariaDB : `mariadb-dump` (volume `db-data`).
-- Migrations : `alembic upgrade head` depuis `backend/` (prod **uniquement** Alembic, jamais `create_all`). Le head actuel est `c1d2e3f4a5b6` (42 révisions) et ajoute `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` et `chat_mutes`.
+- Migrations : `alembic upgrade head` depuis `backend/` (prod **uniquement** Alembic, jamais `create_all`). Le head actuel est `d1e2f3a4b5c6` (45 révisions) ; les dernières ajoutent `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicité de siège (`uq_event_seat_location`) et `contest_type` sur les courts avec `festival_id` obligatoire.
 - Changement de moteur : `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev) ; détail dans [DATABASE.md](DATABASE.md).
 
 ## Dépannage

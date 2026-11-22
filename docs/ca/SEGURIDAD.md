@@ -27,34 +27,43 @@
 | Grup de xat | rol `admin` del grup per esborrar; membre per llegir |
 | Formulari | `require_form_admin` (creador/admin/organizer) |
 | Delegacio | delegant o admin per editar/revocar |
-| Rols globals | `is_admin`; auto-join només amb rol `attendee` |
+| Rols globals | `require_admin(user, db)` unificat: rol legacy `admin` (case-insensitive) o `UserRole` amb estat `ACTIVE`/`APPROVED`; auto-join nomes amb rol `attendee` |
+| Alias d'usuari | `require_self_or_admin` (propietari o admin) a create/update/delete |
+| Bloquejos d'usuari | `require_owner_or_admin` (propietari o `can_edit_user`) a block/unblock/list/status |
 | Rols de canal | `Literal[admin,moderator,member]` (422 fora de la llista) |
 | Pagaments | propietari via inscripcio, admin de festival o global; webhook mock amb `MOCK_WEBHOOK_SECRET` |
 
 ## Pagaments
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sense PAN/IBAN a la BD: solament import, moneda, `provider_ref` i estat.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` per defecte a `backend/app/config.py`). Sense PAN/IBAN a la BD: solament import, moneda, `provider_ref` i estat.
 - Stripe: SDK perezos + verificacio de signatura (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: signatura HMAC_SHA256_V1 sense SDK; Bizum amb `pay_methods="z"` (alta prealable al comerç). Validar contra el sandbox abans de prod.
+- `confirm` i `refund` sincronitzen `FestivalRegistration.payment_status` (`paid`/`refunded`) i, en paid, `paid_at`/`payment_method`/`transaction_id`; el `provider` del Payment es pren del provider actiu, no de `PAYMENTS_PROVIDER`.
+- **Estat real**: Stripe i Redsys NO estan operatius encara; falta cablejar els seus webhooks (`POST /api/payments/webhook/{stripe,redsys}`). Ara només funciona el webhook simulat (`POST /api/payments/webhook/mock`).
+- El `confirm` de Redsys retorna sempre `"pending"`: no confirma cobraments reals fins que es cablegi el webhook.
 
 ## Perimetre
 
-- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` el desactiva.
+- Rate limit SQLite 100/60 s per IP global, 600/60 s a `/dav`, 5/300 s login, 20/60 s refresh i 3/300 s reset i 60/60 s en federació. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) apaga tots els límits i l'auto-migració.
 - Capçaleres: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` estricta a l'API (relajada només a `/docs`), `HSTS` solament a produccio.
 - Cosos <=10 MB (413). CORS amb credencials i orígens explicitos.
 - MariaDB a produccio exigeix TLS (`?ssl_ca=…` a `DATABASE_URL`).
 
-• Llista de comprovacio de producció
+## Llista de comprovacio de producció
 
 1. `APP_ENV=production`, `SECRET_KEY` de 64 bytes per env (sense ella no arranca).
 2. `CORS_ORIGINS` amb dominis explicitos; `DATABASE_URL` MariaDB + `alembic upgrade head`.
 3. TLS amb proxy + `FORWARDED_ALLOW_IPS`; sense admin `setup` (nomes es crea fora de prod).
 4. Canvia el `appUserModelId`/GUID de notificacions Windows si es renombra l'aplicacio.
 
-## Federacio (fase 2)
+## Federacio (fases 2-10)
 
-- Identitat de node = domini + certificat TLS.
-- Peering mutue via mTLS amb certificats de domini (CA publica o privada).
-- TLS obligatori entre nodes; validacio estricta (sense self-signed a prod).
-- La rotacio/revocacio es gestiona per renovacio del certificat. Un node compromes es revoca invalidant el seu certificat i la seva entrada al directori.
-- `allowlist`/`blocklist` per node (`node_policies`). Rate limiting i anti-inundada al marge de federacio. Propagacio d'informes de moderacio entre nodes.
+Detall complet a [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controls vigents:
+
+- Identitat de node = domini + certificat TLS. Peering mutu via mTLS amb certificats de domini (CA publica o privada); TLS obligatori, sense self-signed a prod.
+- Manifest signat RSA-SHA256 amb PEM/clau propis i `expires_at` de 24 h; `whoami` exigeix JWT federat; JWKS per verificar tokens de pares; `peers/verify` i `peers/revoke`.
+- `allowlist`/`blocklist` per node (`node_policies`), amb `import_only`, `disable_chat` i `disable_search`. Rate limiting i anti-inundada al marge; propagacio d'informes de moderacio.
+- Portabilitat: bundles signats amb HMAC i checksum; import valida/sanea `MediaUrl` i normalitza `contest_type`; migracio de festivals i identitats amb `identity_redirects` i auditoria a `migration_audits`; els endpoints de migracio exigeixen admin.
+- Xat federat: bridge signat RS256, dedup per `message_id` a `chat_outbox`, ordre per `timestamp`; reportes i silenciaments, filtre de paraules i limit de 10 missatges/60 s per node i usuari.
+- Esdeveniments: publicacio signada amb HMAC (`X-Clakettes-Signature`), SSE amb `token` obligatori a query, `since` i `limit` opcionals, replay de 200 i 3 reintents amb backoff.
+- Resiliencia: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), revocacio de claus (`keys/revoke`) i pla d'incident en 8 passos. Rotacio/revocacio per renovacio del certificat; un node compromes s'invalida al directori.

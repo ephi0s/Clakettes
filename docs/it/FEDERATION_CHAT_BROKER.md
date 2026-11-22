@@ -1,8 +1,10 @@
 # Valutazione del broker per chat ed eventi: MQTT 5 contro NATS JetStream
 
-[IT](FEDERATION_CHAT_BROKER.md)
+[ES](../es/FEDERATION_CHAT_BROKER.md) · [EN](../en/FEDERATION_CHAT_BROKER.md) · [FR](../fr/FEDERATION_CHAT_BROKER.md) · [DE](../de/FEDERATION_CHAT_BROKER.md) · [IT](FEDERATION_CHAT_BROKER.md) · [CA](../ca/FEDERATION_CHAT_BROKER.md) · [EU](../eu/FEDERATION_CHAT_BROKER.md) · [GL](../gl/FEDERATION_CHAT_BROKER.md) · [OC](../oc/FEDERATION_CHAT_BROKER.md)
 
 Questo documento chiude la valutazione pendente su quale trasporto usare per la chat e la propagazione degli eventi tra i nodi di Clakettes. La decisione è vincolante per la Fase 8 (chat come coda federata) e convive con il backend WebSocket attuale descritto in `docs/es/ARQUITECTURA.md`.
+
+**Stato di implementazione (Fasi 6-10):** la decisione adotta NATS JetStream come destinazione, ma oggi il trasporto duraturo in produzione è `DurableQueueBackend` sulla tabella `chat_outbox` con delegato WebSocket. Le variabili `NATS_*` e il flag `CHAT_BACKEND` del piano di migrazione **non esistono ancora** in `.env.example` né in `app/config.py`: `/api/federation/chat/bridge/config` segnala solo la destinazione prevista (`"transport": "nats-jetstream"`).
 
 ## Criteri ponderati
 

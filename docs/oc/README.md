@@ -4,7 +4,7 @@ Aqueste index es l'entrada principala de la documentacion del projècte. Es pens
 
 ## Lengas
 
-Tota la documentacion existís en 9 lengas de la plataforma. L'espanhòl (canario) es lo canonic:
+Los 18 documents comuns existisson dins las 9 lengas de la plataforma; dins `docs/es/` i a en mai dos analisis especifics (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). L'espanhòl (canari) es lo canonic:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](README.md)
 
 ## Còm navegar la documentacion
@@ -41,7 +41,9 @@ Tota la documentacion existís en 9 lengas de la plataforma. L'espanhòl (canari
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocòl de federacion entre noses (fases 2 a 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats minimalas federadas) | dev |
 | [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modèl de fisança federada, mTLS, manifest signat, portabilitat, chat e resiliéncia | dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decision de broker (NATS JetStream) pel chat e los eveniments entre noses; WebSocket de riba e fallback mononose | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decision de broker (NATS JetStream) pel chat e los eveniments entre noses; transpòrt implementat avui: `DurableQueueBackend` sus `chat_outbox` amb WebSocket de riba | dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Model de menaças dels nodes federats (solament en espanhòl) | dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Modèl de fisança entre nodes (solament en espanhòl) | dev |
 
 ## Rota recomandada per profil
 

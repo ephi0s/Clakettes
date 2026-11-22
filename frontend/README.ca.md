@@ -29,84 +29,85 @@ Consulta `../start.ps1` per als llançadors amb flags `--dev`, `--final`, `--web
 
 ```
 lib/
-├── screens/           # pantallas UI
+├── screens/           # pantalles UI
 │   ├── auth/          # Login
-│   ├── festivals/     # Lista, perfil, crear festival
-│   ├── users/         # Perfil, directorio, crear usuario, roles
-│   ├── shortfilms/    # Lista, perfil, crear cortometraje
-│   ├── chat/          # Chat, canales, crear canal
-│   ├── events/        # Gestión y detalle de eventos, asientos/reservas
+│   ├── festivals/     # Llista, perfil, crear festival
+│   ├── users/         # Perfil, directori, crear usuari, rols
+│   ├── shortfilms/    # Llista, perfil, crear curtmetratge
+│   ├── chat/          # Xat, canals, crear canal
+│   ├── events/        # Gestió i detall d'esdeveniments, seients/reserves
 │   ├── awards/        # Palmarés
-│   ├── notifications/ # Centro de notificaciones
-│   ├── locations/     # Mapa, detalle de localización
-│   ├── forms/         # Formularios de registro, editor de páginas, respuestas, formularios públicos
-│   ├── admin/         # Panel de administración
-│   ├── committees/    # Comités
-│   └── settings/      # Configuración del backend, miembro del directorio, dashboard
-├── services/          # servicios + api/ + chat_backend
-│   ├── api_service.dart              # Fachada + núcleo (auth, transporte, admin, búsqueda)
-│   ├── api/                          # Métodos por dominio (part of api_service.dart)
+│   ├── notifications/ # Centre de notificacions
+│   ├── locations/     # Mapa, detall de localització
+│   ├── forms/         # Formularis de registre, editor de pàgines, respostes, formularis públics
+│   ├── admin/         # Panell d'administració
+│   ├── committees/    # Comitès
+│   └── settings/      # Configuració del backend, membre del directori, tauler
+├── services/          # serveis + api/ + chat_backend
+│   ├── api_service.dart              # Fachada + nucli (auth, transport, admin, cerca)
+│   ├── api/                          # Mètodes per domini (part of api_service.dart)
 │   │   ├── user_api.dart, festival_api.dart, channel_api.dart, form_api.dart
 │   │   ├── calendar_api.dart, catalog_api.dart, org_api.dart
 │   │   ├── event_api.dart, location_api.dart
-│   ├── auth_service.dart             # JWT, persistencia de sesión
-│   ├── backend_config.dart           # URL del backend (guardada > dart-define > default por plataforma)
-│   ├── channel_service.dart          # Canales de chat + claves E2EE
-│   ├── connectivity_monitor.dart     # Detección online/offline
-│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + compresión, con isolates async
-│   ├── database_service.dart         # Inicialización de Hive + adaptadores de tipos
-│   ├── file_downloader.dart          # Descarga nativa (condicional web/io)
-│   ├── locale_service.dart           # Persistencia de idioma (SharedPreferences)
-│   ├── notification_service.dart     # Recordatorios: plugin en escritorio, Notification API en web, no-op en móvil
-│   ├── notification_platform.dart    # Export condicional web/stub (sin Firebase)
-│   ├── offline_cache_service.dart    # Cajas Hive (festivals, users, shortfilms, messages)
-│   ├── sync_queue_service.dart       # Cola offline con retry + backoff (max 3 intentos)
-│   └── chat_backend/                 # Abstracción WS + REST del chat
+│   ├── auth_service.dart             # JWT, persistència de sessió
+│   ├── backend_config.dart           # URL del backend (desada > dart-define > predeterminat per plataforma)
+│   ├── channel_service.dart          # Canals de xat + claus E2EE
+│   ├── connectivity_monitor.dart     # Detecció en línia/fora de línia
+│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + compressió, amb isolates async
+│   ├── database_service.dart         # Inicialització de Hive + adaptadors de tipus
+│   ├── file_downloader.dart          # Descàrrega nativa (condicional web/io)
+│   ├── locale_service.dart           # Persistència d'idioma (SharedPreferences)
+│   ├── notification_service.dart     # Recordatoris: plugin a l'escriptori, Notification API al web, no-op al mòbil
+│   ├── notification_platform.dart    # Export condicional web/stub (sense Firebase)
+│   ├── offline_cache_service.dart    # Caixes Hive (festivals, users, shortfilms, messages)
+│   ├── sync_queue_service.dart       # Cua offline amb retry + backoff (màx. 3 intents)
+│   └── chat_backend/                 # Abstracció WS + REST del xat
 │       ├── abstract_chat_backend.dart
 │       ├── chat_service.dart         # Fachada WS/REST/E2EE
-│       ├── rest_chat_backend.dart    # Historial/sync vía REST (usado como fake en tests)
-│       └── websocket_chat_backend.dart  # Tiempo real vía WebSocket
-├── models/            # modelos Dart (manuales fromJson/toJson + Hive codegen)
-├── widgets/           # widgets reutilizables accesibles
+│       ├── rest_chat_backend.dart    # Historial/sync via REST (fet servir com a fake en tests)
+│       └── websocket_chat_backend.dart  # Temps real via WebSocket
+├── models/            # Models Dart (fromJson/toJson manuals + codegen Hive)
+├── widgets/           # widgets reutilitzables accessibles
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
-│   ├── chat_bubble.dart          # Burbuja de mensaje + contenido enriquecido
-│   ├── chat_input_bar.dart       # Barra de entrada del chat
-│   ├── confirm_dialog.dart       # Diálogo de confirmación accesible
+│   ├── chat_bubble.dart          # Bombolla de missatge + contingut enriquit
+│   ├── chat_input_bar.dart       # Barra d'entrada del xat
+│   ├── confirm_dialog.dart       # Diàleg de confirmació accessible
 │   ├── dav_subscription_section.dart
-│   ├── emoji_picker.dart         # Selector de emojis en bottom sheet
-│   ├── empty_state_widget.dart   # Estado vacío accesible
-│   ├── error_state_widget.dart   # Estado de error con reintento
+│   ├── emoji_picker.dart         # Selector d'emojis en bottom sheet
+│   ├── empty_state_widget.dart   # Estat buit accessible
+│   ├── error_state_widget.dart   # Estat d'error amb reintent
 │   ├── event_visibility_picker.dart
-│   ├── festival_sections.dart    # Secciones de bases y localizaciones del festival
-│   ├── film_location_card.dart   # Tarjeta de rodaje en localización
+│   ├── festival_sections.dart    # Seccions de bases i localitzacions del festival
+│   ├── film_location_card.dart   # Targeta de rodatge en localització
 │   ├── language_picker.dart
-│   ├── list_item_animation.dart  # Animación de entrada de filas
-│   ├── loading_skeleton.dart     # Skeleton de carga (shimmer)
-│   ├── location_badge_chip.dart  # Chip con localización
+│   ├── list_item_animation.dart  # Animació d'entrada de files
+│   ├── loading_skeleton.dart     # Skeleton de càrrega (shimmer)
+│   ├── location_badge_chip.dart  # Xip amb localització
 │   ├── location_cards.dart       # LocationCard, LegacyCard, LocationFormScreen
-│   ├── location_selector.dart    # Selector de localizaciones
-│   ├── location_tag_editor.dart  # Editor de etiquetas de localización
+│   ├── location_selector.dart    # Selector de localitzacions
+│   ├── location_tag_editor.dart  # Editor d'etiquetes de localització
 │   ├── login_prompt_sheet.dart
-│   ├── map_picker.dart           # Mapa de selección de punto
+│   ├── map_picker.dart           # Mapa de selecció de punt
 │   ├── open_in_maps_action.dart
-│   ├── seat_map_widget.dart      # Mapa de asientos interactivo
+│   ├── seat_map_widget.dart      # Mapa de seients interactiu
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
 ├── l10n/              # AppLocalizations + ARB
-├── main.dart          # Entry point, tema Material 3, orden de init de servicios
+├── main.dart          # Punt d'entrada, tema Material 3, ordre d'init de serveis
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
-└── auth_wrapper.dart  # Gate de autenticación (splash → login / home)
+└── auth_wrapper.dart  # Porta d'autenticació (splash → login / home)
 ```
 
 ## Ordre d'inicialització de serveis (main.dart)
 
 ```dart
-await DatabaseService.init();           // Cajas Hive
-await OfflineCacheService.init();       // Cargar datos en caché
-await SyncQueueService.init();          // Mutaciones pendientes
-await ConnectivityMonitor.start();      // Empezar a escuchar la red
-await LocaleService.load();             // Cargar idioma guardado
-// Después runApp()
+await DatabaseService.init();           // Caixes Hive
+await OfflineCacheService.init();       // Carrega dades en caché
+await SyncQueueService.init();          // Mutacions pendents
+await NodeService.init();               // Configuració del node
+await ConnectivityMonitor.start();      // Comença a escoltar la xarxa
+await LocaleService.load();             // Carrega el locale desat
+// Després runApp()
 ```
 
 ## Patró de gestió d'estat
@@ -125,6 +126,7 @@ await LocaleService.load();             // Cargar idioma guardado
 - Adjunta el JWT automàticament (des d'AuthService)
 - Refresh automàtic de token en 401
 - Integració amb la cua offline (SyncQueueService)
+- Nucli més `services/api/` (13 dominis); `resolveMediaUrl()` anteposa el node actiu a les rutes `/uploads/...`; `uploadFile()` fa servir MIME per extensió, Bearer, reintent 401/refresh i fallback entre nodes; el WS del xat deriva la seva URL del mateix `rootUrl`
 - Mètodes: `get`, `post`, `put`, `patch`, `delete`, `upload`
 
 ```dart
@@ -139,13 +141,14 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 3. **Escriptura**: les mutacions s'encuen a `SyncQueueService` (signades amb HMAC)
 4. **Sync**: en recuperar connectivitat, `SyncQueueService` reprodueix la cua seqüencialment
 5. **Resolució de conflictes**: guanya el servidor (last-write-wins amb timestamp)
+6. **Procedència de node**: la caché Hive etiqueta cada entrada per node (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor` exposa `NodeHealth`, `offlineNodeCount` i `isDegraded`, i `DegradedNodesBanner` mostra els nodes sense resposta amb recompte i reintent (`checkNow()`)
 
 ## Internacionalització (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc
+- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 claus per ARB, paritat verificada amb `test/l10n/arb_parity_test.dart`)
 - **Implementació manual**: `lib/l10n/app_localizations.dart` (sense gen-l10n)
 - **Fitxers ARB**: `assets/l10n/app_<locale>.arb`
-- **Auto-detecció**: `LocaleService` llegeix l'idioma del sistema, amb fallback a `en`
+- **Auto-detecció**: `LocaleService.load()` llegeix el locale del sistema, amb fallback a `en` i desa el resolt
 - **Delegat**: `AppLocalizations.of(context)` (delegate manual, sense gen-l10n)
 
 ### Afegir traduccions
@@ -165,16 +168,16 @@ AppLocalizations.of(context)!.roles['admin']
 
 ## Accessibilitat (WCAG 2.1 AA)
 
-| Patrón | Uso |
+| Patró | Ús |
 |---------|-------|
-| `Semantics` | Instancias para lectores de pantalla |
-| `SemanticHeader` | Encabezados de sección (`header: true`) |
-| `SemanticTextField` | Campos de formulario con semántica de validación |
-| `ExcludeSemantics` | Iconos decorativos |
-| `Tooltip` | Elementos interactivos |
+| `Semantics` | Instàncies per a lectors de pantalla |
+| `SemanticHeader` | Capçaleres de secció (`header: true`) |
+| `SemanticTextField` | Camps de formulari amb semàntica de validació |
+| `ExcludeSemantics` | Icones decoratives |
+| `Tooltip` | Elements interactius |
 | `SnackBarBehavior.floating` | Snackbars |
-| `autovalidateMode: onUserInteraction` | Formularios |
-| `TextInputAction.next/done` + `onSubmitted` | Navegación por teclado |
+| `autovalidateMode: onUserInteraction` | Formularis |
+| `TextInputAction.next/done` + `onSubmitted` | Navegació per teclat |
 
 ### Widgets reutilitzables accessibles
 
@@ -207,6 +210,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 - **E2EE**: intercanvi de claus X25519 (pointycastle), xifrat de missatges AES-GCM
 - **Emmagatzematge de claus**: model `UserKey` (clau pública en backend, privada en Hive)
 - **Servei**: `ChatService` abstrau WS/REST/E2EE
+- **Presència**: `ChatPresenceBackend` aporta escriptura, latència i confirmacions de lectura; cerca local, dedup i ordre per `(created_at,id)`, amb missatges offline encuats de forma duradera amb el mateix `message_id`
 
 ## Mapes i localització
 
@@ -220,32 +224,32 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 # Web
 flutter build web --dart-define=BACKEND_URL=https://api.clakettes.com/api
 
-# Escritorio
+# Escriptori
 flutter build windows
 flutter build linux
 flutter build macos
 
-# Móvil
+# Mòbil
 flutter build apk        # APK Android
 flutter build appbundle  # AAB Android (Play Store)
-flutter build ios        # iOS (requiere macOS + Xcode)
+flutter build ios        # iOS (requereix macOS + Xcode)
 ```
 
 ## Dependències (clau)
 
-| Paquete | Propósito |
+| Paquet | Propòsit |
 |---------|-----------|
-| `http` | Cliente REST API |
+| `http` | Client REST API |
 | `hive_flutter` | Caché offline |
-| `shared_preferences` | Persistencia de locale y token de auth |
-| `connectivity_plus` | Detección de red |
-| `web_socket_channel` | Chat en tiempo real |
+| `shared_preferences` | Persistència de locale i token d'auth |
+| `connectivity_plus` | Detecció de xarxa |
+| `web_socket_channel` | Xat en temps real |
 | `pointycastle` | E2EE X25519/AES-GCM |
-| `flutter_map` + `latlong2` | Mapas |
+| `flutter_map` + `latlong2` | Mapes |
 | `geolocator` | GPS |
-| `flutter_local_notifications` | Notificaciones locales |
-| `url_launcher` | Enlaces externos (mapas, web) |
-| `uuid` | IDs del lado del cliente |
+| `flutter_local_notifications` | Notificacions locals |
+| `url_launcher` | Enllaços externs (mapes, web) |
+| `uuid` | IDs del costat del client |
 
 ## Generació de codi (Hive)
 
@@ -258,10 +262,10 @@ Genera `*_adapter.dart` per als models anotats amb `@HiveType`.
 ## Testing
 
 ```bash
-# Tests unitarios + de widgets
+# Tests unitaris + de widgets
 flutter test
 
-# Tests de integración (requiere dispositivo/emulador)
+# Tests d'integració (requereix dispositiu/emulador)
 flutter test integration_test/
 ```
 
@@ -288,10 +292,10 @@ frontend/
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # modelos Dart (Hive + codegen)
-│   ├── screens/             # pantallas
-│   ├── widgets/             # widgets reutilizables
-│   ├── services/            # servicios + api/ + chat_backend
+│   ├── models/              # Models Dart (Hive + codegen)
+│   ├── screens/             # pantalles
+│   ├── widgets/             # widgets reutilitzables
+│   ├── services/            # serveis + api/ + chat_backend
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart
@@ -305,8 +309,8 @@ frontend/
 
 ```powershell
 cd frontend/docker
-.\build.ps1 -Target all      # Todas las plataformas
-.\build.ps1 -Target web      # Solo web
+.\build.ps1 -Target all      # Totes les plataformes
+.\build.ps1 -Target web      # Només web
 ```
 
 Dockerfile multi-etapa:
@@ -315,20 +319,20 @@ Dockerfile multi-etapa:
 
 ## Variables d'entorn
 
-| Variable | Descripción | Default |
+| Variable | Descripció | Default |
 |----------|-------------|---------|
-| `BACKEND_URL` | URL base de la API (vía `--dart-define`) | `http://localhost:8000/api` |
-| `CHROME_EXECUTABLE` | Navegador para `flutter run -d chrome` | Auto-detectado (Brave/Chrome) |
+| `BACKEND_URL` | URL base de l'API (via `--dart-define`) | `http://localhost:8000/api` |
+| `CHROME_EXECUTABLE` | Navegador per a `flutter run -d chrome` | Detectat automàticament (Brave/Chrome) |
 
 ## Solució de problemes
 
-| Problema | Solución |
+| Problema | Solució |
 |----------|----------|
-| `flutter pub get` falla | Borra `.dart_tool`, `pubspec.lock` y repite |
-| Conflictos de tipos Hive | `flutter pub run build_runner build --delete-conflicting-outputs` |
-| Fallo de conexión WebSocket | Comprueba `BACKEND_URL`; asegúrate de que el backend expone `/ws/chat` |
-| El idioma no persiste | Limpia `SharedPreferences`, comprueba `LocaleService.load()` | |
-| El modo oscuro no aplica | Asegúrate de `ThemeMode.system` o `ThemeMode.dark` explícito en `MaterialApp` | |
+| `flutter pub get` falla | Esborra `.dart_tool`, `pubspec.lock` i repeteix |
+| Conflictes de tipus Hive | `flutter pub run build_runner build --delete-conflicting-outputs` |
+| Fallada de connexió WebSocket | Comprova `BACKEND_URL`; assegura't que el backend exposa `/ws/chat` |
+| L'idioma no persisteix | Neteja `SharedPreferences`, comprova `LocaleService.load()` | |
+| El mode fosc no s'aplica | Assegura't de `ThemeMode.system` o `ThemeMode.dark` explícit a `MaterialApp` | |
 
 ## Contribuir
 

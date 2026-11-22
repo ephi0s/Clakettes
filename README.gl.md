@@ -28,18 +28,19 @@ Funciona en web, Android, iOS e escritorio (Windows, macOS, Linux), en 9 idiomas
 - **Perfís con palmarés**: palmarés vinculado a festivais da plataforma ou externo mediante ligazóns, con control de privacidade campo por campo.
 - **Chat**: mensaxes directas e de grupo ou canal por festival, con cifrado de extremo a extremo.
 - **Mapas**: sedes e localizacións de rodaxe en mapas interactivos, con apertura na túa app de mapas favorita.
-- **Sen conexión**: a app segue funcionando offline e sincroniza os teus cambios ao recuperar a conexión.
-- **No teu idioma**: español, inglés, francés, alemán, italiano, catalán, éuscaro, galego e occitano, con detección automática.
+- **Sen conexión**: a app segue funcionando offline, garda a procedencia de cada nodo en caché e sincroniza os teus cambios ao recuperar a conexión.
+- **Federación**: nodos de confianza con mTLS, portabilidade de identidade, chat e eventos entre nodos, moderación, métricas e resiliencia.
+- **No teu idioma**: español, inglés, francés, alemán, italiano, catalán, éuscaro, galego e occitano (823 claves por idioma), con detección automática do locale do sistema.
 
 ## Requisitos e arranque
 
 ### Requisitos mínimos
 
 - Python 3.12+
-- Flutter SDK >= 3.0.0 y < 4.0.0
+- Flutter SDK >= 3.0.0 e < 4.0.0
 - Git
-- Docker y Docker Compose para despliegue/entorno productivo
-- Navegador con soporte para web (recomendado Chrome/Brave)
+- Docker e Docker Compose para despregamento/entorno produtivo
+- Navegador con soporte web (recomendado Chrome/Brave)
 
 ### Inicio rápido
 
@@ -57,17 +58,6 @@ En Linux/macOS:
 
 Isto levanta o backend en `http://localhost:8000` e a app en modo local; a API expón Swagger/OpenAPI en `/docs`. Podes desactivar calquera das dúas partes con `--no-backend` ou `--no-frontend`.
 
-### Outras opcións útiles
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Consulta a referencia completa do arranque e despregamento en [docs/gl/HERRAMIENTAS.md](docs/gl/HERRAMIENTAS.md) e [docs/gl/USO.md](docs/gl/USO.md).
-
 ## Variables de entorno e configuración
 
 ### Backend
@@ -78,6 +68,15 @@ Crea ou axusta `backend/.env` con polo menos:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federación con mTLS (produción)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Pagamentos (mock por defecto; Stripe/Redsys baixo demanda)
+PAYMENTS_PROVIDER=mock
 ```
 
 Para entorno produtivo úsase MariaDB; os scripts e a documentación de despregamento xestiónano con Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 O arranque automático do proxecto xa configura isto cando se usa `start.*`.
 
-## Estado do proxecto
-
-🚧 **En desenvolvemento activo** — Festivais, curtas, chateo con E2EE, mapas, modo sen liña e 9 idiomas funcionando.
-
-**Roadmap seguinte:**
-
-- [ ] Notificacións push (Firebase/APNs)
-- [ ] AppImage Linux firmado
-- [ ] Instalador Windows MSI
-- [x] Documentación API OpenAPI exportable (`/openapi.json` sen operationIds duplicados + `docs/gl/API.md` regenerado)
-
 ## Documentación do proxecto
 
 O mapa de documentación está en [docs/gl/README.md](docs/gl/README.md). É a mellor entrada para cada tipo de usuario:
@@ -116,10 +104,10 @@ O mapa de documentación está en [docs/gl/README.md](docs/gl/README.md). É a m
 - [docs/gl/DESARROLLO.md](docs/gl/DESARROLLO.md): como engadir endpoints ou pantallas
 - [docs/gl/BACKEND.md](docs/gl/BACKEND.md): guía do backend (capas, configuración, auth, tests)
 - [docs/gl/DATABASE.md](docs/gl/DATABASE.md): esquema e migracións
-- [docs/gl/FEDERATION_PROTOCOL.md](docs/gl/FEDERATION_PROTOCOL.md): protocolo de federación (fase 4)
-- [docs/gl/FEDERATION_SCHEMA.md](docs/gl/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/gl/FEDERATION_SECURITY.md](docs/gl/FEDERATION_SECURITY.md): modelo de confianza federado
-- [docs/gl/PUSH.md](docs/gl/PUSH.md): decisión de notificación push
+- [docs/gl/FEDERATION_PROTOCOL.md](docs/gl/FEDERATION_PROTOCOL.md): protocolo entre nodos (fases 2-10)
+- [docs/gl/FEDERATION_SECURITY.md](docs/gl/FEDERATION_SECURITY.md): confianza, mTLS, portabilidade e resiliencia
+- [docs/gl/FEDERATION_SCHEMA.md](docs/gl/FEDERATION_SCHEMA.md): entidades federadas e checksum
+- [docs/gl/FEDERATION_CHAT_BROKER.md](docs/gl/FEDERATION_CHAT_BROKER.md): decisión de transporte e estado implementado
 
 Ademais, o punto de partida para desenvolvemento e convención de proxecto é [AGENTS.md](AGENTS.md).
 
@@ -142,9 +130,9 @@ Ademais, o punto de partida para desenvolvemento e convención de proxecto é [A
 2. Crea unha rama (`git checkout -b feature/nova-funcionalidade`).
 3. Fai commit con mensaxes claras e descritivas (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 4. Empuxa a rama (`git push origin feature/nova-funcionalidade`).
-5. Abre un Pull Request con contexto, cambios e validación.
+5. Abre unha Pull Request con contexto, cambios e validación.
 
-**Convencións de calidade:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Convencións de calidade:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` deben pasar antes de fusionar. GitHub Actions executa esas portas en paralelo e Dependabot abre PRs semanais agrupados: patch/minor fusiónanse sós con CI verde, major queda a revisión manual (detalle en [docs/gl/INFRAESTRUCTURA.md](docs/gl/INFRAESTRUCTURA.md)).
 
 ## Licenza
 

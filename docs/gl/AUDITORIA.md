@@ -2,18 +2,24 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
+## 0. Resumo executivo
+
+Revisión das dependencias, optimizacións aplicadas e débeda técnica pendente do proxecto Clakettes.
+
 ## 1. Dependencias externas: que se pode eliminar e que non
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
 
 | Dep | Veredicto | Motivo |
 | --- | --- | --- |
-| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Mantener | Núcleo del stack |
-| python-jose[cryptography] | Mantener por ahora, migrar a PyJWT en el futuro | Abandonado desde 2016, pero el cambio toca `app/auth.py` + `routers/dependencies.py` + tests; hacerlo en PR separado con tests de tokens |
-| python-dotenv | Mantener | Requerido por `pydantic-settings>=2` y `uvicorn[standard]` (`--env-file`); solo 2 scripts lo importan directamente, pero quitarlo rompería la carga de `.env` |
-| pymysql | Mantener como driver prod | Solo se usa con MariaDB; no cargarlo en dev no ahorra nada (import perezoso ya en SQLAlchemy) |
-| python-multipart, email-validator, bcrypt | Mantener | Uploads, validación email, hash passwords |
-| reportlab 5.1.0 | Mantener, pero con import perezoso (hecho) | Solo `export_service._build_pdf`; antes se importaba a nivel de módulo (~200 ms + memoria en cada worker). Ahora import dentro de la función. Además se sincronizó `pyproject.toml` (faltaba) y se pineó `==5.1.0` |
+| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Manter | Núcleo da pila |
+| PyJWT==2.15.1 | Migración rematada | `python-jose` eliminado; `app/auth.py` e `routers/dependencies.py` usan PyJWT (bump 2.10.1 → 2.15.0 → 2.15.1) |
+| python-dotenv | Non incluída | Non figura en `pyproject.toml`/`requirements*.txt` nin se importa en `backend/`; `pydantic-settings` carga `.env` directamente |
+| pymysql | Manter como controlador prod | Só se usa con MariaDB; non cargalo en dev non aforra nada (import preguiceiro xa en SQLAlchemy) |
+| python-multipart, email-validator, bcrypt | Manter | Subidas, validación de correo, hash de contrasinais |
+| reportlab 5.1.0 | Manter, pero con import preguiceiro (feito) | Só `export_service._build_pdf`; antes importábase a nivel de módulo (~200 ms + memoria en cada worker). Agora importase dentro da función. Ademais sincronizouse `pyproject.toml` (faltaba) e fixouse `==5.1.0` |
+
+**Versións fixadas en `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major desde 6.21.x); desenvolvemento: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 
@@ -22,17 +28,17 @@ Todas as dependencias están en uso real; ningunha se puido eliminar sen romper 
 - `archive`: usado en `crypto_utils.dart` (ZLib/GZip). `dart:io` non vale porque rompe web.
 - `path_provider`: usado en `file_downloader_io.dart` (móbil/desktop).
 - `web`: usado en `file_downloader_web.dart`.
-- `pointycastle` + `crypto` + `uuid`: E2EE do chat (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher`: mapas.
+- `pointycastle` + `crypto`: E2EE do chat (ECDH P-256 + AES-GCM; o nome `X25519` aparece só nun campo herdado).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher`: mapas.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker`: cada un con 1-2 usos, pero eliminalos quitaría funcionalidade.
 
 ## 2. Optimizacións aplicadas
 
 1. `export_service.py`: import reportlab preguiceiro en `_build_pdf` + docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 instancias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300s e `login`); non unificar sen perder límites distintos.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py`: 5 instancias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s e federación 60/60 s); non unificar sen perder límites distintos. O bypass pasa por `app.config.is_testing()` (`1/true/yes/on`).
 3. `base_service.py`: `paginate` fixa `page>=1`, `size` en `[1,100]`; novo `paginate_filtered()` definido con 0 usos (pendente migrar os `get_all_paginated` clonados).
 4. `routers/dependencies.py`: `get_current_user_optional` reutiliza `validate_access_token` (elimina ~30 liñas duplicadas JWT+sesión); fix `__import__("datetime")` → import normal; novo `get_or_404()` para substituír ~100 `HTTPException(404)` inline.
-5. `dav/auth.py`: documentada a relación con `app.auth._hash_token`.
+5. `dav/auth.py`: documentada a relación con `app.auth.hash_token` (antes `_hash_token`; consérvase o alias por compatibilidade).
 6. `pyproject.toml`/`requirements.txt` sincronizados (reportlab).
 7. `reusable_widgets.dart`: novo `showAppSnack()` (1 def + 8 usos; quedan 115 `ScaffoldMessenger` directos).
 
@@ -80,8 +86,10 @@ Todas as dependencias están en uso real; ningunha se puido eliminar sen romper 
     i18n (0 claves ausentes), `locations` (didChangeDependencies con garda).
 12. `get_or_404` estendido a `committees.py` (10), `events.py` (58, vía script
     con revisión + 17 existencias sen asignar para evitar F841), `delegations`
-    (2) e 5 routers de localizacións (12). Sen cambios de esquema: non hai
-    migración Alembic pendente por este lote.
+    (2) e 5 routers de localizacións (12). Este lote non introduciu migración;
+    revisións posteriores si engadiron `a8b9c0d1e2f3` (unicidade de asento) e
+    `b9c0d1e2f3a4` (`contest_type` en curtos), ambas xa aplicadas no head
+    `b9c0d1e2f3a4`.
 13. Rendemento: filtro `venue` de programacion baixado a SQL (antes filtraba
     a páxina en Python e rompía `total`/`pages`).
 14. Frontend: gardas anti-dobre-envío en crear festival/usuario/curta +
@@ -123,7 +131,7 @@ Todas as dependencias están en uso real; ningunha se puido eliminar sen romper 
     novas), `flutter_local_notifications` en escritorio + permiso macOS ao
     iniciar, móbil en no-op explícito (`_supported`). `flutter build web`
     verificado.
-24. Documentación: `docs/es/API.md` (294 endpoints en 33 routers, xerada por
+24. Documentación: `docs/es/API.md` (446 endpoints en 43 routers, xerada por
     AST con `tools/gen_api.py` — rexenerable), `docs/es/ARQUITECTURA.md`
     (capas, fluxos, decisións multiplataforma), `docs/es/USO.md` (arranque,
     env, operación, roles), `docs/es/DESARROLLO.md` (convencións + portas
@@ -131,14 +139,4 @@ Todas as dependencias están en uso real; ningunha se puido eliminar sen romper 
     `docs/es/BACKEND.md` + `docs/es/DATABASE.md` (movidas desde `backend/` o 10/10/2026).
     READMEs e `AGENTS.md` con cifras reais; admin dev `admin`/`setup`
     (sen `ADMIN_PASSWORD` en `.env.example`; seed só non-prod en `app/main.py:257`).
-Estado: 1321 tests backend (33 arquivos) + 347 frontend (69 arquivos) en verde, ruff + analyze limpos.
-
-## 4. Revisión 10/10/2026 (correccións a §2–§3)
-
-1. Docs backend consolidadas: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/es/BACKEND.md` + `docs/es/DATABASE.md`; ligazóns actualizadas en `README.md`, `AGENTS.md`, `docs/es/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-
-3. Tests: backend 1321 `def test_` en 33 arquivos (non 1366/38); frontend 347 bloques en 69 arquivos (non 313/70). Widgets 24 OK. Pantallas: `festival_profile` 956L, `locations` 680L, `chat` 767L, `api_service` 511L, `user_profile` 803L.
-4. Correccións a §2: `RateLimiter` son 3 instancias (`main.py`, `admin.py`, `auth.py`), non 1; `ADMIN_PASSWORD` non existe en `backend/.env.example` (só comentario `admin/setup`); `ruff format` cobre 216 arquivos (non 215).
-5. `tools/gen_api.py` rexenera `API.md` idempotente pero con ruta absoluta hardcodeada e sen shebang (non portable).
-
-
+Estado: 1544 tests backend (54 arquivos) + frontend en 77 arquivos en verde, ruff + analyze limpos.

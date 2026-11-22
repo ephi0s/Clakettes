@@ -4,7 +4,7 @@ Cet index est l'entrée principale de la documentation du projet. Il est pensé 
 
 ## Langues
 
-Toute la documentation existe dans les 9 langues de la plateforme. L'espagnol (canarien) est canonique :
+Les 18 documents communs existent dans les 9 langues de la plateforme ; `docs/es/` contient en outre deux analyses spécifiques (`AMENAZAS_NODOS_FEDERACION.md` et `MODELO_CONFIANZA_NODOS.md`). L'espagnol (canarien) est canonique :
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Comment naviguer dans la documentation
@@ -41,7 +41,9 @@ Toute la documentation existe dans les 9 langues de la plateforme. L'espagnol (c
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocole de fédération entre nœuds (phases 2 à 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entités minimales fédérées) | dev |
 | [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Modèle de confiance fédéré, mTLS, manifeste signé, portabilité, chat et résilience | dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Décision de broker (NATS JetStream) pour le chat et les événements entre nœuds ; WebSocket de bord et repli mononœud | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Décision de broker (NATS JetStream) pour le chat et les événements entre nœuds ; transport aujourd'hui implémenté : `DurableQueueBackend` sur `chat_outbox` avec WebSocket de bord | dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Modèle de menaces des nœuds fédérés (uniquement en espagnol) | dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Modèle de confiance entre nœuds (uniquement en espagnol) | dev |
 
 ## Parcours recommandé par profil
 

@@ -1,5 +1,7 @@
 # Clakettes Schema v1
 
+[ES](../es/FEDERATION_SCHEMA.md) · [EN](../en/FEDERATION_SCHEMA.md) · [FR](../fr/FEDERATION_SCHEMA.md) · [DE](FEDERATION_SCHEMA.md) · [IT](../it/FEDERATION_SCHEMA.md) · [CA](../ca/FEDERATION_SCHEMA.md) · [EU](../eu/FEDERATION_SCHEMA.md) · [GL](../gl/FEDERATION_SCHEMA.md) · [OC](../oc/FEDERATION_SCHEMA.md)
+
 Initiale Version des Föderations-Schemas. Es definiert die minimalen zwischen Knoten austauschbaren Entitäten, versioniert über `schema_version` im Manifest jedes Knotens.
 
 ## Vertrauensmodell (Phase 2)
@@ -50,7 +52,7 @@ Die Identität eines Knotens ist das Tupel **(Domain, X.509-TLS-Zertifikat)**. D
 ### Portabilität (Phase 7)
 
 - `POST /api/federation/portability/bundles` — erzeugt ein Nutzer-Bundle mit `bundle_version`, `origin_domain`, `payload`, `signature` (HMAC-SHA256 mit `SECRET_KEY`) und `checksum` (SHA-256 des kanonischen Payloads).
-- `POST /api/federation/portability/imports` — validiert Signatur und Checksum, prüft die Ursprungsrichtlinie (403, wenn nicht erlaubt), wendet `minimize_data` an und protokolliert das Importierte (Nutzer, Kurzfilme, Festivals, Nachrichten).
+- `POST /api/federation/portability/imports` — validiert Signatur und Checksum, prüft die Ursprungsrichtlinie (403, wenn nicht erlaubt), wendet `minimize_data` an und protokolliert das Importierte (Nutzer, Kurzfilme, Festivals, Nachrichten). Die Bundles enthalten `contest_type` bei jedem Kurzfilm: `MediaUrl` wird validiert/saniert (ungültige URL → `null`), `contest_type` wird bei ungültigem Wert auf `official_section` normalisiert und der Festival-Checksum schließt es ein.
 - `POST /api/federation/portability/festivals/{festival_id}/migrate` — überträgt Festival-Eigentum und seine Kurzfilme auf `new_owner_id` von `target_domain` mit Checksum-Prüfung; nur Admin.
 - `POST /api/federation/portability/users/{user_ref}/migrate` — schreibt `handle` und `did` auf die Ziel-Domain um und erstellt den Redirect; nur Admin.
 - `GET /api/federation/portability/redirects/{old_ref}` — löst die alte Ref auf (`old_ref`, `new_ref`, `target_domain`, `created_at`).
@@ -61,7 +63,7 @@ Die Identität eines Knotens ist das Tupel **(Domain, X.509-TLS-Zertifikat)**. D
 - `POST /api/federation/chat/bridge/outbound` — signiert das Envelope, reiht es in `chat_outbox` mit dem Subjekt `clakettes.chat.node.{target_node}` ein und veröffentlicht es über den konfigurierten Transport (`DurableQueueBackend`); `config` liefert Transport, Stream, Algorithmus und Subject-Mapping.
 - `GET /api/federation/chat/messages` — föderierter Verlauf, dedupliziert nach `message_id` und sortiert nach `timestamp` + `message_id` (optionaler `node`-Filter).
 - `POST /api/chat/moderation/messages/{message_id}/report`, `PATCH /moderate`, `GET /reports`, `POST/GET /mutes`, `GET /limits` — Meldungen, Verbergen/Löschen, Mutes nach Nutzer/Kanal/Knoten, Blockiertwörter-Filter, `disable_chat` pro Knoten und Rate-Limit von 10 Nachrichten/60 s pro Knoten und Nutzer (deaktiviert mit `TESTING=true`).
-- `GET /api/federation/events/stream` — SSE mit optionalem `since`, `token`, `limit`, Replay der letzten 200 Ereignisse und Herzschlag `: ping` alle 15 s.
+- `GET /api/federation/events/stream` — SSE mit obligatorischem `token` in der Query (`since` und `limit` optional), Replay der letzten 200 Ereignisse und Herzschlag `: ping` alle 15 s.
 - `POST /api/federation/events/publish` — veröffentlicht auf einem aus `node`/`entity` abgeleiteten Topic (oder explizitem `topic`), signiert die Zustellung an Peers mit HMAC (`X-Clakettes-Signature`) und überspringt Knoten mit `disable_chat`/`disable_search`; nur Admin.
 - `GET /api/federation/events/retry-queue` — ausstehende Wiederholungen; 3 Versuche mit Backoff 300 ms → 1,5 s → 5 s.
 
@@ -75,7 +77,9 @@ Die Identität eines Knotens ist das Tupel **(Domain, X.509-TLS-Zertifikat)**. D
 
 ### Health und Hilfsfunktionen
 
-- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — Sonden- und Diagnose-Endpunkte.
+- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — Platzhalter mit statischen Antworten, die nicht den tatsächlichen Zustand widerspiegeln; keine operationellen Probe- oder Diagnose-Endpunkte.
+
+> **Hinweis:** sie liefern feste Antworten und können ein falsches Sicherheitsgefühl vermitteln; für echte Diagnosen nutzen Sie die oben beschriebenen Resilienz-Endpunkte.
 
 ## Anpassbarkeit
 

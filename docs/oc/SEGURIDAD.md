@@ -1,6 +1,6 @@
 # Seguranca — model e checklist
 
-[ES](../es/SEGURIDAD.md) · [EN](../en/SEGURIDAD.md) · [FR](../fr/SEGURIDAD.md) · [DE](../de/SEGURIDAD.md) · [IT](../it/SEGURIDAD.md) · [CA](../ca/SEGURIDAD.md) · [EU](../eu/SEGURIDAD.md) · [GL](../gl/SEGURIDAD.md) · [CA](SEGURIDAD.md) · [OC](SEGURIDAD.md)
+[ES](../es/SEGURIDAD.md) · [EN](../en/SEGURIDAD.md) · [FR](../fr/SEGURIDAD.md) · [DE](../de/SEGURIDAD.md) · [IT](../it/SEGURIDAD.md) · [CA](../ca/SEGURIDAD.md) · [EU](../eu/SEGURIDAD.md) · [GL](../gl/SEGURIDAD.md) · [OC](SEGURIDAD.md)
 
 ## Tokens e sessions
 
@@ -27,34 +27,43 @@
 | Grup de xat | rol `admin` del grup per esborrar; membre per llegir |
 | Formulari | `require_form_admin` (creador/admin/organizer) |
 | Delegacio | delegant o admin per editar/revocar |
-| Rols globals | `is_admin`; auto-join només amb rol `attendee` |
+| Rols globals | `require_admin(user, db)` unificat: ròtle legacy `admin` (case-insensitive) o `UserRole` amb estat `ACTIVE`/`APPROVED`; auto-join solament amb ròtle `attendee` |
+| Alias d'usagi | `require_self_or_admin` (proprietari o admin) en create/update/delete |
+| Blocatges d'usagi | `require_owner_or_admin` (proprietari o `can_edit_user`) en block/unblock/list/status |
 | Rols de canal | `Literal[admin,moderator,member]` (422 fora de la llista) |
 | Pagaments | propietari via inscripcio, admin de festival o global; webhook mock amb `MOCK_WEBHOOK_SECRET` |
 
 ## Pagaments
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Sense PAN/IBAN a la BD: solament import, moneda, `provider_ref` i estat.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` per defaut en `backend/app/config.py`). Sense PAN/IBAN a la BD: solament import, moneda, `provider_ref` i estat.
 - Stripe: SDK perezos + verificacio de signatura (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: signatura HMAC_SHA256_V1 sense SDK; Bizum amb `pay_methods="z"` (alta prealable al comerç). Validar contra el sandbox abans de prod.
+- `confirm` e `refund` sincronizan `FestivalRegistration.payment_status` (`paid`/`refunded`) e, en paid, `paid_at`/`payment_method`/`transaction_id`; lo `provider` del Payment se pren del provider actiu, non de `PAYMENTS_PROVIDER`.
+- **Estat real**: Stripe e Redsys NO son pas encara operatius; manca cablar lors webhooks (`POST /api/payments/webhook/{stripe,redsys}`). Uei solament lo webhook simulat fonciona (`POST /api/payments/webhook/mock`).
+- Lo `confirm` de Redsys torna sempre `"pending"`: non confirma de pagaments reaus fins que lo webhook siá cablat.
 
 ## Perimetre
 
-- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` el desactiva.
+- Rate limit SQLite 100/60 s per IP global, 600/60 s en `/dav`, 5/300 s login, 20/60 s refresh e 3/300 s reset e 60/60 s en federacion. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) desactiva totes los limits e l'auto-migracion.
 - Capçaleres: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` estricta a l'API (relajada només a `/docs`), `HSTS` solament a produccio.
 - Corcos <=10 MB (413). CORS amb credencials i orígens explicitos.
 - MariaDB a produccio exigeix TLS (`?ssl_ca=…` a `DATABASE_URL`).
 
-• Llista de comprovacio de productiu
+## Llista de comprovacio de productiu
 
 1. `APP_ENV=production`, `SECRET_KEY` de 64 bytes per env (sense ella no arranca).
 2. `CORS_ORIGINS` amb dominis explicitos; `DATABASE_URL` MariaDB + `alembic upgrade head`.
 3. TLS amb proxy + `FORWARDED_ALLOW_IPS`; sense admin `setup` (solament es crea fora de prod).
 4. Canvia el `appUserModelId`/GUID de notificacions Windows si es renombra l'aplicacio.
 
-## Federacio (fasa 2)
+## Federacio (fasas 2-10)
 
-- Identitat de node = domini + certificat TLS.
-- Peering mutue via mTLS amb certificats de domini (CA publica o privada).
-- TLS obligatori entre nodes; validacio estricta (sense self-signed a prod).
-- La rotacio/revocacio es gestiona per renovacio del certificat. Un node compromes es revoca invalidant el seu certificat i la seva entrada al directori.
-- `allowlist`/`blocklist` per node (`node_policies`). Rate limiting i anti-inundada al marge de federacio. Propagacio d'informes de moderacio entre nodes.
+Detalh complet dins [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Contròls vigents:
+
+- Identitat de nose = domeni + certificat TLS. Peering mutu via mTLS amb certificats de domeni (CA publica o privada); TLS obligatòri, sens self-signed en prod.
+- Manifèst signat RSA-SHA256 amb PEM/clau pròpris e `expires_at` de 24 h; `whoami` exigís JWT federat; JWKS per verificar los tokens dels pares; `peers/verify` e `peers/revoke`.
+- `allowlist`/`blocklist` per nose (`node_policies`), amb `import_only`, `disable_chat` e `disable_search`. Rate limiting e anti-inundada al marge; propagacion dels rapòrts de moderacion.
+- Portabilitat: bundles signats amb HMAC e checksum; l'import valida/sanea `MediaUrl` e normaliza `contest_type`; migracion de festivals e identitats amb `identity_redirects` e auditoria dins `migration_audits`; los endpoints de migracion exigisson admin.
+- Chat federat: bridge signat RS256, dedup per `message_id` dins `chat_outbox`, ordre per `timestamp`; rapòrts e silencis, filtre de mots e limita de 10 messatges/60 s per nose e usagi.
+- Eveniments: publicacion signada amb HMAC (`X-Clakettes-Signature`), SSE amb `token` obligatòri en query, `since` e `limit` opcionalas, replay de 200 e 3 reensajos amb backoff.
+- Resiliéncia: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), revocacion de claus (`keys/revoke`) e plan d'incident en 8 etapas. Rotacion/revocacion per renovacion del certificat; un nose compromés es invalidat dins lo directòri.

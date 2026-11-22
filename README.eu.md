@@ -28,8 +28,9 @@ Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, L
 - **Palmares-dun profilak**: plataformako jaialdiei lotutako edo kanpo-estekazko palmaresa, eremuz eremuko pribatutasun-kontrolarekin.
 - **Txata**: mezu zuzenak eta talde/kanalekoak jaialdiko, muturretik muturrerako zifraketarekin.
 - **Mapak**: egoitzak eta errodaje-kokapenak mapa interaktiboetan, zure mapa-app gogokoenean irekitzeko aukerarekin.
-- **Konexiorik gabe**: app-ak offline funtzionatzen jarraitzen du eta zure aldaketak sinkronizatzen ditu konexioa berreskuratzean.
-- **Zure hizkuntzan**: gaztelania, ingelesa, frantsesa, alemana, italiera, katalana, euskara, galegoa eta okzitaniera, detekzio automatikoarekin.
+- **Konexiorik gabe**: app-ak offline funtzionatzen jarraitzen du, nodo bakoitzaren jatorria cachean gordetzen du eta zure aldaketak sinkronizatzen ditu konexioa berreskuratzean.
+- **Federazioa**: konfiantzazko nodoak mTLSrekin, identitate-portabilitatea, nodoen arteko txata eta gertaerak, moderazioa, metrikak eta erresilientzia.
+- **Zure hizkuntzan**: gaztelania, ingelesa, frantsesa, alemana, italiera, katalana, euskara, galegoa eta okzitaniera (823 gako hizkuntzako), sistemaren locale-aren detekzio automatikoarekin.
 
 ## Baldintzak eta abiaraztea
 
@@ -57,17 +58,6 @@ Linux/macOS-en:
 
 Honek backend-a `http://localhost:8000`-n eta app-a modu lokalean altxatzen ditu; API-k Swagger/OpenAPI erakusten du `/docs`-en. Bi zatietako edozein desaktibatu dezakezu `--no-backend` edo `--no-frontend`-ekin.
 
-### Beste aukera erabilgarri batzuk
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Kontsultatu abiarazte eta hedapenaren erreferentzia osoa [docs/eu/HERRAMIENTAS.md](docs/eu/HERRAMIENTAS.md)-n eta [docs/eu/USO.md](docs/eu/USO.md)-n.
-
 ## Ingurune-aldagaiak eta konfigurazioa
 
 ### Backend-a
@@ -78,6 +68,15 @@ Sortu edo doitu `backend/.env` gutxienez honekin:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federazioa mTLSrekin (ekoizpena)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Ordainketak (lehenetsita mock; Stripe/Redsys eskaeran)
+PAYMENTS_PROVIDER=mock
 ```
 
 Ingurune produktiborako MariaDB erabiltzen da; script-ek eta hedapen-dokumentazioak Docker-ekin kudeatzen dute.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 Proiektuaren abiarazte automatikoak hau jada konfiguratzen du `start.*` erabiltzean.
 
-## Proiektuaren egoera
-
-🚧 **Garapen aktiboan** — Jaialdiak, laburrak, E2EE-dun txata, mapak, offline modua eta 9 hizkuntza funtzionatzen.
-
-**Hurrengo roadmap-a:**
-
-- [ ] Push jakinarazpenak (Firebase/APNs)
-- [ ] Sinatutako Linux AppImage
-- [ ] Windows MSI instalagailua
-- [x] Dokumentazioa API OpenAPI esportagarria (`/openapi.json` operationId bikoiztu gabe + `docs/eu/API.md` birsortua)
-
 ## Proiektuaren dokumentazioa
 
 Dokumentazio-mapa [docs/eu/README.md](docs/eu/README.md)-n dago. Sarrera onena da erabiltzaile-mota bakoitzerako:
@@ -116,10 +104,10 @@ Dokumentazio-mapa [docs/eu/README.md](docs/eu/README.md)-n dago. Sarrera onena d
 - [docs/eu/DESARROLLO.md](docs/eu/DESARROLLO.md): endpoint-ak edo pantailak nola gehitu
 - [docs/eu/BACKEND.md](docs/eu/BACKEND.md): Backend gida (neurmak, konfigurazioa, auth, proveek)
 - [docs/eu/DATABASE.md](docs/eu/DATABASE.md): Eskema eta migrazioak
-- [docs/eu/FEDERATION_PROTOCOL.md](docs/eu/FEDERATION_PROTOCOL.md): Federazio-protokoloa (fasa 4)
-- [docs/eu/FEDERATION_SCHEMA.md](docs/eu/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/eu/FEDERATION_SECURITY.md](docs/eu/FEDERATION_SECURITY.md): Ezpezatutako konfiantza-modeloa
-- [docs/eu/PUSH.md](docs/eu/PUSH.md): Push-notifikazioaren eskaintza
+- [docs/eu/FEDERATION_PROTOCOL.md](docs/eu/FEDERATION_PROTOCOL.md): Nodoen arteko protokoloa (2tik 10erako faseak)
+- [docs/eu/FEDERATION_SCHEMA.md](docs/eu/FEDERATION_SCHEMA.md): Entitate federatuen eskema eta checksum
+- [docs/eu/FEDERATION_SECURITY.md](docs/eu/FEDERATION_SECURITY.md): Konfiantza, mTLS, portabilitatea eta erresilientzia
+- [docs/eu/FEDERATION_CHAT_BROKER.md](docs/eu/FEDERATION_CHAT_BROKER.md): Garraio-erabakia eta inplementazio-egoera
 
 Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.md) da.
 
@@ -136,24 +124,6 @@ Gainera, garapenerako eta proiektu-konbentziorako abiapuntua [AGENTS.md](AGENTS.
 - **Zer dokumentu irakurri behar dut lehenik?** Erabiltzailea bazara, [docs/eu/USO.md](docs/eu/USO.md); garatzailea bazara, [docs/eu/ARQUITECTURA.md](docs/eu/ARQUITECTURA.md).
 - **Nola jakin aldaketa batek dokumentazioa eguneratzea behar duen?** Abiaraztea, API, rolak, baimenak, ingurune-aldagaiak edo eskema aldatzen badu, eguneratu dagokion dokumentazioa ere.
 
-## Garatzaileentzat
-
-> Xehetasun osoa [`AGENTS.md`](AGENTS.md)-n (arkitektura, komandoak eta konbentzioak) eta [`docs/`](docs/eu/README.md)-ko indizean (rol-gidak: funtzionala, erabilera, administrazioa, azpiegitura, segurtasuna, arkitektura, API).
-
-
-
-## Tokiko garapena
-
-```bash
-# Backend
-cd backend
-python -m uvicorn app.main:app --reload
-
-# Frontend
-cd frontend
-flutter run
-```
-
 ## Laguntzea
 
 1. Egin fork errepositorioan.
@@ -162,7 +132,7 @@ flutter run
 4. Bultzatu adarra (`git push origin feature/berri-bat`).
 5. Ireki Pull Request testuinguru, aldaketa eta balidazioarekin.
 
-**Kalitate-konbentzioak:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Kalitate-konbentzioak:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` eta `flutter test` ohi dira fusionatu aurretik. GitHub Actions-ek ate horiek paraleloan exekutatzen ditu eta Dependabot-ek astero PR taldekatuak irekitzen ditu: patch/minor-ak automatikoki fusionatzen dira CI berdearekin, major-ak eskuzko berrikuspenerako geratzen dira (xehetasuna [docs/eu/INFRAESTRUCTURA.md](docs/eu/INFRAESTRUCTURA.md) fitxategian).
 
 ## Lizentzia
 

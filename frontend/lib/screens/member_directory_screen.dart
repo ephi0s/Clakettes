@@ -29,6 +29,10 @@ class _MemberDirectoryScreenState extends State<MemberDirectoryScreen> {
   late AppLocalizations l10n;
   String _search = '';
   String _roleFilter = '';
+  static const _fallbackRoles = ['admin', 'director', 'producer', 'user'];
+  List<String> _roles = [];
+
+  List<String> get _roleFilters => _roles.isEmpty ? _fallbackRoles : _roles;
 
   @override
   void didChangeDependencies() {
@@ -44,6 +48,7 @@ class _MemberDirectoryScreenState extends State<MemberDirectoryScreen> {
   Future<void> _loadData() async {
     if (!mounted) return;
     setState(() { _isLoading = true; _hasError = false; });
+    _loadRoles();
     try {
       final result = await api.getUsers(size: 100, isActive: true);
       if (!mounted) return;
@@ -52,6 +57,16 @@ class _MemberDirectoryScreenState extends State<MemberDirectoryScreen> {
       debugPrint('Error: $e');
       if (!mounted) return;
       setState(() { _isLoading = false; _hasError = true; });
+    }
+  }
+
+  Future<void> _loadRoles() async {
+    try {
+      final roles = await api.getRoles();
+      if (!mounted) return;
+      setState(() { _roles = roles.map((r) => r.name).toList(); });
+    } catch (e) {
+      debugPrint('Error: $e');
     }
   }
 
@@ -100,7 +115,7 @@ class _MemberDirectoryScreenState extends State<MemberDirectoryScreen> {
                           child: Row(children: [
                             FilterChip(label: Text(l10n.all), selected: _roleFilter.isEmpty, onSelected: (_) { setState(() { _roleFilter = ''; }); }),
                             const SizedBox(width: 6),
-                            ...['admin', 'director', 'producer', 'user'].map((r) => Padding(
+                            ..._roleFilters.map((r) => Padding(
                               padding: const EdgeInsets.only(right: 6),
                               child: FilterChip(label: Text(l10n.getRoleTranslation(r)), selected: _roleFilter == r, onSelected: (_) { setState(() { _roleFilter = _roleFilter == r ? '' : r; }); }),
                             )),

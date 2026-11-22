@@ -1,8 +1,11 @@
 """Federation endpoints (node policies: allowlist/blocklist)."""
 
 import base64
+import hashlib
+import hmac
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -14,19 +17,26 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
 from app.models.trusted_node import TrustedNode
-from app.auth import get_current_user
+from app.auth import get_current_user, validate_access_token
 from app.rate_limiter import RateLimiter
 from app.services.node_policy_service import NodePolicyService
+from app.services.user_service import UserService
 from app.services.moderation_report_service import ModerationReportService
 from app.services.node_peering_service import NodePeeringService
 from app.config import settings
 from app.services.federation_token_service import FederationTokenService
+from app.services.message_queue_service import canonical_json
+from app.services.portability_service import PortabilityService
+from app.services.event_bus_service import entity_topic, event_bus, node_topic
+from app.routers import federation_chat_bridge, federation_resilience
+from app.routers import federation_events as federation_events_router
 
 federation_token_service = FederationTokenService()
 
@@ -47,6 +57,12 @@ def _manifest_signature_payload(manifest: dict) -> dict:
 
 def _canonical_json(payload: dict) -> bytes:
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _utc_naive(value: datetime) -> datetime:
+    if value.tzinfo is not None:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
 
 
 async def _fetch_peer_jwks(issuer: str) -> dict:
@@ -71,6 +87,8 @@ def _check_federation_rate_limit(request: Request):
 router = APIRouter(prefix="/federation", tags=["federation"], dependencies=[Depends(_check_federation_rate_limit)])
 service = NodePolicyService()
 report_service = ModerationReportService()
+portability_service = PortabilityService()
+user_service = UserService()
 
 
 class NodePolicyIn(BaseModel):
@@ -112,6 +130,31 @@ def _require_peer(request: Request) -> TrustedNode | None:
 def _require_admin(current_user: User):
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+
+
+async def _resolve_peer_node(request: Request, claimed: str | None = None) -> str:
+    peer = getattr(request.state, "peer_node", None)
+    domain = getattr(peer, "node_domain", None) if peer is not None else None
+    if not domain:
+        token_peer = await get_current_federation_peer(request)
+        if token_peer is not None:
+            domain = token_peer.get("issuer_node") or token_peer.get("iss")
+    claimed = claimed.strip() if isinstance(claimed, str) else ""
+    if domain and claimed and domain != claimed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No puede actuar en nombre de otro nodo")
+    node = domain or claimed
+    if not node:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="node required")
+    return node
+
+
+def _ref_domain(ref: str) -> str | None:
+    if "@" in ref:
+        return ref.rsplit("@", 1)[1].strip().lower() or None
+    parts = ref.split(":")
+    if len(parts) >= 4 and parts[0] == "did" and parts[1] == "clakettes":
+        return parts[2].strip().lower() or None
+    return None
 
 
 @router.get("/nodes")
@@ -241,71 +284,353 @@ async def list_reports(node: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/users/{user_ref}")
-async def propagate_erase(user_ref: str):
-    return {"message": "erase propagated", "user_ref": user_ref, "status": "queued"}
+async def propagate_erase(request: Request, user_ref: str, db: Session = Depends(get_db)):
+    user = (
+        db.query(User)
+        .filter(
+            (User.uuid == user_ref) | (User.did == user_ref) | (User.handle == user_ref) | (User.username == user_ref)
+        )
+        .first()
+    )
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    authorized = False
+    auth = request.headers.get("authorization", "")
+    token = auth[7:].strip() if auth.startswith("Bearer ") else None
+    if token:
+        result = validate_access_token(db, token)
+        if result is not None:
+            app_user = db.query(User).filter(User.id == result[0]).first()
+            if app_user is not None and (app_user.id == user.id or app_user.role == "admin"):
+                authorized = True
+
+    if not authorized:
+        peer_domain = None
+        peer = getattr(request.state, "peer_node", None)
+        if peer is not None:
+            peer_domain = getattr(peer, "node_domain", None)
+        if not peer_domain:
+            token_peer = await get_current_federation_peer(request)
+            if token_peer is not None:
+                peer_domain = token_peer.get("issuer_node") or token_peer.get("iss")
+        ref_domain = _ref_domain(user_ref)
+        if (
+            isinstance(peer_domain, str)
+            and peer_domain.strip()
+            and ref_domain is not None
+            and peer_domain.strip().lower() == ref_domain
+            and service.is_allowed(db, peer_domain)
+        ):
+            authorized = True
+
+    if not authorized:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to erase this user")
+
+    user_id = user.id
+    user_uuid = user.uuid
+    user_did = user.did
+    user_handle = user.handle
+    try:
+        summary = user_service.erase_personal_data(db, user)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    origin = getattr(settings, "PUBLIC_BASE_URL", None) or "primary"
+    topic = ":".join([node_topic(origin), entity_topic("user", str(user_id))])
+    try:
+        envelope = event_bus.publish(
+            topic,
+            {
+                "type": "user.erase",
+                "node": origin,
+                "data": {
+                    "ref": user_ref,
+                    "user_id": user_id,
+                    "uuid": user_uuid,
+                    "did": user_did,
+                    "handle": user_handle,
+                },
+            },
+        )
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="event bus unavailable")
+
+    propagated = []
+    failed = []
+    for node in NodePeeringService().list_allowed(db):
+        if node.node_domain == origin:
+            continue
+        try:
+            await federation_events_router._send_to_peer(node.node_domain, envelope)
+            propagated.append(node.node_domain)
+        except Exception as exc:
+            failed.append(node.node_domain)
+            event_bus.enqueue_retry(node.node_domain, envelope, str(exc))
+    if failed:
+        federation_events_router._ensure_worker()
+
+    return {
+        "erased": True,
+        "ref": user_ref,
+        "user_id": user_id,
+        "summary": summary,
+        "propagated": propagated,
+        "failed": failed,
+    }
 
 
 @router.get("/export/{user_ref}")
-async def export_bundle(user_ref: str):
-    return {"user_ref": user_ref, "bundle": "pending"}
+async def export_bundle(user_ref: str, db: Session = Depends(get_db)):
+    user = (
+        db.query(User)
+        .filter(
+            (User.uuid == user_ref) | (User.did == user_ref) | (User.handle == user_ref) | (User.username == user_ref)
+        )
+        .first()
+    )
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    try:
+        return portability_service.create_bundle(db, user)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 
-@router.get("/health")
+@router.get("/health", deprecated=True)
 async def federation_health():
     return {"status": "ok", "node": "primary"}
 
 
 @router.post("/verify")
 async def verify_bundle(bundle: dict):
-    return {"valid": True, "checksum": "ok"}
+    if not isinstance(bundle, dict):
+        return {"valid": False, "checksum": None, "detail": "invalid_bundle"}
+
+    if bundle.get("bundle_version") == PortabilityService.BUNDLE_VERSION and isinstance(bundle.get("payload"), dict):
+        valid = portability_service.verify_bundle(bundle)
+        return {
+            "valid": valid,
+            "checksum": bundle.get("checksum"),
+            "detail": "ok" if valid else "integrity_check_failed",
+        }
+
+    payload = bundle.get("payload")
+    if not isinstance(payload, dict):
+        payload = {
+            k: v
+            for k, v in bundle.items()
+            if k not in ("signature", "checksum", "certificate_chain", "public_key", "fingerprint")
+        }
+
+    checksum = hashlib.sha256(canonical_json(payload)).hexdigest()
+    provided_checksum = bundle.get("checksum")
+    signature = bundle.get("signature")
+
+    if provided_checksum is None and not signature:
+        return {"valid": False, "checksum": checksum, "detail": "no_cryptographic_material"}
+
+    if provided_checksum is not None and not hmac.compare_digest(checksum, str(provided_checksum)):
+        return {"valid": False, "checksum": checksum, "detail": "checksum_mismatch"}
+
+    if signature:
+        try:
+            chain = bundle.get("certificate_chain")
+            if isinstance(chain, list) and chain:
+                cert_pem = str(chain[0])
+            elif isinstance(chain, str) and chain:
+                cert_pem = chain
+            else:
+                cert_pem = None
+            if cert_pem is not None:
+                from app.mtls import cert_fingerprint_sha256
+
+                fingerprint = bundle.get("fingerprint")
+                if fingerprint is not None and not hmac.compare_digest(
+                    cert_fingerprint_sha256(cert_pem), str(fingerprint)
+                ):
+                    return {"valid": False, "checksum": checksum, "detail": "fingerprint_mismatch"}
+                public_key = x509.load_pem_x509_certificate(cert_pem.encode("ascii")).public_key()
+            elif bundle.get("public_key"):
+                public_key = serialization.load_pem_public_key(str(bundle["public_key"]).encode("ascii"))
+            else:
+                return {"valid": False, "checksum": checksum, "detail": "verification_key_missing"}
+            public_key.verify(base64.b64decode(signature), canonical_json(payload), padding.PKCS1v15(), hashes.SHA256())
+        except Exception:
+            return {"valid": False, "checksum": checksum, "detail": "signature_invalid"}
+
+    return {"valid": True, "checksum": checksum, "detail": "ok"}
 
 
 @router.post("/publish")
-async def publish_event(event: dict):
-    return {"delivered": True, "event": event.get("type", "unknown")}
+async def publish_event(event: dict, request: Request):
+    if not isinstance(event, dict) or not event:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="event must be a non-empty object")
+    event_type = event.get("type")
+    if not isinstance(event_type, str) or not event_type.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="event.type required")
+    data = event.get("data", {})
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="event.data must be an object")
+
+    origin = None
+    peer = getattr(request.state, "peer_node", None)
+    if peer is not None:
+        origin = getattr(peer, "node_domain", None)
+    if origin is None:
+        federated_peer = await get_current_federation_peer(request)
+        if federated_peer is not None:
+            origin = federated_peer.get("issuer_node") or federated_peer.get("iss")
+    if not isinstance(origin, str) or not origin.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="origin node required")
+
+    topic = event.get("topic")
+    if topic is not None and (not isinstance(topic, str) or not topic.strip()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="event.topic must be a string")
+    if not topic:
+        parts = [node_topic(origin)]
+        entity = event.get("entity")
+        if isinstance(entity, str) and entity.strip():
+            entity_id = event.get("entity_id")
+            parts.append(entity_topic(entity, entity_id if isinstance(entity_id, str) else None))
+        topic = ":".join(parts)
+
+    try:
+        envelope = event_bus.publish(topic, {"type": event_type, "node": origin, "data": data})
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="event bus unavailable")
+
+    return {
+        "published": True,
+        "topic": topic,
+        "seq": envelope["seq"],
+        "delivered": [],
+        "failed": [],
+        "skipped": [],
+        "retry_queued": 0,
+    }
+
+
+class NodeRecoverIn(BaseModel):
+    node: str
+
+
+async def _recover_federation_node(node_domain: str, db: Session):
+    target = federation_resilience.peering.get_by_domain(db, node_domain)
+    if target is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"node": node_domain, "status": "not_found", "message": "Nodo no encontrado"},
+        )
+
+    incident = federation_resilience.clear_revocation(db, node_domain)
+
+    federation_resilience.peering.restore(db, node_domain)
+    target.last_seen_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(target)
+
+    pending_retries = len([r for r in event_bus.list_retries() if r.get("node_domain") == node_domain])
+    if pending_retries:
+        federation_events_router._ensure_worker()
+    federation_resilience.metrics.record(node_domain, 0.0, True, retries=pending_retries)
+
+    return {
+        "node": node_domain,
+        "status": "recovering" if pending_retries else "recovered",
+        "incident_cleared": incident is not None,
+        "allowed": target.allowed,
+        "pending_retries": pending_retries,
+    }
 
 
 @router.post("/recover")
-async def recover_node(node: str):
-    return {"node": node, "status": "revoked"}
+async def recover_node(body: NodeRecoverIn, request: Request, db: Session = Depends(get_db)):
+    node_domain = await _resolve_peer_node(request, body.node)
+    return await _recover_federation_node(node_domain, db)
 
 
 @router.post("/bridge")
-async def bridge_chat(message: dict):
-    return {"bridged": True, "id": message.get("id")}
+async def bridge_chat(message: dict, request: Request, db: Session = Depends(get_db)):
+    if not isinstance(message, dict) or not message:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="message must be a non-empty object")
+
+    origin = None
+    peer = getattr(request.state, "peer_node", None)
+    if peer is not None:
+        origin = getattr(peer, "node_domain", None)
+    if origin is None:
+        federated_peer = await get_current_federation_peer(request)
+        if federated_peer is not None:
+            origin = federated_peer.get("issuer_node") or federated_peer.get("iss")
+    if not isinstance(origin, str) or not origin.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="origin node required")
+
+    target_node = message.get("target_node")
+    if target_node is None:
+        target_node = message.get("target")
+    if not isinstance(target_node, str) or not target_node.strip():
+        target_node = origin
+
+    content = message.get("content")
+    if not isinstance(content, str) or not content.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="content required")
+
+    channel_id = message.get("channel_id")
+    if channel_id is not None and (not isinstance(channel_id, int) or isinstance(channel_id, bool)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="channel_id must be an integer")
+    receiver_id = message.get("receiver_id")
+    if receiver_id is not None and (not isinstance(receiver_id, int) or isinstance(receiver_id, bool)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="receiver_id must be an integer")
+
+    body = federation_chat_bridge.OutboundEnvelope(
+        target_node=target_node,
+        channel_id=channel_id,
+        receiver_id=receiver_id,
+        content=content,
+    )
+    try:
+        result = await federation_chat_bridge.chat_bridge_outbound(body, db)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="chat bridge unavailable")
+    if result.get("status") != "sent":
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="chat bridge unavailable")
+    return result
 
 
-@router.get("/aggregate-nodes")
+@router.get("/aggregate-nodes", deprecated=True)
 async def aggregate_nodes():
     return {"nodes": 1, "results": []}
 
 
-@router.get("/keys")
+@router.get("/keys", deprecated=True)
 async def peering_keys():
     return {"keys": []}
 
 
-@router.get("/events")
+@router.get("/events", deprecated=True)
 async def federation_events():
     return {"events": []}
 
 
-@router.get("/capabilities")
+@router.get("/capabilities", deprecated=True)
 async def federation_capabilities():
     return {"capabilities": ["festivals", "users", "chat", "voting"]}
 
 
-@router.get("/status")
+@router.get("/status", deprecated=True)
 async def federation_status():
     return {"status": "running"}
 
 
-@router.get("/info")
+@router.get("/info", deprecated=True)
 async def federation_info():
     return {"name": "Clakettes", "version": "1.0"}
 
 
-@router.get("/ping")
+@router.get("/ping", deprecated=True)
 async def federation_ping():
     return {"pong": True}
 
@@ -322,32 +647,32 @@ async def federation_time():
     return {"time": datetime.now(timezone.utc).isoformat()}
 
 
-@router.get("/version")
+@router.get("/version", deprecated=True)
 async def federation_version():
     return {"version": "1.0.0"}
 
 
 @router.post("/checksum")
 async def federation_checksum(payload: dict):
-    return {"checksum": "ok", "size": len(str(payload))}
+    return {"checksum": hashlib.sha256(canonical_json(payload)).hexdigest(), "size": len(str(payload))}
 
 
-@router.post("/notify")
+@router.post("/notify", deprecated=True)
 async def federation_notify(payload: dict):
     return {"notified": True}
 
 
-@router.post("/subscribe")
+@router.post("/subscribe", deprecated=True)
 async def federation_subscribe(payload: dict):
     return {"subscribed": True}
 
 
-@router.post("/unsubscribe")
+@router.post("/unsubscribe", deprecated=True)
 async def federation_unsubscribe(payload: dict):
     return {"unsubscribed": True}
 
 
-@router.get("/discover")
+@router.get("/discover", deprecated=True)
 async def federation_discover():
     return {"discovered": []}
 
@@ -379,21 +704,73 @@ async def federation_register(body: NodeRegisterIn, db: Session = Depends(get_db
 
 
 @router.post("/unregister")
-async def federation_unregister(payload: dict):
-    return {"unregistered": True}
+async def federation_unregister(payload: dict, request: Request, db: Session = Depends(get_db)):
+    claimed = payload.get("node") or payload.get("node_domain") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    peering = NodePeeringService()
+    if peering.get_by_domain(db, node_domain) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nodo no encontrado")
+    peering.revoke(db, node_domain)
+    federation_resilience.record_revocation(
+        db,
+        node_domain,
+        reason=payload.get("reason") if isinstance(payload, dict) else None,
+        revoked_by=node_domain,
+    )
+    federation_resilience.metrics.record(node_domain, 0.0, True)
+    return {"node": node_domain, "unregistered": True, "allowed": False}
 
 
 @router.post("/sync")
-async def federation_sync(payload: dict):
-    return {"synced": True}
+async def federation_sync(payload: dict, request: Request):
+    claimed = payload.get("node") or payload.get("node_domain") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    since = payload.get("since", 0) if isinstance(payload, dict) else 0
+    if isinstance(since, bool) or not isinstance(since, int) or since < 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="since must be a non-negative integer")
+    topic = payload.get("topic") if isinstance(payload, dict) else None
+    if topic is not None and (not isinstance(topic, str) or not topic.strip()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="topic must be a string")
+    topic = topic or node_topic(node_domain)
+    return {
+        "synced": True,
+        "node": node_domain,
+        "topic": topic,
+        "since": since,
+        "latest": event_bus.latest_sequence(topic),
+        "events": event_bus.replay(topic, since),
+    }
 
 
 @router.post("/reconcile")
-async def federation_reconcile(payload: dict):
-    return {"reconciled": True}
+async def federation_reconcile(payload: dict, request: Request, db: Session = Depends(get_db)):
+    claimed = payload.get("node") or payload.get("node_domain") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    peering = NodePeeringService()
+    node = peering.get_by_domain(db, node_domain)
+    if node is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nodo no encontrado")
+    policy_allowed = service.is_allowed(db, node_domain)
+    changed = False
+    if not policy_allowed and node.allowed:
+        peering.revoke(db, node_domain)
+        federation_resilience.record_revocation(
+            db,
+            node_domain,
+            reason="politica_no_permitida",
+            revoked_by="policy",
+        )
+        changed = True
+    return {
+        "reconciled": True,
+        "node": node_domain,
+        "policy_allowed": policy_allowed,
+        "allowed": bool(node.allowed),
+        "changed": changed,
+    }
 
 
-@router.get("/heartbeat")
+@router.get("/heartbeat", deprecated=True)
 async def federation_heartbeat():
     return {"alive": True}
 
@@ -460,139 +837,214 @@ async def federation_whoami(peer: dict | None = Depends(get_current_federation_p
     }
 
 
-@router.get("/peers")
+@router.get("/peers", deprecated=True)
 async def federation_peers():
     return {"peers": []}
 
 
-@router.get("/links")
+@router.get("/links", deprecated=True)
 async def federation_links():
     return {"links": []}
 
 
-@router.get("/stats")
+@router.get("/stats", deprecated=True)
 async def federation_stats():
     return {"stats": {}}
 
 
-@router.get("/config")
+@router.get("/config", deprecated=True)
 async def federation_config():
     return {"config": {}}
 
 
-@router.get("/status-check")
+@router.get("/status-check", deprecated=True)
 async def federation_status_check():
     return {"ok": True}
 
 
-@router.get("/ready")
+@router.get("/ready", deprecated=True)
 async def federation_ready():
     return {"ready": True}
 
 
-@router.get("/live")
+@router.get("/live", deprecated=True)
 async def federation_live():
     return {"live": True}
 
 
-@router.get("/alive")
+@router.get("/alive", deprecated=True)
 async def federation_alive():
     return {"alive": True}
 
 
-@router.get("/down")
+@router.get("/down", deprecated=True)
 async def federation_down():
     return {"down": False}
 
 
-@router.get("/maintenance")
+@router.get("/maintenance", deprecated=True)
 async def federation_maintenance():
     return {"maintenance": False}
 
 
-@router.get("/readyz")
+@router.get("/readyz", deprecated=True)
 async def federation_readyz():
     return {"ready": True}
 
 
-@router.get("/livez")
+@router.get("/livez", deprecated=True)
 async def federation_livez():
     return {"live": True}
 
 
-@router.get("/healthz")
+@router.get("/healthz", deprecated=True)
 async def federation_healthz():
     return {"healthy": True}
 
 
-@router.get("/ok")
+@router.get("/ok", deprecated=True)
 async def federation_ok():
     return {"ok": True}
 
 
-@router.get("/yes")
+@router.get("/yes", deprecated=True)
 async def federation_yes():
     return {"yes": True}
 
 
-@router.get("/no")
+@router.get("/no", deprecated=True)
 async def federation_no():
     return {"no": False}
 
 
-@router.get("/maybe")
+@router.get("/maybe", deprecated=True)
 async def federation_maybe():
     return {"maybe": True}
 
 
-@router.get("/always")
+@router.get("/always", deprecated=True)
 async def federation_always():
     return {"always": True}
 
 
-@router.get("/never")
+@router.get("/never", deprecated=True)
 async def federation_never():
     return {"never": False}
 
 
 @router.post("/import")
-async def federation_import(payload: dict):
-    return {"imported": True}
+async def federation_import(payload: dict, request: Request, db: Session = Depends(get_db)):
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="bundle must be an object")
+    origin = payload.get("origin_domain")
+    if not isinstance(origin, str) or not origin.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="bundle.origin_domain required")
+    await _resolve_peer_node(request, origin)
+    try:
+        return portability_service.import_bundle(db, payload)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid bundle: integrity check failed")
+    except PermissionError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Origin node not allowed")
 
 
 @router.post("/dedup")
-async def federation_dedup(payload: dict):
-    return {"deduped": True}
+async def federation_dedup(payload: dict, request: Request, db: Session = Depends(get_db)):
+    claimed = payload.get("node") or payload.get("node_origin") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    message_ids = payload.get("message_ids") if isinstance(payload, dict) else None
+    if message_ids is None:
+        message_ids = [payload.get("message_id")] if isinstance(payload, dict) else []
+    if (
+        not isinstance(message_ids, list)
+        or not message_ids
+        or not all(isinstance(mid, str) and mid.strip() for mid in message_ids)
+    ):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="message_id or message_ids required")
+    queue = federation_chat_bridge.queue
+    results = [{"message_id": mid, "duplicate": queue.get_by_message_id(db, mid) is not None} for mid in message_ids]
+    return {
+        "deduped": True,
+        "node": node_domain,
+        "results": results,
+        "duplicates": sum(1 for item in results if item["duplicate"]),
+    }
 
 
 @router.post("/retry")
-async def federation_retry(payload: dict):
-    return {"retried": True}
+async def federation_retry(payload: dict, request: Request):
+    claimed = payload.get("node") or payload.get("node_domain") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    retries = [item for item in event_bus.list_retries() if item.get("node_domain") == node_domain]
+    due = [item for item in event_bus.due_retries() if item.get("node_domain") == node_domain]
+    if retries:
+        federation_events_router._ensure_worker()
+    return {
+        "retried": True,
+        "node": node_domain,
+        "pending": retries,
+        "count": len(retries),
+        "due": len(due),
+        "worker_started": bool(retries),
+    }
 
 
 @router.post("/recover-node")
-async def federation_recover_node(payload: dict):
-    return {"recovered": True}
-
-
-@router.get("/fallback")
-async def federation_fallback():
-    return {"fallback": True}
+async def federation_recover_node(payload: dict, request: Request, db: Session = Depends(get_db)):
+    claimed = payload.get("node") or payload.get("node_domain") if isinstance(payload, dict) else None
+    node_domain = await _resolve_peer_node(request, claimed)
+    result = await _recover_federation_node(node_domain, db)
+    if isinstance(result, JSONResponse):
+        return result
+    return {**result, "recovered": True}
 
 
 @router.get("/integrity")
-async def federation_integrity():
-    return {"integrity": True}
-
-
-@router.get("/degrade")
-async def federation_degrade():
-    return {"mode": "normal"}
+async def federation_integrity(db: Session = Depends(get_db)):
+    now = datetime.now(timezone.utc)
+    nodes = db.query(TrustedNode).all()
+    expired_certificates = [
+        node.node_domain
+        for node in nodes
+        if node.not_after is not None and _utc_naive(node.not_after) < _utc_naive(now)
+    ]
+    invalid_fingerprints = [
+        node.node_domain for node in nodes if not re.fullmatch(r"[0-9a-fA-F]{64}", node.cert_fingerprint_sha256 or "")
+    ]
+    manifest_issues = []
+    manifest = await federation_manifest()
+    signature = manifest.get("signature")
+    if not manifest.get("schema_version") or not signature:
+        manifest_issues.append("manifest_incompleto")
+    else:
+        try:
+            if datetime.fromisoformat(manifest["expires_at"]) < now:
+                manifest_issues.append("manifest_expirado")
+        except (KeyError, TypeError, ValueError):
+            manifest_issues.append("manifest_expirado_invalido")
+        try:
+            payload = _canonical_json(_manifest_signature_payload(manifest))
+            _signing_key().public_key().verify(
+                base64.b64decode(signature), payload, padding.PKCS1v15(), hashes.SHA256()
+            )
+        except Exception:
+            manifest_issues.append("manifest_firma_invalida")
+    issues = {
+        "expired_certificates": expired_certificates,
+        "invalid_fingerprints": invalid_fingerprints,
+        "manifest_issues": manifest_issues,
+    }
+    return {
+        "integrity": not any(issues.values()),
+        "nodes": len(nodes),
+        **issues,
+        "checked_at": now.isoformat(),
+    }
 
 
 @router.get("/metrics")
 async def federation_metrics():
-    return {"peers": 0, "reports": 0, "latency_ms": 0}
+    return federation_resilience.metrics.snapshot()
 
 
 @router.get("/users/{ref}")
@@ -663,6 +1115,7 @@ async def peers_revoke(domain: str, db: Session = Depends(get_db), current_user:
     ok = service.revoke(db, domain)
     if not ok:
         raise HTTPException(status_code=404, detail="Nodo no encontrado")
+    federation_resilience.record_revocation(db, domain, revoked_by=str(current_user.id))
     return {"domain": domain, "revoked": True}
 
 

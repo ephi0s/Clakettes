@@ -2,6 +2,10 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
+## 0. Zusammenfassung
+
+Überprüfung der Abhängigkeiten, angewandten Optimierungen und ausstehenden technischen Schulden des Clakettes-Projekts.
+
 ## 1. Externe Abhängigkeiten: was entfernt werden kann und was nicht
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
@@ -9,11 +13,13 @@
 | Dep | Urteil | Grund |
 |-----|--------|-------|
 | fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Behalten | Kerne des Stacks |
-| python-jose[cryptography] | Für jetzt behalten, zu PyJWT migrieren in Zukunft | Verlassen seit 2016, aber die Änderung betrifft `app/auth.py` + `routers/dependencies.py` + Tests; in separater PR mit Token-Tests durchführen |
-| python-dotenv | Behalten | Erforderlich durch `pydantic-settings>=2` und `uvicorn[standard]` (`--env-file`); nur 2 Skripte importieren es direkt, aber Entfernen würde `.env`-Laden brechen |
+| PyJWT==2.15.1 | Migration abgeschlossen | `python-jose` entfernt; `app/auth.py` und `routers/dependencies.py` nutzen PyJWT (Bump 2.10.1 → 2.15.0 → 2.15.1) |
+| python-dotenv | Nicht enthalten | Steht nicht in `pyproject.toml`/`requirements*.txt` und wird nicht in `backend/` importiert; `pydantic-settings` lädt `.env` direkt |
 | pymysql | Behalten als Prod-Treiber | Wird nur mit MariaDB verwendet; nicht laden in Dev spart nichts (lazy Import bereits in SQLAlchemy) |
 | python-multipart, email-validator, bcrypt | Behalten | Uploads, E-Mail-Validierung, Passwort-Hashing |
 | reportlab 5.1.0 | Behalten, aber mit Lazy-Import (erledigt) | Nur `export_service._build_pdf`; zuvor auf Modulebene importiert (~200 ms + Speicher pro Worker). Jetzt innerhalb der Funktion importiert. Zudem `pyproject.toml` synchronisiert (fehlte) und `==5.1.0` gepinnt |
+
+**In `backend/pyproject.toml` / `requirements*.txt` fixierte Versionen:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (Major seit 6.21.x); Entwicklung: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 
@@ -22,17 +28,17 @@ Alle Abhängigkeiten sind in echtem Einsatz; keine konnte ohne Funktionsverlust 
 - `archive`: verwendet in `crypto_utils.dart` (ZLib/GZip). `dart:io` taugt nicht, weil es Web bricht.
 - `path_provider`: verwendet in `file_downloader_io.dart` (Mobil/Desktop).
 - `web`: verwendet in `file_downloader_web.dart`.
-- `pointycastle` + `crypto` + `uuid`: E2EE des Chats (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher`: Karten.
+- `pointycastle` + `crypto`: E2EE des Chats (ECDH P-256 + AES-GCM; der Name `X25519` erscheint nur in einem vererbten Feld).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher`: Karten.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker`: jedes mit 1-2 Verwendungen, aber Entfernen würde Funktionalität entfernen.
 
 ## 2. Angewandte Optimierungen
 
 1. `export_service.py`: Lazy-reportlab-Import in `_build_pdf` + Docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 `RateLimiter`-Instanzen (Eimer `middleware:`/`dav:` + Limiter für `reset` 3/300s und `login`); nicht vereinheitlichen ohne unterschiedliche Limits zu verlieren.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py`: 5 `RateLimiter`-Instanzen (Eimer `middleware:`/`dav:` + Limiter für `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s und Föderation 60/60 s); nicht vereinheitlichen ohne unterschiedliche Limits zu verlieren. Der Bypass läuft über `app.config.is_testing()` (`1/true/yes/on`).
 3. `base_service.py`: `paginate` setzt `page>=1`, `size` in `[1,100]`; neues `paginate_filtered()` mit 0 Nutzungen definiert (ausstehende Migration der geklonten `get_all_paginated`).
 4. `routers/dependencies.py`: `get_current_user_optional` nutzt wieder `validate_access_token` (entfernt ~30 duplizierte JWT+Session-Zeilen); Fix `__import__("datetime")` → normaler Import; neuer `get_or_404()` zur Ersetzung von ~100 inline `HTTPException(404)`.
-5. `dav/auth.py`: Beziehung zu `app.auth._hash_token` dokumentiert.
+5. `dav/auth.py`: Beziehung zu `app.auth.hash_token` dokumentiert (früher `_hash_token`; der Alias bleibt aus Kompatibilitätsgründen erhalten).
 6. `pyproject.toml`/`requirements.txt` synchronisiert (reportlab).
 7. `reusable_widgets.dart`: neues `showAppSnack()` (1 Definition + 8 Nutzungen; 115 `ScaffoldMessenger` direkt verbleiben).
 
@@ -49,7 +55,7 @@ Alle Abhängigkeiten sind in echtem Einsatz; keine konnte ohne Funktionsverlust 
 9. CI: Tor `ruff format --check` hinzugefügt (GH + GitLab) nach Verifizierung von `216 files already formatted`.
 10. Sicherheit (Pilot `channels.py`, Sicherheitsblock): Neues `require_channel_member`/`is_channel_member` in `permissions.py` und Nutzung in `channels.py` + `chat.py` (entfernt 3 inline-Blöcke mit verzögerten Imports); `channels.py` auf `get_or_404` migriert (7 Blöcke weniger); Rollen-Whitelist `Literal[admin,moderator,member]` in Schemas (zuvor: freie String → 500 durch CheckConstraint; jetzt: 422); 4 neue 403/422-Tests in `TestChannelAuthorization`.
 11. Sicherheit: `POST /delegations/{id}/revoke` erforderte nur Auth — jeder konnte fremde Delegationen widerrufen. Jetzt prüft Delegierender oder Admin + 403-Test. Verifiziert OK (ohne Änderungen): `user_roles`/`user_festival` (attendee-Whitelist), DMs (Eigentum), öffentliche Formulare (optionale Auth), WS (validiert Sitzung), `bulk_create` (ein Commit), SyncQueue (Retry+Backoff), i18n (0 fehlende Schlüssel), `locations` (didChangeDependencies mit Guard).
-12. `get_or_404` erweitert auf `committees.py` (10), `events.py` (58, via Skript mit Überprüfung + 17 unzuweiset zur Vermeidung von F841), `delegations` (2) und 5 Standort-Router (12). Keine Schemaänderung: keine Alembic-Migration ausstehend für dieses Paket.
+12. `get_or_404` erweitert auf `committees.py` (10), `events.py` (58, via Skript mit Überprüfung + 17 unzuweiset zur Vermeidung von F841), `delegations` (2) und 5 Standort-Router (12). Dieses Paket brachte keine Migration; spätere Revisionen fügten jedoch `a8b9c0d1e2f3` (Sitzplatz-Eindeutigkeit) und `b9c0d1e2f3a4` (`contest_type` in Kurzfilmen) hinzu, beide bereits im Head `b9c0d1e2f3a4` angewendet.
 13. Leistung: `venue`-Filter der Programmierung auf SQL heruntergezogen (zuvor gefilterte die Seite in Python und brach `total`/`pages`).
 14. Frontend: Anti-Doppel-Send-Guards beim Erstellen von Festival/Nutzer/Kurzfilm + 3 SnackBars auf `showAppSnack` migriert.
 15. Chat: E2EE außerhalb des UI-Threads — `_prepareContent`/`_unpackContent` nutzen `encryptAsync`/`decryptAsync` (Isolates); neue `encryptSenderKeyAsync`/`decryptSenderKeyAsync` verwendet in Sender-Key-Verbreitung und -Empfang. `RestChatBackend` wird beibehalten: wird von `chat_service_test` als Fake verwendet (war kein toter Code).
@@ -62,9 +68,3 @@ Alle Abhängigkeiten sind in echtem Einsatz; keine konnte ohne Funktionsverlust 
 22. Widget-Tests der extrahierten Widgets (13): `chat_bubble`, `chat_input_bar`, `user_profile_cards`, `location_cards`. Hinweis: Widgets unter `wrapWithLocalization` benötigen ein zusätzliches `pump()` (der Localization-Builder löst im zweiten Frame auf).
 23. Nativer Push ohne Firebase (`docs/de/PUSH.md`): Browser-Notification-API auf Web (`notification_web.dart` + Stub mit bedingtem Export, keine neuen Deps), `flutter_local_notifications` auf Desktop + macOS-Berechtigung beim Start, Mobil als expliziter No-op (`_supported`). `flutter build web` verifiziert.
 24. Dokumentation: `docs/de/API.md`, `docs/de/ARQUITECTURA.md`, `docs/de/USO.md`, `docs/de/DESARROLLO.md`, `docs/de/SEGURIDAD.md`, `docs/de/BACKEND.md` + `docs/de/DATABASE.md` (verschoben von `backend/` am 10/10/2026). READMEs und `AGENTS.md` mit realen Zahlen; Dev-Admin `admin`/`setup` (kein `ADMIN_PASSWORD` in `backend/.env.example`; Seed nur Nicht-Produktion in `app/main.py:257`).
-
-## 4. Überarbeitung 10/10/2026 (Korrekturen an §2–§3)
-
-1. Backend-Docs konsolidiert: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/de/BACKEND.md` + `docs/de/DATABASE.md`; Links aktualisiert in `README.de.md`, `AGENTS.md`, `docs/de/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-4. Korrekturen zu §2: `RateLimiter` sind 3 Instanzen (`main.py`, `admin.py`, `auth.py`), nicht 1; `ADMIN_PASSWORD` existiert nicht in `backend/.env.example` (nur Kommentar `admin/setup`); `ruff format` umfasst 216 Dateien (nicht 215).
-5. `tools/gen_api.py` regeneriert `API.md` idempotent, aber mit fest verdrahtetem absoluten Pfad und ohne Shebang (nicht portabel).

@@ -2,6 +2,10 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](../eu/AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
+## 0. Résumé exécutif
+
+Revue des dépendances, des optimisations appliquées et de la dette technique en attente du projet Clakettes.
+
 ## 1. Dépendances externes : ce qui peut être supprimé et ce qui ne peut pas
 
 ### Backend (`backend/requirements.txt` + `pyproject.toml`)
@@ -9,11 +13,13 @@
 | Dépendance | Verdict | Motif |
 | --- | --- | --- |
 | fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Conserver | Noyau de la pile |
-| python-jose[cryptography] | Conserver pour l'instant, migrer vers PyJWT à l'avenir | Abandonné depuis 2016, mais le changement touche `app/auth.py` + `routers/dependencies.py` + tests ; à faire dans une PR séparée avec tests de tokens |
-| python-dotenv | Conserver | Requis par `pydantic-settings>=2` et `uvicorn[standard]` (`--env-file`) ; seulement 2 scripts l'importent directement, mais le supprimer casserait le chargement de `.env` |
+| PyJWT==2.15.1 | Migration terminée | `python-jose` supprimé ; `app/auth.py` et `routers/dependencies.py` utilisent PyJWT (bump 2.10.1 → 2.15.0 → 2.15.1) |
+| python-dotenv | Non incluse | Ne figure pas dans `pyproject.toml`/`requirements*.txt` et n'est pas importée dans `backend/` ; `pydantic-settings` charge `.env` directement |
 | pymysql | Conserver comme pilote prod | Utilisé seulement avec MariaDB ; ne pas le charger en dev n'économise rien (import paresseux déjà dans SQLAlchemy) |
 | python-multipart, email-validator, bcrypt | Conserver | Uploads, validation email, hashage des mots de passe |
 | reportlab 5.1.0 | Conserver, mais avec import paresseux (fait) | Seulement `export_service._build_pdf` ; auparavant importé au niveau du module (~200 ms + mémoire par travailleur). Maintenant importé à l'intérieur de la fonction. De plus `pyproject.toml` synchronisé (manquait) et épinglé `==5.1.0` |
+
+**Versions épinglées dans `backend/pyproject.toml` / `requirements*.txt` :** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major depuis 6.21.x) ; développement : `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 
@@ -22,17 +28,17 @@ Toutes les dépendances sont en usage réel ; aucune n'a pu être supprimée san
 - `archive` : utilisé dans `crypto_utils.dart` (ZLib/GZip). `dart:io` ne convient pas car il casse le web.
 - `path_provider` : utilisé dans `file_downloader_io.dart` (mobile/bureau).
 - `web` : utilisé dans `file_downloader_web.dart`.
-- `pointycastle` + `crypto` + `uuid` : E2EE du chat (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher` : cartes.
+- `pointycastle` + `crypto` : E2EE du chat (ECDH P-256 + AES-GCM ; le nom `X25519` n'apparaît que dans un champ hérité).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher` : cartes.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker` : chacun avec 1-2 utilisations, mais les supprimer enlèverait des fonctionnalités.
 
 ## 2. Optimisations appliquées
 
 1. `export_service.py` : import reportlab paresseux dans `_build_pdf` + docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` : 3 instances `RateLimiter` (seaux `middleware:`/`dav:` + limiteurs pour `reset` 3/300s et `login`) ; ne pas unifier sans perdre des limites distinctes.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py` : 5 instances `RateLimiter` (seaux `middleware:`/`dav:` + limiteurs `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s et fédération 60/60 s) ; ne pas unifier sans perdre des limites distinctes. Le bypass passe par `app.config.is_testing()` (`1/true/yes/on`).
 3. `base_service.py` : `paginate` fixe `page>=1`, `size` dans `[1,100]` ; nouveau `paginate_filtered()` défini avec 0 utilisations (en attente de migration des `get_all_paginated` clonés).
 4. `routers/dependencies.py` : `get_current_user_optional` réutilise `validate_access_token` (élimine ~30 lignes JWT+session dupliquées) ; fix `__import__("datetime")` → import normal ; nouveau `get_or_404()` pour remplacer ~100 `HTTPException(404)` inline.
-5. `dav/auth.py` : documenté la relation avec `app.auth._hash_token`.
+5. `dav/auth.py` : documenté la relation avec `app.auth.hash_token` (anciennement `_hash_token` ; l'alias est conservé pour compatibilité).
 6. `pyproject.toml`/`requirements.txt` synchronisés (reportlab).
 7. `reusable_widgets.dart` : nouveau `showAppSnack()` (1 définition + 8 utilisations ; 115 `ScaffoldMessenger` directs restent).
 
@@ -49,7 +55,7 @@ Toutes les dépendances sont en usage réel ; aucune n'a pu être supprimée san
 9. CI : porte `ruff format --check` ajoutée (GH + GitLab) après vérification de `216 files already formatted`.
 10. Sécurité (pilote `channels.py`, bloc sécurité) : nouveau `require_channel_member`/`is_channel_member` dans `permissions.py` et utilisation dans `channels.py` + `chat.py` (élimine 3 blocs inline avec imports différés) ; `channels.py` migré vers `get_or_404` (7 blocs de moins) ; liste blanche de rôle `Literal[admin,moderator,member]` dans les schémas (avant : chaîne libre → 500 par CheckConstraint ; maintenant : 422) ; 4 nouveaux tests 403/422 dans `TestChannelAuthorization`.
 11. Sécurité : `POST /delegations/{id}/revoke` exigeait seulement l'auth — n'importe qui pouvait révoquer les délégations d'autrui. Maintenant vérifie le délégateur ou admin + test 403. Vérifiés déjà OK (sans changements) : `user_roles`/`user_festival` (liste blanche attendee), DMs (propriété), formulaires publics (auth optionnel), WS (valide la session), `bulk_create` (single commit), SyncQueue (retry+backoff), i18n (0 clés manquantes), `locations` (didChangeDependencies avec garde).
-12. `get_or_404` étendu à `committees.py` (10), `events.py` (58, via script avec révision + 17 affectations non assignées pour éviter F841), `delegations` (2) et 5 routeurs de localisations (12). Pas de changement de schéma : pas de migration Alembic en attente pour ce lot.
+12. `get_or_404` étendu à `committees.py` (10), `events.py` (58, via script avec révision + 17 affectations non assignées pour éviter F841), `delegations` (2) et 5 routeurs de localisations (12). Ce lot n'a introduit aucune migration ; des révisions ultérieures ont ajouté `a8b9c0d1e2f3` (unicité du siège) et `b9c0d1e2f3a4` (`contest_type` sur les courts), toutes deux déjà appliquées au head `b9c0d1e2f3a4`.
 13. Performance : filtre `venue` de la programmation abaissé à SQL (avant il filtrait la page en Python et cassait `total`/`pages`).
 14. Frontend : gardes anti-double-envoi sur création festival/utilisateur/court-métrage + 3 SnackBars migrés vers `showAppSnack`.
 15. Chat : E2EE hors du fil UI — `_prepareContent`/`_unpackContent` utilisent `encryptAsync`/`decryptAsync` (isolats) ; nouveaux `encryptSenderKeyAsync`/`decryptSenderKeyAsync` utilisés dans la diffusion et la réception des clés de l'expéditeur. `RestChatBackend` est conservé : utilisé par `chat_service_test` comme faux (n'était pas du code mort).
@@ -62,9 +68,3 @@ Toutes les dépendances sont en usage réel ; aucune n'a pu être supprimée san
 22. Tests de widgets des widgets extraits (13) : `chat_bubble`, `chat_input_bar`, `user_profile_cards`, `location_cards`. Note : les widgets sous `wrapWithLocalization` nécessitent un `pump()` supplémentaire (le Builder de localisation résout dans la deuxième frame).
 23. Push natif sans Firebase (`docs/fr/PUSH.md`) : Notification API du navigateur sur web (`notification_web.dart` + stub avec export conditionnel, sans nouvelles dépendances), `flutter_local_notifications` sur bureau + permission macOS au démarrage, mobile en no-op explicite (`_supported`). `flutter build web` vérifié.
 24. Documentation : `docs/fr/API.md`, `docs/fr/ARQUITECTURA.md` (couches, flux, décisions multiplateforme), `docs/fr/USO.md` (démarrage, env, opération, rôles), `docs/fr/DESARROLLO.md` (conventions + portes CI), `docs/fr/SEGURIDAD.md` (tokens, matrice de permissions, checklist prod), `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` (déplacées depuis `backend/` le 10/10/2026). READMEs et `AGENTS.md` ; admin dev `admin`/`setup` (sans `ADMIN_PASSWORD` dans `backend/.env.example` ; seed seulement non-prod dans `app/main.py:257`).
-
-## 4. Révision 10/10/2026 (corrections de §2–§3)
-
-1. Docs backend consolidées : `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/fr/BACKEND.md` + `docs/fr/DATABASE.md` ; liens mis à jour dans `README.fr.md`, `AGENTS.md`, `docs/fr/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`.
-2. Corrections à §2 : `RateLimiter` sont 3 instances (`main.py`, `admin.py`, `auth.py`) ; `ADMIN_PASSWORD` n'existe pas dans `backend/.env.example` (seulement commentaire `admin/setup`).
-

@@ -34,7 +34,16 @@ Admin iniziale (solo non-prod): `admin` / `setup` — da cambiare al primo acces
 | `APP_ENV` | env | `development` crea admin + `create_all`; `production` richiede Alembic |
 | `PUBLIC_BASE_URL` | `backend/.env` | Dominio pubblico del nodo; appare nel manifesto e nei bundle di portabilità |
 | `MTLS_REQUIRED` | env | Impone peer mTLS verificato nella federazione (CN e PEM del certificato) |
+| `MTLS_CA_BUNDLE_PATH` | env | CA radice per validare i certificati dei client federati |
 | `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM del certificato e chiave privata che firmano il manifesto (RSA-SHA256) |
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` disattiva i rate limit e l'auto-migrazione; `SKIP_AUTO_MIGRATE` omette solo l'auto-migrazione |
+| `RATE_LIMITS_DB_PATH` | env | Percorso della BD SQLite dei limiti (default `backend/rate_limits.db`) |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `ACCESS_TOKEN_EXPIRE_MINUTES` | env | Claim e TTL del JWT di accesso |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | env | Gateway di pagamento (`mock` per impostazione predefinita) e secret del webhook simulato |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDSYS_*` | env | Credenziali di pagamento reali; dettaglio in [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) |
+
+**Nota sui pagamenti**: `PAYMENTS_PROVIDER=mock` è il valore predefinito (`backend/app/config.py`). Stripe e Redsys NON sono operativi finché i loro webhook non sono collegati (`POST /api/payments/webhook/{stripe,redsys}`); oggi funziona solo quello simulato. Il `confirm` di Redsys restituisce sempre `"pending"`.
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` disattiva rate limits e auto-migrazione; `SKIP_AUTO_MIGRATE` omette solo l'auto-migrazione |
 
 ## Gestione
 
@@ -43,7 +52,9 @@ Admin iniziale (solo non-prod): `admin` / `setup` — da cambiare al primo acces
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; ritorno con `import_mariadb_to_sqlite.py` (dettaglio in [DATABASE.md](DATABASE.md)).
 - **Backup**: SQLite = copiare `*.db`; MariaDB = `mariadb-dump` (volume `db-data` in Docker).
 - **Log**: stdout di uvicorn (token DAV redatti); errori API in SnackBar + `debugPrint`.
-- **Limiti**: corpi ≤10 MB (413 se maggiore); rate limit con 429 + ripetizione (federation 60/60 s per IP; chat 10/60 s per nodo e utente, disattivato con `TESTING=true`).
+- **Limiti**: corpi ≤10 MB (413 se maggiore); rate limit con 429 + ripetizione (globale 100/60 s per IP, `/dav` 600/60 s, login 5/300 s, refresh 20/60 s, reset 3/300 s, federation 60/60 s; chat 10/60 s per nodo e utente). `TESTING` ∈ {1,true,yes,on} disattiva tutti i limiti.
+- **Senza connessione**: la cache Hive conserva la provenienza di ogni nodo; `reconcile` unisce alla riconnessione e `clearOrigin` scarta un nodo. Se alcuni nodi non rispondono ma il principale sì, appare `DegradedNodesBanner` con il conteggio e un pulsante per ricaricare.
+- **Media**: i percorsi `/uploads/...` restituiti dall'API vengono anteposti al server attivo nel client (`resolveMediaUrl()`); gli URL `http(s)` si usano così come sono.
 - **Federazione**: verifica un nodo terzo con `python tools/federation_conformance.py <url> [--json]`; la salute del peering è su `/api/federation/resilience/health` e le metriche p50/p95 su `/metrics`.
 - **Portabilità**: esporta/importa bundle da `/api/federation/portability/{bundles,imports}` e consulta i redirect di identità su `/redirects/{ref}`.
 
@@ -58,7 +69,7 @@ Admin iniziale (solo non-prod): `admin` / `setup` — da cambiare al primo acces
 - **Profili sociali**: muri di pubblicazioni (microblogging con Markdown e incorporamenti di video e podcast) sui profili utente e festival, con thread di risposte opzionali per pubblicazione e moderazione per ruoli (amministratori, gestione del festival, moderatori). Per ora niente reazioni, sticker o GIF.
 - **Personalizzazione dei profili**: copertina, tagline e link sociali su utenti e festival.
 - **Distintivi**: disattivati di default; solo il team amministrativo può attivarli (`PUT /api/badges/settings`). I distintivi della piattaforma sono assegnati dagli amministratori; quelli di merito del festival (veterano, popolare, ruolo, premio speciale), loro gestione. Ogni distintivo ha un'immagine (SVG preferito).
-- **Votazione della giuria**: punteggio per opera, aggregazione e anonimato opzionale (fase 5 della roadmap).
+- **Votazione della giuria**: già operativa (punteggio per opera, aggregazione e anonimato opzionale); accetta solo corti del festival assegnato.
 
 ## Vedi anche
 

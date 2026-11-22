@@ -1,5 +1,7 @@
 # Clakettes Schema v1
 
+[ES](../es/FEDERATION_SCHEMA.md) · [EN](../en/FEDERATION_SCHEMA.md) · [FR](../fr/FEDERATION_SCHEMA.md) · [DE](../de/FEDERATION_SCHEMA.md) · [IT](../it/FEDERATION_SCHEMA.md) · [CA](FEDERATION_SCHEMA.md) · [EU](../eu/FEDERATION_SCHEMA.md) · [GL](../gl/FEDERATION_SCHEMA.md) · [OC](../oc/FEDERATION_SCHEMA.md)
+
 Versió inicial de l'esquema de federació. Defineix les entitats mínimes intercanviables entre nodes, versionades mitjançant `schema_version` al manifest de cada node.
 
 ## Model de confiança (Fase 2)
@@ -50,7 +52,7 @@ La identitat d'un node és la tupla **(domini, certificat TLS X.509)**. El peeri
 ### Portabilitat (Fase 7)
 
 - `POST /api/federation/portability/bundles` — genera un bundle de l'usuari amb `bundle_version`, `origin_domain`, `payload`, `signature` (HMAC-SHA256 amb `SECRET_KEY`) i `checksum` (SHA-256 del payload canònic).
-- `POST /api/federation/portability/imports` — valida signatura i checksum, comprova la política d'origen (403 si no està permès), aplica `minimize_data` i registra l'importat (usuari, curts, festivals, missatges).
+- `POST /api/federation/portability/imports` — valida signatura i checksum, comprova la política d'origen (403 si no està permès), aplica `minimize_data` i registra l'importat (usuari, curts, festivals, missatges). Els bundles incorporen `contest_type` a cada curt: es valida/sanea `MediaUrl` (URL invàlida → `null`), es normalitza `contest_type` a `official_section` si no és vàlid i el checksum del festival l'inclou.
 - `POST /api/federation/portability/festivals/{festival_id}/migrate` — transfereix la propietat del festival i els seus curts a `new_owner_id` de `target_domain` amb verificació de checksum; només admin.
 - `POST /api/federation/portability/users/{user_ref}/migrate` — reescriu `handle` i `did` al domini de destinació i crea la redirecció; només admin.
 - `GET /api/federation/portability/redirects/{old_ref}` — resol la ref antiga (`old_ref`, `new_ref`, `target_domain`, `created_at`).
@@ -61,7 +63,7 @@ La identitat d'un node és la tupla **(domini, certificat TLS X.509)**. El peeri
 - `POST /api/federation/chat/bridge/outbound` — signa el sobre, l'encua a `chat_outbox` amb subjecte `clakettes.chat.node.{target_node}` i publica pel transport configurat (`DurableQueueBackend`); `config` retorna transport, stream, algorisme i subject mapping.
 - `GET /api/federation/chat/messages` — historial federat deduplicat per `message_id` i ordenat per `timestamp` + `message_id` (filtre opcional `node`).
 - `POST /api/chat/moderation/messages/{message_id}/report`, `PATCH /moderate`, `GET /reports`, `POST/GET /mutes`, `GET /limits` — reportes, amagar/borrar, silenciaments per usuari/canal/node, filtre de paraules bloquejades, `disable_chat` per node i rate limit de 10 missatges/60 s per node i usuari (desactivat amb `TESTING=true`).
-- `GET /api/federation/events/stream` — SSE amb `since`, `token`, `limit` opcional, replay dels últims 200 esdeveniments i batec `: ping` cada 15 s.
+- `GET /api/federation/events/stream` — SSE amb `token` obligatori a la query (`since` i `limit` opcionals), replay dels últims 200 esdeveniments i batec `: ping` cada 15 s.
 - `POST /api/federation/events/publish` — publica en un tema derivat de `node`/`entity` (o `topic` explícit), signa l'enviament a pares amb HMAC (`X-Clakettes-Signature`) i omet els nodes amb `disable_chat`/`disable_search`; només admin.
 - `GET /api/federation/events/retry-queue` — reintents pendents; 3 intents amb backoff 300 ms → 1,5 s → 5 s.
 
@@ -75,7 +77,9 @@ La identitat d'un node és la tupla **(domini, certificat TLS X.509)**. El peeri
 
 ### Health i utilitats
 
-- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — endpoints de sondeig i diagnòstic.
+- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — marcadors de posició (placeholders) amb respostes estàtiques que no reflecteixen l'estat real; no són endpoints de sondeig ni diagnòstic operatius.
+
+> **Avis:** retornen respostes fixes i poden donar una falsa sensació de seguretat; per a un diagnòstic real, emprin els endpoints de resiliència descrits més amunt.
 
 ## Ajustabilitat
 

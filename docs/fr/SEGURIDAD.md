@@ -27,19 +27,24 @@
 | Groupe de chat | rôle `admin` du groupe pour supprimer ; membre pour lire |
 | Formulaire | `require_form_admin` (créateur/admin/organizer) |
 | Délégation | délégateur ou admin pour éditer/révoquer |
-| Rôles globaux | `is_admin` ; auto-join seulement avec le rôle `attendee` |
+| Rôles globaux | `require_admin(user, db)` unifié : rôle legacy `admin` (insensible à la casse) ou `UserRole` avec état `ACTIVE`/`APPROVED` ; auto-join seulement avec le rôle `attendee` |
+| Alias utilisateur | `require_self_or_admin` (propriétaire ou admin) sur create/update/delete |
+| Blocages d'utilisateur | `require_owner_or_admin` (propriétaire ou `can_edit_user`) sur block/unblock/list/status |
 | Rôles de canal | `Literal[admin,moderator,member]` (422 hors liste) |
 | Paiements | propriétaire via inscription, admin du festival ou global ; webhook mock avec `MOCK_WEBHOOK_SECRET` |
 
 ## Paiements
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Pas de PAN/IBAN en BD : seulement montant, devise, `provider_ref` et statut.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py` ; `mock` par défaut dans `backend/app/config.py`). Pas de PAN/IBAN en BD : seulement montant, devise, `provider_ref` et statut.
 - Stripe : SDK paresseux + vérification de signature (`STRIPE_WEBHOOK_SECRET`).
 - Redsys : signature HMAC_SHA256_V1 sans SDK ; Bizum avec `pay_methods="z"` (enregistrement préalable chez le commerçant). Valider dans le sandbox avant la prod.
+- `confirm` et `refund` synchronisent `FestivalRegistration.payment_status` (`paid`/`refunded`) et, en paid, `paid_at`/`payment_method`/`transaction_id` ; le `provider` du Payment est pris du provider actif, et non de `PAYMENTS_PROVIDER`.
+- **État réel** : Stripe et Redsys ne sont PAS encore opérationnels ; il faut câbler leurs webhooks (`POST /api/payments/webhook/{stripe,redsys}`). Aujourd'hui seul le webhook simulé fonctionne (`POST /api/payments/webhook/mock`).
+- Le `confirm` de Redsys renvoie toujours `"pending"` : il ne confirme aucun paiement réel tant que le webhook n'est pas câblé.
 
 ## Périmètre
 
-- Rate limit SQLite 100/60s par IP (`/dav` 600/60s) ; `TESTING=true` le désactive.
+- Rate limit SQLite 100/60 s par IP en global, 600/60 s sur `/dav`, 5/300 s login, 20/60 s refresh et 3/300 s reset et 60/60 s sur la fédération. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) désactive toutes les limites et l'auto-migration.
 - En-têtes : `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` stricte dans l'API (assouplie seulement sur `/docs`), `HSTS` seulement en production.
 - Corps ≤10 Mo (413). CORS avec credentials et origines explicites.
 - MariaDB en production exige TLS (`?ssl_ca=…` dans `DATABASE_URL`).
@@ -51,10 +56,14 @@
 3. TLS avec proxy + `FORWARDED_ALLOW_IPS` ; pas d'admin `setup` (seulement créé hors prod).
 4. Changer `appUserModelId`/GUID des notifications Windows si l'app est renommée.
 
-## Fédération (phase 2)
+## Fédération (phases 2-10)
 
-- Identité du nœud = domaine + certificat TLS.
-- Peering mutuel via mTLS avec certificats de domaine (CA publique ou privée).
-- TLS obligatoire entre nœuds ; validation stricte (pas de self-signed en prod).
-- La rotation/révocation est gérée par renouvellement du certificat. Un nœud compromis est révoqué en invalidant son certificat et son entrée dans le répertoire.
-- `allowlist`/`blocklist` par nœud (`node_policies`). Rate limiting et anti-inondation au bord de la fédération. Propagation des rapports de modération entre nœuds.
+Détail complet dans [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Contrôles en vigueur :
+
+- Identité du nœud = domaine + certificat TLS. Peering mutuel via mTLS avec certificats de domaine (CA publique ou privée) ; TLS obligatoire, pas de self-signed en prod.
+- Manifeste signé RSA-SHA256 avec PEM/clé propres et `expires_at` de 24 h ; `whoami` exige un JWT fédéré ; JWKS pour vérifier les tokens des pairs ; `peers/verify` et `peers/revoke`.
+- `allowlist`/`blocklist` par nœud (`node_policies`), avec `import_only`, `disable_chat` et `disable_search`. Rate limiting et anti-inondation au bord ; propagation des signalements de modération.
+- Portabilité : bundles signés avec HMAC et checksum ; l'import valide/sanitise `MediaUrl` et normalise `contest_type` ; migration des festivals et identités avec `identity_redirects` et audit dans `migration_audits` ; les endpoints de migration exigent admin.
+- Chat fédéré : bridge signé RS256, dédup par `message_id` dans `chat_outbox`, tri par `timestamp` ; signalements et mutes, filtre de mots et limite de 10 messages/60 s par nœud et utilisateur.
+- Événements : publication signée avec HMAC (`X-Clakettes-Signature`), SSE avec `token` obligatoire en query, `since` et `limit` optionnels, replay de 200 et 3 relances avec backoff.
+- Résilience : `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), révocation de clés (`keys/revoke`) et plan d'incident en 8 étapes. Rotation/révocation par renouvellement du certificat ; un nœud compromis est invalidé dans le répertoire.

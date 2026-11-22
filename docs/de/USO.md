@@ -34,7 +34,16 @@ Initial-Admin (nur Non-Prod): `admin` / `setup` — bei der ersten Anmeldung än
 | `APP_ENV` | env | `development` erstellt Admin + `create_all`; `production` erfordert Alembic |
 | `PUBLIC_BASE_URL` | `backend/.env` | Öffentliche Domain des Knotens; erscheint im Manifest und in Portabilitäts-Bundles |
 | `MTLS_REQUIRED` | env | Erzwingt verifiziertes Peer-mTLS in der Föderation (CN und PEM des Zertifikats) |
+| `MTLS_CA_BUNDLE_PATH` | env | Root-CA zur Validierung von Client-Zertifikaten föderierter Peers |
 | `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM des Zertifikats und privater Schlüssel, die das Manifest signieren (RSA-SHA256) |
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` deaktiviert Rate-Limits und Auto-Migration; `SKIP_AUTO_MIGRATE` überspringt nur die Auto-Migration |
+| `RATE_LIMITS_DB_PATH` | env | Pfad der SQLite-DB für Limits (Standard `backend/rate_limits.db`) |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `ACCESS_TOKEN_EXPIRE_MINUTES` | env | Claims und TTL des Access-JWT |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | env | Zahlungsanbieter (`mock` als Standard) und Secrets des simulierten Webhooks |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDSYS_*` | env | Echte Zahlungszugangsdaten; Detail in [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) |
+
+**Zahlungshinweis**: `PAYMENTS_PROVIDER=mock` ist der Standardwert (`backend/app/config.py`). Stripe und Redsys sind NICHT betriebsbereit, bis ihre Webhooks verdrahtet sind (`POST /api/payments/webhook/{stripe,redsys}`); derzeit funktioniert nur der simulierte. Das `confirm` von Redsys gibt immer `"pending"` zurück.
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` deaktiviert Rate-Limits und Auto-Migration; `SKIP_AUTO_MIGRATE` überspringt nur die Auto-Migration |
 
 ## Betrieb
 
@@ -43,7 +52,9 @@ Initial-Admin (nur Non-Prod): `admin` / `setup` — bei der ersten Anmeldung än
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; zurück mit `import_mariadb_to_sqlite.py` (Details in [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = `*.db` kopieren; MariaDB = `mariadb-dump` (Volume `db-data` in Docker).
 - **Logs**: uvicorn-stdout (DAV-Tokens redigiert); API-Fehler in SnackBar + `debugPrint`.
-- **Limits**: Bodies ≤10 MB (413 bei größer); Rate-Limit mit 429 + Wiederholung (federation 60/60 s pro IP; Chat 10/60 s pro Knoten und Nutzer, deaktiviert mit `TESTING=true`).
+- **Limits**: Bodies ≤10 MB (413 bei größer); Rate-Limit mit 429 + Wiederholung (global 100/60 s pro IP, `/dav` 600/60 s, Login 5/300 s, Refresh 20/60 s, Reset 3/300 s, Federation 60/60 s; Chat 10/60 s pro Knoten und Nutzer). `TESTING` ∈ {1,true,yes,on} deaktiviert alle Limits.
+- **Ohne Verbindung**: der Hive-Cache speichert die Herkunft jedes Knotens; `reconcile` führt bei Wiederverbindung zusammen und `clearOrigin` verwirft einen Knoten. Antworten einige Knoten nicht, der Hauptknoten aber schon, erscheint `DegradedNodesBanner` mit Zähler und einer Schaltfläche zum Neuladen.
+- **Medien**: die von der API zurückgegebenen Pfade `/uploads/...` werden im Client mit dem aktiven Server versehen (`resolveMediaUrl()`); `http(s)`-URLs werden so verwendet, wie sie sind.
 - **Föderation**: einen Drittknoten prüfen mit `python tools/federation_conformance.py <url> [--json]`; die Peering-Gesundheit liegt unter `/api/federation/resilience/health` und die p50/p95-Metriken unter `/metrics`.
 - **Portabilität**: Bundles exportieren/importieren über `/api/federation/portability/{bundles,imports}` und Identitäts-Redirects unter `/redirects/{ref}` abfragen.
 
@@ -58,7 +69,7 @@ Initial-Admin (nur Non-Prod): `admin` / `setup` — bei der ersten Anmeldung än
 - **Soziale Profile**: Veröffentlichungswände (Microblogging mit Markdown und Video-/Podcast-Einbettungen) auf Nutzer- und Festival-Profilen, mit optionalen Antwort-Threads pro Veröffentlichung und Moderation nach Rollen (Administratoren, Festival-Leitung, Moderatoren). Derzeit keine Reaktionen, Sticker oder GIFs.
 - **Profil-Anpassung**: Titelbild, Tagline und soziale Links bei Nutzern und Festivals.
 - **Abzeichen**: standardmäßig deaktiviert; nur das Admin-Team kann sie aktivieren (`PUT /api/badges/settings`). Plattform-Abzeichen werden von Administratoren vergeben; Festival-Verdienstabzeichen (Veteran, beliebt, Rolle, Sonderpreis), deren Verwaltung. Jedes Abzeichen hat ein Bild (SVG bevorzugt).
-- **Jury-Abstimmung**: Bewertung pro Werk, Aggregation und optionale Anonymität (Phase 5 der Roadmap).
+- **Jury-Abstimmung**: bereits einsatzfähig (Bewertung pro Werk, Aggregation und optionale Anonymität); nur Kurzfilme des zugewiesenen Festivals zulässig.
 
 ## Siehe auch
 

@@ -59,6 +59,17 @@ Die gesamte Konfiguration erfolgt über `backend/.env` (geladen von `pydantic-se
 | `JWT_AUDIENCE` | `clakettes-api` | JWT-Audience-Claim |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access-Token-TTL |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Kommagetrennte erlaubte Ursprünge |
+| `APP_ENV` | `development` | `production` erfordert robusten `SECRET_KEY`, explizites CORS und Schema über Alembic |
+| `TESTING` | deaktiviert | `1/true/yes/on` deaktiviert Rate-Limits und Auto-Migration (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Öffentlicher Ursprung des Knotens (Manifest, Bundles, absolutes ICS) |
+| `MTLS_REQUIRED` | `False` | Erzwingt verifiziertes mTLS in `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | Root-CA zur Validierung von Client-Zertifikaten |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Eigenes Zertifikat und Schlüssel (Signatur des RSA-SHA256-Manifests) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | SQLite-Datei für den Ratenbegrenzer |
+| `SKIP_AUTO_MIGRATE` | deaktiviert | `1/true/yes/on` überspringt `alembic upgrade head` beim Start |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, leer, `False` | Mock-Zahlungsanbieter und Webhook-Geheimnis |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | leer | Stripe-Zugangsdaten (Lazy-SDK) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, leer, `True`, `978` | Redsys-HMAC-Signatur und Sandbox |
 | `PORT_BACKEND` | `8000` | Server-Port (verwendet von Docker/Start-Skripten) |
 
 **Beispiel `.env` für Produktion:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Passwort-Hashing
 
-- **bcrypt** via `passlib` (rounds=12)
+- **bcrypt** direkt (`bcrypt.hashpw` + `bcrypt.gensalt()`), ohne `passlib`
 - Hash gespeichert in `User.password_hash`
-- Verifiziert via `pwd_context.verify(plain, hash)`
+- Verifiziert via `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Ratenlimit
 
 - **100 Anfragen / 60 Sekunden** pro IP (SQLite-gesichert)
 - Angewandt über `RateLimitMiddleware` in `main.py`
-- Deaktiviert wenn `TESTING=true` Umgebungsvariable gesetzt ist
+- Deaktiviert mit `TESTING` ∈ {1, true, yes, on} (Helper `app.config.is_testing()`), einschließlich des Refresh-Limiters 20/60 s in `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, Profil, Avatar-Upload |
 | `auth` | `/api/users` | auth | Login, Refresh, Registrierung |
 | `auth_sessions` | `/api/auth` | auth | Session-Liste/Widerruf |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, Festival-Verknüpfung  CRUD unter `/api/festivals/{id}/shortfilms`; flache Liste veraltet |
+| `shortfilms` | `/api/shortfilms` | shortfilms | Verschachteltes CRUD unter `/api/festivals/{festival_id}/shortfilms` (GET/POST der Liste und GET/PUT/DELETE des Details, Filter `?contest_type=`); die 5 flachen Endpoints bleiben verfügbar, sind aber mit `deprecated=True` markiert |
 | `chat` | `/api/chat` | chat | Nachrichten, WS-Endpunkt |
 | `user_festival` | `/api/festivals` | user-festival | Beitreten/Verlassen, Mitglieder |
-| `uploads` | `/api/uploads` | uploads | Avatar-Upload |
+| `uploads` | `/api/uploads` | uploads | Multipart-Upload von Avatar, Thumbnail, Video, Dokument und Chat-Bild; liefert relative Pfade `/uploads/...` zurück |
 | `search` | `/api/search` | search | Globale Suche |
 | `admin` | `/api/admin` | admin | Stats, Tabellen, Audit-Log, Reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, ungelesen-Anzahl |
@@ -216,18 +227,21 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Standortbeziehungen |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Kurzfilm-Standorte |
 | `form_definitions` | `/api` | forms | Formular-Builder |
-| `federation` | `/api/federation` | federation | Manifest, Verzeichnis, Knoten, Berichte, WebFinger |
+| `federation` | `/api/federation` | federation | Manifest, Verzeichnis, Knoten, Berichte, WebFinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | RS256-signierte Chat-Bridge, Konfiguration und Nachrichten |
+| `federation_events` | `/api/federation/events` | federation-events | SSE mit obligatorischem `token`, Publishing und Wiederholung |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, Imports, Migration und Redirects |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, Heartbeat, Metriken, Widerruf und Incident |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Meldungen, Mutes, Moderation und Limits |
 | `jury_votes` | `/api` | jury-votes | Juryabstimmung (Phase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, Einstellungen |
 | `badges` | `/api` | badges | Badges, Zuweisungen, Berechtigung |
 | `posts` | `/api` | posts | Social-Posts, Antworten, Moderation |
 | `payments` | `/api` | payments | Checkout, Bestätigung, Rückerstattung, Webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Festival-Regelwerke |
-| `user_blocks` | `/api` | user-blocks | Benutzerblockierung |
-| `moderation_reports` | `/api` | moderation-reports | Moderationsberichte |
-| `node_policies` | `/api` | node-policies | Föderations-Knotenrichtlinien |
+| `user_blocks` | `/api` | user-blocks | Benutzerblockierung (Eigentümer oder Admin) |
 
-Gesamt: 38 Router mit `APIRouter` (40 Router-Dateien, 2 Helfer ohne Router).
+Gesamt: 45 Router-Dateien (43 mit `APIRouter`).
 
 ### Paginierung und Filterung
 
@@ -268,7 +282,7 @@ Antwort-Umschlag:
 | `GET` | `/api/chat/ws` | WebSocket-Verbindung (Auth via Query `token`) |
 | `POST` | `/api/chat/messages` | Nachricht senden (REST-Fallback) |
 | `GET` | `/api/chat/messages` | Paginierter Verlauf |
-| `PATCH` | `/api/chat/messages/{id}/read` | Als gelesen markieren |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Als gelesen markieren |
 
 ### Nachrichtentypen
 
@@ -286,9 +300,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- X25519-Schlüsselaustausch via `/api/users/{id}/keys`
+- ECDH-P-256-Schlüsselaustausch via `POST /api/users/me/public-key` und `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Öffentliche Schlüssel gespeichert in `UserKey` (ein aktiver Schlüssel pro Nutzer)
-- Verschlüsselung/Entschlüsselung im Frontend (`e2ee_service.dart`)
+- AES-GCM-Verschlüsselung/Entschlüsselung im Frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -306,7 +320,13 @@ file: <image/*>
 
 - Gespeichert unter `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Statisch serviert unter `/uploads/avatars/...`
-- Max. Größe: 10 MB (angewendet durch `RequestSizeLimitMiddleware`)
+- Max. Größe: 5 MB für Bilder (`MAX_IMAGE_SIZE` in `routers/uploads.py`); das globale Body-Limit bleibt bei 10 MB
+
+### Alle Uploads
+
+- Die Endpoints `avatar`, `thumbnail`, `video`, `document` und `chat-image` geben einen relativen Pfad `/uploads/<carpeta>/<archivo>` zurück; der Client löst ihn mit `resolveMediaUrl()` gegen den aktiven Knoten auf.
+- Fehlt der Content-Type oder kommt `application/octet-stream` an, erkennt `uploads._sniff_content_type()` den Typ per Magic Bytes (JPEG, PNG, GIF, WebP, PDF und MP4); der 400er-Fehler meldet `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` und `thumbnail_url` nutzen den Typ `MediaUrl`: sie akzeptieren relative Pfade (und leere Zeichenketten) oder gültige http(s)-URLs; eine ungültige URL liefert 422.
 
 ---
 
@@ -338,15 +358,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Test-Konfiguration** (`pyproject.toml` / `pytest.ini`):
+**Test-Konfiguration** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Asynchrone Tests verwenden `pytest.mark.asyncio`; es gibt kein globales `asyncio_mode`.
 
 **Fixtures** (`tests/conftest.py`):
 - `db_session` — In-Memory-SQLite-Session
@@ -373,9 +394,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -427,34 +448,6 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Projektstruktur
-
-```
-backend/
-├── app/
-│   ├── models/              # 40 SQLAlchemy-Modelle (+ base.py)
-│   ├── schemas/             # 37 Pydantic-Schemas
-│   ├── services/            # 43 Business-Logik-Dienste
-│   ├── routers/             # 40 API-Router (38 mit APIRouter)
-│   ├── chat_backend/        # WebSocket-Chat-Implementierung
-│   ├── auth.py              # JWT + Session-Auth
-│   ├── config.py            # Pydantic-Settings
-│   ├── database.py          # Engine, SessionLocal, get_db()
-│   ├── main.py              # FastAPI-App, Middleware, Router
-│   ├── rate_limiter.py      # SQLite-Ratenlimit
-│   ├── enums.py             # Gemeinsame Enums
-│   └── scripts/             # Seed-/Migration-Skripte
-├── alembic/                 # Migrationen
-├── tools/                   # Export-/Import-Skripte
-├── tests/                   # pytest-Tests
-├── uploads/                 # Statische Datei-Uploads
-├── .env.example             # Konfigurationsvorlage
-├── requirements.txt         # Produktions-Abhängigkeiten
-├── requirements-dev.txt     # Dev-Abhängigkeiten (pytest, ruff)
-├── pyproject.toml           # Ruff, pytest-Konfiguration
-└── pytest.ini               # pytest-Konfiguration
-```
-
 Docs in `docs/de/BACKEND.md` (diese Datei) und `docs/de/DATABASE.md`.
 
 ---
@@ -490,7 +483,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -555,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

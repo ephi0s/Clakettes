@@ -28,18 +28,19 @@ Funziona su web, Android, iOS e desktop (Windows, macOS, Linux), in 9 lingue e a
 - **Profili con palmarès**: palmarès collegato a festival della piattaforma o esterno tramite link, con controllo della privacy campo per campo.
 - **Chat**: messaggi diretti e di gruppo o canale per festival, con cifratura end-to-end.
 - **Mappe**: sedi e location di ripresa su mappe interattive, con apertura nella tua app di mappe preferita.
-- **Senza connessione**: l'app continua a funzionare offline e sincronizza le tue modifiche al recupero della connessione.
-- **Nella tua lingua**: spagnolo, inglese, francese, tedesco, italiano, catalano, basco, galiziano e occitano, con rilevamento automatico.
+- **Senza connessione**: l'app continua a funzionare offline, conserva la provenienza di ogni nodo nella cache e sincronizza le tue modifiche al recupero della connessione.
+- **Federazione**: nodi di fiducia con mTLS, portabilità dell'identità, chat ed eventi tra nodi, moderazione, metriche e resilienza.
+- **Nella tua lingua**: spagnolo, inglese, francese, tedesco, italiano, catalano, basco, galiziano e occitano (823 chiavi per lingua), con rilevamento automatico del locale del sistema.
 
 ## Requisiti e avvio
 
 ### Requisiti minimi
 
 - Python 3.12+
-- Flutter SDK >= 3.0.0 y < 4.0.0
+- Flutter SDK >= 3.0.0 e < 4.0.0
 - Git
-- Docker y Docker Compose para despliegue/entorno productivo
-- Navegador con soporte para web (recomendado Chrome/Brave)
+- Docker e Docker Compose per distribuzione/ambiente di produzione
+- Browser con supporto web (consigliati Chrome/Brave)
 
 ### Avvio rapido
 
@@ -57,17 +58,6 @@ In Linux/macOS:
 
 Questo avvia il backend in `http://localhost:8000` e l'app in modalità locale; l'API espone Swagger/OpenAPI in `/docs`. Puoi disattivare una delle due parti con `--no-backend` o `--no-frontend`.
 
-### Altre opzioni utili
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Consulta il riferimento completo di avvio e deployment in [docs/it/HERRAMIENTAS.md](docs/it/HERRAMIENTAS.md) e [docs/it/USO.md](docs/it/USO.md).
-
 ## Variabili di ambiente e configurazione
 
 ### Backend
@@ -78,6 +68,15 @@ Crea o adatta `backend/.env` con almeno:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federazione con mTLS (produzione)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Pagamenti (mock predefinito; Stripe/Redsys su richiesta)
+PAYMENTS_PROVIDER=mock
 ```
 
 Per ambiente produttivo si usa MariaDB; gli script e la documentazione di deployment lo gestiscono con Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 L'avvio automatico del progetto già configura questo quando si usa `start.*`.
 
-## Stato del progetto
-
-🚧 **In sviluppo attivo** — Festival, corti, chat con E2EE, mappe, modalità offline e 9 lingue funzionanti.
-
-**Roadmap successiva:**
-
-- [ ] Notifiche push (Firebase/APNs)
-- [ ] AppImage Linux firmato
-- [ ] Installaer Windows MSI
-- [x] Documentazione OpenAPI esportabile (`/openapi.json` senza operationIds duplicati + `docs/it/API.md` rigenerato)
-
 ## Documentazione del progetto
 
 La mappa della documentazione è in [docs/it/README.md](docs/it/README.md). È il miglior ingresso per ogni tipo di utente:
@@ -116,10 +104,10 @@ La mappa della documentazione è in [docs/it/README.md](docs/it/README.md). È i
 - [docs/it/DESARROLLO.md](docs/it/DESARROLLO.md): come aggiungere endpoint o schermate
 - [docs/it/BACKEND.md](docs/it/BACKEND.md): guida del backend (livelli, configurazione, auth, test)
 - [docs/it/DATABASE.md](docs/it/DATABASE.md): schema e migrazioni
-- [docs/it/FEDERATION_PROTOCOL.md](docs/it/FEDERATION_PROTOCOL.md): protocollo di federazione (fase 4)
-- [docs/it/FEDERATION_SCHEMA.md](docs/it/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/it/FEDERATION_SECURITY.md](docs/it/FEDERATION_SECURITY.md): modello di fiducia federato
-- [docs/it/PUSH.md](docs/it/PUSH.md): decisione notifiche push
+- [docs/it/FEDERATION_PROTOCOL.md](docs/it/FEDERATION_PROTOCOL.md): protocollo tra nodi (fasi 2-10)
+- [docs/it/FEDERATION_SECURITY.md](docs/it/FEDERATION_SECURITY.md): fiducia, mTLS, portabilità e resilienza
+- [docs/it/FEDERATION_SCHEMA.md](docs/it/FEDERATION_SCHEMA.md): entità federate e checksum
+- [docs/it/FEDERATION_CHAT_BROKER.md](docs/it/FEDERATION_CHAT_BROKER.md): decisione sul trasporto e stato implementato
 
 Inoltre, il punto di partenza per sviluppo e convenzione di progetto è [AGENTS.md](AGENTS.md).
 
@@ -144,7 +132,7 @@ Inoltre, il punto di partenza per sviluppo e convenzione di progetto è [AGENTS.
 4. Spingi il ramo (`git push origin feature/nuova-funzionalità`).
 5. Apri una Pull Request con contesto, modifiche e validazione.
 
-**Convenzioni di qualità:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Convenzioni di qualità:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` devono passare prima del merge. GitHub Actions esegue queste porte in parallelo e Dependabot apre PR settimanali raggruppati: patch/minor si fondono da soli con CI verde, major resta a revisione manuale (dettaglio in [docs/it/INFRAESTRUCTURA.md](docs/it/INFRAESTRUCTURA.md)).
 
 ## Licenza
 

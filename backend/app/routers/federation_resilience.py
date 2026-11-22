@@ -42,6 +42,58 @@ def _resolve_peer(request: Request, node: str | None, db: Session) -> TrustedNod
     return target
 
 
+def _revocation_record(node_domain: str, reason: str | None, revoked_at, revoked_by) -> dict:
+    return {
+        "node_domain": node_domain,
+        "reason": reason,
+        "revoked_at": revoked_at.isoformat() if revoked_at else None,
+        "revoked_by": revoked_by,
+    }
+
+
+def record_revocation(
+    db: Session,
+    node_domain: str,
+    reason: str | None = None,
+    revoked_by: str | None = None,
+    revoked_at: datetime | None = None,
+) -> TrustedNode | None:
+    node = peering.get_by_domain(db, node_domain)
+    if node is None:
+        return None
+    moment = revoked_at or datetime.now(timezone.utc)
+    node.allowed = False
+    node.revoked_at = moment
+    node.revocation_reason = reason
+    node.revoked_by = revoked_by
+    db.commit()
+    db.refresh(node)
+    incident = _revocation_record(node_domain, reason, moment, revoked_by)
+    with _revocations_lock:
+        _revocations[node_domain] = incident
+    return node
+
+
+def clear_revocation(db: Session, node_domain: str) -> dict | None:
+    with _revocations_lock:
+        incident = _revocations.pop(node_domain, None)
+    node = peering.get_by_domain(db, node_domain)
+    if node is None:
+        return incident
+    if incident is None and not node.allowed:
+        incident = _revocation_record(
+            node_domain,
+            node.revocation_reason,
+            node.revoked_at or node.updated_at,
+            node.revoked_by,
+        )
+    node.revoked_at = None
+    node.revocation_reason = None
+    node.revoked_by = None
+    db.commit()
+    return incident
+
+
 @router.get("/health")
 async def resilience_health(db: Session = Depends(get_db)):
     started = datetime.now(timezone.utc)
@@ -105,15 +157,8 @@ async def resilience_revoke_key(
     if not ok:
         metrics.record(body.node_domain, (datetime.now(timezone.utc) - started).total_seconds() * 1000, False)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nodo no encontrado")
-    node = peering.get_by_domain(db, body.node_domain)
-    revoked_at = datetime.now(timezone.utc)
-    with _revocations_lock:
-        _revocations[body.node_domain] = {
-            "node_domain": body.node_domain,
-            "reason": body.reason,
-            "revoked_at": revoked_at.isoformat(),
-            "revoked_by": current_user.id,
-        }
+    node = record_revocation(db, body.node_domain, body.reason, str(current_user.id))
+    revoked_at = node.revoked_at if node is not None else datetime.now(timezone.utc)
     metrics.record(
         body.node_domain,
         (datetime.now(timezone.utc) - started).total_seconds() * 1000,
@@ -130,25 +175,15 @@ async def resilience_revoke_key(
 
 @router.get("/keys/revoked")
 async def resilience_revoked_keys(db: Session = Depends(get_db)):
-    with _revocations_lock:
-        recorded = dict(_revocations)
     result = []
-    seen = set()
-    for item in recorded.values():
-        result.append(item)
-        seen.add(item["node_domain"])
     for node in db.query(TrustedNode).filter(TrustedNode.allowed.is_(False)).all():
-        if node.node_domain in seen:
-            continue
         result.append(
-            {
-                "node_domain": node.node_domain,
-                "reason": None,
-                "revoked_at": (
-                    getattr(node, "updated_at", None).isoformat() if getattr(node, "updated_at", None) else None
-                ),
-                "revoked_by": None,
-            }
+            _revocation_record(
+                node.node_domain,
+                node.revocation_reason,
+                node.revoked_at or node.updated_at,
+                node.revoked_by,
+            )
         )
     return {"revoked": result, "count": len(result)}
 

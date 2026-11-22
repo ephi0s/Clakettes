@@ -28,6 +28,9 @@ class TrustedNode(BaseModel):
     minimize_data = Column(Boolean, default=True, nullable=False)
     capabilities = Column(mysql.JSON, nullable=True)  # lista de capacidades del manifiesto
     last_seen_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+    revocation_reason = Column(Text, nullable=True)
+    revoked_by = Column(String(255), nullable=True)
 
     peering_sessions = relationship(
         "NodePeeringSession",

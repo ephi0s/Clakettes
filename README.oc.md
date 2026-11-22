@@ -28,18 +28,19 @@ Fonciona en web, Android, iOS e escritòri (Windows, macOS, Linux), en 9 lengas 
 - **Perfils amb palmarés**: palmarés ligat a festivals de la plataforma o extèrne mejançant ligams, amb contraròtle de privacitat camp per camp.
 - **Chat**: messatges dirèctes e de grop o canau per festivau, amb chiframent d'extrèm a extrèm.
 - **Mapas**: sèts e localizacions de rodatge en mapas interactius, amb dubertura dins ta app de mapas favorita.
-- **Sens connexion**: l'app contunha de foncionar offline e sincroniza tos cambiaments en tornar trobar la connexion.
-- **Dins ta lenga**: espanhòu, anglés, francés, alemand, italian, catalan, euskara, galician e occitan, amb deteccion automatica.
+- **Sens connexion**: l'app contunha de foncionar offline, garda la provenança de cada nose dins la cach e sincroniza tos cambiaments en tornar trobar la connexion.
+- **Federacion**: noses de fisança amb mTLS, portabilitat d'identitat, chat e eveniments entre noses, moderacion, metricas e resiliéncia.
+- **Dins ta lenga**: espanhòu, anglés, francés, alemand, italian, catalan, euskara, galician e occitan (823 claus per lenga), amb deteccion automatica del locale del sistèma.
 
 ## Requesits e aviada
 
 ### Requesits minims
 
 - Python 3.12+
-- Flutter SDK >= 3.0.0 y < 4.0.0
+- Flutter SDK >= 3.0.0 e < 4.0.0
 - Git
-- Docker y Docker Compose para despliegue/entorno productivo
-- Navegador con soporte para web (recomendado Chrome/Brave)
+- Docker e Docker Compose per desplegament/environa productiva
+- Navegador amb suport per al web (recomandat Chrome/Brave)
 
 ### Aviada rapida
 
@@ -57,17 +58,6 @@ En Linux/macOS:
 
 Aquò quilha lo backend en `http://localhost:8000` e l'app en mòde locau; l'API expausa Swagger/OpenAPI en `/docs`. Pòdes desactivar qual que siá de las doas partidas amb `--no-backend` o `--no-frontend`.
 
-### Autras opcions utilas
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Consulta la referéncia completa de l'aviada e desplegament en [docs/oc/HERRAMIENTAS.md](docs/oc/HERRAMIENTAS.md) e [docs/oc/USO.md](docs/oc/USO.md).
-
 ## Variablas d'environa e configuracion
 
 ### Backend
@@ -78,6 +68,15 @@ Crea o ajusta `backend/.env` amb almens:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federacion amb mTLS (produccion)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Pagaments (mock per defaut; Stripe/Redsys a demanda)
+PAYMENTS_PROVIDER=mock
 ```
 
 Per environa productiva s'utiliza MariaDB; los scripts e la documentacion de desplegament o gerisson amb Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 L'aviada automatica del projècte ja configura aquò quand s'utiliza `start.*`.
 
-## Estat del projècte
-
-🚧 **En desvolopament actiu** — Festivals, corts, chat amb E2EE, mapas, mòde offline e 9 lengas que foncionan.
-
-**Roadmap pròche:**
-
-- [ ] Notificacions push (Firebase/APNs)
-- [ ] AppImage Linux firmat
-- [ ] Windows MSI instalador
-- [x] Documentacion API OpenAPI exportable (`/openapi.json` sens operationIds duplicats + `docs/oc/API.md` regenerat)
-
 ## Documentacion del projècte
 
 Lo mapa de documentacion es en [docs/oc/README.md](docs/oc/README.md). Es la melhor intrada per cada tipe d'utilizaire:
@@ -116,10 +104,10 @@ Lo mapa de documentacion es en [docs/oc/README.md](docs/oc/README.md). Es la mel
 - [docs/oc/DESARROLLO.md](docs/oc/DESARROLLO.md): cossí apondre endpoints o ecrans
 - [docs/oc/BACKEND.md](docs/oc/BACKEND.md): guida del backend (capas, configuracion, auth, tèsts)
 - [docs/oc/DATABASE.md](docs/oc/DATABASE.md): esquèma e migracions
-- [docs/oc/FEDERATION_PROTOCOL.md](docs/oc/FEDERATION_PROTOCOL.md): protocolo de federacion (fasa 4)
-- [docs/oc/FEDERATION_SCHEMA.md](docs/oc/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/oc/FEDERATION_SECURITY.md](docs/oc/FEDERATION_SECURITY.md): model de confianza federat
-- [docs/oc/PUSH.md](docs/oc/PUSH.md): decisio de notificacion push
+- [docs/oc/FEDERATION_PROTOCOL.md](docs/oc/FEDERATION_PROTOCOL.md): protocòl entre noses (fasas 2-10)
+- [docs/oc/FEDERATION_SECURITY.md](docs/oc/FEDERATION_SECURITY.md): fisança, mTLS, portabilitat e resiliéncia
+- [docs/oc/FEDERATION_SCHEMA.md](docs/oc/FEDERATION_SCHEMA.md): entitats federadas e checksum
+- [docs/oc/FEDERATION_CHAT_BROKER.md](docs/oc/FEDERATION_CHAT_BROKER.md): decision de transpòrt e estat implementat
 
 En mai, lo punt de partença per desvolopament e convencion de projècte es [AGENTS.md](AGENTS.md).
 
@@ -131,22 +119,20 @@ En mai, lo punt de partença per desvolopament e convencion de projècte es [AGE
 
 ### FAQ rapida
 
-- **¿Necesito Docker para empezar?** No. El arranque local con `start.*` funciona sin Docker; Docker sirve para entorno productivo y builds reproducibles.
-- **¿Qué hago si la API no responde?** Comprueba que el backend está corriendo en `http://localhost:8000` y que `/docs` responde.
-- **¿Qué documento debo leer primero?** Si eres usuario, [docs/oc/USO.md](docs/oc/USO.md); si eres desarrollador, [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
-- **¿Cómo sé si un cambio requiere actualizar documentación?** Si cambia arranque, API, roles, permisos, variables de entorno o esquema, actualiza también la documentación que corresponda.
-
-
+- **Ai besoin de Docker per començar ?** Non. L'aviada locala amb `start.*` fonciona sens Docker ; Docker servís per environa productiva e builds reproduzibles.
+- **Que fas se l'API respond pas ?** Verifica que lo backend corra en `http://localhost:8000` e que `/docs` responde.
+- **Qual document dei legir en primier ?** Se sès utilizaire, [docs/oc/USO.md](docs/oc/USO.md) ; se sès desvolopaire, [docs/oc/ARQUITECTURA.md](docs/oc/ARQUITECTURA.md).
+- **Cossí saber se un cambiament demanda actualizar la documentacion ?** Se cambia aviada, API, ròtles, permissions, variablas d'environa o esquèma, actualiza tanben la documentacion que corresponda.
 
 ## Contribuir
 
-1. Haz un fork del repositorio.
-2. Crea una rama (`git checkout -b feature/nov-funcionalitat`).
-3. Haz commit con mensajes claros y descriptivos (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. Empuja la rama (`git push origin feature/nov-funcionalitat`).
-5. Abre un Pull Request con contexto, cambios y validación.
+1. Fai un fork del depaus.
+2. Crea una branca (`git checkout -b feature/nov-funcionalitat`).
+3. Fai commit amb messatges clars e descriptius (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+4. Possa la branca (`git push origin feature/nov-funcionalitat`).
+5. Dubrís un Pull Request amb contexte, cambiaments e validacion.
 
-**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` e `flutter test` devon passar abans de fusionar. GitHub Actions executa aquelas pòrtas en parallèl e Dependabot dubrís de PRs setmanals gropats: patch/minor se fusionan sols amb CI verda, major demora a revision manuala (detalh dins [docs/oc/INFRAESTRUCTURA.md](docs/oc/INFRAESTRUCTURA.md)).
 
 ## Licéncia
 

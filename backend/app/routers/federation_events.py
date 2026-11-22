@@ -5,7 +5,8 @@ import json
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import jwt
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import inspect, text
@@ -77,19 +78,78 @@ def _peer_url(domain):
     return f"{scheme}://{domain}/api/federation/events/publish"
 
 
+def _local_node_domain():
+    base = getattr(settings, "PUBLIC_BASE_URL", None) or "primary"
+    return str(base).replace("https://", "").replace("http://", "").rstrip("/")
+
+
+def _event_signature(body):
+    return hmac.new(str(settings.SECRET_KEY).encode("utf-8"), body, hashlib.sha256).hexdigest()
+
+
+def _peer_token(domain):
+    from app.routers.federation import federation_token_service
+
+    return federation_token_service.create_token(
+        "federation-events",
+        extra_claims={"iss": domain, "issuer_node": domain},
+    )
+
+
+def _require_trusted_node(db, domain):
+    node = NodePeeringService().get_by_domain(db, domain)
+    if node is None or not node.allowed or getattr(node, "revoked_at", None) is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="peer node not trusted")
+    return node
+
+
+async def _request_peer(request, db):
+    peer = getattr(request.state, "peer_node", None)
+    if peer is not None:
+        return getattr(peer, "node_domain", None)
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[7:].strip()
+    try:
+        claims = jwt.decode(token, options={"verify_signature": False})
+    except jwt.PyJWTError:
+        return None
+    if claims.get("typ") != "federation" or claims.get("aud") != "clakettes-federation":
+        return None
+    issuer = claims.get("iss")
+    if not isinstance(issuer, str) or not issuer.strip():
+        return None
+    _require_trusted_node(db, issuer)
+    from app.routers.federation import get_current_federation_peer
+
+    verified = await get_current_federation_peer(request)
+    if verified is None or verified.get("iss") != issuer:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid federation peer token")
+    claimed = verified.get("issuer_node") or issuer
+    if claimed != issuer:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="peer node mismatch")
+    return issuer
+
+
 async def _send_to_peer(domain, envelope):
+    issuer = _local_node_domain()
     payload = {
         "event": envelope,
-        "issuer": getattr(settings, "PUBLIC_BASE_URL", None) or "primary",
+        "issuer": issuer,
         "sent_at": datetime.now(timezone.utc).isoformat(),
     }
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    signature = hmac.new(str(settings.SECRET_KEY).encode("utf-8"), body, hashlib.sha256).hexdigest()
+    headers = {
+        "Content-Type": "application/json",
+        "X-Clakettes-Signature": _event_signature(body),
+        "Authorization": f"Bearer {_peer_token(issuer)}",
+    }
     async with httpx.AsyncClient() as client:
         response = await client.post(
             _peer_url(domain),
             content=body,
-            headers={"Content-Type": "application/json", "X-Clakettes-Signature": signature},
+            headers=headers,
             timeout=5.0,
         )
         response.raise_for_status()
@@ -166,10 +226,35 @@ async def stream_events(
 @router.post("/publish")
 async def publish_event(
     body: EventPublishIn,
+    request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
 ):
-    require_admin(current_user, db)
+    peer_domain = await _request_peer(request, db)
+    if peer_domain:
+        raw = await request.body()
+        signature = request.headers.get("x-clakettes-signature")
+        if not signature or not hmac.compare_digest(_event_signature(raw), signature):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid event signature")
+        _require_trusted_node(db, peer_domain)
+        try:
+            payload = json.loads(raw)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid payload")
+        if payload.get("issuer") not in (None, peer_domain):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="issuer mismatch")
+        if body.node and body.node != peer_domain:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="node mismatch")
+        body.node = peer_domain
+    else:
+        auth = request.headers.get("authorization", "")
+        if not auth.startswith("Bearer "):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        current_user = await get_current_user(token=auth[7:].strip(), db=db)
+        require_admin(current_user, db)
     topic = _derive_topic(body)
     envelope = event_bus.publish(topic, {"type": body.type, "node": body.node, "data": body.data})
 

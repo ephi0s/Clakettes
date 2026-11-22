@@ -59,6 +59,17 @@ Tota la configuració es realitza a través de `backend/.env` (carregat per `pyd
 | `JWT_AUDIENCE` | `clakettes-api` | Reclamació d'audiència JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | TLL del token d'accés |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Orígens permesos separats per comes |
+| `APP_ENV` | `development` | `production` exigeix `SECRET_KEY` robusta, CORS explícit i esquema via Alembic |
+| `TESTING` | desactivat | `1/true/yes/on` desactiva rate limits i auto-migració (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Origen públic del node (manifest, bundles, ICS absolut) |
+| `MTLS_REQUIRED` | `False` | Exigeix mTLS verificat a `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | CA arrel per validar certificats de clients |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Certificat i clau propis (firma del manifest RSA-SHA256) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | Fitxer SQLite del limitador de peticions |
+| `SKIP_AUTO_MIGRATE` | desactivat | `1/true/yes/on` omite `alembic upgrade head` a l'arrancada |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, buit, `False` | Proveïdor de pagaments mock i secret de webhook |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | buit | Credencials Stripe (SDK perezós) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, buit, `True`, `978` | Signatura HMAC Redsys i sandbox |
 | `PORT_BACKEND` | `8000` | Port del servidor (utilitzat per Docker/scripts d'arrancada) |
 
 **Exemple de `.env` per a producció:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Hash de contrasenyes
 
-- **bcrypt** via `passlib` (rounds=12)
+- **bcrypt** directe (`bcrypt.hashpw` + `bcrypt.gensalt()`), sense `passlib`
 - Hash emmagatzemat a `User.password_hash`
-- Verificat via `pwd_context.verify(plain, hash)`
+- Verificat via `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Límit de peticions
 
 - **100 peticions / 60 segons** per IP (còpia de seguretat SQLite)
 - Aplicat per `RateLimitMiddleware` a `main.py`
-- Desactivat quan s'estableix la variable d'entorn `TESTING=true`
+- Desactivat amb `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), inclòs el limitador de refresh 20/60 s a `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, perfil, pujada d'avatar |
 | `auth` | `/api/users` | auth | Inici de sessió, renovació, registre |
 | `auth_sessions` | `/api/auth` | auth | Llista/revocació de sessions |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, vinculació festival  CRUD sota `/api/festivals/{id}/shortfilms`; la llista plana està obsoleta |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD anidat a `/api/festivals/{festival_id}/shortfilms` (GET/POST de llista i GET/PUT/DELETE de detall, filtre `?contest_type=`); els 5 endpoints plans segueixen disponibles però marcats `deprecated=True` |
 | `chat` | `/api/chat` | chat | Missatges, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Unir-se/sortir, membres |
-| `uploads` | `/api/uploads` | uploads | Pujada d'avatar |
+| `uploads` | `/api/uploads` | uploads | Pujada multipart d'avatar, thumbnail, vídeo, document i imatge de xat; retorna rutes relatives `/uploads/...` |
 | `search` | `/api/search` | search | Cerca global |
 | `admin` | `/api/admin` | admin | Estadístiques, taules, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, comptador de no llegits |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Relacions de ubicació |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Ubicacions de curtmetratge |
 | `form_definitions` | `/api` | forms | Constructor de formularis |
-| `federation` | `/api/federation` | federation | manifest, directori, nodes, informes, webfinger |
+| `federation` | `/api/federation` | federation | manifest, directori, nodes, informes, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | Bridge de xat signat RS256, configuració i missatges |
+| `federation_events` | `/api/federation/events` | federation-events | SSE amb `token` obligatori, publicació i reintent |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, imports, migració i redirects |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, heartbeat, mètriques, revocació i incident |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Reportes, silenciaments, moderació i límits |
 | `jury_votes` | `/api` | jury-votes | Vot del jurat (fase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, configuració |
 | `badges` | `/api` | badges | Insígnies, assignacions, elegibilitat |
 | `posts` | `/api` | posts | Publicacions socials, respostes, moderació |
 | `payments` | `/api` | payments | Pagar, confirmar, reembolsar, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Reguladors del festival |
-| `user_blocks` | `/api` | user-blocks | Bloc d'usuaris |
-| `moderation_reports` | `/api` | moderation-reports | Informes de moderació |
-| `node_policies` | `/api` | node-policies | Polítiques de nodes de federació |
+| `user_blocks` | `/api` | user-blocks | Bloc d'usuaris (propietari o admin) |
 
 
 
@@ -268,7 +282,7 @@ Somiatre de resposta:
 | `GET` | `/api/chat/ws` | Connexió WebSocket (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Enviar missatge (fallback REST) |
 | `GET` | `/api/chat/messages` | Historial paginat |
-| `PATCH` | `/api/chat/messages/{id}/read` | Marcar com llegit |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Marcar com llegit |
 
 ### Tipus de missatge
 
@@ -286,9 +300,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- Intercanvi de claus X25519 a través de `/api/users/{id}/keys`
+- Intercanvi de claus ECDH P-256 a través de `POST /api/users/me/public-key` i `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Claus públiques emmagatzemades a `UserKey` (una clau activa per usuari)
-- Cifrat/descifrat al frontend (`e2ee_service.dart`)
+- Cifrat/descifrat AES-GCM al frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -306,7 +320,13 @@ file: <image/*>
 
 - Desat a `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Servit de manera estàtica a `/uploads/avatars/...`
-- Mida màxima: 10 MB (aplicat per `RequestSizeLimitMiddleware`)
+- Mida màxima: 5 MB per a imatges (`MAX_IMAGE_SIZE` a `routers/uploads.py`); el límit global del cos segueix sent 10 MB
+
+### Totes les pujades
+
+- Els endpoints `avatar`, `thumbnail`, `video`, `document` i `chat-image` retornen una ruta relativa `/uploads/<carpeta>/<archivo>`; el client la resol amb `resolveMediaUrl()` contra el node actiu.
+- Si falta el content-type o arriba `application/octet-stream`, `uploads._sniff_content_type()` detecta el tipus per magic bytes (JPEG, PNG, GIF, WebP, PDF i MP4); l'error 400 indica `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` i `thumbnail_url` fan servir el tipus `MediaUrl`: accepten rutes relatives (i cadena buida) o URLs http(s) vàlides; una URL invàlida retorna 422.
 
 ---
 
@@ -338,15 +358,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Configuració de proves** (`pyproject.toml` / `pytest.ini`):
+**Configuració de proves** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Les proves asíncrones fan servir `pytest.mark.asyncio`; no hi ha `asyncio_mode` global.
 
 **Fixture** (`tests/conftest.py`):
 - `db_session` — sessió SQLite en memòria
@@ -373,9 +394,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -462,12 +483,12 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
 
-• Lista de comprovació de seguretat
+## Lista de comprovació de seguretat
 
 - [ ] Canvieu `SECRET_KEY` a producció
 - [ ] Establiu `CORS_ORIGINS` a dominis específics
@@ -527,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

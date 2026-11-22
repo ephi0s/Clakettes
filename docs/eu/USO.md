@@ -34,7 +34,16 @@ Hasierako admin-a (soilik ekoizpenean ez): `admin` / `setup` — sartzean aldatu
 | `APP_ENV` | env | `development`-ek admin + `create_all` sortzen ditu; `production`-ek Alembic eskatzen du |
 | `PUBLIC_BASE_URL` | `backend/.env` | Nodoaren domeinu publikoa; manifestuan eta portabilitate-bundle-etan agertzen da |
 | `MTLS_REQUIRED` | env | Egiaztatutako pare mTLSa behartzen du federazioan (ziurtagiriaren CNa eta PEMa) |
+| `MTLS_CA_BUNDLE_PATH` | env | Bezero federatuen ziurtagiriak balioztatzeko CA erroa |
 | `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | Manifestua sinatzen duten ziurtagiriaren PEMa eta gako pribatua (RSA-SHA256) |
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING`-ek rate limit-ak eta auto-migrazioa desaktibatzen ditu; `SKIP_AUTO_MIGRATE`-ek auto-migrazioa soilik saltzen du |
+| `RATE_LIMITS_DB_PATH` | env | Mugen SQLite DBaren bidea (lehenetsia `backend/rate_limits.db`) |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `ACCESS_TOKEN_EXPIRE_MINUTES` | env | Sarbide-JWTaren claim-ak eta TTL-a |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | env | Ordainketa-hornitzailea (`mock` lehenetsiz) eta webhook simulatuaren sekretuak |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDSYS_*` | env | Ordainketa-kredentzial errealak; xehetasuna [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) |
+
+**Ordainketa-oharra**: `PAYMENTS_PROVIDER=mock` da balio lehenetsia (`backend/app/config.py`). Stripe eta Redsys ez daude martxan haien webhook-ak konektatu arte (`POST /api/payments/webhook/{stripe,redsys}`); gaur egun simulatuak baino ez dabil. Redsys-en `confirm`-ek beti `"pending"` itzultzen du.
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING`-ek rate limit-ak eta auto-migrazioa desaktibatzen ditu; `SKIP_AUTO_MIGRATE`-k auto-migrazioa soilik saltzen du |
 
 ## Operazioa
 
@@ -43,7 +52,9 @@ Hasierako admin-a (soilik ekoizpenean ez): `admin` / `setup` — sartzean aldatu
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; itzulera `import_mariadb_to_sqlite.py` bidez (xehetasuna [DATABASE.md](DATABASE.md) fitxategian).
 - **Babeskopiak**: SQLite = `*.db` kopiatu; MariaDB = `mariadb-dump` (Docker-en `db-data` bolumena).
 - **Logak**: uvicorn stdout (DAV tokenak dagoeneko ezkutatuta); API erroreak SnackBar + `debugPrint` bidez.
-- **Mugak**: gorputzak ≤10 MB (413 handiagoa bada); rate limit 429 + birsaioarekin (federazioa 60/60 s IP bakoitzeko; txata 10/60 s nodo eta erabiltzaile bakoitzeko, `TESTING=true` bidez desaktibatuta).
+- **Mugak**: gorputzak ≤10 MB (413 handiagoa bada); rate limit 429 + birsaioarekin (globala 100/60 s IP bakoitzeko, `/dav` 600/60 s, login 5/300 s, refresh 20/60 s, reset 3/300 s, federazioa 60/60 s; txata 10/60 s nodo eta erabiltzaile bakoitzeko). `TESTING` ∈ {1,true,yes,on} muga guztiak desaktibatzen ditu.
+- **Konexiorik gabe**: Hive cache-ak nodo bakoitzaren jatorria gordetzen du; `reconcile`-k berriro konektatzean batzen du eta `clearOrigin`-ek nodo bat baztertzen du. Nodo batzuek erantzuten ez badute baina nagusiak bai, `DegradedNodesBanner` agertzen da kopuruarekin eta birkargatzeko botoiarekin.
+- **Mediak**: APIak itzultzen dituen `/uploads/...` bideei zerbitzari aktiboa jartzen zaie aurrean bezeroan (`resolveMediaUrl()`); `http(s)` URLak horren horrela erabiltzen dira.
 - **Federazioa**: egiaztatu hirugarren nodo bat `python tools/federation_conformance.py <url> [--json]` bidez; peering-aren osasuna `/api/federation/resilience/health`-en dago eta p50/p95 metrikak `/metrics`-en.
 - **Portabilitatea**: esportatu/inportatu bundle-ak `/api/federation/portability/{bundles,imports}` bidez eta kontsultatu identitate-birbideratzeak `/redirects/{ref}` bidez.
 
@@ -58,7 +69,7 @@ Hasierako admin-a (soilik ekoizpenean ez): `admin` / `setup` — sartzean aldatu
 - **Profil sozialak**: argitalpen-hormak (Markdown-ekin eta bideo eta podcast txertaketekin mikroblogintza) erabiltzaile eta jaialdien profilaketan, argitalpen bakoitzeko aukerako erantzun-hariak eta rolekiko moderazioarekin (administratzaileak, jaialdiaren kudeaketa, moderatzaileak). Oraindik ez dago erreakziorik, pegatinarik edo GIF-ik.
 - **Profilen pertsonalizazioa**: azala, leloa eta gizarte-loturak erabiltzaile eta jaialdietan.
 - **Intsigniak**: lehenespenez desaktibatuta; soilik administrazio-taldeak aktiba ditzake (`PUT /api/badges/settings`). Plataformako intsigniak administratzaileek ematen dituzte; jaialdiaren merituzkoak (beteranoa, ezaguna, rola, sari berezia), haren kudeaketak. Intsignia bakoitzak irudi bat du (SVG hobetsia).
-- **Epaimahaiaren botoa**: lan bakoitzeko puntuazioa, agregazioa eta anonimotasun aukerakoa (roadmap-aren 5. fasea).
+- **Epaimahaiaren botoa**: jada martxan (lan bakoitzeko puntuazioa, agregazioa eta anonimotasun aukerakoa); esleitutako jaialdiko laburrak soilik onartzen ditu.
 
 ## Ikus ere
 

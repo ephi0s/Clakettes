@@ -39,9 +39,11 @@ void main() {
 
     test('setLocale emits event on stream', () async {
       final localeService = LocaleService.instance;
-      final emitted = await localeService.onLocaleChanged.first;
+      final emittedFuture = localeService.onLocaleChanged.first;
+      await localeService.setLocale(const Locale('es'));
+      final emitted = await emittedFuture;
       expect(emitted, const Locale('es'));
-    }, skip: 'Requires stream ordering in singleton context');
+    });
 
     test('setLocale persists to SharedPreferences', () async {
       final localeService = LocaleService.instance;

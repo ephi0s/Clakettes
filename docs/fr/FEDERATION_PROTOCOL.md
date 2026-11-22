@@ -1,5 +1,7 @@
 # Protocole de fédération Clakettes (phases 2 à 10)
 
+[ES](../es/FEDERATION_PROTOCOL.md) · [EN](../en/FEDERATION_PROTOCOL.md) · [FR](FEDERATION_PROTOCOL.md) · [DE](../de/FEDERATION_PROTOCOL.md) · [IT](../it/FEDERATION_PROTOCOL.md) · [CA](../ca/FEDERATION_PROTOCOL.md) · [EU](../eu/FEDERATION_PROTOCOL.md) · [GL](../gl/FEDERATION_PROTOCOL.md) · [OC](../oc/FEDERATION_PROTOCOL.md)
+
 Étapes pour créer un serveur/client interopérable :
 
 1. Implémentez les endpoints `/api/federation/*` (voir `docs/es/FEDERATION_SCHEMA.md`).
@@ -8,11 +10,11 @@
 4. Exposez le manifeste sur `GET /api/federation/manifest` avec `schema_version`, `node`, `version`, `capabilities`, `issued_at`, `expires_at`, `signature` et `certificate_chain`. Le manifeste est signé en RSA-SHA256 (PKCS#1 v1.5) avec la clé privée du certificat TLS du nœud ; le pair valide la signature avec le PEM de `certificate_chain` et vérifie `expires_at` (24 h).
 5. Exposez la clé publique sur `GET /api/federation/.well-known/jwks.json` pour que les pairs valident les tokens de fédération.
 6. Validez les tokens des pairs via JWKS : un nœud distant appelant un endpoint protégé doit présenter un Bearer JWT signé (RS256) dont l'`iss` est son domaine et dont la signature se valide contre son JWKS. `GET /api/federation/whoami` renvoie l'identité du pair seulement quand ce JWT se valide (401 sinon).
-7. Résolvez les utilisateurs distants via `GET /api/federation/users/{ref}` et `GET /api/federation/.well-known/webfinger` (tous deux exigent un peer mTLS vérifié).
+7. Résolvez les utilisateurs distants via `GET /api/federation/users/{ref}` et `GET /api/federation/.well-known/webfinger` (tous deux exigent un peer mTLS vérifié uniquement lorsque `MTLS_REQUIRED=true` ; par défaut `False`).
 8. Utilisez Clakettes Schema v1 pour l'échange de données.
 9. Portez l'identité et les données avec `POST /api/federation/portability/bundles` et `/imports`, migrez avec `/festivals/{id}/migrate` et `/users/{ref}/migrate`, et résolvez les anciennes refs avec `GET /redirects/{ref}`.
 10. Livrez le chat par le bridge signé `/api/federation/chat/bridge/{inbound,outbound,config}` ; l'historique se consulte sur `/api/federation/chat/messages`, avec déduplication par `message_id` et tri par `timestamp` + `message_id`. La file durable `chat_outbox` permet un transport interchangeable (détail dans `docs/es/FEDERATION_CHAT_BROKER.md`).
-11. Propagez les changements par le bus d'événements : `GET /api/federation/events/stream` (SSE avec `since` et battement), `POST /publish` et `GET /retry-queue` (3 tentatives, backoff 300 ms → 5 s).
+11. Propagez les changements par le bus d'événements : `GET /api/federation/events/stream` (SSE avec `since` et battement), `POST /publish` et `GET /retry-queue` (3 tentatives, backoff 300 ms → 1,5 s → 5 s).
 12. Surveillez la santé du peering avec `/api/federation/resilience/{health,heartbeat,metrics,keys/revoke,keys/revoked,incident-plan}` ; `metrics` expose p50/p95, latence, échecs et relances.
 13. Vérifiez la conformité d'un nœud tiers avec `python tools/federation_conformance.py <url> [--json]` (1 en cas d'échecs critiques/élevés).
 

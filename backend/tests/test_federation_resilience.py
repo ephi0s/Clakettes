@@ -121,6 +121,45 @@ def test_keys_revoked(client, db_session, admin_headers):
     assert match[0]["revoked_at"]
 
 
+def test_revocation_persisted_in_db(client, db_session, admin_headers):
+    _register(db_session, "persist.example", "f" * 64)
+    admin_h, admin = admin_headers
+    client.post(
+        f"{_PREFIX}/keys/revoke",
+        headers=admin_h,
+        json={"node_domain": "persist.example", "reason": "compromiso"},
+    )
+    with resilience_router._revocations_lock:
+        resilience_router._revocations.clear()
+
+    response = client.get(f"{_PREFIX}/keys/revoked")
+    item = [i for i in response.json()["revoked"] if i["node_domain"] == "persist.example"][0]
+    assert item["reason"] == "compromiso"
+    assert item["revoked_by"] == str(admin.id)
+    assert item["revoked_at"]
+
+    node = NodePeeringService().get_by_domain(db_session, "persist.example")
+    assert node.revoked_at is not None
+    assert node.revocation_reason == "compromiso"
+    assert node.revoked_by == str(admin.id)
+
+
+def test_clear_revocation_loads_incident_from_db(db_session):
+    _register(db_session, "restore.example", "g" * 64)
+    resilience_router.record_revocation(db_session, "restore.example", "incidente", "peer.example")
+    with resilience_router._revocations_lock:
+        resilience_router._revocations.clear()
+
+    incident = resilience_router.clear_revocation(db_session, "restore.example")
+    assert incident["reason"] == "incidente"
+    assert incident["revoked_by"] == "peer.example"
+
+    node = NodePeeringService().get_by_domain(db_session, "restore.example")
+    assert node.revoked_at is None
+    assert node.revocation_reason is None
+    assert node.revoked_by is None
+
+
 def test_incident_plan(client):
     response = client.get(f"{_PREFIX}/incident-plan")
     assert response.status_code == 200

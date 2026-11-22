@@ -34,7 +34,7 @@ metadata:
 - **prod target**: non-root `appuser`, no reload
 
 ### Frontend (`frontend/Dockerfile`)
-- Base: `ubuntu:24.04`, installs Flutter 3.24.0 from git
+- Base: `ubuntu:24.04`, installs Flutter 3.47.3 from git
 - **dev target**: `flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=$BACKEND_URL`
 - **build target**: `flutter build web --release`
 - **prod target**: nginx:alpine serving built web, port 80
@@ -44,7 +44,7 @@ metadata:
 
 ### GitHub Actions (`.github/workflows/ci.yml`)
 - Triggers: push `main`/`develop`, PRs to `main`
-- Parallel jobs: (1) backend (Python 3.12, ruff → pytest), (2) frontend (Flutter 3.24, analyze → test), (3) docker-build (needs 1+2, Buildx, layer caching)
+- Parallel jobs: (1) backend (Python 3.12, ruff → pytest), (2) frontend (Flutter 3.47.3, analyze → test), (3) docker-build (needs 1+2, Buildx, layer caching)
 
 ### GitLab CI (`.gitlab-ci.yml`)
 - Stages: lint → test → build

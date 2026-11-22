@@ -20,37 +20,37 @@ Cachas: Routers → Services → Models, tipes via `app.enums`.
 |---|---|---|
 | CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Los routers non consultan; los servicis non lançan 404 (levat 3 eretats) |
 | 404 uniforma | `routers/dependencies.py:get_or_404` | fetch → 404 en una linha |
-| Auth | `app/auth.py:validate_access_token` | Signatura + `type=access` + session activa/non revocada/non expirada; `last_used_at` lazy (5 min) |
+| Auth | `app/auth.py:validate_access_token` | Signatura + `type=access` + session activa/non revocada/non expirada; helpers `hash_token()`, `is_expired()` (naive = UTC), `get_user_with_roles()` e `touch_session()` (`last_used_at` lazy, 5 min) |
 | Auth opcionala | `routers/dependencies.py:get_current_user_optional` | Endpoints publics sens 401 |
-| Permissions | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
-| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, cubèls `middleware:`/`dav:`; instàncias dins `main`/`admin`/`auth`) | Desactivat amb `TESTING=true` |
+| Permissions | `routers/permissions.py` | `require_admin(user, db)` unificat (ròtle legacy `admin` o `UserRole` `ACTIVE`/`APPROVED`), `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*`, `require_self_or_admin` (alias) e `require_owner_or_admin` (blocatges) |
+| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, cubèls `middleware:`/`dav:`; instàncias dins `main`/`admin`/`auth`/`auth_sessions`/`federation`) | 100/60 s global, 600/60 s `/dav`, 5/300 s login, 20/60 s refresh, 3/300 s reset, federacion 60/60 s; bypass centralizat en `app.config.is_testing()` (`1/true/yes/on`) |
 | Chat en temps real | `app/chat_backend/` (WebSocket) + REST dins `routers/chat.py` | WS valida la session via `validate_access_token` |
 | Chat federat | `routers/federation_chat_bridge.py`, `services/message_queue_service.py` (`chat_outbox`), `chat_backend/durable_queue_backend.py` (`DurableQueueBackend`), `services/message_federation_service.py` | Bridge signat RS256, dedup per `message_id`, ordre per `timestamp`, transpòrt intercambiable |
-| Moderacion del chat | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Rapòrts, silencis, filtre de mots, `disable_chat` e 10 messatges/60 s per nose e usagi (off amb `TESTING=true`) |
-| Bus d'eveniments | `routers/federation_events.py`, `services/event_bus_service.py` | SSE amb `since`, batement e replay (200); publicacion signada e 3 reensajos (300 ms→5 s) |
+| Moderacion del chat | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Rapòrts, silencis, filtre de mots, `disable_chat` e 10 messatges/60 s per nose e usagi (off amb `TESTING` ∈ {1,true,yes,on}) |
+| Bus d'eveniments | `routers/federation_events.py`, `services/event_bus_service.py` | SSE amb `since`, batement e replay (200); publicacion signada e 3 reensajos (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefix `/dav`, cubèl proper 600/60s) | Token bearer dins l'URL; TLS obligatòri en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF amb reportlab en import perezós |
-| Migracions | `alembic/` (42 versions, head `c1d2e3f4a5b6`) | Prod solament Alembic; dev tanben `create_all` |
+| Migracions | `alembic/` (45 versions, head `d1e2f3a4b5c6`) | Prod solament Alembic; dev tanben `create_all` |
 | Federacion | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifest signat RSA-SHA256, directòri, noses, rapòrts, webfinger, ref usagis, JWKS, `whoami`, token federat, peers/verify, peers/revoke, mTLS per CN/PEM |
 | Portabilitat | `routers/federation_portability.py`, `services/portability_service.py`, modèls `identity_redirect`/`migration_audit` | Bundles signats, imports, migracion de festivals/usagis e redireccions |
 | Resiliéncia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Santat, batement, metricas p50/p95, revocacion de claus e plan d'incident |
 | Conformitat | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI que verifica manifest, JWKS, token, directòri, portabilitat, bridge e SSE |
 
-API generada: `python tools/gen_api.py --all` produís 446 endpoints dins 39 routers amb prefix (vejatz [API.md](API.md)).
+API generada: `python tools/gen_api.py --all` produís 446 endpoints dins 43 routers (39 amb prefix dins `main.py`; lo generador combina tanben lo prefix de cada `APIRouter` e detecta las dependéncias d'auth, vejatz [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
 Servicis singleton + `setState()` + Streams (sens Provider). Arranjada dins `main()`:
-`DatabaseService` → `OfflineCache` → `SyncQueue` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
+`DatabaseService` → `OfflineCache` → `SyncQueue` → `NodeService` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
 
 | Pèça | Ont | Regla |
 |---|---|---|
-| API | `services/api_service.dart` (nuclèu) + `services/api/` (9 domenis) | Base `BACKEND_URL` (gardada > dart-define > defaut per plataforma; emulator Android `10.0.2.2`) |
-| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 reensajos + backoff, anti-reenviament) | Cach amb etiqueta de nose (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); contròls de santat per nose per degradar amb elegància; a la reconnexion, sync amb confirmacion |
-| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en directe, REST per istoric e istoric federat; E2EE ECDH P-256 + AES-GCM en isolats |
+| API | `services/api_service.dart` (nuclèu) + `services/api/` (13 domenis, division implementada, vejatz son README) | Base `BACKEND_URL` (gardada > dart-define > defaut per plataforma; emulator Android `10.0.2.2`); `resolveMediaUrl()` antepón lo nose actiu a `/uploads/...`; `uploadFile()` utiliza lo MIME per extension, Bearer, reensaj 401/refresh e fallback entre noses; lo WS del chat deriva son URL del meteis `rootUrl` |
+| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 reensajos + backoff, anti-reenviament) | Cach amb etiqueta de nose (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor` expausa `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` e sondas `ApiService.testNode()`; a la reconnexion, sync amb confirmacion |
+| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en directe, REST per istoric e istoric federat; E2EE ECDH P-256 + AES-GCM en isolats; `ChatPresenceBackend` apòrta escritura, laténcia e confirmacions de lectura; recèrca locala, dedup e ordre per `(created_at,id)`; messatges offline encolats de forma durabla amb lo meteis `message_id` |
 | Avisos | `notification_service.dart` | Escritòri: plugin SO; web: Notification API; mobil: no-op (vejatz [PUSH.md](PUSH.md)) |
-| Navigacion | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer totjorn; 10 ecrans en cach |
-| i18n | `l10n/` + `assets/l10n/` (9 locales) | `en.arb` es lo fallback; 0 claus absentas (verificat amb script) |
+| Navigacion | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer totjorn; 11 ecrans en cach; `DegradedNodesBanner` avisa dels noses sens responsa amb recompte e reensaj (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (9 locales, 823 claus per ARB) | `app_en.arb` es lo fallback; paritat de claus e placeholders en `test/l10n/arb_parity_test.dart` (referéncia `es`); `LocaleService.load()` detecta lo locale del SO e persista lo resolt |
 | Permissions SO | `AndroidManifest.xml` / `Info.plist` | Ret, localizacion, camèra, galariá, alarmas exactas |
 
 ## Fluxes claus
@@ -62,3 +62,5 @@ Servicis singleton + `setState()` + Streams (sens Provider). Arranjada dins `mai
 5. **Portabilitat**: bundle signat → import amb politica d'origina → migracion de festival/usagi → redireccion de la ref anciana.
 6. **Chat federat**: envelopa signada → verificacion de signatura e dedup → persisténcia dins `chat_outbox` → difusion e ordre per `timestamp`.
 7. **Eveniments**: publicacion sul bus → SSE amb `since` e batement → reensaji amb backoff se lo par fracassa.
+8. **Corts en festival**: alta en `/api/festivals/{id}/shortfilms` amb `contest_type` (`official_section` per defaut o `contest`) → `FestivalDetailResponse` amb recompte e resumit → filtre dins l'app → projeccions solament amb corts del meteis festival.
+9. **Mèdia**: pujada multipart → rota relativa `/uploads/...` (MIME per magic bytes, metadatas netejadas) → `resolveMediaUrl()` la resòlv contra lo nose actiu → cach Hive per nose.

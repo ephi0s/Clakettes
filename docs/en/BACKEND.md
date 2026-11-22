@@ -59,6 +59,17 @@ All configuration is done via `backend/.env` (loaded by `pydantic-settings`):
 | `JWT_AUDIENCE` | `clakettes-api` | JWT audience claim |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Comma-separated allowed origins |
+| `APP_ENV` | `development` | `production` requires a strong `SECRET_KEY`, explicit CORS and schema via Alembic |
+| `TESTING` | disabled | `1/true/yes/on` disables rate limits and auto-migration (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Public origin of the node (manifest, bundles, absolute ICS) |
+| `MTLS_REQUIRED` | `False` | Requires verified mTLS on `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | Root CA to validate client certificates |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Own certificate and key (RSA-SHA256 manifest signing) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | SQLite file backing the rate limiter |
+| `SKIP_AUTO_MIGRATE` | disabled | `1/true/yes/on` skips `alembic upgrade head` on startup |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, empty, `False` | Mock payment provider and webhook secret |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | empty | Stripe credentials (lazy SDK) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, empty, `True`, `978` | Redsys HMAC signing and sandbox |
 | `PORT_BACKEND` | `8000` | Server port (used by Docker/start scripts) |
 
 **Example `.env` for production:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Password hashing
 
-- **bcrypt** via `passlib` (rounds=12)
+- **bcrypt** direct (`bcrypt.hashpw` + `bcrypt.gensalt()`), without `passlib`
 - Hash stored in `User.password_hash`
-- Verified via `pwd_context.verify(plain, hash)`
+- Verified via `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Rate limit
 
 - **100 requests / 60 seconds** per IP (SQLite-backed)
 - Applied via `RateLimitMiddleware` in `main.py`
-- Disabled when `TESTING=true` environment variable is set
+- Disabled with `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), including the 20/60 s refresh limiter in `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profile, avatar upload |
 | `auth` | `/api/users` | auth | Login, refresh, register |
 | `auth_sessions` | `/api/auth` | auth | Session list/revoke |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, festival linkage  CRUD under `/api/festivals/{id}/shortfilms`; flat listing is deprecated |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD nested under `/api/festivals/{festival_id}/shortfilms` (list GET/POST and detail GET/PUT/DELETE, `?contest_type=` filter); the 5 flat endpoints remain available but are marked `deprecated=True` |
 | `chat` | `/api/chat` | chat | Messages, WS endpoint |
 | `user_festival` | `/api/festivals` | user-festival | Join/leave, members |
-| `uploads` | `/api/uploads` | uploads | Avatar upload |
+| `uploads` | `/api/uploads` | uploads | Multipart upload of avatar, thumbnail, video, document and chat image; returns relative paths `/uploads/...` |
 | `search` | `/api/search` | search | Global search |
 | `admin` | `/api/admin` | admin | Stats, tables, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, unread count |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Location relations |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Shortfilm locations |
 | `form_definitions` | `/api` | forms | Form builder |
-| `federation` | `/api/federation` | federation | manifest, directory, nodes, reports, webfinger |
+| `federation` | `/api/federation` | federation | manifest, directory, nodes, reports, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | RS256-signed chat bridge, config and messages |
+| `federation_events` | `/api/federation/events` | federation-events | SSE with mandatory `token`, publish and retry |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, imports, migration and redirects |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, heartbeat, metrics, revocation and incident |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Reports, mutes, moderation and limits |
 | `jury_votes` | `/api` | jury-votes | Jury voting (phase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, settings |
 | `badges` | `/api` | badges | Badges, assignments, eligibility |
 | `posts` | `/api` | posts | Social posts, replies, moderation |
 | `payments` | `/api` | payments | Checkout, confirm, refund, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Festival rulebooks |
-| `user_blocks` | `/api` | user-blocks | User blocking |
-| `moderation_reports` | `/api` | moderation-reports | Moderation reports |
-| `node_policies` | `/api` | node-policies | Federation node policies |
+| `user_blocks` | `/api` | user-blocks | User blocking (owner or admin) |
 
 
 
@@ -268,7 +282,7 @@ Response envelope:
 | `GET` | `/api/chat/ws` | WebSocket connection (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Send message (REST fallback) |
 | `GET` | `/api/chat/messages` | Paginated history |
-| `PATCH` | `/api/chat/messages/{id}/read` | Mark read |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Mark read |
 
 ### Message types
 
@@ -286,9 +300,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- X25519 key exchange via `/api/users/{id}/keys`
+- ECDH P-256 key exchange via `POST /api/users/me/public-key` and `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Public keys stored in `UserKey` (one active per user)
-- Encryption/decryption in the frontend (`e2ee_service.dart`)
+- AES-GCM encryption/decryption in the frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -306,7 +320,13 @@ file: <image/*>
 
 - Saved to `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Served statically at `/uploads/avatars/...`
-- Max size: 10 MB (applied by `RequestSizeLimitMiddleware`)
+- Max size: 5 MB for images (`MAX_IMAGE_SIZE` in `routers/uploads.py`); the global body limit remains 10 MB
+
+### All uploads
+
+- The `avatar`, `thumbnail`, `video`, `document` and `chat-image` endpoints return a relative path `/uploads/<folder>/<file>`; the client resolves it with `resolveMediaUrl()` against the active node.
+- If the content-type is missing or arrives as `application/octet-stream`, `uploads._sniff_content_type()` detects the type by magic bytes (JPEG, PNG, GIF, WebP, PDF and MP4); the 400 error says `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` and `thumbnail_url` use the `MediaUrl` type: they accept relative paths (and an empty string) or valid http(s) URLs; an invalid URL returns 422.
 
 ---
 
@@ -338,15 +358,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Test configuration** (`pyproject.toml` / `pytest.ini`):
+**Test configuration** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Async tests use `pytest.mark.asyncio`; there is no global `asyncio_mode`.
 
 **Fixtures** (`tests/conftest.py`):
 - `db_session` — in-memory SQLite session
@@ -373,9 +394,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -462,7 +483,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -527,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

@@ -29,84 +29,85 @@ Kontsultatu `../start.ps1` abiarazleetarako `--dev`, `--final`, `--web` flag-eki
 
 ```
 lib/
-├── screens/           # pantallas UI
+├── screens/           # UI pantailak
 │   ├── auth/          # Login
-│   ├── festivals/     # Lista, perfil, crear festival
-│   ├── users/         # Perfil, directorio, crear usuario, roles
-│   ├── shortfilms/    # Lista, perfil, crear cortometraje
-│   ├── chat/          # Chat, canales, crear canal
-│   ├── events/        # Gestión y detalle de eventos, asientos/reservas
+│   ├── festivals/     # Zerrenda, profila, sortu jaialdia
+│   ├── users/         # Profila, direktorioa, sortu erabiltzailea, rolak
+│   ├── shortfilms/    # Zerrenda, profila, sortu laburmetraia
+│   ├── chat/          # Txata, kanalak, sortu kanala
+│   ├── events/        # Ekitaldien kudeaketa eta xehetasuna, eserlekuak/erreserbak
 │   ├── awards/        # Palmarés
-│   ├── notifications/ # Centro de notificaciones
-│   ├── locations/     # Mapa, detalle de localización
-│   ├── forms/         # Formularios de registro, editor de páginas, respuestas, formularios públicos
-│   ├── admin/         # Panel de administración
-│   ├── committees/    # Comités
-│   └── settings/      # Configuración del backend, miembro del directorio, dashboard
-├── services/          # 17 servicios + api/ (9 dominios) + chat_backend (4 clases)
-│   ├── api_service.dart              # Fachada + núcleo (auth, transporte, admin, búsqueda)
-│   ├── api/                          # Métodos por dominio (part of api_service.dart)
+│   ├── notifications/ # Jakinarazpen-zentroa
+│   ├── locations/     # Mapa, kokapenaren xehetasuna
+│   ├── forms/         # Izen-emate formularioak, orri-editorea, erantzunak, formulario publikoak
+│   ├── admin/         # Administrazio-panela
+│   ├── committees/    # Batzordeak
+│   └── settings/      # Backendaren konfigurazioa, direktorioko kidea, panela
+├── services/          # 17 zerbitzu + api/ (13 domeinu) + chat_backend (4 klase)
+│   ├── api_service.dart              # Fatxada + nukleoa (auth, garraioa, admin, bilaketa)
+│   ├── api/                          # Domeinuko metodoak (api_service.dart-en partea)
 │   │   ├── user_api.dart, festival_api.dart, channel_api.dart, form_api.dart
 │   │   ├── calendar_api.dart, catalog_api.dart, org_api.dart
 │   │   ├── event_api.dart, location_api.dart
-│   ├── auth_service.dart             # JWT, persistencia de sesión
-│   ├── backend_config.dart           # URL del backend (guardada > dart-define > default por plataforma)
-│   ├── channel_service.dart          # Canales de chat + claves E2EE
-│   ├── connectivity_monitor.dart     # Detección online/offline
-│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + compresión, con isolates async
-│   ├── database_service.dart         # Inicialización de Hive + adaptadores de tipos
-│   ├── file_downloader.dart          # Descarga nativa (condicional web/io)
-│   ├── locale_service.dart           # Persistencia de idioma (SharedPreferences)
-│   ├── notification_service.dart     # Recordatorios: plugin en escritorio, Notification API en web, no-op en móvil
-│   ├── notification_platform.dart    # Export condicional web/stub (sin Firebase)
-│   ├── offline_cache_service.dart    # Cajas Hive (festivals, users, shortfilms, messages)
-│   ├── sync_queue_service.dart       # Cola offline con retry + backoff (max 3 intentos)
-│   └── chat_backend/                 # Abstracción WS + REST del chat
+│   ├── auth_service.dart             # JWT, saioaren iraunkortasuna
+│   ├── backend_config.dart           # Backendaren URLa (gordeta > dart-define > plataformaren lehenetsia)
+│   ├── channel_service.dart          # Txat-kanalak + E2EE giltzak
+│   ├── connectivity_monitor.dart     # Online/offline detekzioa
+│   ├── crypto_utils.dart             # E2EE (ECDH P-256, AES-GCM) + konpresioa, isolate asynkoekin
+│   ├── database_service.dart         # Hive-aren hasieratzea + mota-egokitzaileak
+│   ├── file_downloader.dart          # Deskarga natiboa (web/io baldintzatuta)
+│   ├── locale_service.dart           # Hizkuntzaren iraunkortasuna (SharedPreferences)
+│   ├── notification_service.dart     # Gogorarazleak: plugin mahaigainean, Notification API webean, no-op mugikorrean
+│   ├── notification_platform.dart    # Web/stub esportazio baldintzatua (Firebase gabe)
+│   ├── offline_cache_service.dart    # Hive kutxak (festivals, users, shortfilms, messages)
+│   ├── sync_queue_service.dart       # Linea offline retry + backoff-ekin (gehienez 3 saiakera)
+│   └── chat_backend/                 # Txataren WS + REST abstrakzioa
 │       ├── abstract_chat_backend.dart
-│       ├── chat_service.dart         # Fachada WS/REST/E2EE
-│       ├── rest_chat_backend.dart    # Historial/sync vía REST (usado como fake en tests)
-│       └── websocket_chat_backend.dart  # Tiempo real vía WebSocket
-├── models/            # 24 modelos Dart (manuales fromJson/toJson + Hive codegen)
-├── widgets/           # 24 widgets reutilizables accesibles
+│       ├── chat_service.dart         # WS/REST/E2EE fatxada
+│       ├── rest_chat_backend.dart    # Historia/sync REST bidez (testetan fake gisa erabilia)
+│       └── websocket_chat_backend.dart  # Denbora erreala WebSocket bidez
+├── models/            # 24 Dart ereduak (eskuzko fromJson/toJson + Hive codegen)
+├── widgets/           # 33 widget berrerabilgarri irisgarriak
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
-│   ├── chat_bubble.dart          # Burbuja de mensaje + contenido enriquecido
-│   ├── chat_input_bar.dart       # Barra de entrada del chat
-│   ├── confirm_dialog.dart       # Diálogo de confirmación accesible
+│   ├── chat_bubble.dart          # Mezu-burbuila + eduki aberatsa
+│   ├── chat_input_bar.dart       # Txataren sarrera-barra
+│   ├── confirm_dialog.dart       # Berrespen-elkarrizketa irisgarria
 │   ├── dav_subscription_section.dart
-│   ├── emoji_picker.dart         # Selector de emojis en bottom sheet
-│   ├── empty_state_widget.dart   # Estado vacío accesible
-│   ├── error_state_widget.dart   # Estado de error con reintento
+│   ├── emoji_picker.dart         # Emoji-hautatzailea bottom sheet-ean
+│   ├── empty_state_widget.dart   # Egoera hutsa irisgarria
+│   ├── error_state_widget.dart   # Errore-egoera birsaioarekin
 │   ├── event_visibility_picker.dart
-│   ├── festival_sections.dart    # Secciones de bases y localizaciones del festival
-│   ├── film_location_card.dart   # Tarjeta de rodaje en localización
+│   ├── festival_sections.dart    # Jaialdiaren arau eta kokapen atalak
+│   ├── film_location_card.dart   # Errodaje-kokapenaren txartela
 │   ├── language_picker.dart
-│   ├── list_item_animation.dart  # Animación de entrada de filas
-│   ├── loading_skeleton.dart     # Skeleton de carga (shimmer)
-│   ├── location_badge_chip.dart  # Chip con localización
+│   ├── list_item_animation.dart  # Lerroen sarrera-animazioa
+│   ├── loading_skeleton.dart     # Karga-skeletona (shimmer)
+│   ├── location_badge_chip.dart  # Kokapen-txipa
 │   ├── location_cards.dart       # LocationCard, LegacyCard, LocationFormScreen
-│   ├── location_selector.dart    # Selector de localizaciones
-│   ├── location_tag_editor.dart  # Editor de etiquetas de localización
+│   ├── location_selector.dart    # Kokapen-hautatzailea
+│   ├── location_tag_editor.dart  # Kokapen-etiketen editorea
 │   ├── login_prompt_sheet.dart
-│   ├── map_picker.dart           # Mapa de selección de punto
+│   ├── map_picker.dart           # Puntu-hautapeko mapa
 │   ├── open_in_maps_action.dart
-│   ├── seat_map_widget.dart      # Mapa de asientos interactivo
+│   ├── seat_map_widget.dart      # Eserleku-mapa interaktiboa
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
 ├── l10n/              # AppLocalizations + 9 ARB
-├── main.dart          # Entry point, tema Material 3, orden de init de servicios
+├── main.dart          # Sarrera-puntua, Material 3 gaia, zerbitzuen hasieratze-ordena
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
-└── auth_wrapper.dart  # Gate de autenticación (splash → login / home)
+└── auth_wrapper.dart  # Autentifikazio-atea (splash → login / home)
 ```
 
 ## Zerbitzuen hasieratze-ordena (main.dart)
 
 ```dart
-await DatabaseService.init();           // Cajas Hive
-await OfflineCacheService.init();       // Cargar datos en caché
-await SyncQueueService.init();          // Mutaciones pendientes
-await ConnectivityMonitor.start();      // Empezar a escuchar la red
-await LocaleService.load();             // Cargar idioma guardado
-// Después runApp()
+await DatabaseService.init();           // Hive kutxak
+await OfflineCacheService.init();       // Kargatu cacheko datuak
+await SyncQueueService.init();          // Zain dauden mutazioak
+await NodeService().load();             // Nodo federatuen zerrenda kargatu
+await ConnectivityMonitor.start();      // Sarea entuten hasi
+await LocaleService.load();             // Gordetako hizkuntza kargatu
+// Ondoren runApp()
 ```
 
 ## Egoera-kudeaketako eredua
@@ -139,10 +140,11 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 3. **Idazketa**: mutazioak `SyncQueueService`-n ilaratzen dira (HMAC-ekin sinatuta)
 4. **Sync**: konektibitatea berreskuratzean, `SyncQueueService`-k ilara sekuentzialki erreproduzitzen du
 5. **Gatazken ebazpena**: zerbitzariak irabazten du (last-write-wins timestamp-arekin)
+6. **Nodo-jatorria**: Hive cache-ak nodo bakoitzaren jatorria gordetzen du; `reconcile`-k berriro konektatzean batzen du eta `clearOrigin`-ek nodo bat baztertzen du. Nodo batzuek erantzuten ez badute baina nagusiak bai, `DegradedNodesBanner` agertzen da kopuruarekin eta birkargatzeko botoiarekin.
 
 ## Internazionalizazioa (i18n)
 
-- **9 locale**: en, es, fr, de, it, ca, eu, gl, oc
+- **9 locale**: en, es, fr, de, it, ca, eu, gl, oc (823 gako hizkuntzako, paritatea `test/l10n/arb_parity_test.dart`-ekin egiaztatuta)
 - **Eskuzko inplementazioa**: `lib/l10n/app_localizations.dart` (gen-l10n gabe)
 - **ARB fitxategiak**: `assets/l10n/app_<locale>.arb`
 - **Auto-detekzioa**: `LocaleService`-k sistemaren hizkuntza irakurtzen du, fallback `en`-era
@@ -165,16 +167,16 @@ AppLocalizations.of(context)!.roles['admin']
 
 ## Irisgarritasuna (WCAG 2.1 AA)
 
-| Patrón | Uso |
+| Eredua | Erabilera |
 |---------|-------|
-| `Semantics` | instancias para lectores de pantalla |
-| `SemanticHeader` | Encabezados de sección (`header: true`) |
-| `SemanticTextField` | Campos de formulario con semántica de validación |
-| `ExcludeSemantics` | iconos decorativos |
-| `Tooltip` | elementos interactivos |
+| `Semantics` | pantaila-irakurgailuentzako instantziak |
+| `SemanticHeader` | Atal-buruak (`header: true`) |
+| `SemanticTextField` | Balioztatze-semantikadun formulario-eremuak |
+| `ExcludeSemantics` | ikono dekoratiboak |
+| `Tooltip` | elementu interaktiboak |
 | `SnackBarBehavior.floating` | snackbars |
-| `autovalidateMode: onUserInteraction` | Formularios |
-| `TextInputAction.next/done` + `onSubmitted` | Navegación por teclado |
+| `autovalidateMode: onUserInteraction` | Formularioak |
+| `TextInputAction.next/done` + `onSubmitted` | Teklatuzko nabigazioa |
 
 ### Widget berrerabilgarri irisgarriak
 
@@ -220,32 +222,32 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 # Web
 flutter build web --dart-define=BACKEND_URL=https://api.clakettes.com/api
 
-# Escritorio
+# Mahaigaina
 flutter build windows
 flutter build linux
 flutter build macos
 
-# Móvil
+# Mugikorra
 flutter build apk        # APK Android
 flutter build appbundle  # AAB Android (Play Store)
-flutter build ios        # iOS (requiere macOS + Xcode)
+flutter build ios        # iOS (macOS + Xcode behar ditu)
 ```
 
 ## Mendekotasunak (giltzarriak)
 
-| Paquete | Propósito |
+| Paketea | Helburua |
 |---------|-----------|
-| `http` | Cliente REST API |
-| `hive_flutter` | Caché offline |
-| `shared_preferences` | Persistencia de locale y token de auth |
-| `connectivity_plus` | Detección de red |
-| `web_socket_channel` | Chat en tiempo real |
+| `http` | REST API bezeroa |
+| `hive_flutter` | Cache offline |
+| `shared_preferences` | Locale eta auth tokenaren iraunkortasuna |
+| `connectivity_plus` | Sare-detekzioa |
+| `web_socket_channel` | Denbora errealeko txata |
 | `pointycastle` | E2EE X25519/AES-GCM |
-| `flutter_map` + `latlong2` | Mapas |
+| `flutter_map` + `latlong2` | Mapak |
 | `geolocator` | GPS |
-| `flutter_local_notifications` | Notificaciones locales |
-| `url_launcher` | Enlaces externos (mapas, web) |
-| `uuid` | IDs del lado del cliente |
+| `flutter_local_notifications` | Jakinarazpen lokalak |
+| `url_launcher` | Kanpo-estekak (mapak, web) |
+| `uuid` | Bezero-aldeko IDak |
 
 ## Kode-sorkuntza (Hive)
 
@@ -258,10 +260,10 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ## Testing-a
 
 ```bash
-# Tests unitarios + de widgets
+# Unit + widget testak
 flutter test
 
-# Tests de integración (requiere dispositivo/emulador)
+# Integrazio-testak (gailua/emuladorea behar da)
 flutter test integration_test/
 ```
 
@@ -284,14 +286,14 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 archivos ARB
+│   ├── l10n/                # 9 ARB fitxategi
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
-│   ├── models/              # modelos Dart (Hive + codegen)
-│   ├── screens/             # pantallas
-│   ├── widgets/             # widgets reutilizables
-│   ├── services/            # servicios + api/ + chat_backend
+│   ├── models/              # Dart ereduak (Hive + codegen)
+│   ├── screens/             # pantailak
+│   ├── widgets/             # widget berrerabilgarriak
+│   ├── services/            # zerbitzuak + api/ + chat_backend
 │   ├── main.dart
 │   ├── main_scaffold.dart
 │   └── auth_wrapper.dart
@@ -305,8 +307,8 @@ frontend/
 
 ```powershell
 cd frontend/docker
-.\build.ps1 -Target all      # Todas las plataformas
-.\build.ps1 -Target web      # Solo web
+.\build.ps1 -Target all      # Plataforma guztiak
+.\build.ps1 -Target web      # Web soilik
 ```
 
 Dockerfile multi-etapa:
@@ -315,20 +317,20 @@ Dockerfile multi-etapa:
 
 ## Ingurune-aldagaiak
 
-| Variable | Descripción | Default |
+| Aldagaia | Deskribapena | Lehenetsia |
 |----------|-------------|---------|
-| `BACKEND_URL` | URL base de la API (vía `--dart-define`) | `http://localhost:8000/api` |
-| `CHROME_EXECUTABLE` | Navegador para `flutter run -d chrome` | Auto-detectado (Brave/Chrome) |
+| `BACKEND_URL` | APIaren oinarrizko URLa (`--dart-define` bidez) | `http://localhost:8000/api` |
+| `CHROME_EXECUTABLE` | `flutter run -d chrome`-rako nabigatzailea | Automatikoki detektatuta (Brave/Chrome) |
 
 ## Arazoen konponbidea
 
-| Problema | Solución |
+| Arazoa | Irtenbidea |
 |----------|----------|
-| `flutter pub get` falla | Borra `.dart_tool`, `pubspec.lock` y repite |
-| Conflictos de tipos Hive | `flutter pub run build_runner build --delete-conflicting-outputs` |
-| Fallo de conexión WebSocket | Comprueba `BACKEND_URL`; asegúrate de que el backend expone `/ws/chat` |
-| El idioma no persiste | Limpia `SharedPreferences`, comprueba `LocaleService.load()` |
-| El modo oscuro no aplica | Asegúrate de `ThemeMode.system` o `ThemeMode.dark` explícito en `MaterialApp` |
+| `flutter pub get` huts egiten du | Ezabatu `.dart_tool`, `pubspec.lock` eta saiatu berriro |
+| Hive moten gatazkak | `flutter pub run build_runner build --delete-conflicting-outputs` |
+| WebSocket konexio-errorea | Egiaztatu `BACKEND_URL`; ziurtatu backend-ek `/ws/chat` erakusten duela |
+| Hizkuntzak ez du irauten | Garbitu `SharedPreferences`, egiaztatu `LocaleService.load()` |
+| Modu iluna aplikatzen ez bada | Ziurtatu `ThemeMode.system` edo `ThemeMode.dark` esplizitua `MaterialApp`-en |
 
 ## Laguntzea
 

@@ -27,19 +27,24 @@
 | Chat-Gruppe | Rolle `admin` der Gruppe zum Löschen; Mitglied zum Lesen |
 | Formular | `require_form_admin` (Ersteller/Admin/Organizer) |
 | Delegation | Delegierender oder Admin zum Bearbeiten/Widerrufen |
-| Globale Rollen | `is_admin`; Auto-Join nur mit Rolle `attendee` |
+| Globale Rollen | `require_admin(user, db)` vereinheitlicht: Legacy-Rolle `admin` (case-insensitive) oder `UserRole` mit Status `ACTIVE`/`APPROVED`; Auto-Join nur mit Rolle `attendee` |
+| Nutzer-Aliase | `require_self_or_admin` (Eigentümer oder Admin) bei create/update/delete |
+| Nutzer-Blockierungen | `require_owner_or_admin` (Eigentümer oder `can_edit_user`) bei block/unblock/list/status |
 | Kanalrollen | `Literal[admin,moderator,member]` (422 außerhalb der Liste) |
 | Zahlungen | Eigentümer über Anmeldung, Festival-Admin oder globaler Admin; Mock-Webhook mit `MOCK_WEBHOOK_SECRET` |
 
 ## Zahlungen
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). Keine PAN/IBAN in DB: nur Betrag, Währung, `provider_ref` und Status.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` als Standard in `backend/app/config.py`). Keine PAN/IBAN in DB: nur Betrag, Währung, `provider_ref` und Status.
 - Stripe: Lazy-SDK + Signaturverifizierung (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: HMAC_SHA256_V1-Signatur ohne SDK; Bizum mit `pay_methods="z"` (vorherige Händlerregistrierung). Gegen Sandbox vor Prod validieren.
+- `confirm` und `refund` synchronisieren `FestivalRegistration.payment_status` (`paid`/`refunded`) und bei paid `paid_at`/`payment_method`/`transaction_id`; der `provider` des Payment wird vom aktiven Provider übernommen, nicht von `PAYMENTS_PROVIDER`.
+- **Aktueller Status**: Stripe und Redsys sind noch NICHT betriebsbereit; ihre Webhooks müssen noch verdrahtet werden (`POST /api/payments/webhook/{stripe,redsys}`). Derzeit funktioniert nur der simulierte Webhook (`POST /api/payments/webhook/mock`).
+- Das `confirm` von Redsys gibt immer `"pending"` zurück: es bestätigt keine echten Zahlungen, bis der Webhook verdrahtet ist.
 
 ## Perimeter
 
-- Rate-Limit SQLite 100/60s pro IP (`/dav` 600/60s); `TESTING=true` schaltet es aus.
+- SQLite-Rate-Limit 100/60 s global pro IP, 600/60 s in `/dav`, 5/300 s Login, 20/60 s Refresh und 3/300 s Reset und 60/60 s in der Föderation. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) schaltet alle Limits und die Auto-Migration ab.
 - Header: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, strenge `Content-Security-Policy` in der API (entspannt nur auf `/docs`), `HSTS` nur in Produktion.
 - Körper ≤10 MB (413). CORS mit Credentials und expliziten Ursprüngen.
 - MariaDB in Produktion erfordert TLS (`?ssl_ca=…` in `DATABASE_URL`).
@@ -51,10 +56,14 @@
 3. TLS mit Proxy + `FORWARDED_ALLOW_IPS`; kein Admin `setup` (nur außerhalb von Prod erstellt).
 4. `appUserModelId`/GUID der Windows-Benachrichtigungen ändern, wenn App umbenannt wird.
 
-## Föderation (Phase 2)
+## Föderation (Phasen 2-10)
 
-- Knotenidentität = Domain + TLS-Zertifikat.
-- Gegenseitiges Peering via mTLS mit Domain-Zertifikaten (öffentliche oder private CA).
-- TLS obligatorisch zwischen Knoten; strikte Validierung (keine selbstsignierten in Prod).
-- Rotation/Widerruf wird durch Zertifikatserneuerung verwaltet. Ein kompromittierter Knoten wird widerrufen durch Invalidierung seines Zertifikats und seines Verzeichniseintrags.
-- `allowlist`/`blocklist` pro Knoten (`node_policies`). Rate-Limiting und Anti-Flood am Föderationsrand. Verbreitung von Moderationsberichten zwischen Knoten.
+Vollständige Details in [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Geltende Kontrollen:
+
+- Knotenidentität = Domain + TLS-Zertifikat. Gegenseitiges Peering via mTLS mit Domain-Zertifikaten (öffentliche oder private CA); TLS obligatorisch, keine selbstsignierten in Prod.
+- RSA-SHA256-signiertes Manifest mit eigenem PEM/Schlüssel und `expires_at` von 24 h; `whoami` erfordert föderiertes JWT; JWKS zur Verifikation von Peer-Tokens; `peers/verify` und `peers/revoke`.
+- `allowlist`/`blocklist` pro Knoten (`node_policies`), mit `import_only`, `disable_chat` und `disable_search`. Rate-Limiting und Anti-Flood am Rand; Verbreitung von Moderationsberichten.
+- Portabilität: HMAC-signierte Bundles mit Checksum; der Import validiert/saniert `MediaUrl` und normalisiert `contest_type`; Migration von Festivals und Identitäten mit `identity_redirects` und Audit in `migration_audits`; die Migrations-Endpoints erfordern Admin.
+- Föderierter Chat: RS256-signierte Bridge, Deduplizierung nach `message_id` in `chat_outbox`, Sortierung nach `timestamp`; Meldungen und Mutes, Wortfilter und Limit von 10 Nachrichten/60 s pro Knoten und Nutzer.
+- Ereignisse: HMAC-signiertes Publishing (`X-Clakettes-Signature`), SSE mit obligatorischem `token` in der Query, `since` und `limit` optional, Replay von 200 und 3 Wiederholungen mit Backoff.
+- Resilienz: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), Schlüssel-Widerruf (`keys/revoke`) und Incident-Plan in 8 Schritten. Rotation/Widerruf durch Zertifikatserneuerung; ein kompromittierter Knoten wird im Verzeichnis invalidiert.

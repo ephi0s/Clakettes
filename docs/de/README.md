@@ -4,7 +4,7 @@ Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er ist so aufgeb
 
 ## Sprachen
 
-Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (kanarisch) ist kanonisch:
+Die 18 gemeinsamen Dokumente existieren in den 9 Sprachen der Plattform; in `docs/es/` gibt es zusätzlich zwei spezifische Analysen (`AMENAZAS_NODOS_FEDERACION.md` und `MODELO_CONFIANZA_NODOS.md`). Spanisch (kanarisch) ist kanonisch:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Navigation in der Dokumentation
@@ -41,7 +41,9 @@ Die gesamte Dokumentation existiert in den 9 Sprachen der Plattform. Spanisch (k
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Föderationsprotokoll zwischen Knoten (Phasen 2 bis 10) | Dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (minimale föderierte Entitäten) | Dev |
 | [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Föderiertes Vertrauensmodell, mTLS, signiertes Manifest, Portabilität, Chat und Resilienz | Dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Broker-Entscheidung (NATS JetStream) für Chat und Ereignisse zwischen Knoten; Edge-WebSocket und Single-Node-Fallback | Dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Broker-Entscheidung (NATS JetStream) für Chat und Ereignisse zwischen Knoten; heute implementierter Transport: `DurableQueueBackend` über `chat_outbox` mit Edge-WebSocket | Dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Bedrohungsmodell föderierter Knoten (nur auf Spanisch) | Dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Vertrauensmodell zwischen Knoten (nur auf Spanisch) | Dev |
 
 ## Empfohlener Pfad nach Profil
 

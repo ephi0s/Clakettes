@@ -1,6 +1,6 @@
 # Clakettes Backend — Documentacion tecnica
 
-[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](../gl/BACKEND.md) · [CA](BACKEND.md) · [OC](BACKEND.md)
+[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](../gl/BACKEND.md) · [OC](BACKEND.md)
 
 Backend FastAPI per la plataforma de gestion de festivals de cinema Clakettes.
 
@@ -59,6 +59,17 @@ Tota la configuracion fa per `backend/.env` (carregat per `pydantic-settings`):
 | `JWT_AUDIENCE` | `clakettes-api` | Reclamacio audiencia JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | TLL del token d'acces |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Origenes permises separades per comes |
+| `APP_ENV` | `development` | `production` exegís `SECRET_KEY` robusta, origines CORS explicits e esquèma via Alembic |
+| `TESTING` | desactivat | `1/true/yes/on` desactiva los rate limits e l'auto-migracion (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Origina publica del nose (manifest, bundles, ICS absolut) |
+| `MTLS_REQUIRED` | `False` | Exegís mTLS verificat en `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | CA raíç per validar los certificats dels clients |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Certificat e clau pròpris (signatura del manifest RSA-SHA256) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | Fichièr SQLite per lo limitador de peticions |
+| `SKIP_AUTO_MIGRATE` | desactivat | `1/true/yes/on` omet `alembic upgrade head` a l'arrancada |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, void, `False` | Proveïdor de pagaments mock e secret de webhook |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | void | Credencialas Stripe (SDK perezos) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, void, `True`, `978` | Signatura HMAC Redsys e sandbox |
 | `PORT_BACKEND` | `8000` | Port del servidor (usat per Docker/scripts d'arrancada) |
 
 **Exemple de `.env` per a productiu:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Hash de contrasenias
 
-- **bcrypt** via `passlib` (rounds=12)
+- **bcrypt** direct (`bcrypt.hashpw` + `bcrypt.gensalt()`), sens `passlib`
 - Hash emmagatzemat en `User.password_hash`
-- Verificat via `pwd_context.verify(plain, hash)`
+- Verificat via `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Limite de peticions
 
 - **100 peticions / 60 segons** per IP (copia de seguretat en SQLite)
 - Aplicat per `RateLimitMiddleware` en `main.py`
-- Desactivat quan s'estableix la variable d'entorn `TESTING=true`
+- Se desactiva amb `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), compres lo limitador de refresh 20/60 s dins `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, perfil, pujada d'avatar |
 | `auth` | `/api/users` | auth | Inici de sessio, renovacio, registre |
 | `auth_sessions` | `/api/auth` | auth | Llista/revocacio de sessions |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, vinculacio festival  CRUD sota `/api/festivals/{id}/shortfilms`; la lista plana es obsolescenta |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD dins `/api/festivals/{festival_id}/shortfilms` (GET/POST de lista e GET/PUT/DELETE de detalh, filtre `?contest_type=`); los 5 endpoints plans demoran disponibles mas marcats `deprecated=True` |
 | `chat` | `/api/chat` | chat | Missatges, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Unir-se/sortir, membres |
-| `uploads` | `/api/uploads` | uploads | Pujada d'avatar |
+| `uploads` | `/api/uploads` | uploads | Pujada multipart d'avatar, thumbnail, vidèo, document e imatge de chat; torna rotas relativas `/uploads/...` |
 | `search` | `/api/search` | search | Cerca global |
 | `admin` | `/api/admin` | admin | Estadistiques, taules, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, comptador de no llegits |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Relacions de ubicacio |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Ubicacions de curtmetratge |
 | `form_definitions` | `/api` | forms | Constructor de formulari |
-| `federation` | `/api/federation` | federation | manifest, directori, nodes, informes, webfinger |
+| `federation` | `/api/federation` | federation | manifest, directòri, noses, rapòrts, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | Bridge de chat signat RS256, config e messatges |
+| `federation_events` | `/api/federation/events` | federation-events | SSE amb `token` obligatòri, publicacion e reensaj |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, imports, migracion e redireccions |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Santat, batement, metricas, revocacion e incident |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Rapòrts, silencis, moderacion e limitas |
 | `jury_votes` | `/api` | jury-votes | Vot del jurat (fasa 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, configuracio |
 | `badges` | `/api` | badges | Insignies, assignacions, elegibilitat |
 | `posts` | `/api` | posts | Publicacions socials, respostes, moderacio |
 | `payments` | `/api` | payments | Pagar, confirmar, reembolsar, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Reguladors del festival |
-| `user_blocks` | `/api` | user-blocks | Bloc d'usagis |
-| `moderation_reports` | `/api` | moderation-reports | Informes de moderacio |
-| `node_policies` | `/api` | node-policies | Politiques de nodes de federacio |
+| `user_blocks` | `/api` | user-blocks | Blocatge d'usagis (proprietari o admin) |
 
 
 
@@ -268,7 +282,7 @@ Somiatge de resposta:
 | `GET` | `/api/chat/ws` | Connexio WebSocket (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Enviar missatge (fallback REST) |
 | `GET` | `/api/chat/messages` | Historial paginat |
-| `PATCH` | `/api/chat/messages/{id}/read` | Marcar com llegit |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Marcar com llegit |
 
 ### Tipus de missatge
 
@@ -286,9 +300,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- Intercanvi de claus X25519 a través de `/api/users/{id}/keys`
+- Intercanvi de claus ECDH P-256 a través de `POST /api/users/me/public-key` e `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Claus publices emmagatzemades en `UserKey` (una clau activa per usagi)
-- Xifrat/desxifrat al frontend (`e2ee_service.dart`)
+- Xifrat/desxifrat AES-GCM al frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -306,7 +320,13 @@ file: <image/*>
 
 - Desat a `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Servit de manera estatica a `/uploads/avatars/...`
-- Mida maxima: 10 MB (aplicat per `RequestSizeLimitMiddleware`)
+- Mida maxima: 5 MB per a imatges (`MAX_IMAGE_SIZE` dins `routers/uploads.py`); lo limit global del còs demora 10 MB
+
+### Totas las pujadas
+
+- Los endpoints `avatar`, `thumbnail`, `video`, `document` e `chat-image` tornan una rota relativa `/uploads/<carpeta>/<archivo>`; lo client la resòlv amb `resolveMediaUrl()` contra lo nose actiu.
+- Se lo content-type manca o arriba `application/octet-stream`, `uploads._sniff_content_type()` detecta lo tipe pels magic bytes (JPEG, PNG, GIF, WebP, PDF e MP4); l'error 400 indica `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` e `thumbnail_url` utilizan lo tipe `MediaUrl`: acceptan de rotas relativas (e cadena voida) o d'URLs http(s) validas; una URL invalida torna 422.
 
 ---
 
@@ -338,15 +358,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Configuracio de provades** (`pyproject.toml` / `pytest.ini`):
+**Configuracio de provades** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Las provadas asincronas utilizan `pytest.mark.asyncio`; i a pas de `asyncio_mode` global.
 
 **Fixures** (`tests/conftest.py`):
 - `db_session` — sessio SQLite en memoria
@@ -373,9 +394,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -427,34 +448,6 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Estructura del projècte
-
-```
-backend/
-├── app/
-│   ├── models/              # 40 models SQLAlchemy (+ base.py)
-│   ├── schemas/             # 37 esquemes Pydantic
-│   ├── services/            # 43 serveis de logica de negocis
-│   ├── routers/             # 40 routers API (38 amb APIRouter)
-│   ├── chat_backend/        # Implementacio WebSocket de xat
-│   ├── auth.py              # JWT + autenticacio de sessio
-│   ├── config.py            # Pydantic Settings
-│   ├── database.py          # Motor, SessionLocal, get_db()
-│   ├── main.py              # Aplicacio FastAPI, middleware, routers
-│   ├── rate_limiter.py      # Limitador de velocitat SQLite
-│   ├── enums.py             | Enums compartits
-│   └── scripts/             # Scripts de seed/migracio
-├── alembic/                 # Migracions
-├── tools/                   # Scripts d'exportacio/importacio
-├── tests/                   # Provades pytest
-├── uploads/                 | Fitxers pujats estatics
-├── .env.example             | Plantilla de configuracio
-├── requirements.txt         | Dependencies de productiu
-├── requirements-dev.txt     | Dependencies de desenvolupament (pytest, ruff)
-├── pyproject.toml           | Configuracio Ruff, pytest
-└── pytest.ini               | Configuracio pytest
-```
-
 Documentacion a `docs/oc/BACKEND.md` (aquest fitxer) e `docs/oc/DATABASE.md`.
 
 ---
@@ -490,7 +483,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -555,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

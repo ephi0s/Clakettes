@@ -1,8 +1,10 @@
 # Chat eta gertaeretarako brokeraren ebaluazioa: MQTT 5 vs NATS JetStream
 
-[EU](FEDERATION_CHAT_BROKER.md)
+[ES](../es/FEDERATION_CHAT_BROKER.md) · [EN](../en/FEDERATION_CHAT_BROKER.md) · [FR](../fr/FEDERATION_CHAT_BROKER.md) · [DE](../de/FEDERATION_CHAT_BROKER.md) · [IT](../it/FEDERATION_CHAT_BROKER.md) · [CA](../ca/FEDERATION_CHAT_BROKER.md) · [EU](FEDERATION_CHAT_BROKER.md) · [GL](../gl/FEDERATION_CHAT_BROKER.md) · [OC](../oc/FEDERATION_CHAT_BROKER.md)
 
 Dokumentu honek Clakettesen nodoen arteko chat eta gertaeren hedapenerako zein garraio erabili behar den egiteko dagoen ebaluazioa ixten du. Erabakia Fase 8rako (chat federatu-ilara gisa) loteslea da, eta `docs/es/ARQUITECTURA.md`en deskribatutako WebSocket backendarekin batera bizi da.
+
+**Inplementazio-egoera (6-10 faseak):** erabakiak NATS JetStream hartzen du helmuga gisa, baina gaur egun ekoizpeneko garraio iraunkorra `DurableQueueBackend` da `chat_outbox` taulan WebSocket ordezkariarekin. Migrazio-planerako `NATS_*` aldagaiak eta `CHAT_BACKEND` flag-a **oraindik ez dira existitzen** `.env.example`-n ezta `app/config.py`-n ere: `/api/federation/chat/bridge/config`-ek aurreikusitako helmugaren berri soilik ematen du (`"transport": "nats-jetstream"`).
 
 ## Pisatutako irizpideak
 

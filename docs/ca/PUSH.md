@@ -4,11 +4,11 @@
 
 Sense Firebase ni proveïdors externs. Estratègia per plataforma:
 
-| Plataforma | Mecanismo | Estado |
+| Plataforma | Mecanisme | Estat |
 |---|---|---|
-| Escritorio (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min antes) + permiso macOS al iniciar | Funcional con la app instalada |
-| Web | Notification API nativa (`notification_web.dart` vía `package:web`, sin deps nuevas) con temporizadores; pide permiso en `init` | Funcional con pestaña abierta |
-| Android/iOS | No soportado por decisión de producto (`_supported = false` en `init`) | No-op documentado |
+| Escriptori (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min abans) + permís macOS en iniciar | Funcional amb l'app instal·lada |
+| Web | Notification API nativa (`notification_web.dart` via `package:web`, sense deps noves) amb temporitzadors; demana permís a `init` | Funcional amb la pestanya oberta |
+| Android/iOS | No compatible per decisió de producte (`_supported = false` a `init`) | No-op documentat |
 
 ## Detalls d'implementació
 

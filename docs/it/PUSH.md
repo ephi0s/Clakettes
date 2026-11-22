@@ -4,11 +4,11 @@
 
 Senza Firebase né provider esterni. Strategia per piattaforma:
 
-| Plataforma | Mecanismo | Estado |
+| Piattaforma | Meccanismo | Stato |
 |---|---|---|
-| Escritorio (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min antes) + permiso macOS al iniciar | Funcional con la app instalada |
-| Web | Notification API nativa (`notification_web.dart` vía `package:web`, sin deps nuevas) con temporizadores; pide permiso en `init` | Funcional con pestaña abierta |
-| Android/iOS | No soportado por decisión de producto (`_supported = false` en `init`) | No-op documentado |
+| Desktop (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min prima) + permesso macOS all'avvio | Funzionale con l'app installata |
+| Web | Notification API nativa (`notification_web.dart` via `package:web`, senza nuove dipendenze) con timer; chiede il permesso in `init` | Funzionale con la scheda aperta |
+| Android/iOS | Non supportato per decisione di prodotto (`_supported = false` in `init`) | No-op documentato |
 
 ## Dettagli di implementazione
 

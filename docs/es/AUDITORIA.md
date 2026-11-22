@@ -13,11 +13,13 @@ Revisión de dependencias, optimizaciones aplicadas y deuda técnica pendiente d
 | Dep | Veredicto | Motivo |
 | --- | --- | --- |
 | fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Mantener | Núcleo del stack |
-| python-jose[cryptography] | Mantener por ahora, migrar a PyJWT en el futuro | Abandonado desde 2016, pero el cambio toca `app/auth.py` + `routers/dependencies.py` + tests; hacerlo en PR separado con tests de tokens |
-| python-dotenv | Mantener | Requerido por `pydantic-settings>=2` y `uvicorn[standard]` (`--env-file`); solo 2 scripts lo importan directamente, pero quitarlo rompería la carga de `.env` |
+| PyJWT==2.15.1 | Migración completada | `python-jose` eliminado; `app/auth.py` y `routers/dependencies.py` usan PyJWT (bump 2.10.1 → 2.15.0 → 2.15.1) |
+| python-dotenv | No incluida | No figura en `pyproject.toml`/`requirements*.txt` ni se importa en `backend/`; `pydantic-settings` carga `.env` directamente |
 | pymysql | Mantener como driver prod | Solo se usa con MariaDB; no cargarlo en dev no ahorra nada (import perezoso ya en SQLAlchemy) |
 | python-multipart, email-validator, bcrypt | Mantener | Uploads, validación email, hash passwords |
 | reportlab 5.1.0 | Mantener, pero con import perezoso (hecho) | Solo `export_service._build_pdf`; antes se importaba a nivel de módulo (~200 ms + memoria en cada worker). Ahora import dentro de la función. Además se sincronizó `pyproject.toml` (faltaba) y se pineó `==5.1.0` |
+
+**Versiones fijadas en `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major desde 6.21.x); desarrollo: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 
@@ -26,17 +28,17 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
 - `archive`: usado en `crypto_utils.dart` (ZLib/GZip). `dart:io` no vale porque rompe web.
 - `path_provider`: usado en `file_downloader_io.dart` (móvil/desktop).
 - `web`: usado en `file_downloader_web.dart`.
-- `pointycastle` + `crypto` + `uuid`: E2EE del chat (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher`: mapas.
+- `pointycastle` + `crypto`: E2EE del chat (ECDH P-256 + AES-GCM; el nombre `X25519` aparece solo en un campo heredado).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher`: mapas.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker`: cada uno con 1-2 usos, pero eliminarlos quitaría funcionalidad.
 
 ## 2. Optimizaciones aplicadas
 
 1. `export_service.py`: import reportlab perezoso en `_build_pdf` + docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 instancias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300s y `login`); no unificar sin perder límites distintos.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py`: 5 instancias `RateLimiter` (buckets `middleware:`/`dav:` + limiters de `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s y federación 60/60 s); no unificar sin perder límites distintos. El bypass pasa por `app.config.is_testing()` (`1/true/yes/on`).
 3. `base_service.py`: `paginate` fija `page>=1`, `size` en `[1,100]`; nuevo `paginate_filtered()` definido con 0 usos (pendiente migrar los `get_all_paginated` clonados).
 4. `routers/dependencies.py`: `get_current_user_optional` reutiliza `validate_access_token` (elimina líneas duplicadas JWT+sesión); fix `__import__("datetime")` → import normal; nuevo `get_or_404()` para reemplazar `HTTPException(404)` inline.
-5. `dav/auth.py`: documentada la relación con `app.auth._hash_token`.
+5. `dav/auth.py`: documentada la relación con `app.auth.hash_token` (antes `_hash_token`; se conserva el alias por compatibilidad).
 6. `pyproject.toml`/`requirements.txt` sincronizados (reportlab).
 7. `reusable_widgets.dart`: nuevo `showAppSnack()` para centralizar snackbars.
 
@@ -53,7 +55,7 @@ Todas las dependencias están en uso real; ninguna se pudo eliminar sin romper f
 9. CI: gate `ruff format --check` añadido (GH + GitLab).
 10. Seguridad (piloto `channels.py`): nuevo `require_channel_member`/`is_channel_member` en `permissions.py` y uso en `channels.py` + `chat.py`; `channels.py` migrado a `get_or_404`; whitelist de rol `Literal[admin,moderator,member]` en schemas (antes: string libre → 500 por CheckConstraint; ahora: 422).
 11. Seguridad: `POST /delegations/{id}/revoke` exigía solo auth — cualquiera revocaba delegaciones ajenas. Ahora verifica delegador o admin + test 403.
-12. `get_or_404` extendido a `committees.py`, `events.py`, `delegations` y 5 routers de localizaciones. Sin cambios de esquema: no hay migración Alembic pendiente por este lote.
+12. `get_or_404` extendido a `committees.py`, `events.py`, `delegations` y 5 routers de localizaciones. Este lote no introdujo migración; revisiones posteriores sí añadieron `a8b9c0d1e2f3` (unicidad de asiento) y `b9c0d1e2f3a4` (`contest_type` en cortos), ambas ya aplicadas en el head `b9c0d1e2f3a4`.
 13. Rendimiento: filtro `venue` de programación bajado a SQL (antes filtraba la página en Python y rompía `total`/`pages`).
 14. Frontend: guardas anti-doble-envío en crear festival/usuario/corto + SnackBars migrados a `showAppSnack`.
 15. Chat: E2EE fuera del UI thread — `_prepareContent`/`_unpackContent` usan `encryptAsync`/`decryptAsync` (isolates); nuevos `encryptSenderKeyAsync`/`decryptSenderKeyAsync` en difusión y recepción de sender keys. `RestChatBackend` se conserva: lo usa `chat_service_test` como fake.

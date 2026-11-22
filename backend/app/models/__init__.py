@@ -12,6 +12,7 @@ from app.models.role_group import RoleGroup, RoleGroupMembership
 from app.models.participant_tag import ParticipantTag, FestivalParticipantTag, ParticipantTagCategory
 from app.models.user_role import UserRole, UserParticipantTag, UserRoleStatus, UserRoleVisibility
 from app.models.user_alias import UserAlias, AliasContext, AliasVisibility
+from app.models.user_follow import UserFollow
 from app.models.committee import Committee, CommitteeMember
 from app.models.role_delegation import RoleDelegation
 from app.models.role_transition import RoleTransition
@@ -107,6 +108,7 @@ __all__ = [
     "UserAlias",
     "AliasContext",
     "AliasVisibility",
+    "UserFollow",
     "Committee",
     "CommitteeMember",
     "RoleDelegation",

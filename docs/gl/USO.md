@@ -34,7 +34,16 @@ Admin inicial (só non-prod): `admin` / `setup` — cambiar ao entrar.
 | `APP_ENV` | env | `development` crea admin + `create_all`; `production` esixe Alembic |
 | `PUBLIC_BASE_URL` | `backend/.env` | Dominio público do nodo; aparece no manifesto e nos bundles de portabilidade |
 | `MTLS_REQUIRED` | env | Obliga a peer mTLS verificado en federación (CN e PEM do certificado) |
+| `MTLS_CA_BUNDLE_PATH` | env | CA raíz para validar certificados de clientes federados |
 | `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | env | PEM do certificado e clave privada que asinan o manifesto (RSA-SHA256) |
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` desactiva os rate limits e a auto-migración; `SKIP_AUTO_MIGRATE` omite só a auto-migración |
+| `RATE_LIMITS_DB_PATH` | env | Ruta da BD SQLite de límites (por defecto `backend/rate_limits.db`) |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `ACCESS_TOKEN_EXPIRE_MINUTES` | env | Claims e TTL do JWT de acceso |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | env | Pasarela (`mock` por defecto) e segredos do webhook simulado |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `REDSYS_*` | env | Credenciais de pago reais; detalle en [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) |
+
+**Nota de pagos**: `PAYMENTS_PROVIDER=mock` é o valor por defecto (`backend/app/config.py`). Stripe e Redsys NON están operativos ata cablear os seus webhooks (`POST /api/payments/webhook/{stripe,redsys}`); hoxe só funciona o simulado. O `confirm` de Redsys devolve sempre `"pending"`.
+| `TESTING`, `SKIP_AUTO_MIGRATE` | env | `1/true/yes/on`: `TESTING` desactiva rate limits e auto-migración; `SKIP_AUTO_MIGRATE` omite só a auto-migración |
 
 ## Operación
 
@@ -43,7 +52,9 @@ Admin inicial (só non-prod): `admin` / `setup` — cambiar ao entrar.
 - **SQLite → MariaDB**: `export_sqlite_to_mariadb.py`; volta con `import_mariadb_to_sqlite.py` (detalle en [DATABASE.md](DATABASE.md)).
 - **Backups**: SQLite = copiar `*.db`; MariaDB = `mariadb-dump` (volume `db-data` en Docker).
 - **Logs**: stdout de uvicorn (tokens DAV xa redactados); erros de API en SnackBar + `debugPrint`.
-- **Límites**: corpos ≤10 MB (413 se maior); rate limit con 429 + reintento (federación 60/60 s por IP; chat 10/60 s por nodo e usuario, desactivado con `TESTING=true`).
+- **Límites**: corpos ≤10 MB (413 se maior); rate limit con 429 + reintento (global 100/60 s por IP, `/dav` 600/60 s, login 5/300 s, refresh 20/60 s, reset 3/300 s, federación 60/60 s; chat 10/60 s por nodo e usuario). `TESTING` ∈ {1,true,yes,on} desactiva todos os límites.
+- **Sen conexión**: a caché Hive garda a procedencia de cada nodo; `reconcile` fusiona ao reconectar e `clearOrigin` descarta un nodo. Se algúns nodos non responden pero o principal si, aparece `DegradedNodesBanner` co recuento e un botón para recargar.
+- **Medios**: as rutas `/uploads/...` que devolve a API antepoñense ao servidor activo no cliente (`resolveMediaUrl()`); as URLs `http(s)` úsanse tal cal.
 - **Federación**: comproba un nodo terceiro con `python tools/federation_conformance.py <url> [--json]`; a saúde do peering está en `/api/federation/resilience/health` e as métricas p50/p95 en `/metrics`.
 - **Portabilidade**: exporta/importa bundles desde `/api/federation/portability/{bundles,imports}` e consulta as redireccións de identidade en `/redirects/{ref}`.
 
@@ -58,7 +69,7 @@ Admin inicial (só non-prod): `admin` / `setup` — cambiar ao entrar.
 - **Perfis sociais**: muros de publicacións (microblogging con Markdown e incrustacións de vídeo e podcast) en perfís de usuario e festival, con fíos de respostas opcionais por publicación e moderación por roles (administradores, xestión do festival, moderadores). Sen reaccións, pegatinas nin GIF por agora.
 - **Personalización de perfís**: portada, tagline e ligazóns sociais en usuarios e festivais.
 - **Insignias**: desactivadas por defecto; só o equipo administrativo pode activalas (`PUT /api/badges/settings`). As insignias de plataforma outorgánas os administradores; as de mérito de festival (veterano, popular, rol, premio especial), a súa xestión. Cada insignia leva unha imaxe (SVG preferido).
-- **Votación do xurado**: puntuación por obra, agregación e anonimato opcional (fase 5 do roadmap).
+- **Votación do xurado**: xa operativa (puntuación por obra, agregación e anonimato opcional); só admite curtos do festival asignado.
 
 ## Ver tamén
 

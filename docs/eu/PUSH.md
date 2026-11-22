@@ -4,11 +4,11 @@
 
 Firebase-rik ez kanpo-hornitzailerik ez. Plataformako estrategia:
 
-| Plataforma | Mecanismo | Estado |
+| Plataforma | Mekanismoa | Egoera |
 |---|---|---|
-| Escritorio (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min antes) + permiso macOS al iniciar | Funcional con la app instalada |
-| Web | Notification API nativa (`notification_web.dart` vía `package:web`, sin deps nuevas) con temporizadores; pide permiso en `init` | Funcional con pestaña abierta |
-| Android/iOS | No soportado por decisión de producto (`_supported = false` en `init`) | No-op documentado |
+| Mahaigaina (Windows/macOS/Linux) | `flutter_local_notifications` (`zonedSchedule`, 30 min lehenago) + macOS baimena hasieran | Funtzionala aplikazioa instalatuta dagoenean |
+| Web-a | Notification API natiboa (`notification_web.dart` `package:web` bidez, mendekotasun berririk gabe) tenporizadoreekin; baimena eskatzen du `init`-en | Funtzionala fitxa irekita dagoenean |
+| Android/iOS | Ez onartua produktu-erabakiz (`_supported = false` `init`-en) | No-op dokumentatua |
 
 ## Inplementazio-xehetasunak
 

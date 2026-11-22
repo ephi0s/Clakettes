@@ -106,10 +106,6 @@ class PaginatedResult<T> {
 /// - Configuración de la URL base (compile-time + override en runtime mediante setBaseUrl)
 ///
 /// Uso: ApiService().getFestivals(page: 1, size: 20)
-///
-/// Nota: 1285 líneas — considera dividirlo en clientes específicos por dominio
-/// (UserApi, FestivalApi, ChannelApi, etc.) para mantenerlo.
-/// TODO(E26): deuda modularizacion — plan en lib/services/api/README.md; ref. lib/services/api/festival_api.dart
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
@@ -562,10 +558,6 @@ class ApiService {
   }
 
   // ---------------------------------------------------------------------------
-  // Short Films
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
   // Search
   // ---------------------------------------------------------------------------
 
@@ -594,22 +586,6 @@ class ApiService {
   Future<void> resetDatabase() async {
     await request('POST', '/admin/reset?confirm=yes');
   }
-
-  // ---------------------------------------------------------------------------
-  // Notifications
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
-  // Role Groups
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
-  // Committees
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
-  // Delegations
-  // ---------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------
   // Role Transitions

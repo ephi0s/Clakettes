@@ -1,6 +1,6 @@
 # Clakettes Backend — Teknikoa dokumentazioa
 
-[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [CA](BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](../gl/BACKEND.md) · [OC](../oc/BACKEND.md)
+[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](BACKEND.md) · [GL](../gl/BACKEND.md) · [OC](../oc/BACKEND.md)
 
 FastAPI backend Clakettes filma-festival-ko kudeaketa platforma-ren barruan.
 
@@ -59,6 +59,17 @@ Konfigurazioa osoa `backend/.env` fitxategian egiten da (`pydantic-settings` bid
 | `JWT_AUDIENCE` | `clakettes-api` | JWT-aren aiketari deia |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access-ken ttl |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Komatxoekin beharrezko orokorrak |
+| `APP_ENV` | `development` | `production`-ek `SECRET_KEY` sendoa, CORS esplizitua eta Alembic bidezko eskema eskatzen ditu |
+| `TESTING` | desaktibatuta | `1/true/yes/on`-ek rate limit-ak eta auto-migrazioa desaktibatzen ditu (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Nodoaren jatorri publikoa (manifestua, bundle-ak, ICS absolutua) |
+| `MTLS_REQUIRED` | `False` | `/api/federation`-en egiaztatutako mTLSa eskatzen du |
+| `MTLS_CA_BUNDLE_PATH` | `None` | Bezeroen ziurtagiriak balioztatzeko CA erroa |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Noroen ziurtagiria eta gakoa (RSA-SHA256 manifestuaren sinadura) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | Rate-limit-eko SQLite fitxategia |
+| `SKIP_AUTO_MIGRATE` | desaktibatuta | `1/true/yes/on`-ek `alembic upgrade head` salatzen du abiaraztean |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, hutsa, `False` | Ordainketa-hornitzaile mock eta webhook-sekretua |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | hutsa | Stripe-kredentzialak (SDK nagia) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, hutsa, `True`, `978` | Redsys HMAC sinadura eta sandbox |
 | `PORT_BACKEND` | `8000` | zerbitzariaren porta (Docker/hasiera eskritatik) |
 
 **Adibidea `.env` produktu batean:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Pasahitz-hash-ak
 
-- **bcrypt** `passlib`-ekin (rounds=12)
+- **bcrypt** zuzena (`bcrypt.hashpw` + `bcrypt.gensalt()`), `passlib` gabe
 - Hash gordetzen da `User.password_hash`-en
-- `pwd_context.verify(plain, hash)` bidez egiaztatzen da
+- `bcrypt.checkpw(plain, hash)` bidez egiaztatzen da (`app/services/user_service.py`)
 
 ### Esaskera-kontrole
 
 - **100 esakra / 60 segundu** IP-eko (SQLite-ko kopia)
 - `RateLimitMiddleware`-penean `main.py`-an aplikatzen da
-- `TESTING=true` aldagaia ez badago desaktibatze da
+- `TESTING` ∈ {1, true, yes, on} bidez desaktibatzen da (`app.config.is_testing()` laguntzailea), `routers/auth_sessions.py`-ko refresh 20/60 s limitatzailea barne
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profila, avatar eskaintzea |
 | `auth` | `/api/users` | auth | Hasi saioa, berritzea, erregistroa |
 | `auth_sessions` | `/api/auth` | auth | sesio-zerrenda / ukatu |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, festival-ko aukera  CRUD `/api/festivals/{id}/shortfilms` azpian; zerrenda laua zaharkituta dago |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD habiaratua `/api/festivals/{festival_id}/shortfilms`-en (zerrendaren GET/POST eta xehetasunaren GET/PUT/DELETE, `?contest_type=` iragazkia); 5 endpoint lauak erabilgarri daude baina `deprecated=True` markatuta |
 | `chat` | `/api/chat` | chat | mezuak, WS endpoint |
 | `user_festival` | `/api/festivals` | user-festival | sarbidea / irten, kideak |
-| `uploads` | `/api/uploads` | uploads | avatar eskaintza |
+| `uploads` | `/api/uploads` | uploads | Avatar, thumbnail, bideo, dokumentu eta txat-irudien multipart igoera; `/uploads/...` bide erlatiboak itzultzen ditu |
 | `search` | `/api/search` | search | bilaketa osoa |
 | `admin` | `/api/admin` | admin | estatistak, taulak, audit-log, erreset |
 | `notifications` | `/api/notifications` | notifications | CRUD, ia-oi kopurua |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | kokatzeko erlazionak |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | kurdiak kokatzeko |
 | `form_definitions` | `/api` | forms | formulario-ko editorea |
-| `federation` | `/api/federation` | federation | esku-menua, direktorioa, nodoak, webfinger |
+| `federation` | `/api/federation` | federation | manifestua, direktorioa, nodoak, txostenak, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | RS256 sinatutako txat-bridge-a, konfigurazioa eta mezuak |
+| `federation_events` | `/api/federation/events` | federation-events | SSE `token` nahitaezkoarekin, argitalpena eta birsaioa |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundle-ak, inportazioak, migrazioa eta birbideratzeak |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Osasuna, taupada, metrikak, errebokazioa eta intzidentea |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Txostenak, isiltzeak, moderazioa eta mugak |
 | `jury_votes` | `/api` | jury-votes | juradoaren botoa (fase 5) |
 | `calendar` | `/api/calendar` | calendar | agenda, CalDAV, konfigurazioa |
 | `badges` | `/api` | badges | insignak, eskaintzak, aukeratzea |
 | `posts` | `/api` | posts | publikatuko sozialak, erantzunak, moderazioa |
 | `payments` | `/api` | payments | txartel, kontua, berrita, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | festival-ko liburu-gauzak |
-| `user_blocks` | `/api` | user-blocks | erabiltzaile-blokeoak |
-| `moderation_reports` | `/api` | moderation-reports | moderazio-itzulpenak |
-| `node_policies` | `/api` | node-policies | nodo-eko federazio-politikoak |
+| `user_blocks` | `/api` | user-blocks | Erabiltzaile-blokeoak (jabea edo admin) |
 
 ### Paginazioa eta filtratzea
 
@@ -266,7 +280,7 @@ Erantzun-sakura:
 | `GET` | `/api/chat/ws` | WebSocket-ko konexioa (`token` query-kin autentikazioa) |
 | `POST` | `/api/chat/messages` | Mezua bidali (REST-egaia) |
 | `GET` | `/api/chat/messages` | historiaren kontua |
-| `PATCH` | `/api/chat/messages/{id}/read` | Irisgarritzen |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Irisgarritzen |
 
 ### Mezua-aka
 
@@ -284,9 +298,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- X25519 gako-eratibaketa `/api/users/{id}/keys`-rekin
+- ECDH P-256 gako-eratibaketa `POST /api/users/me/public-key` eta `GET /api/users/{user_id}/public-key` bidez (`routers/keys.py`)
 - Publikoak gordetzen dira `UserKey`-n (bat zerbitzari-ko erabiltzailea)
-- Xifratuta/desxifratutafrontend-en (`e2ee_service.dart`)
+- AES-GCM xifratuta/desxifratuta frontend-en (`services/crypto_utils.dart`)
 
 ---
 
@@ -304,7 +318,13 @@ file: <image/*>
 
 - `backend/uploads/avatars/{user_id}_{uuid}.{ext}`-ko gordetzea
 -静okoki eskaintzen da `/uploads/avatars/...`-en
-- 10 MB max tamaina (`RequestSizeLimitMiddleware`-kin aplikatzen)
+- 5 MB gehienezko tamaina irudietarako (`MAX_IMAGE_SIZE` `routers/uploads.py`-en); gorputzaren muga orokorra 10 MB da oraindik
+
+### Igoera guztiak
+
+- `avatar`, `thumbnail`, `video`, `document` eta `chat-image` endpoint-ek `/uploads/<karpeta>/<fitxategia>` bide erlatiboa itzultzen dute; bezeroak `resolveMediaUrl()`-ekin ebazten du nodo aktiboaren aurka.
+- Content-type-a falta bada edo `application/octet-stream` iristen bada, `uploads._sniff_content_type()`-ek mota magic bytes bidez detektatzen du (JPEG, PNG, GIF, WebP, PDF eta MP4); 400 erroreak `Use JPEG, PNG, WebP, GIF, PDF or MP4.` adierazten du.
+- `logo_url`, `banner_url`, `video_url` eta `thumbnail_url`-ek `MediaUrl` mota erabiltzen dute: bide erlatiboak (eta kate hutsa) edo http(s) URL baliozkoak onartzen dituzte; URL baliogabe batek 422 itzultzen du.
 
 ---
 
@@ -336,15 +356,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Ezakutagarrien konfigurazioa** (`pyproject.toml` / `pytest.ini`):
+**Ezakutagarrien konfigurazioa** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Proba asinkronoek `pytest.mark.asyncio` erabiltzen dute; ez dago `asyncio_mode` globalik.
 
 **Ezabaketa** (`tests/conftest.py`):
 - `db_session` — memoria-ko SQLite-sesioa
@@ -371,9 +392,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -425,34 +446,6 @@ cd backend && python tools/import_mariadb_to_sqlite.py
 
 ---
 
-## Proiektuko eremu-ra
-
-```
-backend/
-├── app/
-│   ├── models/              # 40 SQLAlchemy modelak (+ base.py)
-│   ├── schemas/             # 37 Pydantic eskera
-│   ├── services/            # 43 lan-erako zerbitzuak
-│   ├── routers/             # 40 API-router-ak (38 `APIRouter`-ekin)
-│   ├── chat_backend/        # WebSocket txat-eramoa
-│   ├── auth.py              # JWT + sesioa autentikazioa
-│   ├── config.py            # Pydantic Settings
-│   ├── database.py          # Motor, SessionLocal, get_db()
-│   ├── main.py              # FastAPI aplikazioa, middleware, router-ak
-│   ├── rate_limiter.py      # SQLite rate-limit
-│   ├── enums.py             # shared enums
-│   └── scripts/             # Seed/migazio eskriptuak
-├── alembic/                 # Migrerak
-├── tools/                   # Eskaintza/importatutako eskriptuak
-├── tests/                   # Proveek pytest-ak
-├── uploads/                 # eskaintzea
-├── .env.example             # konfigurazio-mikroa
-├── requirements.txt         # produktu-ko jarduera
-├── requirements-dev.txt     # garapene-ko� Anforderungen (pytest, ruff)
-├── pyproject.toml           # Ruff, pytest-eko konfigurazioa
-└── pytest.ini               # pytest-eko konfigurazioa
-```
-
 Dokumentazioa `docs/eu/BACKEND.md` (hau da) eta `docs/eu/DATABASE.md` fitxategian.
 
 ---
@@ -488,7 +481,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -552,5 +545,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

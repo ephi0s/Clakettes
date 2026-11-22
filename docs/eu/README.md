@@ -4,7 +4,7 @@ Aurkibide hau proiektuaren dokumentazioaren sarrera nagusia da. Erabiltzaile, ad
 
 ## Hizkuntzak
 
-Dokumentazio osoa plataformaren 9 hizkuntzetan dago. Espainiera (kanarioa) da kanonikoa:
+18 dokumentu komunak plataformaren 9 hizkuntzetan daude; `docs/es/`-n bi azterketa espezifiko ere badaude (`AMENAZAS_NODOS_FEDERACION.md` eta `MODELO_CONFIANZA_NODOS.md`). Espainiera (kanarioa) da kanonikoa:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Dokumentazioan nabigatzen
@@ -41,7 +41,9 @@ Dokumentazio osoa plataformaren 9 hizkuntzetan dago. Espainiera (kanarioa) da ka
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Nodoen arteko federazio-protokoloa (2tik 10erako faseak) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (gutxieneko entitate federatuak) | dev |
 | [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Federazio-confiantza eredua, mTLS, sinatutako manifestua, portabilitatea, txata eta erresilientzia | dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Nodoen arteko txat eta gertaeretarako broker-erabakia (NATS JetStream); ertzeko WebSocket eta nodo bakarreko fallback-a | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Nodoen arteko txat eta gertaeretarako broker-erabakia (NATS JetStream); gaur egun inplementatutako garraioa: `DurableQueueBackend` `chat_outbox`-en WebSocket ertzekoarekin | dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Federazio-nodoen mehatxu-eredua (soilik gaztelaniaz) | dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Nodoen arteko konfiantza-eredua (soilik gaztelaniaz) | dev |
 
 ## Profilaren araberako ibilbide gomendatua
 

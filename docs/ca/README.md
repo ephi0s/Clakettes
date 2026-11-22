@@ -4,7 +4,7 @@ Aquest índex és l'entrada principal de la documentació del projecte. Està pe
 
 ## Idiomes
 
-Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol (canari) és el canònic:
+Els 18 documents comuns existeixen en les 9 llengües de la plataforma; a `docs/es/` hi ha a més dues anàlisis específiques (`AMENAZAS_NODOS_FEDERACION.md` i `MODELO_CONFIANZA_NODOS.md`). L'espanyol (canari) és el canònic:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Com navegar per la documentació
@@ -40,8 +40,10 @@ Tota la documentació existeix en les 9 llengües de la plataforma. L'espanyol (
 | [AUDITORIA.md](AUDITORIA.md) | Informe d'auditoria (rev. 10/10/2026) | referència |
 | [FEDERATION_PROTOCOL.md](FEDERATION_PROTOCOL.md) | Protocol de federació entre nodes (fases 2 a 10) | dev |
 | [FEDERATION_SCHEMA.md](FEDERATION_SCHEMA.md) | Clakettes Schema v1 (entitats mínimes federades) | dev |
-| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confiança federat, mTLS, manifiesto signat, portabilitat, xat i resiliència | dev |
-| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisió de broker (NATS JetStream) per al xat i els esdeveniments entre nodes; WebSocket de vora i fallback mononode | dev |
+| [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) | Model de confiança federat, mTLS, manifest signat, portabilitat, xat i resiliència | dev |
+| [FEDERATION_CHAT_BROKER.md](FEDERATION_CHAT_BROKER.md) | Decisió de broker (NATS JetStream) per al xat i els esdeveniments entre nodes; transport implementat avui: `DurableQueueBackend` sobre `chat_outbox` amb WebSocket de vora | dev |
+| [AMENAZAS_NODOS_FEDERACION.md](../es/AMENAZAS_NODOS_FEDERACION.md) | Model d'amenaces de nodes federats (només en espanyol) | dev |
+| [MODELO_CONFIANZA_NODOS.md](../es/MODELO_CONFIANZA_NODOS.md) | Model de confiança entre nodes (només en espanyol) | dev |
 
 ## Ruta recomanada per perfil
 

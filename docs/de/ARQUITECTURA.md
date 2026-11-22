@@ -20,37 +20,37 @@ Schichten: Routers → Services → Models, Typen über `app.enums`.
 |---|---|---|
 | CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Router fragen nicht ab; Services werfen keine 404 (außer 3 geerbten) |
 | Einheitliche 404 | `routers/dependencies.py:get_or_404` | fetch → 404 in einer Zeile |
-| Auth | `app/auth.py:validate_access_token` | Signatur + `type=access` + aktive/nicht widerrufene/nicht abgelaufene Sitzung; `last_used_at` lazy (5 min) |
+| Auth | `app/auth.py:validate_access_token` | Signatur + `type=access` + aktive/nicht widerrufene/nicht abgelaufene Sitzung; Helfer `hash_token()`, `is_expired()` (naive = UTC), `get_user_with_roles()` und `touch_session()` (`last_used_at` lazy, 5 min) |
 | Optionale Auth | `routers/dependencies.py:get_current_user_optional` | Öffentliche Endpoints ohne 401 |
-| Berechtigungen | `routers/permissions.py` | `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*` |
-| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, Buckets `middleware:`/`dav:`; Instanzen in `main`/`admin`/`auth`) | Deaktiviert mit `TESTING=true` |
+| Berechtigungen | `routers/permissions.py` | vereinheitlichtes `require_admin(user, db)` (Legacy-Rolle `admin` oder `UserRole` `ACTIVE`/`APPROVED`), `require_festival_admin`, `require_channel_admin/member`, `require_form_admin`, `can_manage_*`, `require_self_or_admin` (Alias) und `require_owner_or_admin` (Blockierungen) |
+| Rate limit | `RateLimitMiddleware` + `RateLimiter` (SQLite, Buckets `middleware:`/`dav:`; Instanzen in `main`/`admin`/`auth`/`auth_sessions`/`federation`) | 100/60 s global, 600/60 s `/dav`, 5/300 s Login, 20/60 s Refresh, 3/300 s Reset, Federation 60/60 s; zentraler Bypass über `app.config.is_testing()` (`1/true/yes/on`) |
 | Echtzeit-Chat | `app/chat_backend/` (WebSocket) + REST in `routers/chat.py` | WS validiert Sitzung über `validate_access_token` |
 | Föderierter Chat | `routers/federation_chat_bridge.py`, `services/message_queue_service.py` (`chat_outbox`), `chat_backend/durable_queue_backend.py` (`DurableQueueBackend`), `services/message_federation_service.py` | RS256-signierte Bridge, Deduplizierung nach `message_id`, Sortierung nach `timestamp`, austauschbarer Transport |
-| Chat-Moderation | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Meldungen, Mutes, Wortfilter, `disable_chat` und 10 Nachrichten/60 s pro Knoten und Nutzer (aus mit `TESTING=true`) |
-| Ereignis-Bus | `routers/federation_events.py`, `services/event_bus_service.py` | SSE mit `since`, Herzschlag und Replay (200); signiertes Publishing und 3 Wiederholungen (300 ms→5 s) |
+| Chat-Moderation | `routers/chat_moderation.py`, `services/chat_moderation_service.py`, `services/chat_rate_limit_service.py` | Meldungen, Mutes, Wortfilter, `disable_chat` und 10 Nachrichten/60 s pro Knoten und Nutzer (aus mit `TESTING` ∈ {1,true,yes,on}) |
+| Ereignis-Bus | `routers/federation_events.py`, `services/event_bus_service.py` | SSE mit `since`, Herzschlag und Replay (200); signiertes Publishing und 3 Wiederholungen (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (Präfix `/dav`, eigener Bucket 600/60s) | Bearer-Token in URL; TLS in Prod zwingend |
 | Export | `services/export_service.py` | CSV/ICS in stdlib; PDF mit reportlab im Lazy-Import |
-| Migrationen | `alembic/` (42 Versionen, Head `c1d2e3f4a5b6`) | Prod nur Alembic; dev zusätzlich `create_all` |
+| Migrationen | `alembic/` (45 Versionen, Head `d1e2f3a4b5c6`) | Prod nur Alembic; dev zusätzlich `create_all` |
 | Föderation | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | RSA-SHA256-signiertes Manifest, Verzeichnis, Knoten, Meldungen, Webfinger, users ref, JWKS, `whoami`, Föderations-Token, peers/verify, peers/revoke, mTLS nach CN/PEM |
 | Portabilität | `routers/federation_portability.py`, `services/portability_service.py`, Modelle `identity_redirect`/`migration_audit` | Signierte Bundles, Imports, Festival-/Nutzer-Migration und Redirects |
 | Resilienz | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, Heartbeat, p50/p95-Metriken, Schlüssel-Widerruf und Incident-Plan |
 | Konformität | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI, die Manifest, JWKS, Token, Verzeichnis, Portabilität, Bridge und SSE prüft |
 
-Generierte API: `python tools/gen_api.py --all` erzeugt 441 Endpoints in 39 Routern mit Präfix (siehe [API.md](API.md)).
+Generierte API: `python tools/gen_api.py --all` erzeugt 446 Endpoints in 43 Routern (39 mit Präfix in `main.py`; der Generator kombiniert zusätzlich das Präfix jedes `APIRouter` und erkennt Auth-Abhängigkeiten, siehe [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
 Singleton-Services + `setState()` + Streams (kein Provider). Start in `main()`:
-`DatabaseService` → `OfflineCache` → `SyncQueue` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
+`DatabaseService` → `OfflineCache` → `SyncQueue` → `NodeService` → `ConnectivityMonitor` → `LocaleService` → `NotificationService`.
 
 | Baustein | Wo | Regel |
 |---|---|---|
-| API | `services/api_service.dart` (Kern) + `services/api/` (9 Domänen) | Basis `BACKEND_URL` (gespeichert > dart-define > Plattform-Default; Android-Emulator `10.0.2.2`) |
-| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 Wiederholungen + Backoff, Anti-Resend) | Cache mit Knoten-Tag (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); Health-Checks pro Knoten für elegante Degradation; bei Wiederverbindung Sync mit Bestätigung |
-| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | Live-WS, REST für Verlauf und föderierten Verlauf; E2EE ECDH P-256 + AES-GCM in Isolates |
+| API | `services/api_service.dart` (Kern) + `services/api/` (13 Domänen, Split umgesetzt, siehe README) | Basis `BACKEND_URL` (gespeichert > dart-define > Plattform-Default; Android-Emulator `10.0.2.2`); `resolveMediaUrl()` stellt den aktiven Knoten vor `/uploads/...`; `uploadFile()` nutzt MIME nach Dateiendung, Bearer, 401/Refresh-Wiederholung und Fallback zwischen Knoten; der Chat-WS leitet seine URL aus demselben `rootUrl` ab |
+| Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 Wiederholungen + Backoff, Anti-Resend) | Cache mit Knoten-Tag (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor` exponiert `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` und Sonden `ApiService.testNode()`; bei Wiederverbindung Sync mit Bestätigung |
+| Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | Live-WS, REST für Verlauf und föderierten Verlauf; E2EE ECDH P-256 + AES-GCM in Isolates; `ChatPresenceBackend` liefert Schreibindikator, Latenz und Lesebestätigungen; lokale Suche, Deduplizierung und Sortierung nach `(created_at,id)`; offline Nachrichten dauerhaft mit derselben `message_id` eingereiht |
 | Benachrichtigungen | `notification_service.dart` | Desktop: OS-Plugin; Web: Notification API; Mobil: no-op (siehe [PUSH.md](PUSH.md)) |
-| Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer immer; 10 gecachte Bildschirme |
-| i18n | `l10n/` + `assets/l10n/` (9 Locales) | `en.arb` ist Fallback; 0 fehlende Keys (per Skript geprüft) |
+| Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer immer; 11 gecachte Bildschirme; `DegradedNodesBanner` meldet nicht antwortende Knoten mit Zähler und Wiederholung (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (9 Locales, 823 Schlüssel pro ARB) | `app_en.arb` ist Fallback; Parität von Schlüsseln und Placeholders in `test/l10n/arb_parity_test.dart` (Referenz `es`); `LocaleService.load()` erkennt das Locale des Systems und speichert das aufgelöste |
 | OS-Berechtigungen | `AndroidManifest.xml` / `Info.plist` | Netzwerk, Standort, Kamera, Fotobibliothek, exakte Alarme |
 
 ## Schlüsselabläufe
@@ -62,3 +62,5 @@ Singleton-Services + `setState()` + Streams (kein Provider). Start in `main()`:
 5. **Portabilität**: signiertes Bundle → Import mit Ursprungsrichtlinie → Festival-/Nutzer-Migration → Redirect der alten Ref.
 6. **Föderierter Chat**: signiertes Envelope → Signaturprüfung und Deduplizierung → Persistenz in `chat_outbox` → Verteilung und Sortierung nach `timestamp`.
 7. **Ereignisse**: Veröffentlichung im Bus → SSE mit `since` und Herzschlag → Wiederholung mit Backoff bei Peer-Fehler.
+8. **Kurzfilme im Festival**: Anlegen unter `/api/festivals/{id}/shortfilms` mit `contest_type` (`official_section` als Standard oder `contest`) → `FestivalDetailResponse` mit Zähler und Zusammenfassung → Filter in der App → Vorführungen nur mit Kurzfilmen desselben Festivals.
+9. **Medien**: Multipart-Upload → relative Route `/uploads/...` (MIME per Magic Bytes, Metadaten bereinigt) → `resolveMediaUrl()` löst sie gegen den aktiven Knoten auf → Hive-Cache pro Knoten.

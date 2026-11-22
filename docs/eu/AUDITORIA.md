@@ -2,18 +2,24 @@
 
 [ES](../es/AUDITORIA.md) · [EN](../en/AUDITORIA.md) · [FR](../fr/AUDITORIA.md) · [DE](../de/AUDITORIA.md) · [IT](../it/AUDITORIA.md) · [CA](../ca/AUDITORIA.md) · [EU](AUDITORIA.md) · [GL](../gl/AUDITORIA.md) · [OC](../oc/AUDITORIA.md)
 
+## 0. Laburpen exekutiboa
+
+Clakettes proiektuaren mendekotasunen, aplikatutako optimizazioen eta zain dagoen zor teknikoaren berrikuspena.
+
 ## 1. Kanpo-mendekotasunak: zer kendu daiteke eta zer ez
 
 ### Backend-a (`backend/requirements.txt` + `pyproject.toml`)
 
 | Dep | Veredicto | Motivo |
 | --- | --- | --- |
-| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Mantener | Núcleo del stack |
-| python-jose[cryptography] | Mantener por ahora, migrar a PyJWT en el futuro | Abandonado desde 2016, pero el cambio toca `app/auth.py` + `routers/dependencies.py` + tests; hacerlo en PR separado con tests de tokens |
-| python-dotenv | Mantener | Requerido por `pydantic-settings>=2` y `uvicorn[standard]` (`--env-file`); solo 2 scripts lo importan directamente, pero quitarlo rompería la carga de `.env` |
-| pymysql | Mantener como driver prod | Solo se usa con MariaDB; no cargarlo en dev no ahorra nada (import perezoso ya en SQLAlchemy) |
-| python-multipart, email-validator, bcrypt | Mantener | Uploads, validación email, hash passwords |
-| reportlab 5.1.0 | Mantener, pero con import perezoso (hecho) | Solo `export_service._build_pdf`; antes se importaba a nivel de módulo (~200 ms + memoria en cada worker). Ahora import dentro de la función. Además se sincronizó `pyproject.toml` (faltaba) y se pineó `==5.1.0` |
+| fastapi, uvicorn[standard], sqlalchemy, pydantic(+settings), alembic | Mantendu | Stackaren muina |
+| PyJWT==2.15.1 | Migrazioa osatuta | `python-jose` ezabatu da; `app/auth.py` eta `routers/dependencies.py`-ek PyJWT erabiltzen dute (2.10.1 → 2.15.0 → 2.15.1 bertsio-igoera) |
+| python-dotenv | Ez sartuta | Ez da agertzen `pyproject.toml`/`requirements*.txt`-en, ezta `backend/`-en inportatzen ere; `pydantic-settings`-ek `.env` zuzenean kargatzen du |
+| pymysql | Mantendu prod gidari gisa | MariaDB-rekin bakarrik erabiltzen da; dev-ean ez kargatzeak ez du ezer aurrezten (inportazio nagia dagoeneko SQLAlchemy-n) |
+| python-multipart, email-validator, bcrypt | Mantendu | Kargak, helbide elektronikoaren baliozkotzea, pasahitz-hashak |
+| reportlab 5.1.0 | Mantendu, baina inportazio nagiarekin (eginda) | Soilik `export_service._build_pdf`; lehen modulu-mailan inportatzen zen (~200 ms + memoria langile bakoitzeko). Orain funtzioaren barruan inportatzen da. Gainera `pyproject.toml` sinkronizatu zen (falta zen) eta `==5.1.0` finkatu zen |
+
+**Bertsio finkatuak `backend/pyproject.toml` / `requirements*.txt`-en:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major 6.21.x-tik); garapena: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend-a (`frontend/pubspec.yaml`)
 
@@ -22,17 +28,17 @@ Mendekotasun guztiak benetako erabileran daude; bat ere ezin izan da kendu funtz
 - `archive`: `crypto_utils.dart`-en erabilia (ZLib/GZip). `dart:io` ez du balio web-a hausten duelako.
 - `path_provider`: `file_downloader_io.dart`-en erabilia (mugikorra/escritorioa).
 - `web`: `file_downloader_web.dart`-en erabilia.
-- `pointycastle` + `crypto` + `uuid`: txataren E2EE (X25519/ECDH P-256 + AES-GCM).
-- `flutter_map` + `cancellable_tile` + `latlong2` + `geolocator` + `url_launcher`: mapak.
+- `pointycastle` + `crypto`: txataren E2EE (ECDH P-256 + AES-GCM; `X25519` izena heredatutako eremu batean bakarrik agertzen da).
+- `flutter_map` + `latlong2` + `geolocator` + `url_launcher`: mapak.
 - `table_calendar`, `flutter_local_notifications` + `timezone` + `flutter_timezone`, `image_picker` + `file_picker`: bakoitza erabilera 1-2rekin, baina kentzeak funtzionaltasuna kenduko luke.
 
 ## 2. Aplikatutako optimizazioak
 
 1. `export_service.py`: reportlab inportazio nagia `_build_pdf`-n + docstring.
-2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py`: 3 `RateLimiter` instantzia (`middleware:`/`dav:` bucket-ak + `reset` 3/300s eta `login` limiter-ak); ez bateratu muga desberdinak galdu gabe.
+2. `main.py` RateLimitMiddleware + `routers/admin.py` + `routers/auth.py` + `routers/auth_sessions.py` + `routers/federation.py`: 5 `RateLimiter` instantzia (`middleware:`/`dav:` bucket-ak + `reset` 3/300 s, `login` 5/300 s, `refresh` 20/60 s eta federazioa 60/60 s limiter-ak); ez bateratu muga desberdinak galdu gabe. Saihesbidea `app.config.is_testing()`-en bidez doa (`1/true/yes/on`).
 3. `base_service.py`: `paginate`-k `page>=1`, `size` `[1,100]`-en finkatzen du; `paginate_filtered()` berria 0 erabilerarekin (klonatutako `get_all_paginated`-ak migratzeko daude).
 4. `routers/dependencies.py`: `get_current_user_optional`-ek `validate_access_token` berrerabiltzen du (JWT+saio ~30 lerro bikoiztu kenduta); `__import__("datetime")` konponketa → inportazio normala; `get_or_404()` berria ~100 `HTTPException(404)` inline ordezkatzeko.
-5. `dav/auth.py`: `app.auth._hash_token`-rekiko erlazioa dokumentatuta.
+5. `dav/auth.py`: `app.auth.hash_token`-rekiko erlazioa dokumentatuta (lehen `_hash_token`; bateragarritasunerako aliasa gordetzen da).
 6. `pyproject.toml`/`requirements.txt` sinkronizatuta (reportlab).
 7. `reusable_widgets.dart`: `showAppSnack()` berria (def 1 + 8 erabilera; 115 `ScaffoldMessenger` zuzen geratzen dira).
 
@@ -79,8 +85,10 @@ Mendekotasun guztiak benetako erabileran daude; bat ere ezin izan da kendu funtz
     i18n (0 giltza falta), `locations` (didChangeDependencies guard-arekin).
 12. `get_or_404` `committees.py`-ra (10), `events.py`-ra (58, script bidez
     berrikuspenarekin + esleitu gabeko 17 existentzia F841 saihesteko), `delegations`-era
-    (2) eta kokapenen 5 router-etara (12) hedatuta. Eskema-aldaketarik gabe: ez dago
-    Alembic migrazio pendiente-rik sorta honengatik.
+    (2) eta kokapenen 5 router-etara (12) hedatuta. Sorta honek ez zuen migraziorik
+    sartu; ondorengo berrikuspenek `a8b9c0d1e2f3` (eserlekuen bakartasuna) eta
+    `b9c0d1e2f3a4` (`contest_type` laburretan) gehitu zituzten, biak head
+    `b9c0d1e2f3a4`-ean jada aplikatuta.
 13. Errendimendua: programazioaren `venue` iragazkia SQL-ra jaitsita (lehen orria
     Python-en iragazten zuen eta `total`/`pages` hausten zituen).
 14. Frontend: bidalketa bikoitzaren aurkako guard-ak jaialdia/erabiltzailea/laburra sortzean +
@@ -130,13 +138,4 @@ Mendekotasun guztiak benetako erabileran daude; bat ere ezin izan da kendu funtz
     `docs/es/BACKEND.md` + `docs/es/DATABASE.md` (`backend/`-tik mugituta 10/10/2026an).
     README-ak eta `AGENTS.md` zifra errelekin; admin dev `admin`/`setup`
     (`.env.example`-n `ADMIN_PASSWORD` gabe; seed prod-ez kanpo soilik `app/main.py:257`-n).
-Egoera: 1321 backend test (33 fitxategi) + 347 frontend (69 fitxategi) berdean, ruff + analyze garbi.
-
-## 4. 10/10/2026ko berrikuspena (§2–§3 zuzenketak)
-
-1. Backend doc-ak bateratuta: `backend/BACKEND.md` + `backend/DATABASE.md` → `docs/es/BACKEND.md` + `docs/es/DATABASE.md`; estekak eguneratuta `README.md`, `AGENTS.md`, `docs/es/README.md`, `ARQUITECTURA.md`, `USO.md`, `ADMINISTRACION.md`-n.
-
-3. Test-ak: backend 1321 `def test_` 33 fitxategitan (ez 1366/38); frontend 347 bloke 69 fitxategitan (ez 313/70). Widget-ak 24 OK. Pantailak: `festival_profile` 956L, `locations` 680L, `chat` 767L, `api_service` 511L, `user_profile` 803L.
-4. §2 zuzenketak: `RateLimiter` 3 instantzia dira (`main.py`, `admin.py`, `auth.py`), ez 1; `ADMIN_PASSWORD` ez dago `backend/.env.example`-n (iruzkin soilik `admin/setup`); `ruff format`-ek 216 fitxategi estaltzen ditu (ez 215).
-5. `tools/gen_api.py`-k `API.md` idempotente birsortzen du baina bide absolutu hardkodeatuarekin eta shebang gabe (ez eramangarria).
-
+Egoera: 1544 backend test (54 fitxategi) + frontend 77 fitxategitan berdean, ruff + analyze garbi.

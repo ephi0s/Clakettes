@@ -31,7 +31,7 @@ En non-prod (`APP_ENV != production`) o arranque crea `admin` / `setup` (`admin@
 | Identidade do par | `GET /api/federation/whoami` | Valida o JWT RS256 do par contra o seu JWKS; 401 se non é válido |
 | Portabilidade | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Exportar/importar bundles asinados, migrar propiedade e identidade e resolver refs antigas (as migracións, só admin) |
 | Chat e moderación | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Bridge asinado, histórico deduplicado, informes, silenciamentos, filtro e límite de 10 mensaxes/60 s por nodo e usuario |
-| Eventos | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE con `since` e latido, publicación a pares e reintentos (3 intentos, 300 ms→5 s) |
+| Eventos | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE con `since` e latido, publicación a pares e reintentos (3 intentos, 300 ms → 1,5 s → 5 s) |
 | Resiliencia | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Saúde, latido, métricas p50/p95, revogación inmediata de claves e plan de incidente |
 | Conformidade | `python tools/federation_conformance.py <url> [--json]` | Verifica un nodo terceiro; sae 1 se hai fallos críticos/altos |
 
@@ -40,7 +40,7 @@ O detalle do modelo de confianza e do transporte está en [FEDERATION_SECURITY.m
 ## Backups e migracións
 
 - SQLite: copiar `*.db` en quente parado (`-Kill` antes). MariaDB: `mariadb-dump` (volume `db-data`).
-- Migracións: `alembic upgrade head` desde `backend/` (prod **só** Alembic, nunca `create_all`). O head actual é `c1d2e3f4a5b6` (42 revisións) e engade `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` e `chat_mutes`.
+- Migracións: `alembic upgrade head` desde `backend/` (prod **só** Alembic, nunca `create_all`). O head actual é `d1e2f3a4b5c6` (45 revisións); as últimas engaden `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, a unicidade de asento (`uq_event_seat_location`) e `contest_type` en curtos con `festival_id` obrigatorio.
 - Cambio de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalle en [DATABASE.md](DATABASE.md).
 
 ## Resolución de problemas

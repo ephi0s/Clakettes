@@ -1,5 +1,7 @@
 # Clakettes Schema v1
 
+[ES](../es/FEDERATION_SCHEMA.md) · [EN](../en/FEDERATION_SCHEMA.md) · [FR](../fr/FEDERATION_SCHEMA.md) · [DE](../de/FEDERATION_SCHEMA.md) · [IT](../it/FEDERATION_SCHEMA.md) · [CA](../ca/FEDERATION_SCHEMA.md) · [EU](../eu/FEDERATION_SCHEMA.md) · [GL](../gl/FEDERATION_SCHEMA.md) · [OC](FEDERATION_SCHEMA.md)
+
 Version iniciala de l'esquèma de federacion. Defineix las entitats minimalas intercambiablas entre noses, versionadas amb `schema_version` dins lo manifest de cada nose.
 
 ## Modèl de fisança (Fasa 2)
@@ -50,7 +52,7 @@ L'identitat d'un nose es la tupa **(domeni, certificat TLS X.509)**. Lo peering 
 ### Portabilitat (Fasa 7)
 
 - `POST /api/federation/portability/bundles` — genèra un bundle de l'usagi amb `bundle_version`, `origin_domain`, `payload`, `signature` (HMAC-SHA256 amb `SECRET_KEY`) e `checksum` (SHA-256 del payload canonic).
-- `POST /api/federation/portability/imports` — valida signatura e checksum, verifica la politica d'origina (403 se non es autorizat), aplica `minimize_data` e enregistra l'importat (usagi, corts, festivals, messatges).
+- `POST /api/federation/portability/imports` — valida signatura e checksum, verifica la politica d'origina (403 se non es autorizat), aplica `minimize_data` e enregistra l'importat (usagi, corts, festivals, messatges). Los bundles incorporan `contest_type` dins cada cort: se valida/sanea `MediaUrl` (URL invalida → `null`), se normaliza `contest_type` a `official_section` se non es valid e lo checksum del festival l'inclutz.
 - `POST /api/federation/portability/festivals/{festival_id}/migrate` — transferís la proprietat del festival e sos corts a `new_owner_id` de `target_domain` amb verificacion de checksum; solament admin.
 - `POST /api/federation/portability/users/{user_ref}/migrate` — reescriu `handle` e `did` al domeni de destinacion e crea la redireccion; solament admin.
 - `GET /api/federation/portability/redirects/{old_ref}` — resòlv la ref anciana (`old_ref`, `new_ref`, `target_domain`, `created_at`).
@@ -61,7 +63,7 @@ L'identitat d'un nose es la tupa **(domeni, certificat TLS X.509)**. Lo peering 
 - `POST /api/federation/chat/bridge/outbound` — signa l'envelopa, la met en còda dins `chat_outbox` amb subjècte `clakettes.chat.node.{target_node}` e publica pel transpòrt configurat (`DurableQueueBackend`); `config` torna transpòrt, stream, algoritme e correspodendas de subjèctes.
 - `GET /api/federation/chat/messages` — istoric federat deduplicat per `message_id` e ordenat per `timestamp` + `message_id` (filtre opcional `node`).
 - `POST /api/chat/moderation/messages/{message_id}/report`, `PATCH /moderate`, `GET /reports`, `POST/GET /mutes`, `GET /limits` — rapòrts, amagar/escafar, silencis per usagi/canal/nose, filtre de mots blocats, `disable_chat` per nose e limita de 10 messatges/60 s per nose e usagi (desactivat amb `TESTING=true`).
-- `GET /api/federation/events/stream` — SSE amb `since`, `token`, `limit` opcional, replay dels darrièrs 200 eveniments e batement `: ping` cada 15 s.
+- `GET /api/federation/events/stream` — SSE amb `token` obligatòri en query (`since` e `limit` opcionalas), replay dels darrièrs 200 eveniments e batement `: ping` cada 15 s.
 - `POST /api/federation/events/publish` — publica sus un tèma derivat de `node`/`entity` (o `topic` explicit), signa l'enviament als pares amb HMAC (`X-Clakettes-Signature`) e omet los noses amb `disable_chat`/`disable_search`; solament admin.
 - `GET /api/federation/events/retry-queue` — reensajos en espèra; 3 ensajos amb backoff 300 ms → 1,5 s → 5 s.
 
@@ -75,7 +77,9 @@ L'identitat d'un nose es la tupa **(domeni, certificat TLS X.509)**. Lo peering 
 
 ### Santat e utilitats
 
-- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — endpoints de sonda e diagnostic.
+- `GET /api/federation/health`, `/ping`, `/status`, `/info`, `/version`, `/capabilities`, `/keys`, `/events`, `/peers`, `/links`, `/stats`, `/config`, `/heartbeat`, `/aggregate-nodes`, `/ok`, `/yes`, `/no`, `/maybe`, `/always`, `/never` — marcaires de posicion (placeholders) amb responsas estaticas que non reflètan l'estat real ; non son endpoints de sonda ni diagnostic operatius.
+
+> **Avertiment :** retornan responsas fixas e pòdon donar una falsa impression de seguretat ; per un diagnostic real, utilizatz los endpoints de resilientia descrits mai naut.
 
 ## Ajustabilitat
 

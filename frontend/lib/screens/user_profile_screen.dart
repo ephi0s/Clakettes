@@ -18,6 +18,7 @@ import '../widgets/confirm_dialog.dart';
 import '../widgets/dav_subscription_section.dart';
 import '../widgets/language_picker.dart';
 import '../services/auth_service.dart';
+import '../services/chat_backend/chat_service.dart';
 import '../services/offline_cache_service.dart';
 import '../services/sync_queue_service.dart';
 import '../widgets/open_in_maps_action.dart';
@@ -56,6 +57,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   late bool _isPublicBio;
   late bool _isPublicLocation;
   late AppLocalizations l10n;
+  bool _isFollowing = false;
+  bool _followLoading = false;
 
   List<UserSession> _sessions = [];
   bool _sessionsLoading = false;
@@ -159,6 +162,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     _isPublicLocation = _user.isPublicLocation;
     _loadCurrentUserIfNeeded();
     _loadExtras();
+    _loadFollowStatus();
   }
 
   @override
@@ -621,8 +625,102 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     showLanguagePicker(context);
   }
 
-  void _dummyAction(String label) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(label), behavior: SnackBarBehavior.floating));
+  Future<void> _loadFollowStatus() async {
+    final id = _user.id;
+    if (id == null) return;
+    try {
+      final data = await ApiService().getFollowStatus(id);
+      if (mounted) setState(() => _isFollowing = data['is_following'] == true);
+    } catch (_) {}
+  }
+
+  Future<void> _toggleFollow() async {
+    final id = _user.id;
+    if (id == null || _followLoading || _isOwnProfile) return;
+    setState(() => _followLoading = true);
+    try {
+      if (_isFollowing) {
+        await ApiService().unfollowUser(id);
+      } else {
+        await ApiService().followUser(id);
+      }
+      await _loadFollowStatus();
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.loadError), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _followLoading = false);
+    }
+  }
+
+  Future<void> _openMessage() async {
+    final recipientId = _user.id;
+    if (recipientId == null) return;
+    User? me = _fetchedCurrentUser ?? widget.currentUser;
+    if (me == null) {
+      try {
+        me = await AuthService().getCurrentUser();
+      } catch (_) {}
+    }
+    if (me?.id == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.loadError), behavior: SnackBarBehavior.floating),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.messageButton),
+        content: SemanticTextField(
+          controller: controller,
+          label: l10n.sendMessage,
+          semanticLabel: l10n.sendMessage,
+          maxLines: 3,
+          textInputAction: TextInputAction.send,
+          onSubmitted: (_) => Navigator.pop(ctx, true),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () {
+              if (controller.text.trim().isEmpty) return;
+              Navigator.pop(ctx, true);
+            },
+            child: Text(l10n.sendMessage),
+          ),
+        ],
+      ),
+    );
+    final content = controller.text.trim();
+    controller.dispose();
+    if (confirmed != true || content.isEmpty) return;
+    final chat = ChatService(api: ApiService(), auth: AuthService());
+    try {
+      await chat.sendMessage(senderId: me!.id!, content: content, receiverId: recipientId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.requestSent), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.loadError), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } finally {
+      await chat.dispose();
+    }
   }
 
   void _editBanner() {
@@ -786,9 +884,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               if (!_isOwnProfile)
                 Row(
                   children: [
-                    FilledButton.icon(icon: const Icon(Icons.person_add, size: 18), label: Text(l10n.follow), onPressed: () => _dummyAction(l10n.follow)),
+                    FilledButton.icon(icon: Icon(_isFollowing ? Icons.person_remove : Icons.person_add, size: 18), label: Text(_isFollowing ? l10n.following : l10n.follow), onPressed: _followLoading ? null : _toggleFollow),
                     const SizedBox(width: 8),
-                    OutlinedButton.icon(icon: const Icon(Icons.message, size: 18), label: Text(l10n.messageButton), onPressed: () => _dummyAction(l10n.messageButton)),
+                    OutlinedButton.icon(icon: const Icon(Icons.message, size: 18), label: Text(l10n.messageButton), onPressed: _openMessage),
                   ],
                 )
               else if (_canEdit)

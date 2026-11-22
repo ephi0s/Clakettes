@@ -1,6 +1,6 @@
 # Clakettes Backend — Documentación técnica
 
-[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [CA](BACKEND.md) · [GL](BACKEND.md) · [OC](../oc/BACKEND.md)
+[ES](../es/BACKEND.md) · [EN](../en/BACKEND.md) · [FR](../fr/BACKEND.md) · [DE](../de/BACKEND.md) · [IT](../it/BACKEND.md) · [CA](../ca/BACKEND.md) · [EU](../eu/BACKEND.md) · [GL](BACKEND.md) · [OC](../oc/BACKEND.md)
 
 Backend FastAPI para a plataforma de xestión de festivais de cinema Clakettes.
 
@@ -59,6 +59,17 @@ Toda a configuración faise por `backend/.env` (cargado por `pydantic-settings`)
 | `JWT_AUDIENCE` | `clakettes-api` | Reivindicación audiencia JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | TTL do token de acceso |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Oríxenes permitidas separadas por comas |
+| `APP_ENV` | `development` | `production` esixe `SECRET_KEY` robusta, CORS explícito e esquema vía Alembic |
+| `TESTING` | desactivado | `1/true/yes/on` desactiva rate limits e auto-migración (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Orixe público do nodo (manifesto, bundles, ICS absoluto) |
+| `MTLS_REQUIRED` | `False` | Esixe mTLS verificado en `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | CA raíz para validar certificados de clientes |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Certificado e clave propios (firma do manifesto RSA-SHA256) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | Ficheiro SQLite do limitador de peticións |
+| `SKIP_AUTO_MIGRATE` | desactivado | `1/true/yes/on` omite `alembic upgrade head` no arranque |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, baleiro, `False` | Provedor de pagamentos mock e segredo de webhook |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | baleiro | Credenciais Stripe (SDK preguizoso) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, baleiro, `True`, `978` | Sinatura HMAC Redsys e sandbox |
 | `PORT_BACKEND` | `8000` | Puerto do servidor (usado por Docker/scripts de arranque) |
 
 **Exemplo de `.env` en produción:**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Hash de contrasinais
 
-- **bcrypt** mediante `passlib` (rounds=12)
+- **bcrypt** directo (`bcrypt.hashpw` + `bcrypt.gensalt()`), sen `passlib`
 - Hash gardado en `User.password_hash`
-- Verificado mediante `pwd_context.verify(plain, hash)`
+- Verificado mediante `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Límite de peticións
 
 - **100 peticións / 60 segundos** por IP (copia de seguridade en SQLite)
 - Aplicado mediante `RateLimitMiddleware` en `main.py`
-- Desactivado cando se establece a variable de entorno `TESTING=true`
+- Desactivado con `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), incluído o limitador de refresh 20/60 s en `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, perfil, subida de avatar |
 | `auth` | `/api/users` | auth | Login, refresh, rexistro |
 | `auth_sessions` | `/api/auth` | auth | Lista/revocación de sesións |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, vinculación festival  CRUD baixo `/api/festivals/{id}/shortfilms`; a listaxe plana está obsoleta |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD anidado en `/api/festivals/{festival_id}/shortfilms` (GET/POST de lista e GET/PUT/DELETE de detalle, filtro `?contest_type=`); os 5 endpoints planos seguen dispoñibles pero marcados `deprecated=True` |
 | `chat` | `/api/chat` | chat | Mensaxes, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Unirse/sair, membros |
-| `uploads` | `/api/uploads` | uploads | Subida de avatar |
+| `uploads` | `/api/uploads` | uploads | Subida multipart de avatar, thumbnail, vídeo, documento e imaxe de chat; devolve rutas relativas `/uploads/...` |
 | `search` | `/api/search` | search | Busca global |
 | `admin` | `/api/admin` | admin | Estatísticas, táboas, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, non lidos count |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Relacións de ubicación |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Ubicacións de curtametraxe |
 | `form_definitions` | `/api` | forms | Creador de formularios |
-| `federation` | `/api/federation` | federation | manifest, directorio, nodos, informes, webfinger |
+| `federation` | `/api/federation` | federation | manifesto, directorio, nodos, informes, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | Bridge de chat asinado RS256, configuración e mensaxes |
+| `federation_events` | `/api/federation/events` | federation-events | SSE con `token` obrigatorio, publicación e reintento |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, imports, migración e redirects |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, heartbeat, métricas, revogación e incidente |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Informes, silenciamentos, moderación e límites |
 | `jury_votes` | `/api` | jury-votes | Votaxe do xurado (fase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, configuracións |
 | `badges` | `/api` | badges | Insignias, asignacións, elegibilidade |
 | `posts` | `/api` | posts | Publicacións sociais, resposta, moderación |
 | `payments` | `/api` | payments | Checkout, confirmar, reembolso, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Reglamentos festival |
-| `user_blocks` | `/api` | user-blocks | Bloqueo de usuarios |
-| `moderation_reports` | `/api` | moderation-reports | Informes de moderación |
-| `node_policies` | `/api` | node-policies | Políticas de nodos de federación |
+| `user_blocks` | `/api` | user-blocks | Bloqueo de usuarios (propietario ou admin) |
 
 ### Paginación e filtrado
 
@@ -266,7 +280,7 @@ Sobre de resposta:
 | `GET` | `/api/chat/ws` | Conexión WebSocket (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Enviar mensaxe (fallback REST) |
 | `GET` | `/api/chat/messages` | Historial paginado |
-| `PATCH` | `/api/chat/messages/{id}/read` | Marcar como lido |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Marcar como lido |
 
 ### Tipos de mensaxe
 
@@ -284,13 +298,13 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- Intercambio de chaves X25519 vía `/api/users/{id}/keys`
+- Intercambio de chaves ECDH P-256 vía `POST /api/users/me/public-key` e `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Chaves públicas gardadas en `UserKey` (unha chave activa por usuario)
-- Encriptación/descriptación no frontend (`e2ee_service.dart`)
+- Encriptación/descriptación AES-GCM no frontend (`services/crypto_utils.dart`)
 
 ---
 
-## Subida de archivos
+## Subida de ficheiros
 
 ### Subida de avatar
 
@@ -304,7 +318,13 @@ file: <image/*>
 
 - Gardado en `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Servido de forma estática en `/uploads/avatars/...`
-- Tamaño máximo: 10 MB (aplicado por `RequestSizeLimitMiddleware`)
+- Tamaño máximo: 5 MB para imaxes (`MAX_IMAGE_SIZE` en `routers/uploads.py`); o límite global do corpo segue sendo 10 MB
+
+### Todas as subidas
+
+- Os endpoints `avatar`, `thumbnail`, `video`, `document` e `chat-image` devolven unha ruta relativa `/uploads/<carpeta>/<arquivo>`; o cliente resólvea con `resolveMediaUrl()` contra o nodo activo.
+- Se falta o content-type ou chega `application/octet-stream`, `uploads._sniff_content_type()` detecta o tipo por magic bytes (JPEG, PNG, GIF, WebP, PDF e MP4); o erro 400 indica `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` e `thumbnail_url` usan o tipo `MediaUrl`: aceptan rutas relativas (e cadea baleira) ou URLs http(s) válidas; unha URL inválida devolve 422.
 
 ---
 
@@ -336,15 +356,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Configuración de probas** (`pyproject.toml` / `pytest.ini`):
+**Configuración de probas** (`pyproject.toml`):
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+As probas asíncronas usan `pytest.mark.asyncio`; non hai `asyncio_mode` global.
 
 **Fixos** (`tests/conftest.py`):
 - `db_session` — sesión SQLite en memoria
@@ -371,9 +392,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -462,7 +483,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -527,5 +548,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

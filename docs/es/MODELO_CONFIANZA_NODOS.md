@@ -166,7 +166,7 @@ En todos los casos, el siguiente handshake mTLS falla en la validación de caden
 | Endpoint | Método | Descripción |
 |---|---|---|
 | `POST /api/federation/peers/verify` | POST | Recibe un manifiesto remoto, valida firma+y cert, devuelve si el nodo es de confianza. |
-| `GET /api/federation/peers/{domain}/cert` | GET | Devuelve el certificado público (PEM) de un nodo confiado para validación offline. |
+| `GET /api/federation/.well-known/jwks.json` | GET | Claves públicas del nodo (JWKS) para verificación de tokens de pares. |
 | `POST /api/federation/peers/{domain}/revoke` | POST | Marca `allowed = false` en `trusted_nodes` (revocación administrativa). |
 
 ## 8. Integración con middleware de seguridad existente

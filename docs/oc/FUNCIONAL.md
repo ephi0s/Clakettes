@@ -8,8 +8,8 @@ Utilitat reala del projècte per ròtle, amb lo flux que la sosten. Detalh opera
 
 1. Crea lo festival (`POST /api/festivals/`) amb descripcion, web, sèti e logo.
 2. Dobra las convocacions: formularis d'inscripcion amb seccions, ròtles e etiquetas (`RegistrationForm + Sections + Links`), expausats per un ligam public que qualqu'un pòt emplir sens compte.
-3. Receb los corts ligats a las tuas convocacions e localizacions de rodatge.
-4. Monta la programacion: eveniments (gala, projeccion, atelier, taula, networking, prèmis, fèsta, masterclass, Q&A) amb tipes de bilhet, sètis (disponible/reservada/vendida/asignada/bloquejada), reservas e check-in dels assistents; exporta los assistents a CSV e los eveniments a ICS. Criba cada òbra del visionatge amb estat `pending/screened/disqualified` e motiv, e filtra per estat, desqualificadas o etiqueta de participant. L'organizacion verifica las etiquetas d'elegibilitat (resident, estudiant) amb de metòdes externs, e lo participant pòt demandar la verificacion en apondent un certificat de residéncia o d'inscripcion.
+3. Receb los corts ligats a las tuas convocacions e localizacions de rodatge, gestionats dins `/api/festivals/{id}/shortfilms` e classats coma `official_section` (per defaut) o `contest`; lo perfil del festival mòstra lo recompte e l'app permet de filtrar per tipe.
+4. Monta la programacion: eveniments (gala, projeccion, atelier, taula, networking, prèmis, fèsta, masterclass, Q&A) amb tipes de bilhet, sètis (disponible/reservada/vendida/asignada/bloquejada), reservas e check-in dels assistents; exporta los assistents a CSV e los eveniments a ICS. Criba cada òbra del visionatge amb estat `pending/screened/disqualified` e motiv, e filtra per estat, desqualificadas o etiqueta de participant. Solament se pòdon programar de projeccions amb corts del meteis festival (`EventService` rebuta los ids estrangièrs). L'organizacion verifica las etiquetas d'elegibilitat (resident, estudiant) amb de metòdes externs, e lo participant pòt demandar la verificacion en apondent un certificat de residéncia o d'inscripcion.
 5. Nomena de comitats amb de membres e publica de prèmis (verificats o non, publics o non) per festival, cort o usagi, amb etiquetas d'elegibilitat e verificacion del receptor.
 6. Comunica: los canales del festival (admin/moderator/member), messatges e imatges sul perfil, rulebooks.
 
@@ -19,11 +19,11 @@ Solament edita/escafa sos festivals e gestiona sos usagis (`require_festival_adm
 
 - Perfil amb mestièr (realizacion, interpretacion, son, scenario, montatge, vestuari, maquilhaje, figuracion, doblatge, foley, premsa, produccion, distribucion…), bio e palmarés ligat als festivals de la plataforma o extern per ligam.
 - Privacitat camp per camp (email, bio, localizacion) e perfils publics/privats.
-- Cada usagi edita son perfil e sos corts; lo jurat consulta e vota segon son festival.
-- Chat dirècte e de grop/canal amb chiframent de cap a cap: las claus publicas son publicadas a `POST /api/users/me/public-key`, lo servidor serva e retransmet solament lo chifrat, lo chiframent real se passa dins l'app. Ente noses federats lo messatge viatja pel bridge signat, es deduplicat per `message_id` e ordenat per data; podetz senhalar de messatges e los administrators pòdon silenciar d'usagis o filtrar de mots.
+- Cada usagi edita son perfil e sos corts; lo jurat consulta e vota segon son festival e solament pòt votar los corts d'el.
+- Chat dirècte e de grop/canal amb chiframent de cap a cap: las claus publicas son publicadas a `POST /api/users/me/public-key`, lo servidor serva e retransmet solament lo chifrat, lo chiframent real se passa dins l'app. Ente noses federats lo messatge viatja pel bridge signat, es deduplicat per `message_id` e ordenat per data; podetz senhalar de messatges e los administrators pòdon silenciar d'usagis o filtrar de mots. L'app mòstra indicador d'escritura, laténcia e confirmacions de lectura, permet de cercar dins l'istoric e encola los messatges offline de forma durabla amb lo meteis `message_id`.
 
 ## Equipa express (attendee)
-- Lo concors express (tanben dich guerrilla) es lo concors ciutadan **dins lo festival** : los corts son creats e votats amb `contest_type = contest`.
+- Lo concors express (tanben dich guerrilla) es lo concors ciutadan **dins lo festival** : los corts son creats e votats amb `contest_type = contest` (lo valor per defaut es `official_section`; exprèss e guerrilla son lo meteis concors).
 
 - Auto-join al festival (`POST /api/festivals/{id}/join`, ròtle `attendee`) e sortida liura (`leave`).
 - Ge-localiza los participants, coordona lo grop per chat e presenta lo cort al concors express.

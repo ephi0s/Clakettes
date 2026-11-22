@@ -23,7 +23,7 @@ metadata:
 
 `app/main.py` creates the FastAPI app with:
 - `lifespan` handler: `Base.metadata.create_all()`, seeds admin user (`admin`/`setup`), purges expired sessions, starts WebSocket chat backend
-- Middleware (last added = first executed): CORS → TrustedHost (non-dev only) → RateLimit (100/60s, skips when TESTING=true) → SecurityHeaders
+- Middleware (last added = first executed): CORS → TrustedHost (non-dev only) → RateLimit (100/60s global, 600/60s `/dav`; skips when `TESTING` ∈ {1,true,yes,on} via `app.config.is_testing()`) → SecurityHeaders
 - 33 routers registered under `/api/...`, plus `/health` and `/api/health`
 - Static files mounted at `/uploads`
 
@@ -41,7 +41,7 @@ metadata:
 - `RateLimitMiddleware` in `main.py`: 100 req/60s per IP
 - Backed by SQLite (`rate_limits.db`) via `RateLimiter` class in `rate_limiter.py`
 - WAL mode, thread-safe via `threading.local()`
-- Skipped when `TESTING=true`
+- Skipped when `TESTING` ∈ {1,true,yes,on} (also login 5/300s, refresh 20/60s, reset 3/300s and auto-migration)
 
 ## Database
 
@@ -55,7 +55,7 @@ metadata:
 - `pytest tests/ -x -q --tb=short` — stop on first failure, quiet, short traceback
 - `asyncio_mode = auto` in `pytest.ini` — no async markers needed
 - Uses `httpx` for async HTTP testing
-- Test env: set `TESTING=true` to bypass rate limiter
+- Test env: set `TESTING=1|true|yes|on` to bypass all rate limits and auto-migration
 - Lint: `ruff check .` from `backend/` — line-length 120 (`pyproject.toml: [tool.ruff] line-length = 120`), rules E, F, W
 
 ## Migrations

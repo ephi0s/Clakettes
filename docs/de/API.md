@@ -1,18 +1,20 @@
 # API — Endpunktreferenz
 
-[ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](../de/API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
+[ES](../es/API.md) · [EN](../en/API.md) · [FR](../fr/API.md) · [DE](API.md) · [IT](../it/API.md) · [CA](../ca/API.md) · [EU](../eu/API.md) · [GL](../gl/API.md) · [OC](../oc/API.md)
 
-Erzeugt aus `app/routers/*.py` + Präfixen in `app/main.py`.
+Erzeugt aus `app/routers/*.py` (Präfix jedes `APIRouter` plus dem in `app/main.py`) und den Abhängigkeiten jedes Endpunkts.
 Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
+
+Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie eine absolute URL. Der Client löst ihn mit `resolveMediaUrl()` auf, das den aktiven Server voranstellt; `http(s)`-URLs bleiben unverändert. Medienfelder (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) akzeptieren beide Formate.
 
 ## `admin` → `/api/admin`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/admin/stats` | ja |
-| GET | `/api/admin/tables` | ja |
-| GET | `/api/admin/audit-log` | ja |
-| POST | `/api/admin/reset` | ja |
+| GET | `/api/admin/stats` | ja (Admin) |
+| GET | `/api/admin/tables` | ja (Admin) |
+| GET | `/api/admin/audit-log` | ja (Admin) |
+| POST | `/api/admin/reset` | ja (Admin) |
 
 ## `auth` → `/api/users`
 
@@ -34,18 +36,18 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | Methode | Pfad | Auth |
 |---|---|---|
 | GET | `/api/badges/status` | nein |
-| PUT | `/api/badges/settings` | ja |
-| GET | `/api/badges/` | optional |
-| POST | `/api/badges/` | ja |
+| PUT | `/api/badges/settings` | ja (Admin) |
+| GET | `/api/badges` | optional |
+| POST | `/api/badges` | ja (Admin) |
 | GET | `/api/badges/{badge_id}` | optional |
-| PUT | `/api/badges/{badge_id}` | ja |
-| DELETE | `/api/badges/{badge_id}` | ja |
-| POST | `/api/badges/{badge_id}/image` | ja |
+| PUT | `/api/badges/{badge_id}` | ja (Admin) |
+| DELETE | `/api/badges/{badge_id}` | ja (Admin) |
+| POST | `/api/badges/{badge_id}/image` | ja (Admin) |
 | GET | `/api/badges/{badge_id}/eligibility` | optional |
-| POST | `/api/badges/{badge_id}/assign` | ja |
+| POST | `/api/badges/{badge_id}/assign` | ja (Admin) |
 | DELETE | `/api/badge-assignments/{assignment_id}` | ja |
-| GET | `/api/users/{user_id}/badges/` | optional |
-| GET | `/api/festivals/{festival_id}/badges/` | optional |
+| GET | `/api/users/{user_id}/badges` | optional |
+| GET | `/api/festivals/{festival_id}/badges` | optional |
 
 ## `calendar` → `/api/calendar`
 
@@ -54,8 +56,8 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/calendar/agenda` | optional |
 | GET | `/api/calendar/agenda/export/ics` | optional |
 | GET | `/api/calendar/settings` | nein |
-| GET | `/api/calendar/admin/settings` | ja |
-| PUT | `/api/calendar/admin/settings` | ja |
+| GET | `/api/calendar/admin/settings` | ja (Admin) |
+| PUT | `/api/calendar/admin/settings` | ja (Admin) |
 | POST | `/api/calendar/dav/token` | ja |
 | GET | `/api/calendar/dav/token` | ja |
 | DELETE | `/api/calendar/dav/token` | ja |
@@ -91,30 +93,30 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | POST | `/api/chat/groups/{group_id}/members` | ja |
 | DELETE | `/api/chat/groups/{group_id}/members/{user_id}` | ja |
 | PUT | `/api/chat/groups/{group_id}/members/{user_id}/role` | ja |
-| WEBSOCKET | `/api/chat/ws` | token (query) |
+| WEBSOCKET | `/api/chat/ws` | Token (Query, Pflicht) |
 
-## `chat_moderation` → `/`
+## `chat_moderation` → `/api/chat/moderation`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| POST | `/messages/{message_id}/report` | ja |
-| PATCH | `/messages/{message_id}/moderate` | ja |
-| GET | `/reports` | ja |
-| POST | `/mutes` | ja |
-| GET | `/mutes` | ja |
-| GET | `/limits` | ja |
+| POST | `/api/chat/moderation/messages/{message_id}/report` | ja |
+| PATCH | `/api/chat/moderation/messages/{message_id}/moderate` | ja |
+| GET | `/api/chat/moderation/reports` | ja (Admin) |
+| POST | `/api/chat/moderation/mutes` | ja |
+| GET | `/api/chat/moderation/mutes` | ja (Admin) |
+| GET | `/api/chat/moderation/limits` | ja (Admin) |
 
 ## `committees` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/committees/` | optional |
-| POST | `/api/festivals/{festival_id}/committees/` | ja |
+| GET | `/api/festivals/{festival_id}/committees` | optional |
+| POST | `/api/festivals/{festival_id}/committees` | ja |
 | GET | `/api/committees/{committee_id}` | optional |
 | PUT | `/api/committees/{committee_id}` | ja |
 | DELETE | `/api/committees/{committee_id}` | ja |
-| GET | `/api/committees/{committee_id}/members/` | optional |
-| POST | `/api/committees/{committee_id}/members/` | ja |
+| GET | `/api/committees/{committee_id}/members` | optional |
+| POST | `/api/committees/{committee_id}/members` | ja |
 | PUT | `/api/committee-members/{member_id}` | ja |
 | DELETE | `/api/committee-members/{member_id}` | ja |
 
@@ -122,42 +124,42 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| OPTIONS | `/dav/` | nein |
+| OPTIONS | `/dav` | nein |
 | OPTIONS | `/dav/{dav_path:path}` | nein |
-| PROPFIND | `/dav/` | nein |
+| PROPFIND | `/dav` | nein |
 | GET | `/dav/{principal}/calendars/{collection}.ics` | nein |
 | HEAD | `/dav/{principal}/calendars/{collection}.ics` | nein |
 | GET | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
 | HEAD | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | nein |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
-| API_ROUTE | `/dav/{principal}/calendars/{collection}/{resource}/` | nein |
-| PROPFIND | `/dav/{principal}/calendars/{collection}/` | nein |
+| GET/HEAD | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
+| PROPFIND | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
+| REPORT | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
+| PROPFIND/REPORT | `/dav/{principal}/calendars/{collection}/{resource}` | nein |
 | PROPFIND | `/dav/{principal}/calendars/{collection}` | nein |
-| REPORT | `/dav/{principal}/calendars/{collection}/` | nein |
+| PROPFIND | `/dav/{principal}/calendars/{collection}` | nein |
 | REPORT | `/dav/{principal}/calendars/{collection}` | nein |
-| PROPFIND | `/dav/{principal}/calendars/` | nein |
+| REPORT | `/dav/{principal}/calendars/{collection}` | nein |
 | PROPFIND | `/dav/{principal}/calendars` | nein |
-| PROPFIND | `/dav/{principal}/` | nein |
+| PROPFIND | `/dav/{principal}/calendars` | nein |
 | PROPFIND | `/dav/{principal}` | nein |
-| REPORT | `/dav/{principal}/calendars/` | nein |
+| PROPFIND | `/dav/{principal}` | nein |
 | REPORT | `/dav/{principal}/calendars` | nein |
-| REPORT | `/dav/{principal}/` | nein |
+| REPORT | `/dav/{principal}/calendars` | nein |
 | REPORT | `/dav/{principal}` | nein |
-| API_ROUTE | `/dav/{write_path:path}` | nein |
+| REPORT | `/dav/{principal}` | nein |
+| PUT/POST/DELETE/PATCH/MOVE/COPY/LOCK/UNLOCK/PROPPATCH | `/dav/{write_path:path}` | nein |
 
 ## `delegations` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/delegations/` | optional |
-| POST | `/api/delegations/` | ja |
+| GET | `/api/delegations` | optional |
+| POST | `/api/delegations` | ja |
 | PUT | `/api/delegations/{delegation_id}` | ja |
 | POST | `/api/delegations/{delegation_id}/revoke` | ja |
 | GET | `/api/users/{user_id}/active-delegations` | optional |
-| GET | `/api/role-transitions/` | ja |
-| POST | `/api/role-transitions/` | ja |
+| GET | `/api/role-transitions` | ja |
+| POST | `/api/role-transitions` | ja |
 | GET | `/api/users/{user_id}/role-transitions` | ja |
 | GET | `/api/users/{user_id}/role-check` | ja |
 
@@ -165,9 +167,9 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/events/` | nein |
+| GET | `/api/festivals/{festival_id}/events` | nein |
 | GET | `/api/festivals/{festival_id}/events/export/ics` | ja |
-| POST | `/api/festivals/{festival_id}/events/` | ja |
+| POST | `/api/festivals/{festival_id}/events` | ja |
 | GET | `/api/events/{event_id}` | nein |
 | PUT | `/api/events/{event_id}` | ja |
 | DELETE | `/api/events/{event_id}` | ja |
@@ -179,25 +181,25 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | PUT | `/api/events/{event_id}/screenings` | ja |
 | GET | `/api/festivals/{festival_id}/screenings` | nein |
 | GET | `/api/events/{event_id}/occupancy` | nein |
-| GET | `/api/events/{event_id}/ticket-types/` | nein |
-| POST | `/api/events/{event_id}/ticket-types/` | ja |
+| GET | `/api/events/{event_id}/ticket-types` | nein |
+| POST | `/api/events/{event_id}/ticket-types` | ja |
 | PUT | `/api/ticket-types/{tt_id}` | ja |
 | DELETE | `/api/ticket-types/{tt_id}` | ja |
-| GET | `/api/events/{event_id}/seats/` | nein |
+| GET | `/api/events/{event_id}/seats` | nein |
 | POST | `/api/events/{event_id}/seats/bulk` | ja |
 | GET | `/api/events/{event_id}/seats/sections` | nein |
 | GET | `/api/events/{event_id}/seats/counts` | nein |
 | PUT | `/api/seats/{seat_id}` | ja |
 | POST | `/api/seats/{seat_id}/release` | ja |
 | DELETE | `/api/seats/{seat_id}` | ja |
-| GET | `/api/events/{event_id}/reservations/` | ja |
-| POST | `/api/events/{event_id}/reservations/` | ja |
+| GET | `/api/events/{event_id}/reservations` | ja |
+| POST | `/api/events/{event_id}/reservations` | ja |
 | PUT | `/api/reservations/{reservation_id}` | ja |
 | POST | `/api/reservations/{reservation_id}/confirm` | ja |
 | POST | `/api/reservations/{reservation_id}/cancel` | ja |
 | DELETE | `/api/reservations/{reservation_id}` | ja |
-| GET | `/api/events/{event_id}/attendees/` | ja |
-| POST | `/api/events/{event_id}/attendees/` | ja |
+| GET | `/api/events/{event_id}/attendees` | ja |
+| POST | `/api/events/{event_id}/attendees` | ja |
 | GET | `/api/attendees/{attendee_id}` | nein |
 | PUT | `/api/attendees/{attendee_id}` | ja |
 | POST | `/api/attendees/{attendee_id}/check-in` | ja |
@@ -205,135 +207,133 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | GET | `/api/events/{event_id}/attendees/export/csv` | ja |
 | DELETE | `/api/attendees/{attendee_id}` | ja |
 | POST | `/api/events/{event_id}/assign-vip` | ja |
-| GET | `/api/users/me/events/` | ja |
+| GET | `/api/users/me/events` | ja |
 | GET | `/api/users/me/events/{event_id}/reservation` | ja |
-| GET | `/api/festivals/{festival_id}/awards/` | nein |
-| POST | `/api/festivals/{festival_id}/awards/` | ja |
+| GET | `/api/festivals/{festival_id}/awards` | nein |
+| POST | `/api/festivals/{festival_id}/awards` | ja |
 | PUT | `/api/awards/{award_id}` | ja |
 | DELETE | `/api/awards/{award_id}` | ja |
 | PATCH | `/api/awards/{award_id}/recipient-verification` | ja |
-| GET | `/api/users/{user_id}/awards/` | nein |
+| GET | `/api/users/{user_id}/awards` | nein |
 | GET | `/api/public/profile/{token}` | nein |
 | GET | `/api/festivals/{festival_id}/users/{user_id}/profile` | nein |
 
-## `federation` → `/api`
+## `federation` → `/api/federation`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/nodes` | ja |
-| POST | `/api/nodes` | ja |
-| GET | `/api/manifest` | nein |
-| PATCH | `/api/reports/{report_id}` | nein |
-| GET | `/api/directory` | nein |
-| POST | `/api/reports` | nein |
-| GET | `/api/reports` | nein |
-| DELETE | `/api/users/{user_ref}` | nein |
-| GET | `/api/export/{user_ref}` | nein |
-| GET | `/api/health` | nein |
-| POST | `/api/verify` | nein |
-| POST | `/api/publish` | nein |
-| POST | `/api/recover` | nein |
-| POST | `/api/bridge` | nein |
-| GET | `/api/aggregate-nodes` | nein |
-| GET | `/api/keys` | nein |
-| GET | `/api/events` | nein |
-| GET | `/api/capabilities` | nein |
-| GET | `/api/status` | nein |
-| GET | `/api/info` | nein |
-| GET | `/api/ping` | nein |
-| POST | `/api/echo` | nein |
-| GET | `/api/time` | nein |
-| GET | `/api/version` | nein |
-| POST | `/api/checksum` | nein |
-| POST | `/api/notify` | nein |
-| POST | `/api/subscribe` | nein |
-| POST | `/api/unsubscribe` | nein |
-| GET | `/api/discover` | nein |
-| POST | `/api/register` | nein |
-| POST | `/api/unregister` | nein |
-| POST | `/api/sync` | nein |
-| POST | `/api/reconcile` | nein |
-| GET | `/api/heartbeat` | nein |
-| GET | `/api/whoami` | nein |
-| GET | `/api/peers` | nein |
-| GET | `/api/links` | nein |
-| GET | `/api/stats` | nein |
-| GET | `/api/config` | nein |
-| GET | `/api/status-check` | nein |
-| GET | `/api/ready` | nein |
-| GET | `/api/live` | nein |
-| GET | `/api/alive` | nein |
-| GET | `/api/down` | nein |
-| GET | `/api/maintenance` | nein |
-| GET | `/api/readyz` | nein |
-| GET | `/api/livez` | nein |
-| GET | `/api/healthz` | nein |
-| GET | `/api/ok` | nein |
-| GET | `/api/yes` | nein |
-| GET | `/api/no` | nein |
-| GET | `/api/maybe` | nein |
-| GET | `/api/always` | nein |
-| GET | `/api/never` | nein |
-| POST | `/api/import` | nein |
-| POST | `/api/dedup` | nein |
-| POST | `/api/retry` | nein |
-| POST | `/api/recover-node` | nein |
-| GET | `/api/fallback` | nein |
-| GET | `/api/integrity` | nein |
-| GET | `/api/degrade` | nein |
-| GET | `/api/metrics` | nein |
-| GET | `/api/users/{ref}` | nein |
-| GET | `/api/.well-known/webfinger` | nein |
-| POST | `/api/peers/verify` | nein |
-| POST | `/api/peers/{domain}/revoke` | ja |
-| GET | `/api/.well-known/jwks.json` | nein |
-| POST | `/api/token` | nein |
+| GET | `/api/federation/nodes` | ja (Admin) |
+| POST | `/api/federation/nodes` | ja (Admin) |
+| GET | `/api/federation/manifest` | nein |
+| PATCH | `/api/federation/reports/{report_id}` | nein |
+| GET | `/api/federation/directory` | nein |
+| POST | `/api/federation/reports` | nein |
+| GET | `/api/federation/reports` | nein |
+| DELETE | `/api/federation/users/{user_ref}` | Föderations-JWT |
+| GET | `/api/federation/export/{user_ref}` | nein |
+| GET | `/api/federation/health` (veraltet) | nein |
+| POST | `/api/federation/verify` | nein |
+| POST | `/api/federation/publish` | Föderations-JWT |
+| POST | `/api/federation/recover` | nein |
+| POST | `/api/federation/bridge` | Föderations-JWT |
+| GET | `/api/federation/aggregate-nodes` (veraltet) | nein |
+| GET | `/api/federation/keys` (veraltet) | nein |
+| GET | `/api/federation/events` (veraltet) | nein |
+| GET | `/api/federation/capabilities` (veraltet) | nein |
+| GET | `/api/federation/status` (veraltet) | nein |
+| GET | `/api/federation/info` (veraltet) | nein |
+| GET | `/api/federation/ping` (veraltet) | nein |
+| POST | `/api/federation/echo` | nein |
+| GET | `/api/federation/time` | nein |
+| GET | `/api/federation/version` (veraltet) | nein |
+| POST | `/api/federation/checksum` | nein |
+| POST | `/api/federation/notify` (veraltet) | nein |
+| POST | `/api/federation/subscribe` (veraltet) | nein |
+| POST | `/api/federation/unsubscribe` (veraltet) | nein |
+| GET | `/api/federation/discover` (veraltet) | nein |
+| POST | `/api/federation/register` | nein |
+| POST | `/api/federation/unregister` | nein |
+| POST | `/api/federation/sync` | nein |
+| POST | `/api/federation/reconcile` | nein |
+| GET | `/api/federation/heartbeat` (veraltet) | nein |
+| GET | `/api/federation/whoami` | Föderations-JWT |
+| GET | `/api/federation/peers` (veraltet) | nein |
+| GET | `/api/federation/links` (veraltet) | nein |
+| GET | `/api/federation/stats` (veraltet) | nein |
+| GET | `/api/federation/config` (veraltet) | nein |
+| GET | `/api/federation/status-check` (veraltet) | nein |
+| GET | `/api/federation/ready` (veraltet) | nein |
+| GET | `/api/federation/live` (veraltet) | nein |
+| GET | `/api/federation/alive` (veraltet) | nein |
+| GET | `/api/federation/down` (veraltet) | nein |
+| GET | `/api/federation/maintenance` (veraltet) | nein |
+| GET | `/api/federation/readyz` (veraltet) | nein |
+| GET | `/api/federation/livez` (veraltet) | nein |
+| GET | `/api/federation/healthz` (veraltet) | nein |
+| GET | `/api/federation/ok` (veraltet) | nein |
+| GET | `/api/federation/yes` (veraltet) | nein |
+| GET | `/api/federation/no` (veraltet) | nein |
+| GET | `/api/federation/maybe` (veraltet) | nein |
+| GET | `/api/federation/always` (veraltet) | nein |
+| GET | `/api/federation/never` (veraltet) | nein |
+| POST | `/api/federation/import` | nein |
+| POST | `/api/federation/dedup` | nein |
+| POST | `/api/federation/retry` | nein |
+| POST | `/api/federation/recover-node` | nein |
+| GET | `/api/federation/integrity` | nein |
+| GET | `/api/federation/metrics` | nein |
+| GET | `/api/federation/users/{ref}` | nein |
+| GET | `/api/federation/.well-known/webfinger` | nein |
+| POST | `/api/federation/peers/verify` | nein |
+| POST | `/api/federation/peers/{domain}/revoke` | ja (Admin) |
+| GET | `/api/federation/.well-known/jwks.json` | nein |
+| POST | `/api/federation/token` | nein |
 
-## `federation_chat_bridge` → `/api`
+## `federation_chat_bridge` → `/api/federation`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| POST | `/api/chat/bridge/inbound` | nein |
-| POST | `/api/chat/bridge/outbound` | nein |
-| GET | `/api/chat/bridge/config` | nein |
-| GET | `/api/chat/messages` | nein |
+| POST | `/api/federation/chat/bridge/inbound` | nein |
+| POST | `/api/federation/chat/bridge/outbound` | nein |
+| GET | `/api/federation/chat/bridge/config` | nein |
+| GET | `/api/federation/chat/messages` | nein |
 
-## `federation_events` → `/`
-
-| Methode | Pfad | Auth |
-|---|---|---|
-| GET | `/stream` | nein |
-| POST | `/publish` | ja |
-| GET | `/retry-queue` | ja |
-
-## `federation_portability` → `/`
+## `federation_events` → `/api/federation/events`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| POST | `/bundles` | ja |
-| POST | `/imports` | ja |
-| POST | `/festivals/{festival_id}/migrate` | nein |
-| POST | `/users/{user_ref}/migrate` | nein |
-| GET | `/redirects/{old_ref}` | ja |
+| GET | `/api/federation/events/stream` | Token (Query, Pflicht) |
+| POST | `/api/federation/events/publish` | ja (Admin) |
+| GET | `/api/federation/events/retry-queue` | ja (Admin) |
 
-## `federation_resilience` → `/`
+## `federation_portability` → `/api/federation/portability`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/health` | nein |
-| GET | `/heartbeat` | nein |
-| GET | `/metrics` | nein |
-| POST | `/keys/revoke` | ja |
-| GET | `/keys/revoked` | nein |
-| GET | `/incident-plan` | nein |
+| POST | `/api/federation/portability/bundles` | ja |
+| POST | `/api/federation/portability/imports` | ja |
+| POST | `/api/federation/portability/festivals/{festival_id}/migrate` | ja (Admin) |
+| POST | `/api/federation/portability/users/{user_ref}/migrate` | ja (Admin) |
+| GET | `/api/federation/portability/redirects/{old_ref}` | ja |
+
+## `federation_resilience` → `/api/federation/resilience`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| GET | `/api/federation/resilience/health` | nein |
+| GET | `/api/federation/resilience/heartbeat` | nein |
+| GET | `/api/federation/resilience/metrics` | nein |
+| POST | `/api/federation/resilience/keys/revoke` | ja (Admin) |
+| GET | `/api/federation/resilience/keys/revoked` | nein |
+| GET | `/api/federation/resilience/incident-plan` | nein |
 
 ## `festival_rulebooks` → `/api/festivals/{festival_id}/rulebooks`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/rulebooks/` | nein |
+| GET | `/api/festivals/{festival_id}/rulebooks` | nein |
 | GET | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | nein |
-| POST | `/api/festivals/{festival_id}/rulebooks/` | ja |
+| POST | `/api/festivals/{festival_id}/rulebooks` | ja |
 | POST | `/api/festivals/{festival_id}/rulebooks/upload` | ja |
 | PUT | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | ja |
 | DELETE | `/api/festivals/{festival_id}/rulebooks/{rulebook_id}` | ja |
@@ -342,8 +342,8 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/festivals/` | nein |
-| POST | `/api/festivals/` | ja |
+| GET | `/api/festivals` | nein |
+| POST | `/api/festivals` | ja |
 | GET | `/api/festivals/{festival_id}` | nein |
 | GET | `/api/festivals/{festival_id}/shortfilms` | nein |
 | POST | `/api/festivals/{festival_id}/shortfilms` | ja |
@@ -362,38 +362,38 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/forms/` | ja |
-| POST | `/api/forms/` | ja |
+| GET | `/api/forms` | ja |
+| POST | `/api/forms` | ja |
 | GET | `/api/forms/{form_id}` | ja |
 | PUT | `/api/forms/{form_id}` | ja |
 | DELETE | `/api/forms/{form_id}` | ja |
 | POST | `/api/forms/{form_id}/clone` | ja |
-| POST | `/api/forms/{form_id}/pages/` | ja |
+| POST | `/api/forms/{form_id}/pages` | ja |
 | PUT | `/api/forms/{form_id}/pages/{page_id}` | ja |
 | DELETE | `/api/forms/{form_id}/pages/{page_id}` | ja |
-| POST | `/api/forms/{form_id}/pages/{page_id}/fields/` | ja |
+| POST | `/api/forms/{form_id}/pages/{page_id}/fields` | ja |
 | PUT | `/api/forms/{form_id}/fields/{field_id}` | ja |
 | DELETE | `/api/forms/{form_id}/fields/{field_id}` | ja |
-| GET | `/api/forms/{form_id}/links/` | ja |
-| POST | `/api/forms/{form_id}/links/` | ja |
+| GET | `/api/forms/{form_id}/links` | ja |
+| POST | `/api/forms/{form_id}/links` | ja |
 | DELETE | `/api/forms/{form_id}/links/{link_id}` | ja |
 | GET | `/api/forms/public/{token}` | nein |
 | POST | `/api/forms/public/{token}/submit` | optional |
-| GET | `/api/forms/{form_id}/responses/` | ja |
+| GET | `/api/forms/{form_id}/responses` | ja |
 | GET | `/api/forms/{form_id}/responses/export/csv` | ja |
 | PUT | `/api/forms/responses/{response_id}` | ja |
 | POST | `/api/forms/responses/{response_id}/approve` | ja |
 | POST | `/api/forms/responses/{response_id}/reject` | ja |
 
-## `jury_votes` → `/api`
+## `jury_votes` → `/api/jury-votes`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| POST | `/api` | ja |
-| GET | `/api/{festival_id}` | optional |
-| GET | `/api/aggregate/{festival_id}` | nein |
-| GET | `/api/by-juror/{festival_id}/{juror_id}` | ja |
-| GET | `/api/anonymous/{festival_id}` | ja |
+| POST | `/api/jury-votes` | ja |
+| GET | `/api/jury-votes/{festival_id}` | optional |
+| GET | `/api/jury-votes/aggregate/{festival_id}` | nein |
+| GET | `/api/jury-votes/by-juror/{festival_id}/{juror_id}` | ja |
+| GET | `/api/jury-votes/anonymous/{festival_id}` | ja |
 
 ## `keys` → `/api/users`
 
@@ -406,7 +406,7 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/images/` | nein |
+| GET | `/api/locations/{location_id}/images` | nein |
 | POST | `/api/locations/{location_id}/images/upload` | ja |
 | POST | `/api/locations/{location_id}/images/url` | ja |
 | DELETE | `/api/locations/{location_id}/images/{image_id}` | ja |
@@ -415,8 +415,8 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/relations/` | nein |
-| POST | `/api/locations/{location_id}/relations/` | ja |
+| GET | `/api/locations/{location_id}/relations` | nein |
+| POST | `/api/locations/{location_id}/relations` | ja |
 | DELETE | `/api/locations/{location_id}/relations/{relation_id}` | ja |
 | POST | `/api/locations/{location_id}/relations/suggest` | ja |
 
@@ -424,16 +424,16 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/locations/{location_id}/tags/` | nein |
-| POST | `/api/locations/{location_id}/tags/` | ja |
+| GET | `/api/locations/{location_id}/tags` | nein |
+| POST | `/api/locations/{location_id}/tags` | ja |
 | DELETE | `/api/locations/{location_id}/tags/{tag_id}` | ja |
 
 ## `locations` → `/api/locations`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/locations/` | nein |
-| POST | `/api/locations/` | ja |
+| GET | `/api/locations` | nein |
+| POST | `/api/locations` | ja |
 | GET | `/api/locations/{location_id}` | nein |
 | PUT | `/api/locations/{location_id}` | ja |
 | PUT | `/api/locations/{location_id}/badge` | ja |
@@ -443,7 +443,7 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/notifications/` | ja |
+| GET | `/api/notifications` | ja |
 | GET | `/api/notifications/unread-count` | ja |
 | PUT | `/api/notifications/{notification_id}/read` | ja |
 | PUT | `/api/notifications/read-all` | ja |
@@ -453,13 +453,13 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/participant-tags/` | nein |
-| POST | `/api/participant-tags/` | ja |
+| GET | `/api/participant-tags` | nein |
+| POST | `/api/participant-tags` | ja (Admin) |
 | GET | `/api/participant-tags/{tag_id}` | nein |
-| PUT | `/api/participant-tags/{tag_id}` | ja |
-| DELETE | `/api/participant-tags/{tag_id}` | ja |
-| GET | `/api/festivals/{festival_id}/participant-tags/` | nein |
-| POST | `/api/festivals/{festival_id}/participant-tags/` | ja |
+| PUT | `/api/participant-tags/{tag_id}` | ja (Admin) |
+| DELETE | `/api/participant-tags/{tag_id}` | ja (Admin) |
+| GET | `/api/festivals/{festival_id}/participant-tags` | nein |
+| POST | `/api/festivals/{festival_id}/participant-tags` | ja |
 | PUT | `/api/festivals/{festival_id}/participant-tags/{fpt_id}` | ja |
 | DELETE | `/api/festivals/{festival_id}/participant-tags/{fpt_id}` | ja |
 
@@ -468,61 +468,63 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | Methode | Pfad | Auth |
 |---|---|---|
 | POST | `/api/payments/checkout` | ja |
-| GET | `/api/payments/` | ja |
+| GET | `/api/payments` | ja |
 | GET | `/api/payments/{payment_id}` | ja |
 | POST | `/api/payments/{payment_id}/confirm` | ja |
 | POST | `/api/payments/{payment_id}/refund` | ja |
 | POST | `/api/payments/webhook/mock` | nein |
+| POST | `/api/payments/webhook/stripe` | nein |
+| POST | `/api/payments/webhook/redsys` | nein |
 
 ## `posts` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/posts/` | optional |
-| POST | `/api/users/{user_id}/posts/` | ja |
-| GET | `/api/festivals/{festival_id}/posts/` | optional |
-| POST | `/api/festivals/{festival_id}/posts/` | ja |
+| GET | `/api/users/{user_id}/posts` | optional |
+| POST | `/api/users/{user_id}/posts` | ja |
+| GET | `/api/festivals/{festival_id}/posts` | optional |
+| POST | `/api/festivals/{festival_id}/posts` | ja |
 | GET | `/api/posts/{post_id}` | optional |
 | PUT | `/api/posts/{post_id}` | ja |
 | DELETE | `/api/posts/{post_id}` | ja |
-| GET | `/api/posts/{post_id}/replies/` | optional |
-| POST | `/api/posts/{post_id}/replies/` | ja |
+| GET | `/api/posts/{post_id}/replies` | optional |
+| POST | `/api/posts/{post_id}/replies` | ja |
 | POST | `/api/posts/{post_id}/moderate` | ja |
 
 ## `registration_forms` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/festivals/{festival_id}/registration-forms/` | ja |
-| POST | `/api/festivals/{festival_id}/registration-forms/` | ja |
+| GET | `/api/festivals/{festival_id}/registration-forms` | ja |
+| POST | `/api/festivals/{festival_id}/registration-forms` | ja |
 | GET | `/api/festivals/{festival_id}/registration-forms/{form_id}` | ja |
 | GET | `/api/registration-forms/{form_id}` | ja |
 | PUT | `/api/registration-forms/{form_id}` | ja |
 | DELETE | `/api/registration-forms/{form_id}` | ja |
-| GET | `/api/registration-forms/{form_id}/registrations/` | ja |
+| GET | `/api/registration-forms/{form_id}/registrations` | ja |
 | PUT | `/api/festivals/{festival_id}/registration-forms/{form_id}` | ja |
 | DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}` | ja |
 | GET | `/api/public/forms/{token}` | nein |
 | POST | `/api/public/forms/{token}/register` | optional |
-| GET | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | ja |
-| POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/` | ja |
+| GET | `/api/festivals/{festival_id}/registration-forms/{form_id}/links` | ja |
+| POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links` | ja |
 | DELETE | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}` | ja |
 | POST | `/api/festivals/{festival_id}/registration-forms/{form_id}/links/{link_id}/regenerate` | ja |
-| GET | `/api/registration-forms/{form_id}/links/` | ja |
-| POST | `/api/registration-forms/{form_id}/links/` | ja |
+| GET | `/api/registration-forms/{form_id}/links` | ja |
+| POST | `/api/registration-forms/{form_id}/links` | ja |
 | DELETE | `/api/registration-form-links/{link_id}` | ja |
 | POST | `/api/registration-form-links/{link_id}/regenerate` | ja |
-| GET | `/api/festivals/{festival_id}/registrations/` | ja |
+| GET | `/api/festivals/{festival_id}/registrations` | ja |
 | GET | `/api/festivals/{festival_id}/registrations/export/csv` | ja |
 | GET | `/api/festivals/{festival_id}/registrations/export/pdf` | ja |
-| GET | `/api/users/{user_id}/registrations/` | ja |
+| GET | `/api/users/{user_id}/registrations` | ja |
 | PUT | `/api/registrations/{registration_id}` | ja |
 | POST | `/api/registrations/{registration_id}/approve` | ja |
 | POST | `/api/registrations/{registration_id}/reject` | ja |
 | POST | `/api/registrations/{registration_id}/payment/mark-paid` | ja |
 | POST | `/api/registrations/{registration_id}/payment/mark-refunded` | ja |
 | DELETE | `/api/registrations/{registration_id}` | ja |
-| POST | `/api/registration-forms/{form_id}/sections/` | ja |
+| POST | `/api/registration-forms/{form_id}/sections` | ja |
 | PUT | `/api/registration-forms/{form_id}/sections/{section_id}` | ja |
 | DELETE | `/api/registration-forms/{form_id}/sections/{section_id}` | ja |
 
@@ -530,51 +532,51 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/role-groups/` | nein |
-| POST | `/api/role-groups/` | ja |
+| GET | `/api/role-groups` | nein |
+| POST | `/api/role-groups` | ja (Admin) |
 | GET | `/api/role-groups/{group_id}` | nein |
-| PUT | `/api/role-groups/{group_id}` | ja |
-| DELETE | `/api/role-groups/{group_id}` | ja |
-| GET | `/api/role-groups/{group_id}/memberships/` | nein |
-| POST | `/api/role-groups/{group_id}/memberships/` | ja |
-| PUT | `/api/role-group-memberships/{membership_id}` | ja |
-| DELETE | `/api/role-group-memberships/{membership_id}` | ja |
+| PUT | `/api/role-groups/{group_id}` | ja (Admin) |
+| DELETE | `/api/role-groups/{group_id}` | ja (Admin) |
+| GET | `/api/role-groups/{group_id}/memberships` | nein |
+| POST | `/api/role-groups/{group_id}/memberships` | ja (Admin) |
+| PUT | `/api/role-group-memberships/{membership_id}` | ja (Admin) |
+| DELETE | `/api/role-group-memberships/{membership_id}` | ja (Admin) |
 
 ## `roles` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/roles/` | ja |
-| POST | `/api/roles/` | ja |
-| GET | `/api/roles/hierarchy/` | optional |
+| GET | `/api/roles` | ja |
+| POST | `/api/roles` | ja (Admin) |
+| GET | `/api/roles/hierarchy` | optional |
 | GET | `/api/roles/{role_id}` | optional |
-| PUT | `/api/roles/{role_id}` | ja |
-| DELETE | `/api/roles/{role_id}` | ja |
-| GET | `/api/festivals/{festival_id}/roles/` | optional |
-| POST | `/api/festivals/{festival_id}/roles/` | ja |
-| POST | `/api/festivals/{festival_id}/roles/initialize` | ja |
+| PUT | `/api/roles/{role_id}` | ja (Admin) |
+| DELETE | `/api/roles/{role_id}` | ja (Admin) |
+| GET | `/api/festivals/{festival_id}/roles` | optional |
+| POST | `/api/festivals/{festival_id}/roles` | ja |
+| POST | `/api/festivals/{festival_id}/roles/initialize` | ja (Admin) |
 | PUT | `/api/festivals/{festival_id}/roles/{fr_id}` | ja |
 | DELETE | `/api/festivals/{festival_id}/roles/{fr_id}` | ja |
 | GET | `/api/roles/{role_id}/dependencies` | optional |
-| POST | `/api/role-dependencies/` | ja |
-| DELETE | `/api/role-dependencies/{dependency_id}` | ja |
+| POST | `/api/role-dependencies` | ja (Admin) |
+| DELETE | `/api/role-dependencies/{dependency_id}` | ja (Admin) |
 | GET | `/api/roles/{role_id}/conflicts` | optional |
-| POST | `/api/role-conflicts/` | ja |
-| DELETE | `/api/role-conflicts/{conflict_id}` | ja |
+| POST | `/api/role-conflicts` | ja (Admin) |
+| DELETE | `/api/role-conflicts/{conflict_id}` | ja (Admin) |
 | GET | `/api/roles/{role_id}/check-conflicts` | optional |
 
 ## `search` → `/api/search`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/search/` | ja |
+| GET | `/api/search` | ja |
 
 ## `shortfilm_locations` → `/api/shortfilms/{shortfilm_id}/locations`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/shortfilms/{shortfilm_id}/locations/` | nein |
-| POST | `/api/shortfilms/{shortfilm_id}/locations/` | ja |
+| GET | `/api/shortfilms/{shortfilm_id}/locations` | nein |
+| POST | `/api/shortfilms/{shortfilm_id}/locations` | ja |
 | PUT | `/api/shortfilms/{shortfilm_id}/locations/{sfloc_id}` | ja |
 | DELETE | `/api/shortfilms/{shortfilm_id}/locations/{sfloc_id}` | ja |
 
@@ -582,11 +584,11 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/shortfilms/` | nein |
-| POST | `/api/shortfilms/` | ja |
-| GET | `/api/shortfilms/{shortfilm_id}` | nein |
-| PUT | `/api/shortfilms/{shortfilm_id}` | ja |
-| DELETE | `/api/shortfilms/{shortfilm_id}` | ja |
+| GET | `/api/shortfilms` (veraltet) | nein |
+| POST | `/api/shortfilms` (veraltet) | ja |
+| GET | `/api/shortfilms/{shortfilm_id}` (veraltet) | nein |
+| PUT | `/api/shortfilms/{shortfilm_id}` (veraltet) | ja |
+| DELETE | `/api/shortfilms/{shortfilm_id}` (veraltet) | ja |
 
 ## `uploads` → `/api/uploads`
 
@@ -598,14 +600,12 @@ Interaktive Details: `/docs` (Swagger) und `/redoc` bei laufendem Backend.
 | POST | `/api/uploads/document` | ja |
 | POST | `/api/uploads/chat-image` | ja |
 
-Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie eine absolute URL. Der Client löst ihn mit `resolveMediaUrl()` auf, was den aktiven Server voranstellt; `http(s)`-URLs bleiben unverändert. Medienfelder (`logo_url`, `banner_url`, `video_url`, `thumbnail_url`) akzeptieren beide Formate.
-
 ## `user_aliases` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/aliases/` | nein |
-| POST | `/api/users/{user_id}/aliases/` | ja |
+| GET | `/api/users/{user_id}/aliases` | nein |
+| POST | `/api/users/{user_id}/aliases` | ja |
 | PUT | `/api/users/{user_id}/aliases/{alias_id}` | ja |
 | DELETE | `/api/users/{user_id}/aliases/{alias_id}` | ja |
 
@@ -613,9 +613,9 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| POST | `/api/users/{user_id}/blocks/` | ja |
+| POST | `/api/users/{user_id}/blocks` | ja |
 | DELETE | `/api/users/{user_id}/blocks/{blocked_id}` | ja |
-| GET | `/api/users/{user_id}/blocks/` | ja |
+| GET | `/api/users/{user_id}/blocks` | ja |
 | GET | `/api/users/{user_id}/blocks/{blocked_id}/status` | ja |
 
 ## `user_festival` → `/api/festivals`
@@ -627,30 +627,40 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 | GET | `/api/festivals/{festival_id}/members` | ja |
 | GET | `/api/festivals/user/{user_id}/festivals` | ja |
 
+## `user_follows` → `/api`
+
+| Methode | Pfad | Auth |
+|---|---|---|
+| POST | `/api/users/{user_id}/follow` | ja |
+| DELETE | `/api/users/{user_id}/follow` | ja |
+| GET | `/api/users/{user_id}/follow/status` | ja |
+| GET | `/api/users/{user_id}/followers` | ja |
+| GET | `/api/users/{user_id}/following` | ja |
+
 ## `user_roles` → `/api`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/users/{user_id}/roles/` | ja |
-| POST | `/api/users/{user_id}/roles/` | ja |
+| GET | `/api/users/{user_id}/roles` | ja |
+| POST | `/api/users/{user_id}/roles` | ja |
 | PUT | `/api/users/{user_id}/roles/{ur_id}` | ja |
 | DELETE | `/api/users/{user_id}/roles/{ur_id}` | ja |
-| GET | `/api/users/{user_id}/participant-tags/` | ja |
+| GET | `/api/users/{user_id}/participant-tags` | ja |
 | PATCH | `/api/users/{user_id}/participant-tags/{upt_id}/verify` | ja |
 | POST | `/api/users/{user_id}/participant-tags/{upt_id}/request-verification` | ja |
-| POST | `/api/users/{user_id}/participant-tags/` | ja |
+| POST | `/api/users/{user_id}/participant-tags` | ja |
 | DELETE | `/api/users/{user_id}/participant-tags/{upt_id}` | ja |
 
 ## `users` → `/api/users`
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/users/` | ja |
+| GET | `/api/users` | ja |
 | GET | `/api/users/public` | nein |
 | GET | `/api/users/me` | ja |
 | GET | `/api/users/me/export` | ja |
 | DELETE | `/api/users/me` | ja |
-| POST | `/api/users/` | ja |
+| POST | `/api/users` | ja |
 | GET | `/api/users/{user_id}` | ja |
 | GET | `/api/users/{user_id}/public` | nein |
 | PUT | `/api/users/{user_id}` | ja |
@@ -660,12 +670,12 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/validation-rules/` | nein |
-| POST | `/api/validation-rules/` | ja |
+| GET | `/api/validation-rules` | nein |
+| POST | `/api/validation-rules` | ja (Admin) |
 | GET | `/api/validation-rules/{rule_id}` | nein |
-| PUT | `/api/validation-rules/{rule_id}` | ja |
-| DELETE | `/api/validation-rules/{rule_id}` | ja |
-| GET | `/api/validation-rule-groups/` | nein |
-| POST | `/api/validation-rule-groups/` | ja |
+| PUT | `/api/validation-rules/{rule_id}` | ja (Admin) |
+| DELETE | `/api/validation-rules/{rule_id}` | ja (Admin) |
+| GET | `/api/validation-rule-groups` | nein |
+| POST | `/api/validation-rule-groups` | ja (Admin) |
 
-Gesamt: 446 Endpunkte in 39 Routern.
+Gesamt: 451 Endpunkte in 44 Routern (40 mit Präfix in `main.py`).

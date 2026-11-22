@@ -28,17 +28,18 @@ Funciona en web, Android, iOS i escriptori (Windows, macOS, Linux), en 9 idiomes
 - **Perfils amb palmarès**: palmarès vinculat a festivals de la plataforma o extern mitjançant enllaços, amb control de privacitat camp per camp.
 - **Xat**: missatges directes i de grup o canal per festival, amb xifrat d'extrem a extrem.
 - **Mapes**: seus i localitzacions de rodatge en mapes interactius, amb obertura a la teva app de mapes preferida.
-- **Sense connexió**: l'app continua funcionant offline i sincronitza els teus canvis en recuperar la connexió.
-- **En el teu idioma**: espanyol, anglès, francès, alemany, italià, català, euskera, gallec i occità, amb detecció automàtica.
+- **Sense connexió**: l'app continua funcionant offline, guarda la procedència de cada node a la caché i sincronitza els teus canvis en recuperar la connexió.
+- **Federació**: nodes de confiança amb mTLS, portabilitat d'identitat, xat i esdeveniments entre nodes, moderació, mètriques i resiliència.
+- **En el teu idioma**: espanyol, anglès, francès, alemany, italià, català, euskera, gallec i occità (823 claus per idioma), amb detecció automàtica del locale del sistema.
 
 ## Requisits i arrencada
 
 ### Requisits mínims
 
 - Python 3.12+
-- Flutter SDK >= 3.0.0 y < 4.0.0
+- Flutter SDK >= 3.0.0 i < 4.0.0
 - Git
-- Docker y Docker Compose para despliegue/entorno productivo
+- Docker i Docker Compose per a desplegament/entorn productiu
 - Navegador amb suport per a web (recomanat Chrome/Brave)
 
 ### Inici ràpid
@@ -57,17 +58,6 @@ En Linux/macOS:
 
 Això aixeca el backend a `http://localhost:8000` i l'app en mode local; l'API exposa Swagger/OpenAPI a `/docs`. Pots desactivar qualsevol de les dues parts amb `--no-backend` o `--no-frontend`.
 
-### Altres opcions útils
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Consulta la referència completa de l'arrencada i desplegament a [docs/ca/HERRAMIENTAS.md](docs/ca/HERRAMIENTAS.md) i [docs/ca/USO.md](docs/ca/USO.md).
-
 ## Variables d'entorn i configuració
 
 ### Backend
@@ -78,6 +68,15 @@ Crea o ajusta `backend/.env` amb almenys:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federació amb mTLS (producció)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Pagaments (mock per defecte; Stripe/Redsys sota demanda)
+PAYMENTS_PROVIDER=mock
 ```
 
 Per a entorn productiu s'utilitza MariaDB; els scripts i la documentació de desplegament ho gestionen amb Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 L'arrencada automàtica del projecte ja configura això quan s'utilitza `start.*`.
 
-## Estat del projecte
-
-🚧 **En desenvolupament actiu** — Festivals, curts, xat amb E2EE, mapes, mode offline i 9 idiomes funcionant.
-
-**Roadmap proper:**
-
-- [ ] Notificacions push (Firebase/APNs)
-- [ ] AppImage Linux signat
-- [ ] Instal·lador Windows MSI
-- [x] Documentació OpenAPI exportable (`/openapi.json` sense operationIds duplicats + `docs/ca/API.md` regenerat)
-
 ## Documentació del projecte
 
 El mapa de documentació és a [docs/ca/README.md](docs/ca/README.md). És la millor entrada per a cada tipus d'usuari:
@@ -116,10 +104,10 @@ El mapa de documentació és a [docs/ca/README.md](docs/ca/README.md). És la mi
 - [docs/ca/DESARROLLO.md](docs/ca/DESARROLLO.md): com afegir endpoints o pantalles
 - [docs/ca/BACKEND.md](docs/ca/BACKEND.md): guia del backend (capes, configuració, auth, proves)
 - [docs/ca/DATABASE.md](docs/ca/DATABASE.md): esquema i migracions
-- [docs/ca/FEDERATION_PROTOCOL.md](docs/ca/FEDERATION_PROTOCOL.md): protocolo de federació (fase 4)
-- [docs/ca/FEDERATION_SCHEMA.md](docs/ca/FEDERATION_SCHEMA.md): Clakettes Schema v1
-- [docs/ca/FEDERATION_SECURITY.md](docs/ca/FEDERATION_SECURITY.md): model de confiança federat
-- [docs/ca/PUSH.md](docs/ca/PUSH.md): decisió de notificació push
+- [docs/ca/FEDERATION_PROTOCOL.md](docs/ca/FEDERATION_PROTOCOL.md): protocol de federació (fases 2-10)
+- [docs/ca/FEDERATION_SECURITY.md](docs/ca/FEDERATION_SECURITY.md): confiança, mTLS, portabilitat i resiliència
+- [docs/ca/FEDERATION_SCHEMA.md](docs/ca/FEDERATION_SCHEMA.md): entitats federades i checksum
+- [docs/ca/FEDERATION_CHAT_BROKER.md](docs/ca/FEDERATION_CHAT_BROKER.md): decisió de transport i estat implementat
 
 A més, el punt de partida per a desenvolupament i convenció de projecte és [AGENTS.md](AGENTS.md).
 
@@ -136,8 +124,6 @@ A més, el punt de partida per a desenvolupament i convenció de projecte és [A
 - **Quin document he de llegir primer?** Si ets usuari, [docs/ca/USO.md](docs/ca/USO.md); si ets desenvolupador, [docs/ca/ARQUITECTURA.md](docs/ca/ARQUITECTURA.md).
 - **Com sé si un canvi requereix actualitzar documentació?** Si canvia arrencada, API, rols, permisos, variables d'entorn o esquema, actualitza també la documentació que correspongui.
 
-
-
 ## Contribuir
 
 1. Fes un fork del repositori.
@@ -146,7 +132,7 @@ A més, el punt de partida per a desenvolupament i convenció de projecte és [A
 4. Empeny la branca (`git push origin feature/nova-funcionalitat`).
 5. Obre un Pull Request amb context, canvis i validació.
 
-**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/).
+**Convencions de qualitat:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` i `flutter test` han de passar abans de fusionar. GitHub Actions executa aquestes portes en paral·lel i Dependabot obre PRs setmanals agrupats: patch/minor es fusionen sols amb CI verda, major queda a revisió manual (detall a [docs/ca/INFRAESTRUCTURA.md](docs/ca/INFRAESTRUCTURA.md)).
 
 ## Llicència
 

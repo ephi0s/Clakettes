@@ -28,8 +28,9 @@ Funciona en web, Android, iOS y escritorio (Windows, macOS, Linux), en 9 idiomas
 - **Perfiles con palmarés**: palmarés vinculado a festivales de la plataforma o externo mediante enlaces, con control de privacidad campo por campo.
 - **Chat**: mensajes directos y de grupo o canal por festival, con cifrado de extremo a extremo.
 - **Mapas**: sedes y localizaciones de rodaje en mapas interactivos, con apertura en tu app de mapas favorita.
-- **Sin conexión**: la app sigue funcionando offline y sincroniza tus cambios al recuperar la conexión.
-- **En tu idioma**: español, inglés, francés, alemán, italiano, catalán, euskera, gallego y occitano, con detección automática.
+- **Sin conexión**: la app sigue funcionando offline, guarda la procedencia de cada nodo en caché y sincroniza tus cambios al recuperar la conexión.
+- **Federación**: nodos de confianza con mTLS, portabilidad de identidad, chat y eventos entre nodos, moderación, métricas y resiliencia.
+- **En tu idioma**: español, inglés, francés, alemán, italiano, catalán, euskera, gallego y occitano (823 claves por idioma), con detección automática del locale del sistema.
 
 ## Requisitos y arranque
 
@@ -69,6 +70,15 @@ Crea o ajusta `backend/.env` con al menos:
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Federación con mTLS (producción)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Pagos (mock por defecto; Stripe/Redsys bajo demanda)
+PAYMENTS_PROVIDER=mock
 ```
 
 Para entorno productivo se usa MariaDB; los scripts y la documentación de despliegue lo gestionan con Docker.
@@ -96,6 +106,10 @@ El mapa de documentación está en [docs/es/README.md](docs/es/README.md). Es la
 - [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md): cómo añadir endpoints o pantallas
 - [docs/es/BACKEND.md](docs/es/BACKEND.md): guía del backend (capas, config, auth, tests)
 - [docs/es/DATABASE.md](docs/es/DATABASE.md): esquema y migraciones
+- [docs/es/FEDERATION_PROTOCOL.md](docs/es/FEDERATION_PROTOCOL.md): protocolo entre nodos (fases 2-10)
+- [docs/es/FEDERATION_SECURITY.md](docs/es/FEDERATION_SECURITY.md): confianza, mTLS, portabilidad y resiliencia
+- [docs/es/FEDERATION_SCHEMA.md](docs/es/FEDERATION_SCHEMA.md): entidades federadas y checksum
+- [docs/es/FEDERATION_CHAT_BROKER.md](docs/es/FEDERATION_CHAT_BROKER.md): decisión de transporte y estado implementado
 
 Además, el punto de partida para desarrollo y convención de proyecto es [AGENTS.md](AGENTS.md).
 
@@ -120,7 +134,7 @@ Además, el punto de partida para desarrollo y convención de proyecto es [AGENT
 4. Empuja la rama (`git push origin feature/nueva-funcionalidad`).
 5. Abre un Pull Request con contexto, cambios y validación.
 
-**Convenciones de calidad:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` y `flutter test` deben pasar antes de fusionar.
+**Convenciones de calidad:** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` y `flutter test` deben pasar antes de fusionar. GitHub Actions ejecuta esas puertas en paralelo y Dependabot abre PRs semanales agrupados: patch/minor se fusionan solos con CI verde, major queda a revisión manual (detalle en [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md)).
 
 ## Licencia
 

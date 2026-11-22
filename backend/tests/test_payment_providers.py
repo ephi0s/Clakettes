@@ -4,6 +4,7 @@ import pytest
 
 from app.services.payment_providers import (
     MockPaymentProvider,
+    PaymentConfirmationError,
     ProviderNotConfigured,
     RedsysPaymentProvider,
     StripePaymentProvider,
@@ -89,3 +90,104 @@ class TestRedsysStub:
         assert RedsysPaymentProvider.is_paid({"Ds_Response": "0099"}) is True
         assert RedsysPaymentProvider.is_paid({"Ds_Response": "0101"}) is False
         assert RedsysPaymentProvider.is_paid({}) is False
+
+    @staticmethod
+    def _signed_response(provider, secret, order, ds_response="0000"):
+        params = {
+            "DS_MERCHANT_AMOUNT": "1000",
+            "DS_MERCHANT_ORDER": order,
+            "DS_MERCHANT_MERCHANTCODE": "999008881",
+            "Ds_Response": ds_response,
+        }
+        params_b64 = provider.encode_parameters(params)
+        return {
+            "Ds_SignatureVersion": provider.signature_version,
+            "Ds_MerchantParameters": params_b64,
+            "Ds_Signature": provider.sign_parameters(secret, order, params_b64),
+        }
+
+    def _configured(self, monkeypatch):
+        from app.config import settings
+
+        secret = self._key()
+        monkeypatch.setattr(settings, "REDSYS_MERCHANT_CODE", "999008881")
+        monkeypatch.setattr(settings, "REDSYS_SECRET_KEY", secret)
+        return RedsysPaymentProvider(), secret
+
+    def test_confirm_paid_response(self, monkeypatch):
+        from app.models.payment import Payment
+
+        provider, secret = self._configured(monkeypatch)
+        order = "123456ABC"
+        payment = Payment(amount=10.0, status="pending", provider="redsys", provider_ref=order)
+        assert provider.confirm(payment, self._signed_response(provider, secret, order)) == "paid"
+
+    def test_confirm_unpaid_response_is_pending(self, monkeypatch):
+        from app.models.payment import Payment
+
+        provider, secret = self._configured(monkeypatch)
+        order = "123456ABC"
+        payment = Payment(amount=10.0, status="pending", provider="redsys", provider_ref=order)
+        response = self._signed_response(provider, secret, order, ds_response="0101")
+        assert provider.confirm(payment, response) == "pending"
+
+    def test_confirm_without_response_is_pending(self, monkeypatch):
+        from app.models.payment import Payment
+
+        provider, _ = self._configured(monkeypatch)
+        payment = Payment(amount=10.0, status="pending", provider="redsys", provider_ref="123456ABC")
+        assert provider.confirm(payment) == "pending"
+        assert provider.confirm(payment, {}) == "pending"
+
+    def test_confirm_bad_signature_rejected(self, monkeypatch):
+        from app.models.payment import Payment
+
+        provider, secret = self._configured(monkeypatch)
+        order = "123456ABC"
+        payment = Payment(amount=10.0, status="pending", provider="redsys", provider_ref=order)
+        response = self._signed_response(provider, secret, order)
+        response["Ds_Signature"] = "tampered"
+        with pytest.raises(PaymentConfirmationError):
+            provider.confirm(payment, response)
+
+    def test_confirm_foreign_order_rejected(self, monkeypatch):
+        from app.models.payment import Payment
+
+        provider, secret = self._configured(monkeypatch)
+        payment = Payment(amount=10.0, status="pending", provider="redsys", provider_ref="123456ABC")
+        with pytest.raises(PaymentConfirmationError):
+            provider.confirm(payment, self._signed_response(provider, secret, "OTHER"))
+
+    def test_confirm_syncs_registration(self, monkeypatch, db_session, create_user):
+        from app.models.festival import Festival
+        from app.models.payment import Payment
+        from app.models.registration import FestivalRegistration
+        from app.services.payment_service import PaymentService
+
+        provider, secret = self._configured(monkeypatch)
+        user, _ = create_user()
+        fest = Festival(name="Fest", is_active=True)
+        db_session.add(fest)
+        db_session.commit()
+        reg = FestivalRegistration(user_id=user.id, festival_id=fest.id, payment_status="pending")
+        db_session.add(reg)
+        db_session.commit()
+        order = "123456ABC"
+        payment = Payment(
+            registration_id=reg.id,
+            amount=10.0,
+            currency="EUR",
+            status="pending",
+            provider="redsys",
+            provider_ref=order,
+        )
+        db_session.add(payment)
+        db_session.commit()
+        response = self._signed_response(provider, secret, order)
+        result = PaymentService(provider=provider).confirm(db_session, payment, response=response)
+        assert result.status == "paid"
+        db_session.refresh(reg)
+        assert reg.payment_status == "paid"
+        assert reg.paid_at is not None
+        assert reg.payment_method == "redsys"
+        assert reg.transaction_id == order

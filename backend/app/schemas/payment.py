@@ -28,3 +28,8 @@ class PaymentResponse(BaseModel):
 
 class PaymentPage(PageBase):
     items: list[PaymentResponse]
+
+
+class WebhookResponse(BaseModel):
+    received: bool
+    status: str

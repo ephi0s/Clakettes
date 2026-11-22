@@ -15,15 +15,17 @@
 1. Dienst: Methode in der Datei von `lib/services/api/` der eigenen Domäne.
 2. Bildschirm in `lib/screens/` <600 Zeilen: wiederverwendbare UI nach `lib/widgets/` extrahieren (Blasen, Karten, Leisten, Abschnitte).
 3. Hinweise mit `showAppSnack`; Löschungen mit `showConfirmDialog`; Fehler mit `ErrorStateWidget` und Wiederholung.
-4. Texte in `assets/l10n/en.arb` zuerst (Fallback) + restliche Locales; 0 fehlende Schlüssel verifiziert.
+4. Texte zuerst in `assets/l10n/app_en.arb` (Fallback) + restliche Locales (823 Schlüssel); führe `flutter test test/l10n/arb_parity_test.dart` aus: es erfordert identische Schlüssel und Placeholders in den 9 ARBs (Referenz `es`).
 5. Test in `test/screens/` oder `test/widgets/` (Widgets mit `l10n` benötigen ein zusätzliches `pump()` nach `pumpWidget`).
 
-## Tore (CI erfordert sie)
+## Abhängigkeiten (Dependabot)
 
-| Befehl | Wo |
-|--------|----|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 Probleme) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` vor Test | `frontend/` |
+- pip in `/backend` und pub in `/frontend`, wöchentlich (montags), gruppiert in `backend-deps`/`frontend-deps`; Aktualisierungen vom Typ `version-update:semver-major` werden ignoriert.
+- Patch/Minor: `.github/workflows/dependabot-automerge.yml` aktiviert `gh pr merge --auto --squash` nur für `dependabot[bot]`; der tatsächliche Merge erfordert grünes CI. Major: manuelle Prüfung.
+- `.github/workflows/dependabot-rebase.yml` führt einen Rebase offener PRs montags 04:17 UTC und bei `workflow_dispatch` durch. Details in [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md).
+
+## Qualitätstore
+
+- Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
+- Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
+- Nach Änderungen an Endpoints oder Routen die Referenz neu erzeugen mit `python tools/gen_api.py --all` (kombiniert Präfixe aus `main.py` und jedem `APIRouter`).

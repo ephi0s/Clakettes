@@ -142,7 +142,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internacionalización (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc
+- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 claves por ARB, paridad verificada con `test/l10n/arb_parity_test.dart`)
 - **Implementación manual**: `lib/l10n/app_localizations.dart` (sin gen-l10n)
 - **Archivos ARB**: `assets/l10n/app_<locale>.arb`
 - **Auto-detección**: `LocaleService` lee el idioma del sistema, con fallback a `en`

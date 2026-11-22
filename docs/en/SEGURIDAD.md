@@ -27,19 +27,24 @@
 | Chat group | group role `admin` to delete; member to read |
 | Form | `require_form_admin` (creator/admin/organizer) |
 | Delegation | delegator or admin to edit/revoke |
-| Global roles | `is_admin`; auto-join only with role `attendee` |
+| Global roles | unified `require_admin(user, db)`: legacy `admin` role (case-insensitive) or `UserRole` with status `ACTIVE`/`APPROVED`; auto-join only with role `attendee` |
+| User aliases | `require_self_or_admin` (owner or admin) on create/update/delete |
+| User blocks | `require_owner_or_admin` (owner or `can_edit_user`) on block/unblock/list/status |
 | Channel roles | `Literal[admin,moderator,member]` (422 outside list) |
 | Payments | owner via registration, festival admin or global admin; mock webhook with `MOCK_WEBHOOK_SECRET` |
 
 ## Payments
 
-- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`). No PAN/IBAN in DB: only amount, currency, `provider_ref` and status.
+- `PAYMENTS_PROVIDER=mock|stripe|redsys` (`payment_providers.py`; `mock` by default in `backend/app/config.py`). No PAN/IBAN in DB: only amount, currency, `provider_ref` and status.
 - Stripe: lazy SDK + signature verification (`STRIPE_WEBHOOK_SECRET`).
 - Redsys: HMAC_SHA256_V1 signature without SDK; Bizum with `pay_methods="z"` (prior merchant enrollment). Validate against sandbox before prod.
+- `confirm` and `refund` sync `FestivalRegistration.payment_status` (`paid`/`refunded`) and, on paid, `paid_at`/`payment_method`/`transaction_id`; the Payment's `provider` is taken from the active provider, not from `PAYMENTS_PROVIDER`.
+- **Current status**: Stripe and Redsys are NOT operational yet; their webhooks still need wiring (`POST /api/payments/webhook/{stripe,redsys}`). Only the simulated webhook works today (`POST /api/payments/webhook/mock`).
+- Redsys `confirm` always returns `"pending"`: it does not confirm real charges until the webhook is wired.
 
 ## Perimeter
 
-- Rate limit SQLite 100/60s per IP (`/dav` 600/60s); `TESTING=true` disables it.
+- SQLite rate limit 100/60 s per IP globally, 600/60 s on `/dav`, 5/300 s login, 20/60 s refresh and 3/300 s reset and 60/60 s on federation. `TESTING` ∈ {1, true, yes, on} (`app.config.is_testing()`) disables all limits and auto-migration.
 - Headers: `nosniff`, `DENY`, `Referrer-Policy`, `Permissions-Policy`, strict `Content-Security-Policy` in the API (relaxed only on `/docs`), `HSTS` only in production.
 - Bodies ≤10 MB (413). CORS with credentials and explicit origins.
 - MariaDB in production requires TLS (`?ssl_ca=…` in `DATABASE_URL`).
@@ -51,10 +56,14 @@
 3. TLS with proxy + `FORWARDED_ALLOW_IPS`; no admin `setup` (only created outside prod).
 4. Change `appUserModelId`/GUID of Windows notifications if app is renamed.
 
-## Federation (phase 2)
+## Federation (phases 2-10)
 
-- Node identity = domain + TLS certificate.
-- Mutual peering via mTLS with domain certificates (public or private CA).
-- TLS mandatory between nodes; strict validation (no self-signed in prod).
-- Rotation/revocation managed by certificate renewal. A compromised node is revoked by invalidating its certificate and its directory entry.
-- `allowlist`/`blocklist` per node (`node_policies`). Rate limiting and anti-flood at federation edge. Moderation report propagation between nodes.
+Full detail in [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controls in force:
+
+- Node identity = domain + TLS certificate. Mutual peering via mTLS with domain certificates (public or private CA); TLS mandatory, no self-signed in prod.
+- RSA-SHA256 signed manifest with own PEM/key and 24 h `expires_at`; `whoami` requires a federation JWT; JWKS to verify peer tokens; `peers/verify` and `peers/revoke`.
+- `allowlist`/`blocklist` per node (`node_policies`), with `import_only`, `disable_chat` and `disable_search`. Rate limiting and anti-flood at the edge; moderation report propagation.
+- Portability: HMAC-signed bundles and checksum; import validates/sanitizes `MediaUrl` and normalizes `contest_type`; festival and identity migration with `identity_redirects` and auditing in `migration_audits`; migration endpoints require admin.
+- Federated chat: RS256-signed bridge, dedup by `message_id` in `chat_outbox`, ordering by `timestamp`; reports and mutes, word filter and limit of 10 messages/60 s per node and user.
+- Events: HMAC-signed publish (`X-Clakettes-Signature`), SSE with mandatory `token` in query, optional `since` and `limit`, replay of 200 and 3 retries with backoff.
+- Resilience: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), key revocation (`keys/revoke`) and an 8-step incident plan. Rotation/revocation by certificate renewal; a compromised node is invalidated in the directory.

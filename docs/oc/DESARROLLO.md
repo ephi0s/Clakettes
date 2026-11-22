@@ -20,17 +20,20 @@
    reutilizabla (borbolhas, cartas, barras, seccions).
 3. Avises amb `showAppSnack`; escafaments amb `showConfirmDialog`; errors amb
    `ErrorStateWidget` e tornada d'ensajar.
-4. Tèxtes en `assets/l10n/en.arb` d'en primièr (fallback) + rèsta de locales;
-   0 claus absentas verificat.
+4. Tèxtes en `assets/l10n/app_en.arb` d'en primièr (fallback) + rèsta de locales
+   (823 claus); executatz `flutter test test/l10n/arb_parity_test.dart`: exigeís
+   las meteissas claus e placeholders dins los 9 ARB (referéncia `es`).
 5. Tèst en `test/screens/` o `test/widgets/` (los widgets amb `l10n`
    an besonh d'un `pump()` extra aprèp `pumpWidget`).
 
-## Pòrtas (CI las exigís)
+## Dependéncias (Dependabot)
 
-| Comando | Dónde |
-|---|---|
-| `ruff check .` + `ruff format --check .` | `backend/` |
-| `pytest tests/ -x -q --tb=short` | `backend/` |
-| `flutter analyze` (0 issues) | `frontend/` |
-| `flutter test` | `frontend/` |
-| `dart run build_runner build --delete-conflicting-outputs` antes de test | `frontend/` |
+- pip en `/backend` e pub en `/frontend`, setmanals (diluns), gropats en `backend-deps`/`frontend-deps`; las actualizacions `version-update:semver-major` son ignoradas.
+- Patch/minor: `.github/workflows/dependabot-automerge.yml` activa `gh pr merge --auto --squash` solament per `dependabot[bot]`; lo merge efectiu exigís CI verda. Major: revision manuala.
+- `.github/workflows/dependabot-rebase.yml` rebaseja los PRs dobèrts los diluns a 04:17 UTC e jos `workflow_dispatch`. Detalh dins [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md).
+
+## Pòrtas de qualitat
+
+- Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
+- Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
+- Après cambiar endpoints o rotas, regeneratz la referéncia amb `python tools/gen_api.py --all` (combina los prefixes de `main.py` e de cada `APIRouter`).

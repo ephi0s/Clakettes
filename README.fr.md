@@ -28,8 +28,9 @@ Fonctionne en web, Android, iOS et bureau (Windows, macOS, Linux), en 9 langues 
 - **Profils avec palmarès** : palmarès lié aux festivals de la plateforme ou externe via liens, avec contrôle de confidentialité champ par champ.
 - **Chat** : messages directs et de groupe ou canal par festival, avec chiffrement de bout en bout.
 - **Cartes** : sièges et localisations de tournage sur cartes interactives, avec ouverture dans ton app de cartes favorite.
-- **Sans connexion** : l'app continue de fonctionner offline et synchronise tes changements en récupérant la connexion.
-- **Dans ta langue** : espagnol, anglais, français, allemand, italien, catalan, basque, galicien et occitan, avec détection automatique.
+- **Sans connexion** : l'app continue de fonctionner offline, conserve la provenance de chaque nœud en cache et synchronise tes changements en récupérant la connexion.
+- **Fédération** : nœuds de confiance avec mTLS, portabilité d'identité, chat et événements entre nœuds, modération, métriques et résilience.
+- **Dans ta langue** : espagnol, anglais, français, allemand, italien, catalan, basque, galicien et occitan (823 clés par langue), avec détection automatique du locale du système.
 
 ## Requêtes et démarrage
 
@@ -57,17 +58,6 @@ En Linux/macOS :
 
 Ceci lève le backend sur `http://localhost:8000` et l'app en mode local ; l'API expose Swagger/OpenAPI sur `/docs`. Tu peux désactiver l'une des deux parties avec `--no-backend` ou `--no-frontend`.
 
-### Autres options utiles
-
-```bash
-./start.ps1 --help
-./start.ps1 --migrate
-./start.ps1 --build
-./start.ps1 --build-all
-```
-
-Consulte la référence complète du démarrage et déploiement dans [docs/fr/HERRAMIENTAS.md](docs/fr/HERRAMIENTAS.md) et [docs/fr/USO.md](docs/fr/USO.md).
-
 ## Variables d'environnement et configuration
 
 ### Backend
@@ -78,6 +68,15 @@ Crée ou ajuste `backend/.env` avec au moins :
 DATABASE_URL=sqlite:///./clakettes.db
 SECRET_KEY=tu-secret-key
 CORS_ORIGINS=https://tu-dominio.com
+APP_ENV=development
+PUBLIC_BASE_URL=https://tu-dominio.com
+# Fédération avec mTLS (production)
+MTLS_REQUIRED=false
+MTLS_CA_BUNDLE_PATH=
+MTLS_CLIENT_CERT_PATH=
+MTLS_CLIENT_KEY_PATH=
+# Paiements (mock par défaut ; Stripe/Redsys sur demande)
+PAYMENTS_PROVIDER=mock
 ```
 
 Pour environnement productif on utilise MariaDB ; les scripts et la documentation de déploiement le gèrent avec Docker.
@@ -92,17 +91,6 @@ flutter run --dart-define=BACKEND_URL=http://localhost:8000
 
 Le démarrage automatique du projet configure déjà ceci quand on utilise `start.*`.
 
-## État du projet
-
-🚧 **En développement actif** — Festivals, courts, chat avec E2EE, cartes, mode hors ligne et 9 langues fonctionnant.
-
-**Feuille de route prochaine :**
-
-- [ ] Notifications push (Firebase/APNs)
-- [ ] AppImage Linux signé
-- [ ] Installeur Windows MSI
-- [x] Documentation OpenAPI exportable (`/openapi.json` sans operationIds dupliqués + `docs/fr/API.md` régénéré)
-
 ## Documentation du projet
 
 La carte de documentation est dans [docs/fr/README.md](docs/fr/README.md). C'est la meilleure entrée pour chaque type d'utilisateur :
@@ -116,10 +104,10 @@ La carte de documentation est dans [docs/fr/README.md](docs/fr/README.md). C'est
 - [docs/fr/DESARROLLO.md](docs/fr/DESARROLLO.md) : comment ajouter endpoints ou écrans
 - [docs/fr/BACKEND.md](docs/fr/BACKEND.md) : guide du backend (couches, config, auth, tests)
 - [docs/fr/DATABASE.md](docs/fr/DATABASE.md) : schéma et migrations
-- [docs/fr/FEDERATION_PROTOCOL.md](docs/fr/FEDERATION_PROTOCOL.md) : protocole de fédération (phase 4)
-- [docs/fr/FEDERATION_SCHEMA.md](docs/fr/FEDERATION_SCHEMA.md) : Clakettes Schema v1
-- [docs/fr/FEDERATION_SECURITY.md](docs/fr/FEDERATION_SECURITY.md) : modèle de confiance fédéré
-- [docs/fr/PUSH.md](docs/fr/PUSH.md) : décision de notification
+- [docs/fr/FEDERATION_PROTOCOL.md](docs/fr/FEDERATION_PROTOCOL.md) : protocole entre nœuds (phases 2-10)
+- [docs/fr/FEDERATION_SECURITY.md](docs/fr/FEDERATION_SECURITY.md) : confiance, mTLS, portabilité et résilience
+- [docs/fr/FEDERATION_SCHEMA.md](docs/fr/FEDERATION_SCHEMA.md) : entités fédérées et checksum
+- [docs/fr/FEDERATION_CHAT_BROKER.md](docs/fr/FEDERATION_CHAT_BROKER.md) : décision de transport et état implémenté
 
 En outre, le point de départ pour développement et convention de projet est [AGENTS.md](AGENTS.md).
 
@@ -128,7 +116,6 @@ En outre, le point de départ pour développement et convention de projet est [A
 - [docs/fr/README.md](docs/fr/README.md) : index général par audience
 - [docs/fr/HERRAMIENTAS.md](docs/fr/HERRAMIENTAS.md) : commandes de build, test et démarrage
 - [docs/fr/FUNCIONAL.md](docs/fr/FUNCIONAL.md) : usage réel du produit par rôle
-- [docs/fr/PUSH.md](docs/fr/PUSH.md) : décision de notification
 
 ### FAQ rapide
 
@@ -145,7 +132,7 @@ En outre, le point de départ pour développement et convention de projet est [A
 4. Pousse la branche (`git push origin feature/nueva-funcionalidad`).
 5. Ouvre une Pull Request avec contexte, changements et validation.
 
-**Conventions de qualité :** [Conventional Commits](https://www.conventionalcommits.org/).
+**Conventions de qualité :** [Conventional Commits](https://www.conventionalcommits.org/), `ruff check .`, `ruff format --check .`, `flutter analyze`, `pytest` et `flutter test` doivent passer avant de fusionner. GitHub Actions exécute ces portes en parallèle et Dependabot ouvre des PR hebdomadaires groupées : patch/minor se fusionnent seuls avec une CI verte, major reste à revue manuelle (détail dans [docs/fr/INFRAESTRUCTURA.md](docs/fr/INFRAESTRUCTURA.md)).
 
 ## Licence
 

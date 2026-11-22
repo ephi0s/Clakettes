@@ -1,5 +1,7 @@
 # Clakettes federazio-protokoloa (2tik 10erako faseak)
 
+[ES](../es/FEDERATION_PROTOCOL.md) · [EN](../en/FEDERATION_PROTOCOL.md) · [FR](../fr/FEDERATION_PROTOCOL.md) · [DE](../de/FEDERATION_PROTOCOL.md) · [IT](../it/FEDERATION_PROTOCOL.md) · [CA](../ca/FEDERATION_PROTOCOL.md) · [EU](FEDERATION_PROTOCOL.md) · [GL](../gl/FEDERATION_PROTOCOL.md) · [OC](../oc/FEDERATION_PROTOCOL.md)
+
 Elkarrekikotasunezko zerbitzari/bezero bat sortzeko urratsak:
 
 1. Ezarri `/api/federation/*` endpoint-ak (ikusi `docs/es/FEDERATION_SCHEMA.md`).
@@ -8,11 +10,11 @@ Elkarrekikotasunezko zerbitzari/bezero bat sortzeko urratsak:
 4. Arraztu manifestua `GET /api/federation/manifest` bidez `schema_version`, `node`, `version`, `capabilities`, `issued_at`, `expires_at`, `signature` eta `certificate_chain` eremuekin. Manifestua RSA-SHA256 (PKCS#1 v1.5) bidez sinatzen da nodoaren TLS ziurtagiriaren gako pribatuarekin; pareak `certificate_chain`-eko PEMarekin balioztatzen du sinadura eta `expires_at` (24 h) egiaztatzen du.
 5. Arraztu gako publikoa `GET /api/federation/.well-known/jwks.json` bidez, pareek federazio-tokenak baliozta ditzaten.
 6. Balioztatu pareen tokenak JWKS bidez: babestutako endpoint batera deitzen duen urruneko nodo batek sinatutako (RS256) Bearer JWT aurkeztu behar du, `iss` bere domeinua izanik eta sinadura bere JWKSen kontra baliozta dela. `GET /api/federation/whoami` bidez parearen identitatea itzultzen da JWT hori baliozkoa denean soilik (bestela 401).
-7. Ebaztu urruneko erabiltzaileak `GET /api/federation/users/{ref}` eta `GET /api/federation/.well-known/webfinger` bidez (biek egiaztatutako pare mTLS eskatzen dute).
+7. Ebaztu urruneko erabiltzaileak `GET /api/federation/users/{ref}` eta `GET /api/federation/.well-known/webfinger` bidez (biek egiaztatutako pare mTLS eskatzen dute `MTLS_REQUIRED=true` denean bakarrik; lehenetsiz `False`).
 8. Erabili Clakettes Schema v1 datu-trukaketarako.
 9. Transferitu identitatea eta datuak `POST /api/federation/portability/bundles` eta `/imports` bidez (HMAC-SHA256 sinadura eta checksum), migratu `/festivals/{id}/migrate` eta `/users/{ref}/migrate` bidez, eta ebaztu erreferentzia zaharrak `GET /redirects/{ref}` bidez.
 10. Banatu txata sinatutako `/api/federation/chat/bridge/{inbound,outbound,config}` bridge-aren bidez; historia `/api/federation/chat/messages` bidez kontsultatzen da, `message_id` bidez deduplikatuta eta `timestamp` + `message_id` bidez ordenatuta. `chat_outbox` ilara iraunkorrak garraio trukagarria ahalbidetzen du (xehetasuna `docs/es/FEDERATION_CHAT_BROKER.md` fitxategian).
-11. Hedatu aldaketak gertaera-busaren bidez: `GET /api/federation/events/stream` (SSE `since` eta bihotz-taupadarekin), `POST /publish` eta `GET /retry-queue` (3 saiakera, 300 ms → 5 s atzerapena).
+11. Hedatu aldaketak gertaera-busaren bidez: `GET /api/federation/events/stream` (SSE `since` eta bihotz-taupadarekin), `POST /publish` eta `GET /retry-queue` (3 saiakera, 300 ms → 1,5 s → 5 s atzerapena).
 12. Zaindu peering-aren osasuna `/api/federation/resilience/{health,heartbeat,metrics,keys/revoke,keys/revoked,incident-plan}` bidez; `metrics`-ek p50/p95, latentzia, hutsegiteak eta birsaioak erakusten ditu.
 13. Egiaztatu hirugarren nodo baten betetze-maila `python tools/federation_conformance.py <url> [--json]` bidez (1 hutsegite kritiko edo altuak badaude).
 

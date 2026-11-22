@@ -59,6 +59,17 @@ Toute la configuration se fait via `backend/.env` (chargé par `pydantic-setting
 | `JWT_AUDIENCE` | `clakettes-api` | Revendication audience JWT |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Durée de vie du token d'accès |
 | `CORS_ORIGINS` | `None` (→ `["*"]`) | Origines autorisées séparées par des virgules |
+| `APP_ENV` | `development` | `production` exige une `SECRET_KEY` robuste, des origines CORS explicites et un schéma via Alembic |
+| `TESTING` | désactivé | `1/true/yes/on` désactive les rate limits et l'auto-migration (`app.config.is_testing()`) |
+| `PUBLIC_BASE_URL` | `None` | Origine publique du nœud (manifeste, bundles, ICS absolu) |
+| `MTLS_REQUIRED` | `False` | Exige un mTLS vérifié sur `/api/federation` |
+| `MTLS_CA_BUNDLE_PATH` | `None` | CA racine pour valider les certificats clients |
+| `MTLS_CLIENT_CERT_PATH`, `MTLS_CLIENT_KEY_PATH` | `None` | Certificat et clé propres (signature du manifeste RSA-SHA256) |
+| `RATE_LIMITS_DB_PATH` | `backend/rate_limits.db` | Fichier SQLite servant au limiteur de requêtes |
+| `SKIP_AUTO_MIGRATE` | désactivé | `1/true/yes/on` omet `alembic upgrade head` au démarrage |
+| `PAYMENTS_PROVIDER`, `MOCK_WEBHOOK_SECRET`, `MOCK_PAYMENTS_FORCE_FAIL` | `mock`, vide, `False` | Fournisseur de paiement mock et secret de webhook |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | vide | Identifiants Stripe (SDK paresseux) |
+| `REDSYS_MERCHANT_CODE`, `REDSYS_TERMINAL`, `REDSYS_SECRET_KEY`, `REDSYS_SANDBOX`, `REDSYS_CURRENCY` | —, `1`, vide, `True`, `978` | Signature HMAC Redsys et sandbox |
 | `PORT_BACKEND` | `8000` | Port du serveur (utilisé par Docker/scripts de démarrage) |
 
 **Exemple de `.env` pour la production :**
@@ -169,15 +180,15 @@ POST /api/auth/refresh
 
 ### Hashage des mots de passe
 
-- **bcrypt** via `passlib` (rounds=12)
+- **bcrypt** direct (`bcrypt.hashpw` + `bcrypt.gensalt()`), sans `passlib`
 - Hash stocké dans `User.password_hash`
-- Vérifié via `pwd_context.verify(plain, hash)`
+- Vérifié via `bcrypt.checkpw(plain, hash)` (`app/services/user_service.py`)
 
 ### Limite de requêtes
 
 - **100 requêtes / 60 secondes** par IP (sauvegarde SQLite)
 - Appliqué via `RateLimitMiddleware` dans `main.py`
-- Désactivé quand la variable d'environnement `TESTING=true` est définie
+- Désactivé avec `TESTING` ∈ {1, true, yes, on} (helper `app.config.is_testing()`), y compris le limiteur de refresh 20/60 s dans `routers/auth_sessions.py`
 
 ---
 
@@ -191,10 +202,10 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profil, upload avatar |
 | `auth` | `/api/users` | auth | Connexion, rafraîchissement, inscription |
 | `auth_sessions` | `/api/auth` | auth | Liste/révocation des sessions |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD, lien festival  CRUD sous `/api/festivals/{id}/shortfilms` ; la liste plate est obsolète |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD imbriqué dans `/api/festivals/{festival_id}/shortfilms` (GET/POST de liste et GET/PUT/DELETE de détail, filtre `?contest_type=`) ; les 5 endpoints plats restent disponibles mais marqués `deprecated=True` |
 | `chat` | `/api/chat` | chat | Messages, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Rejoindre/quitter, membres |
-| `uploads` | `/api/uploads` | uploads | Upload avatar |
+| `uploads` | `/api/uploads` | uploads | Upload multipart d'avatar, thumbnail, vidéo, document et image de chat ; renvoie des chemins relatifs `/uploads/...` |
 | `search` | `/api/search` | search | Recherche globale |
 | `admin` | `/api/admin` | admin | Stats, tables, audit-log, reset |
 | `notifications` | `/api/notifications` | notifications | CRUD, non lus count |
@@ -216,16 +227,19 @@ POST /api/auth/refresh
 | `location_relations` | `/api/locations/{location_id}/relations` | location-relations | Relations de localisation |
 | `shortfilm_locations` | `/api/shortfilms/{shortfilm_id}/locations` | shortfilm-locations | Localisations de court-métrage |
 | `form_definitions` | `/api` | forms | Constructeur de formulaires |
-| `federation` | `/api/federation` | federation | manifest, répertoire, nœuds, rapports, webfinger |
+| `federation` | `/api/federation` | federation | manifeste, répertoire, nœuds, signalements, webfinger, `whoami`, JWKS, peers/verify, mTLS |
+| `federation_chat_bridge` | `/api/federation/chat` | federation-chat-bridge | Bridge de chat signé RS256, config et messages |
+| `federation_events` | `/api/federation/events` | federation-events | SSE avec `token` obligatoire, publication et relances |
+| `federation_portability` | `/api/federation/portability` | federation-portability | Bundles, imports, migration et redirects |
+| `federation_resilience` | `/api/federation/resilience` | federation-resilience | Health, heartbeat, métriques, révocation et incident |
+| `chat_moderation` | `/api/chat/moderation` | chat-moderation | Signalements, mutes, modération et limites |
 | `jury_votes` | `/api` | jury-votes | Vote du jury (phase 5) |
 | `calendar` | `/api/calendar` | calendar | Agenda, CalDAV, paramètres |
 | `badges` | `/api` | badges | Insignes, affectations, éligibilité |
 | `posts` | `/api` | posts | Publications sociales, réponses, modération |
 | `payments` | `/api` | payments | Paiement, confirmation, remboursement, webhook |
 | `festival_rulebooks` | `/api/festivals/{festival_id}/rulebooks` | rulebooks | Livre de règles du festival |
-| `user_blocks` | `/api` | user-blocks | Blocage d'utilisateur |
-| `moderation_reports` | `/api` | moderation-reports | Rapports de modération |
-| `node_policies` | `/api` | node-policies | Politiques de nœuds de fédération |
+| `user_blocks` | `/api` | user-blocks | Blocage d'utilisateur (propriétaire ou admin) |
 
 ### Pagination et filtrage
 
@@ -266,7 +280,7 @@ Enveloppe de réponse :
 | `GET` | `/api/chat/ws` | Connexion WebSocket (auth via query `token`) |
 | `POST` | `/api/chat/messages` | Envoyer un message (fallback REST) |
 | `GET` | `/api/chat/messages` | Historique paginé |
-| `PATCH` | `/api/chat/messages/{id}/read` | Marquer comme lu |
+| `PUT` | `/api/chat/messages/{message_id}/read` | Marquer comme lu |
 
 ### Types de message
 
@@ -284,9 +298,9 @@ class MessageType(str, Enum):
 
 ### E2EE
 
-- Échange de clés X25519 via `/api/users/{id}/keys`
+- Échange de clés ECDH P-256 via `POST /api/users/me/public-key` et `GET /api/users/{user_id}/public-key` (`routers/keys.py`)
 - Clés publiques stockées dans `UserKey` (une clé active par utilisateur)
-- Chiffrement/déchiffrement dans le frontend (`e2ee_service.dart`)
+- Chiffrement/déchiffrement AES-GCM dans le frontend (`services/crypto_utils.dart`)
 
 ---
 
@@ -304,7 +318,13 @@ file: <image/*>
 
 - Sauvegardé dans `backend/uploads/avatars/{user_id}_{uuid}.{ext}`
 - Servi de manière statique à `/uploads/avatars/...`
-- Taille maximale : 10 Mo (appliqué par `RequestSizeLimitMiddleware`)
+- Taille maximale : 5 MB pour les images (`MAX_IMAGE_SIZE` dans `routers/uploads.py`) ; la limite globale du corps reste à 10 MB
+
+### Tous les uploads
+
+- Les endpoints `avatar`, `thumbnail`, `video`, `document` et `chat-image` renvoient un chemin relatif `/uploads/<dossier>/<fichier>` ; le client le résout avec `resolveMediaUrl()` contre le nœud actif.
+- Si le content-type manque ou arrive en `application/octet-stream`, `uploads._sniff_content_type()` détecte le type par magic bytes (JPEG, PNG, GIF, WebP, PDF et MP4) ; l'erreur 400 indique `Use JPEG, PNG, WebP, GIF, PDF or MP4.`
+- `logo_url`, `banner_url`, `video_url` et `thumbnail_url` utilisent le type `MediaUrl` : acceptent des chemins relatifs (et chaîne vide) ou des URL http(s) valides ; une URL invalide renvoie 422.
 
 ---
 
@@ -336,15 +356,16 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 python -m pytest tests/test_festivals.py -v
 ```
 
-**Configuration des tests** (`pyproject.toml` / `pytest.ini`) :
+**Configuration des tests** (`pyproject.toml`) :
 
-```ini
+```toml
 [tool.pytest.ini_options]
-asyncio_mode = auto
-testpaths = tests
-python_files = test_*.py
-python_functions = test_*
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = ["interop: interoperability tests that drive the real caldav client against a live server"]
 ```
+
+Les tests asynchrones utilisent `pytest.mark.asyncio` ; il n'y a pas de `asyncio_mode` global.
 
 **Fixtures** (`tests/conftest.py`) :
 - `db_session` — session SQLite en mémoire
@@ -371,9 +392,9 @@ ruff format .
 ```toml
 [tool.ruff]
 line-length = 120
-target-version = "py312"
-select = ["E", "F", "I", "UP", "B", "C4", "PTH", "T20", "SIM", "ARG"]
-ignore = ["E501", "SIM102", "SIM103"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
 ```
 
 ---
@@ -459,7 +480,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy"}
+# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
 ```
 
 ---
@@ -524,5 +545,5 @@ async def custom_action(
 - [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)
 - [Pydantic v2](https://docs.pydantic.dev/latest/)
 - [Alembic](https://alembic.sqlalchemy.org/)
-- [python-jose](https://github.com/mpdavis/python-jose)
-- [passlib](https://passlib.readthedocs.io/)
+- [PyJWT](https://github.com/jpadilla/pyjwt)
+- [bcrypt](https://github.com/pyca/bcrypt/)

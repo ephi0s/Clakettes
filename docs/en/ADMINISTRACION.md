@@ -31,7 +31,7 @@ In non-prod (`APP_ENV != production`) startup creates `admin` / `setup` (`admin@
 | Peer identity | `GET /api/federation/whoami` | Validates the peer's RS256 JWT against its JWKS; 401 if not valid |
 | Portability | `POST /api/federation/portability/bundles`, `/imports`, `/festivals/{id}/migrate`, `/users/{ref}/migrate`, `GET /redirects/{ref}` | Export/import signed bundles, migrate ownership and identity and resolve old refs (migrations, admin only) |
 | Chat and moderation | `/api/federation/chat/bridge/{inbound,outbound,config}`, `GET /api/federation/chat/messages`, `/api/chat/moderation/*` | Signed bridge, deduplicated history, reports, mutes, word filter and limit of 10 messages/60 s per node and user |
-| Events | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE with `since` and heartbeat, publish to peers and retries (3 attempts, 300 ms→5 s) |
+| Events | `GET /api/federation/events/stream`, `POST /publish`, `GET /retry-queue` | SSE with `since` and heartbeat, publish to peers and retries (3 attempts, 300 ms → 1.5 s → 5 s) |
 | Resilience | `GET /api/federation/resilience/{health,heartbeat,metrics,incident-plan}`, `POST /keys/revoke`, `GET /keys/revoked` | Health, heartbeat, p50/p95 metrics, immediate key revocation and incident plan |
 | Conformance | `python tools/federation_conformance.py <url> [--json]` | Verifies a third-party node; exits 1 if there are critical/high failures |
 
@@ -40,7 +40,7 @@ The detail of the trust model and transport is in [FEDERATION_SECURITY.md](FEDER
 ## Backups and migrations
 
 - SQLite: copy `*.db` while stopped (`-Kill` first). MariaDB: `mariadb-dump` (volume `db-data`).
-- Migrations: `alembic upgrade head` from `backend/` (prod **only** Alembic, never `create_all`). The current head is `c1d2e3f4a5b6` (42 revisions) and adds `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports` and `chat_mutes`.
+- Migrations: `alembic upgrade head` from `backend/` (prod **only** Alembic, never `create_all`). The current head is `d1e2f3a4b5c6` (45 revisions); the latest add `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, seat uniqueness (`uq_event_seat_location`) and `contest_type` in shorts with required `festival_id`.
 - Engine change: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detail in [DATABASE.md](DATABASE.md).
 
 ## Troubleshooting
