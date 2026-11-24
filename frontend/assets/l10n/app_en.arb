@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Delete this post?",
   "postDeleteFailed": "Could not delete",
   "postEditTitle": "Edit post",
+  "postTitleHint": "Post title",
   "postSaveFailed": "Could not save",
   "postActionForbidden": "Action not allowed",
   "postReplyFailed": "Could not reply",

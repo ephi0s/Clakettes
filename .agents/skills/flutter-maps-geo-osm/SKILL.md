@@ -9,7 +9,7 @@ metadata:
 
 ## Dependencies (`frontend/pubspec.yaml`)
 
-`flutter_map: ^7.0.2`, `latlong2: ^0.9.1`, `geolocator: ^11.0.0`, `url_launcher: ^6.2.1`.
+`flutter_map`, `latlong2`, `geolocator`, `url_launcher`.
 
 ## Tile Layer (single canonical form)
 

@@ -9,7 +9,7 @@ Zine-jaialdien kudeaketa plataformarako Flutter frontend multiplataforma.
 - **Framework-a**: Flutter (Material 3, kolore dinamikoa, modu iluna)
 - **Egoera**: Singleton-ak + `setState()` + Stream-ak (EZ Provider, EZ flutter_it, EZ riverpod)
 - **Tokiko biltegiratzea**: Hive, SharedPreferences
-- **i18n**: 9 hizkuntza (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manuala (gen-l10n gabe)
+- **i18n**: hizkuntza guztiak (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manuala (gen-l10n gabe)
 - **Irisgarritasuna**: Semantics widget, TalkBack/VoiceOver euskarria, WCAG 2.1 AA
 - **Arkitektura**: Services / Managers / Views (Flutter Arkitektura Pragmatikoa)
 
@@ -67,7 +67,7 @@ lib/
 │       ├── rest_chat_backend.dart    # Historia/sync REST bidez (testetan fake gisa erabilia)
 │       └── websocket_chat_backend.dart  # Denbora erreala WebSocket bidez
 ├── models/            # 24 Dart ereduak (eskuzko fromJson/toJson + Hive codegen)
-├── widgets/           # 33 widget berrerabilgarri irisgarriak
+├── widgets/           # widget berrerabilgarri irisgarriak
 │   ├── reusable_widgets.dart     # ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField + showAppSnack
 │   ├── agenda_calendar_widget.dart
 │   ├── chat_bubble.dart          # Mezu-burbuila + eduki aberatsa
@@ -92,7 +92,7 @@ lib/
 │   ├── open_in_maps_action.dart
 │   ├── seat_map_widget.dart      # Eserleku-mapa interaktiboa
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
-├── l10n/              # AppLocalizations + 9 ARB
+├── l10n/              # AppLocalizations + ARB guztiak
 ├── main.dart          # Sarrera-puntua, Material 3 gaia, zerbitzuen hasieratze-ordena
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
 └── auth_wrapper.dart  # Autentifikazio-atea (splash → login / home)
@@ -144,7 +144,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internazionalizazioa (i18n)
 
-- **9 locale**: en, es, fr, de, it, ca, eu, gl, oc (823 gako hizkuntzako, paritatea `test/l10n/arb_parity_test.dart`-ekin egiaztatuta)
+- **locale guztiak**: en, es, fr, de, it, ca, eu, gl, oc (paritatea `test/l10n/arb_parity_test.dart`-ekin egiaztatuta)
 - **Eskuzko inplementazioa**: `lib/l10n/app_localizations.dart` (gen-l10n gabe)
 - **ARB fitxategiak**: `assets/l10n/app_<locale>.arb`
 - **Auto-detekzioa**: `LocaleService`-k sistemaren hizkuntza irakurtzen du, fallback `en`-era
@@ -153,7 +153,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Itzulpenak gehitzea
 
 1. Gehitu giltza `assets/l10n/app_en.arb`-ra
-2. Erreplikatu beste 8 `.arb`-etan
+2. Erreplikatu gainerako `.arb`-etan
 3. Erabili Dart-en: `AppLocalizations.of(context)!.yourKey`
 
 ### Giltza habiaratuak (rolak, balidazioa)
@@ -202,6 +202,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 - **Modu iluna**: euskarri osoa `_baseTheme(ColorScheme)` bidez
 - **18+ osagai-gai**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Cupertino orri-trantsizioak** iOS/macOS-en
+- **UI inportazioak**: Flutter 3.50+etik aurrera UI inportazioak `package:material_ui/material_ui.dart` eta `package:cupertino_ui/cupertino_ui.dart`-en daude; lokalizazio-delegatuak `GlobalMaterialLocalizations.delegates`-etik datoz (`flutter_localizations` gabe). Ez da `package:flutter/material.dart` erabiltzen, `table_calendar`-en pasabide puntuala izan ezik: `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Txata (E2EE)
 
@@ -286,7 +287,7 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 ARB fitxategi
+│   ├── l10n/                # ARB fitxategiak
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
@@ -336,7 +337,7 @@ Dockerfile multi-etapa:
 
 1. Jarraitu existitzen diren ereduak (singleton-ak, `setState`, stream-ak)
 2. Gehitu `Semantics` widget interaktibo berriei
-3. Gehitu itzulpenak 9 ARB fitxategietara
+3. Gehitu itzulpenak ARB fitxategi guztietara
 4. Exekutatu `flutter analyze` eta `flutter test` PR aurretik
 5. Commit konbentzionalak: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

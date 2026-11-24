@@ -28,7 +28,7 @@ Bolumenak: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-d
 ## Irudiak
 
 - Backend `python:3.12-alpine`, EXPOSE 8000; dev `uvicorn --reload`-ekin, prod `appuser` erabiltzaile ez-root gisa.
-- Frontend build `ubuntu:24.04 + Flutter 3.47.3` (ARG `BACKEND_URL`); dev `flutter run -d web-server` 3000-n; prod `nginx:alpine` 80-n `try_files $uri $uri/ /index.html` (SPA) erabiliz.
+- Frontend build `ubuntu:24.04 + Flutter 3.50.1` (ARG `BACKEND_URL`); dev `flutter run -d web-server` 3000-n; prod `nginx:alpine` 80-n `try_files $uri $uri/ /index.html` (SPA) erabiliz.
 
 ## Ingurunea (`backend/.env`, ikusi `.env.example`)
 
@@ -50,15 +50,15 @@ Bolumenak: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-d
 
 ## Osasuna eta behatzekoak
 
-- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → bertsioa (`0.3.0`, `APP_VERSION` konstantea). App-eko `ConnectivityMonitor`-ek benetako zunda gisa erabiltzen ditu: nodo bakoitzeko `NodeHealth`-ek (`testNode()`, latentzia, `offlineNodeCount`, `isDegraded`) Hive cache-a dotoreki degradatzen du eta `DegradedNodesBanner` erakusten du kopuruarekin eta birsaio-botoiarekin.
+- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → `APP_VERSION` konstanteak itzultzen duen bertsioa. App-eko `ConnectivityMonitor`-ek benetako zunda gisa erabiltzen ditu: nodo bakoitzeko `NodeHealth`-ek (`testNode()`, latentzia, `offlineNodeCount`, `isDegraded`) Hive cache-a dotoreki degradatzen du eta `DegradedNodesBanner` erakusten du kopuruarekin eta birsaio-botoiarekin.
 - Federazioa: `GET /api/federation/resilience/health` eta `/metrics` (p50/p95, latentzia, hutsegiteak eta birsaioak); `GET /api/federation/events/stream`-ek SSEa mantentzen du 15 s an bihotz-taupadarekin; `python tools/federation_conformance.py <url> [--json]` bidez hirugarren nodoak egiaztatzen dira.
 - Logak: uvicorn stdout (DAV tokenak ezkutatuta); API erroreak SnackBar + `debugPrint` bidez.
 - Mugak: gorputza ≤10 MB (413), avatar/irudia ≤5 MB (`jpeg/png/webp/gif` magic-bytes-ekin), bideoa ≤100 MB (`mp4/webm/quicktime`), dokumentuak ≤10 MB (pdf); rate limit 100 req/60s IP bakoitzeko (429; `/dav*` 600/60s; `TESTING` ∈ {1,true,yes,on} bidez saihestuta).
 
 ## CI
 
-- **GitHub** (push/PR `main,develop`-era): `backend-lint` + `frontend-lint` + `backend-test` (SQLite, `TESTING=true`, pytest `-m "not interop"` erabiliz) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 irudi).
-- **GitLab**: `lint → test → build` etapak; `docker-build` soilik `main`-en registry-ra push eginez.
+- **GitHub** (push/PR `main,develop`-era): `backend-lint` + `frontend-lint` + `docs-api` (`API.md` birsortuta dagoela egiaztatzen du) + `backend-test` (SQLite, `TESTING=true`, pytest `-m "not interop"` erabiliz) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (backend-eko eta frontend-eko irudiak, dev eta prod).
+- **GitLab**: `lint → test → build` etapak; lint job-ek `docs-api` barne hartzen dute (`API.md` birsortuta dagoela egiaztatzen du); `docker-build` soilik `main`-en registry-ra push eginez.
 
 ### Mendekotasunen eguneratzea
 

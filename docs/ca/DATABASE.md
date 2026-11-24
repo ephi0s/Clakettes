@@ -151,7 +151,7 @@ Camps:
 - **Taula:** `shortfilms`
 - **Classe:** `ShortFilm`
 - **Camps clau:** title, description, duration, video_url, thumbnail_url, festival_id (FK, obligatori), contest_type (official_section|contest), user_id (FK), is_public, tags
-- **Relacions:** Pertany a Festival, pertany a User, té molts Awards, té moltes ShortFilmLocations. El concurs express (guerrilla) és `contest`; la secció oficial és `official_section`; `festival_id` és obligatori amb FK `RESTRICT` i indexat, i `contest_type` també està indexat (migració `b9c0d1e2f3a4`).
+- **Relacions:** Pertany a Festival, pertany a User, té molts Awards, té moltes ShortFilmLocations. El concurs express (guerrilla) és `contest`; la secció oficial és `official_section`; `festival_id` és obligatori amb FK `RESTRICT` i indexat, i `contest_type` també està indexat.
 
 ### Message
 - **Taula:** `messages`
@@ -311,7 +311,7 @@ Camps:
 - **Taula:** `trusted_nodes`
 - **Classe:** `TrustedNode`
 - **Camps clau:** node_domain (únic, índex), cert_fingerprint_sha256 (únic, índex), allowed, revoked_at (DateTime, nullable), revocation_reason (Text, nullable), revoked_by (String(255), nullable)
-- **Relacions:** Entitat de federació; `revoked_at`, `revocation_reason` i `revoked_by` registren la revocació del node (migració `c0d1e2f3a4b5`)
+- **Relacions:** Entitat de federació; `revoked_at`, `revocation_reason` i `revoked_by` registren la revocació del node.
 
 ### Location
 - **Taula:** `locations`
@@ -389,7 +389,7 @@ Camps:
 - **Classe:** `EventSeat`
 - **Camps clau:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
 - **Relacions:** Pertany a Event, pertany a EventTicketType
-- **Restricció:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (migració `a8b9c0d1e2f3`; substitueix l'`Meta.unique_together` inoperant de SQLAlchemy)
+- **Restricció:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (substitueix l'`Meta.unique_together` inoperant de SQLAlchemy)
 
 ### EventReservation
 - **Taula:** `event_reservations`
@@ -420,8 +420,8 @@ Això s'utilitza com a dependència de FastAPI per a l'accés a la base de dades
 
 ## Notes de migració de SQLite a MariaDB
 
-Els canvis d'esquema es gestionen amb Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Hi ha 45 revisions i el head és `d1e2f3a4b5c6`; les set últimes (`a8b9c0d1e2f3`, `a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`, `b9c0d1e2f3a4`, `c0d1e2f3a4b5`, `d1e2f3a4b5c6`) afegeixen la unicitat de seient, les taules de portabilitat, la cua durable de xat, la moderació, `contest_type` a `shortfilms` amb índex i `festival_id` obligatori amb FK `RESTRICT`, i metadades de revocació a `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`). En producció només Alembic, mai `create_all`.
-La revisió `d1e2f3a4b5c6` afegeix la taula `user_follows` (parella única `follower_id`, `followed_id`).
+Els canvis d'esquema es gestionen amb Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Les últimes migracions afegeixen la unicitat de seient, les taules de portabilitat, la cua durable de xat, la moderació, `contest_type` a `shortfilms` amb índex i `festival_id` obligatori amb FK `RESTRICT`, i metadades de revocació a `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`). En producció només Alembic, mai `create_all`.
+La taula `user_follows` (parella única `follower_id`, `followed_id`) es gestiona amb Alembic.
 
 En migrar de SQLite a MariaDB:
 - SQLite `INTEGER PRIMARY KEY` es correspon amb MariaDB `INT AUTO_INCREMENT`

@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Diesen Beitrag löschen?",
   "postDeleteFailed": "Konnte nicht löschen",
   "postEditTitle": "Beitrag bearbeiten",
+  "postTitleHint": "Titel des Beitrags",
   "postSaveFailed": "Konnte nicht speichern",
   "postActionForbidden": "Aktion nicht erlaubt",
   "postReplyFailed": "Konnte nicht antworten",

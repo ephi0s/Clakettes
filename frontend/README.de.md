@@ -9,7 +9,7 @@ Flutter-Frontend (multiplattform) für die Filmfestival-Management-Plattform.
 - **Framework**: Flutter (Material 3, color dinámico, modo oscuro)
 - **Estado**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Almacenamiento local**: Hive, SharedPreferences
-- **i18n**: 9 idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sin gen-l10n)
+- **i18n**: todos los idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sin gen-l10n)
 - **Accesibilidad**: widgets Semantics, soporte TalkBack/VoiceOver, WCAG 2.1 AA
 - **Arquitectura**: Services / Managers / Views (Arquitectura Flutter Pragmática)
 
@@ -92,7 +92,7 @@ lib/
 │   ├── open_in_maps_action.dart
 │   ├── seat_map_widget.dart      # Interaktiver Sitzplan
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
-├── l10n/              # AppLocalizations + 9 ARB
+├── l10n/              # AppLocalizations + alle ARB
 ├── main.dart          # Einstiegspunkt, Material-3-Theme, Reihenfolge der Dienst-Initialisierung
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
 └── auth_wrapper.dart  # Auth-Gate (Splash → Login / Home)
@@ -143,7 +143,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internationalisierung (i18n)
 
-- **9 Locales**: en, es, fr, de, it, ca, eu, gl, oc (823 Schlüssel pro ARB, Parität geprüft mit `test/l10n/arb_parity_test.dart`)
+- **alle Locales**: en, es, fr, de, it, ca, eu, gl, oc (Parität geprüft mit `test/l10n/arb_parity_test.dart`)
 - **Manuelle Implementierung**: `lib/l10n/app_localizations.dart` (ohne gen-l10n)
 - **ARB-Dateien**: `assets/l10n/app_<locale>.arb`
 - **Auto-Erkennung**: `LocaleService` liest die Systemsprache, mit Fallback auf `en`
@@ -152,7 +152,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Übersetzungen hinzufügen
 
 1. Füge den Key zu `assets/l10n/app_en.arb` hinzu
-2. Repliziere ihn in die anderen 8 `.arb`
+2. Repliziere ihn in alle anderen `.arb`
 3. Nutze ihn in Dart: `AppLocalizations.of(context)!.yourKey`
 
 ### Verschachtelte Keys (Rollen, Validierung)
@@ -199,8 +199,9 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 
 - **Seed-Farbe**: `#B8956E` (goldener Sand)
 - **Dark Mode**: volle Unterstützung via `_baseTheme(ColorScheme)`
-- **18+ Komponententhemes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
+- **Komponententhemes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Cupertino-Seitenübergänge** auf iOS/macOS
+- **UI-Imports**: seit Flutter 3.50+ liegen die UI-Imports in `package:material_ui/material_ui.dart` und `package:cupertino_ui/cupertino_ui.dart`; die Lokalisierungs-Delegates stammen aus `GlobalMaterialLocalizations.delegates` (ohne `flutter_localizations`). `package:flutter/material.dart` wird nicht verwendet, außer für die punktuelle `table_calendar`-Brücke in `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Chat (E2EE)
 
@@ -285,7 +286,7 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 ARB-Dateien
+│   ├── l10n/                # alle ARB-Dateien
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
@@ -335,7 +336,7 @@ Multi-Stage-Dockerfile:
 
 1. Folge den bestehenden Mustern (Singletons, `setState`, Streams)
 2. Füge `Semantics` zu neuen interaktiven Widgets hinzu
-3. Füge Übersetzungen zu den 9 ARB-Dateien hinzu
+3. Füge Übersetzungen zu allen ARB-Dateien hinzu
 4. Führe `flutter analyze` und `flutter test` vor dem PR aus
 5. Konventionelle Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

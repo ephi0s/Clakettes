@@ -1,6 +1,6 @@
 ---
 name: flutter-offline-sync-hive
-description: Expert guidance for Clakettes offline-first data. Covers DatabaseService.init() with 37 Hive adapters, OfflineCacheService HMAC-signed cache with schema validation, SyncQueueService FIFO replay (contains/enqueue/syncAll, maxAttempts 3, backoff), and ConnectivityMonitor health-probed status. Use when working with offline cache, sync queue, or connectivity.
+description: Expert guidance for Clakettes offline-first data. Covers DatabaseService.init() with the Hive adapters registered there, OfflineCacheService HMAC-signed cache with schema validation, SyncQueueService FIFO replay (contains/enqueue/syncAll, maxAttempts 3, backoff), and ConnectivityMonitor health-probed status. Use when working with offline cache, sync queue, or connectivity.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Sat, 10 Oct 2026 00:00:00 GMT
@@ -10,7 +10,7 @@ metadata:
 ## Startup Order (`lib/main.dart`)
 
 1. `WidgetsFlutterBinding.ensureInitialized()`
-2. `await DatabaseService.init()` — `Hive.initFlutter()` + 36 `registerAdapter(...)` calls
+2. `await DatabaseService.init()` — `Hive.initFlutter()` + the `registerAdapter(...)` calls for the registered adapters
 3. `await OfflineCacheService.instance.init()` — opens `offline_cache` + `cache_meta` boxes, loads/generates 32B HMAC secret in SharedPreferences
 4. `await SyncQueueService.instance.init()` — opens `sync_queue` box
 5. `ConnectivityMonitor.instance.start()` — `connectivity_plus` listener + `ApiService.healthCheck()` probe

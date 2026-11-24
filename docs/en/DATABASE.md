@@ -151,7 +151,7 @@ Fields:
 - **Table:** `shortfilms`
 - **Class:** `ShortFilm`
 - **Key fields:** title, description, duration, video_url, thumbnail_url, festival_id (FK, required), contest_type (official_section|contest), user_id (FK), is_public, tags
-- **Relationships:** Belongs to Festival, belongs to User, has many Awards, has many ShortFilmLocations. The express (guerrilla) contest is `contest`; the official section is `official_section`; `festival_id` is required with a `RESTRICT` FK and indexed, and `contest_type` is also indexed (migration `b9c0d1e2f3a4`).
+- **Relationships:** Belongs to Festival, belongs to User, has many Awards, has many ShortFilmLocations. The express (guerrilla) contest is `contest`; the official section is `official_section`; `festival_id` is required with a `RESTRICT` FK and indexed, and `contest_type` is also indexed (Alembic migration).
 
 ### Message
 - **Table:** `messages`
@@ -311,7 +311,7 @@ Fields:
 - **Table:** `trusted_nodes`
 - **Class:** `TrustedNode`
 - **Key fields:** node_domain (unique, index), cert_fingerprint_sha256 (unique, index), allowed, revoked_at (DateTime, nullable), revocation_reason (Text, nullable), revoked_by (String(255), nullable)
-- **Relationships:** Federation entity; `revoked_at`, `revocation_reason` and `revoked_by` record node revocation (migration `c0d1e2f3a4b5`)
+- **Relationships:** Federation entity; `revoked_at`, `revocation_reason` and `revoked_by` record node revocation (Alembic migration)
 
 ### Location
 - **Table:** `locations`
@@ -389,7 +389,7 @@ Fields:
 - **Class:** `EventSeat`
 - **Key fields:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
 - **Relationships:** Belongs to Event, belongs to EventTicketType
-- **Constraint:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (migration `a8b9c0d1e2f3`; replaces SQLAlchemy's inoperative `Meta.unique_together`)
+- **Constraint:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (Alembic migration; replaces SQLAlchemy's inoperative `Meta.unique_together`)
 
 ### EventReservation
 - **Table:** `event_reservations`
@@ -420,8 +420,8 @@ This is used as a FastAPI dependency for database access from endpoints.
 
 ## SQLite to MariaDB migration notes
 
-Schema changes are managed with Alembic (`backend/alembic/versions/`; `alembic upgrade head`). There are 45 revisions and the head is `d1e2f3a4b5c6`; the last seven (`a8b9c0d1e2f3`, `a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`, `b9c0d1e2f3a4`, `c0d1e2f3a4b5`, `d1e2f3a4b5c6`) add seat uniqueness, the portability tables, the durable chat queue, moderation, `contest_type` in `shortfilms` with an index and required `festival_id` with a `RESTRICT` FK, and revocation metadata in `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`). In production only Alembic, never `create_all`.
-Revision `d1e2f3a4b5c6` adds the `user_follows` table (unique `follower_id`, `followed_id` pair).
+Schema changes are managed with Alembic (`backend/alembic/versions/`; `alembic upgrade head`). Migrations add seat uniqueness, the portability tables, the durable chat queue, moderation, `contest_type` in `shortfilms` with an index and required `festival_id` with a `RESTRICT` FK, and revocation metadata in `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`). In production only Alembic, never `create_all`.
+The `user_follows` table (unique `follower_id`, `followed_id` pair) is managed with Alembic.
 
 When migrating from SQLite to MariaDB:
 - SQLite `INTEGER PRIMARY KEY` corresponds to MariaDB `INT AUTO_INCREMENT`

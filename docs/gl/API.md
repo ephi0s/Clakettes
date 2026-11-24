@@ -677,5 +677,3 @@ Todas as subidas devolven unha ruta relativa `/uploads/<carpeta>/<ficheiro>`, nu
 | DELETE | `/api/validation-rules/{rule_id}` | si (admin) |
 | GET | `/api/validation-rule-groups` | non |
 | POST | `/api/validation-rule-groups` | si (admin) |
-
-Total: 451 endpoints en 44 routers (40 con prefixo en `main.py`).

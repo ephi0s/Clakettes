@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Marcador accesible de estado vacío con icono, título, subtítulo opcional y acción.
 ///

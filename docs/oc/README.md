@@ -4,7 +4,7 @@ Aqueste index es l'entrada principala de la documentacion del projècte. Es pens
 
 ## Lengas
 
-Los 18 documents comuns existisson dins las 9 lengas de la plataforma; dins `docs/es/` i a en mai dos analisis especifics (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). L'espanhòl (canari) es lo canonic:
+Los documents comuns existisson dins totas las lengas de la plataforma; dins `docs/es/` i a en mai dos analisis especifics (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). L'espanhòl (canari) es lo canonic:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](README.md)
 
 ## Còm navegar la documentacion
@@ -78,7 +78,7 @@ Los 18 documents comuns existisson dins las 9 lengas de la plataforma; dins `doc
 - Se càmbias un flux d'arranjada, sincronizar [README.oc.md](../../README.oc.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Se càmbias una API publica, actualizar [API.md](API.md) e, se cal, [DESARROLLO.md](DESARROLLO.md).
 - Se càmbias l'esquèma o la persisténcia, revisar [DATABASE.md](DATABASE.md) e las migracions.
-- Cada còp que editas un document dins `docs/es/`, replicar lo càmbio a las 8 sòrs (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Cada còp que editas un document dins `docs/es/`, replicar lo càmbio a totes las sòrs (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## FAQ rapida
 

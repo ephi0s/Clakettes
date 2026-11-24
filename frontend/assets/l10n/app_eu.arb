@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Ezabatu argitalpen hau?",
   "postDeleteFailed": "Ezin izan da ezabatu",
   "postEditTitle": "Editatu argitalpena",
+  "postTitleHint": "Argitalpenaren izenburua",
   "postSaveFailed": "Ezin izan da gorde",
   "postActionForbidden": "Ekintza ez da onartzen",
   "postReplyFailed": "Ezin izan da erantzun",

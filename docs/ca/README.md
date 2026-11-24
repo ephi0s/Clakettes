@@ -4,7 +4,7 @@ Aquest índex és l'entrada principal de la documentació del projecte. Està pe
 
 ## Idiomes
 
-Els 18 documents comuns existeixen en les 9 llengües de la plataforma; a `docs/es/` hi ha a més dues anàlisis específiques (`AMENAZAS_NODOS_FEDERACION.md` i `MODELO_CONFIANZA_NODOS.md`). L'espanyol (canari) és el canònic:
+Els documents comuns existeixen en totes les llengües de la plataforma; a `docs/es/` hi ha a més anàlisis específiques (`AMENAZAS_NODOS_FEDERACION.md` i `MODELO_CONFIANZA_NODOS.md`). L'espanyol (canari) és el canònic:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Com navegar per la documentació
@@ -78,7 +78,7 @@ Els 18 documents comuns existeixen en les 9 llengües de la plataforma; a `docs/
 - Si canvies un flux d'arrancada, sincronitza [README.ca.md](../../README.ca.md), [USO.md](USO.md) i [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Si canvies una API pública, actualitza [API.md](API.md) i, si escau, [DESARROLLO.md](DESARROLLO.md).
 - Si canvies l'esquema o la persistència, revisa [DATABASE.md](DATABASE.md) i les migracions.
-- Cada cop que editis un document a `docs/es/`, replica el canvi a les 8 germanes (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Cada cop que editis un document a `docs/es/`, replica el canvi a totes les germanes (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Preguntes freqüents ràpides
 

@@ -28,7 +28,7 @@ Volumi: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-data
 ## Immagini
 
 - Backend `python:3.12-alpine`, EXPOSE 8000; dev con `uvicorn --reload`, prod come utente non-root `appuser`.
-- Frontend build `ubuntu:24.04 + Flutter 3.47.3` (ARG `BACKEND_URL`); dev `flutter run -d web-server` su 3000; prod `nginx:alpine` su 80 con `try_files $uri $uri/ /index.html` (SPA).
+- Frontend build `ubuntu:24.04 + Flutter 3.50.1` (ARG `BACKEND_URL`); dev `flutter run -d web-server` su 3000; prod `nginx:alpine` su 80 con `try_files $uri $uri/ /index.html` (SPA).
 
 ## Ambiente (`backend/.env`, vedi `.env.example`)
 
@@ -50,15 +50,15 @@ Volumi: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-data
 
 ## Salute e osservabili
 
-- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → versione (`0.3.0`, costante `APP_VERSION`). Il `ConnectivityMonitor` nell'app li usa come sonda reale: `NodeHealth` per nodo (`testNode()`, latenza, `offlineNodeCount`, `isDegraded`) degrada con eleganza la cache Hive e mostra `DegradedNodesBanner` con conteggio e pulsante di ripetizione.
+- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → la versione restituita da `APP_VERSION`. Il `ConnectivityMonitor` nell'app li usa come sonda reale: `NodeHealth` per nodo (`testNode()`, latenza, `offlineNodeCount`, `isDegraded`) degrada con eleganza la cache Hive e mostra `DegradedNodesBanner` con conteggio e pulsante di ripetizione.
 - Federazione: `GET /api/federation/resilience/health` e `/metrics` (p50/p95, latenza, errori e ripetizioni); `GET /api/federation/events/stream` mantiene l'SSE con un battito ogni 15 s; `python tools/federation_conformance.py <url> [--json]` verifica nodi terzi.
 - Log: stdout di uvicorn (token DAV redatti); errori API in SnackBar + `debugPrint`.
 - Limiti: corpo ≤10 MB (413), avatar/immagine ≤5 MB (`jpeg/png/webp/gif` con magic-bytes), video ≤100 MB (`mp4/webm/quicktime`), docs ≤10 MB (pdf); rate limit 100 req/60s per IP (429; `/dav*` 600/60s; bypass con `TESTING` ∈ {1,true,yes,on}).
 
 ## CI
 
-- **GitHub** (push/PR su `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (SQLite, `TESTING=true`, pytest con `-m "not interop"`) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 immagini).
-- **GitLab**: stage `lint → test → build`; `docker-build` solo su `main` con push al registry.
+- **GitHub** (push/PR su `main,develop`): `backend-lint` + `frontend-lint` + `docs-api` (verifica che `API.md` sia rigenerata) + `backend-test` (SQLite, `TESTING=true`, pytest con `-m "not interop"`) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` con le immagini di backend e frontend (dev e prod).
+- **GitLab**: stage `lint → test → build`; i job di lint includono `docs-api` (verifica che `API.md` sia rigenerata); `docker-build` solo su `main` con push al registry.
 
 ### Aggiornamento delle dipendenze
 

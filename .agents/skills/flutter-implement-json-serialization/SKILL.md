@@ -15,7 +15,7 @@ metadata:
 ## Core Guidelines
 
 - **Plain models first**: `factory Model.fromJson(Map<String, dynamic> json)` + `Map<String, dynamic> toJson()`, `final` properties, explicit casts. Pattern-match syntax is used in this codebase.
-- **Hive when offline**: models persisted by `DatabaseService` (`festivals`, `users`, `shortfilms`, `messages` boxes) or cached by `OfflineCacheService` need a Hive `TypeAdapter` with a unique `typeId`. Register it in `DatabaseService.init()` alongside the existing 37 adapters.
+- **Hive when offline**: models persisted by `DatabaseService` (`festivals`, `users`, `shortfilms`, `messages` boxes) or cached by `OfflineCacheService` need a Hive `TypeAdapter` with a unique `typeId`. Register it in `DatabaseService.init()` alongside the existing adapters.
 - **Regenerate, never hand-write adapters**: `flutter pub run build_runner build --delete-conflicting-outputs`.
 - **SyncQueue payloads**: `SyncOperation.toJson()` uses `entity_type`/`entity_id`/`created_at`/`status`/`attempts` keys; keep them stable — the queue replays them against the backend.
 - **Schema contract**: `OfflineCacheService._validateEntitySchema` requires `festival.name: String`, `user.username/email: String` + `role` in `{admin, organizer, user, jury, moderator}`, `shortfilm.title: String` + `user_id: int`, `message.content: String` + `sender_id: int`. New required fields must be added there too.

@@ -9,7 +9,7 @@ Multi-platform Flutter frontend for the film festival management platform.
 - **Framework**: Flutter (Material 3, dynamic color, dark mode)
 - **State**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Local storage**: Hive, SharedPreferences
-- **i18n**: 9 languages (en, es, fr, de, it, ca, eu, gl, oc) — manual `AppLocalizations` (no gen-l10n)
+- **i18n**: the languages in `assets/l10n/` (en, es, fr, de, it, ca, eu, gl, oc) — manual `AppLocalizations` (no gen-l10n)
 - **Accessibility**: Semantics widgets, TalkBack/VoiceOver support, WCAG 2.1 AA
 - **Architecture**: Services / Managers / Views (Pragmatic Flutter Architecture)
 
@@ -92,7 +92,7 @@ lib/
 │   ├── open_in_maps_action.dart
 │   ├── seat_map_widget.dart      # Interactive seat map
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
-├── l10n/              # AppLocalizations + 9 ARB
+├── l10n/              # AppLocalizations + all ARBs
 ├── main.dart          # Entry point, Material 3 theme, service init order
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
 └── auth_wrapper.dart  # Auth gate (splash → login / home)
@@ -126,7 +126,7 @@ await LocaleService.load();             // Load saved locale
 - Attaches the JWT automatically (from AuthService)
 - Automatic token refresh on 401
 - Offline queue integration (SyncQueueService)
-- Core plus `services/api/` (13 domains); `resolveMediaUrl()` prefixes `/uploads/...` paths with the active node; `uploadFile()` uses MIME by extension, Bearer, 401/refresh retry and fallback between nodes; the chat WS derives its URL from the same `rootUrl`
+- Core plus `services/api/` (separated domains); `resolveMediaUrl()` prefixes `/uploads/...` paths with the active node; `uploadFile()` uses MIME by extension, Bearer, 401/refresh retry and fallback between nodes; the chat WS derives its URL from the same `rootUrl`
 - Methods: `get`, `post`, `put`, `patch`, `delete`, `upload`
 
 ```dart
@@ -145,7 +145,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internationalization (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 keys per ARB, parity verified with `test/l10n/arb_parity_test.dart`)
+- **Locales**: en, es, fr, de, it, ca, eu, gl, oc (key parity verified with `test/l10n/arb_parity_test.dart`)
 - **Manual implementation**: `lib/l10n/app_localizations.dart` (no gen-l10n)
 - **ARB files**: `assets/l10n/app_<locale>.arb`
 - **Auto-detection**: `LocaleService.load()` reads the system locale, falls back to `en` and persists the resolved one
@@ -154,7 +154,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Adding translations
 
 1. Add the key to `assets/l10n/app_en.arb`
-2. Replicate it in the other 8 `.arb` files
+2. Replicate it in the rest of the `.arb` files
 3. Use it in Dart: `AppLocalizations.of(context)!.yourKey`
 
 ### Nested keys (roles, validation)
@@ -201,8 +201,9 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 
 - **Seed color**: `#B8956E` (golden sand)
 - **Dark mode**: full support via `_baseTheme(ColorScheme)`
-- **18+ component themes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
+- **Component themes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Cupertino page transitions** on iOS/macOS
+- **UI imports**: since Flutter 3.50+ UI imports live in `package:material_ui/material_ui.dart` and `package:cupertino_ui/cupertino_ui.dart`; localization delegates come from `GlobalMaterialLocalizations.delegates` (no `flutter_localizations`). `package:flutter/material.dart` is not used except for the one-off `table_calendar` bridge in `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Chat (E2EE)
 
@@ -288,7 +289,7 @@ frontend/
 ├── windows/                 # Config Windows
 ├── web/                     # Config web (index.html, manifest.json)
 ├── assets/
-│   ├── l10n/                # 9 ARB files
+│   ├── l10n/                # all ARBs
 │   └── images/              # Logos, placeholders
 ├── lib/
 │   ├── l10n/                # app_localizations.dart (manual)
@@ -338,7 +339,7 @@ Multi-stage Dockerfile:
 
 1. Follow existing patterns (singletons, `setState`, streams)
 2. Add `Semantics` to new interactive widgets
-3. Add translations to all 9 ARB files
+3. Add translations to all ARBs
 4. Run `flutter analyze` and `flutter test` before the PR
 5. Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

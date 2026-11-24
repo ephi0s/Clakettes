@@ -4,7 +4,7 @@ Aurkibide hau proiektuaren dokumentazioaren sarrera nagusia da. Erabiltzaile, ad
 
 ## Hizkuntzak
 
-18 dokumentu komunak plataformaren 9 hizkuntzetan daude; `docs/es/`-n bi azterketa espezifiko ere badaude (`AMENAZAS_NODOS_FEDERACION.md` eta `MODELO_CONFIANZA_NODOS.md`). Espainiera (kanarioa) da kanonikoa:
+Dokumentu komunak plataformaren hizkuntza guztietan daude; `docs/es/`-n bi azterketa espezifiko ere badaude (`AMENAZAS_NODOS_FEDERACION.md` eta `MODELO_CONFIANZA_NODOS.md`). Espainiera (kanarioa) da kanonikoa:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Dokumentazioan nabigatzen
@@ -78,7 +78,7 @@ Aurkibide hau proiektuaren dokumentazioaren sarrera nagusia da. Erabiltzaile, ad
 - Abiarazte-fluxuren bat aldatzen baduzu, sinkronizatu [README.eu.md](../../README.eu.md), [USO.md](USO.md) eta [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - API publikoren bat aldatzen baduzu, eguneratu [API.md](API.md) eta, hala badagokio, [DESARROLLO.md](DESARROLLO.md).
 - Eskema edo iraunkortasuna aldatzen baduzu, berrikusi [DATABASE.md](DATABASE.md) eta migrazioak.
-- `docs/es/` fitxategi bat editatzen duzun bakoitzean, errepikatu aldaketa 8 ahizpetan (`docs/<hizkuntza>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- `docs/es/` fitxategi bat editatzen duzun bakoitzean, errepikatu aldaketa dokumentu ahizpa guztietan (`docs/<hizkuntza>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Ohiko galderak
 

@@ -8,7 +8,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.12"
-  FLUTTER_VERSION: "3.47.3"
+  FLUTTER_VERSION: "3.50.1"
 
 jobs:
   # ─── LINT ─────────────────────────────────────────────────────────
@@ -25,9 +25,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - name: Install ruff
-        run: pip install "ruff==0.15.22"
+        run: pip install "ruff==0.17.6"
       - name: Run ruff check
         run: ruff check .
       - name: Check ruff format
@@ -52,6 +54,18 @@ jobs:
       - name: Run flutter analyze
         run: flutter analyze
 
+  docs-api:
+    name: Docs API (generador al día)
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Check generated API docs
+        run: python tools/gen_api.py --all --check
+
   # ─── TEST ─────────────────────────────────────────────────────────
   backend-test:
     name: Backend Tests (pytest, SQLite)
@@ -66,7 +80,9 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - name: Install dependencies
         run: |
           pip install -r requirements.txt -r requirements-dev.txt
@@ -103,7 +119,9 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - name: Install dependencies
         run: |
           pip install -r requirements.txt -r requirements-dev.txt
@@ -155,7 +173,7 @@ jobs:
   docker-build:
     name: Docker Build
     runs-on: ubuntu-26.04
-    needs: [backend-lint, frontend-lint, backend-test, backend-migration, frontend-test]
+    needs: [backend-lint, frontend-lint, docs-api, backend-test, backend-migration, frontend-test]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v5

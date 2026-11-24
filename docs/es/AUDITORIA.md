@@ -19,7 +19,7 @@ Revisión de dependencias, optimizaciones aplicadas y deuda técnica pendiente d
 | python-multipart, email-validator, bcrypt | Mantener | Uploads, validación email, hash passwords |
 | reportlab 5.1.0 | Mantener, pero con import perezoso (hecho) | Solo `export_service._build_pdf`; antes se importaba a nivel de módulo (~200 ms + memoria en cada worker). Ahora import dentro de la función. Además se sincronizó `pyproject.toml` (faltaba) y se pineó `==5.1.0` |
 
-**Versiones fijadas en `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major desde 6.21.x); desarrollo: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
+**Versiones fijadas en `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major desde 6.21.x); desarrollo: `pytest>=9.2.0`, `ruff==0.17.6`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 

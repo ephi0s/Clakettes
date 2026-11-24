@@ -4,7 +4,7 @@ Questo indice è il punto di ingresso principale della documentazione del proget
 
 ## Lingue
 
-I 18 documenti comuni esistono nelle 9 lingue della piattaforma; in `docs/es/` ci sono inoltre due analisi specifiche (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). Lo spagnolo (canario) è canonico:
+I documenti comuni esistono in tutte le lingue della piattaforma; in `docs/es/` ci sono inoltre analisi specifiche (`AMENAZAS_NODOS_FEDERACION.md` e `MODELO_CONFIANZA_NODOS.md`). Lo spagnolo (canario) è canonico:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Come navigare nella documentazione
@@ -78,7 +78,7 @@ I 18 documenti comuni esistono nelle 9 lingue della piattaforma; in `docs/es/` c
 - Se cambi un flusso di avvio, sincronizza [README.md](../../README.md), [USO.md](USO.md) e [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Se cambi un'API pubblica, aggiorna [API.md](API.md) e, se opportuno, [DESARROLLO.md](DESARROLLO.md).
 - Se cambi lo schema o la persistenza, verifica [DATABASE.md](DATABASE.md) e le migrazioni.
-- Ogni volta che modifichi un documento in `docs/es/`, replica la modifica nelle 8 sorelle (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Ogni volta che modifichi un documento in `docs/es/`, replica la modifica in tutte le sorelle (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## FAQ rapida
 

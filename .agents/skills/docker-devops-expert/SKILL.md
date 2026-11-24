@@ -9,7 +9,7 @@ metadata:
 
 ## Docker Compose
 
-`docker-compose.yml` defines 3 profiles:
+`docker-compose.yml` define los perfiles `dev`, `db` y `prod`:
 
 ### Dev (default: `docker compose up`)
 - `backend` (target: dev): port `${PORT_BACKEND:-8000}:8000`, volume-mounts `./backend:/app`, `backend-data:/app/data`
@@ -34,7 +34,7 @@ metadata:
 - **prod target**: non-root `appuser`, no reload
 
 ### Frontend (`frontend/Dockerfile`)
-- Base: `ubuntu:24.04`, installs Flutter 3.47.3 from git
+- Base: `ubuntu:24.04`, instala Flutter desde git (versión fijada en el Dockerfile)
 - **dev target**: `flutter run -d web-server --web-port 3000 --dart-define=BACKEND_URL=$BACKEND_URL`
 - **build target**: `flutter build web --release`
 - **prod target**: nginx:alpine serving built web, port 80
@@ -44,7 +44,7 @@ metadata:
 
 ### GitHub Actions (`.github/workflows/ci.yml`)
 - Triggers: push `main`/`develop`, PRs to `main`
-- Parallel jobs: (1) backend (Python 3.12, ruff → pytest), (2) frontend (Flutter 3.47.3, analyze → test), (3) docker-build (needs 1+2, Buildx, layer caching)
+- Jobs paralelos: backend (ruff → pytest), frontend (analyze → test) y docker-build (depende de los anteriores, Buildx, caché de capas)
 
 ### GitLab CI (`.gitlab-ci.yml`)
 - Stages: lint → test → build

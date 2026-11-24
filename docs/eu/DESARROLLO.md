@@ -20,8 +20,8 @@
    berrerabilgarria (burbuilak, txartelak, barrak, sekzioak).
 3. Abisuak `showAppSnack`-ekin; ezabaketak `showConfirmDialog`-ekin; erroreak
    `ErrorStateWidget`-ekin eta saiakera-errepikapenarekin.
-4. Testuak `assets/l10n/app_en.arb`-n lehenik (fallback) + gainerako locale-ak (823 gako);
-   exekutatu `flutter test test/l10n/arb_parity_test.dart`: 9 ARB-ek gako eta placeholder
+4. Testuak `assets/l10n/app_en.arb`-n lehenik (fallback) + gainerako locale-ak;
+   exekutatu `flutter test test/l10n/arb_parity_test.dart`: ARB guztiek gako eta placeholder
    berberak izatea exigitzen du (erreferentzia `es`).
 5. Test-a `test/screens/` edo `test/widgets/`-n (`l10n`-dun widget-ek
    `pump()` gehigarri bat behar dute `pumpWidget` ondoren).
@@ -34,6 +34,7 @@
 
 ## Kalitate-ateak
 
+- Komando bakarra: `tools/check.ps1` (Windows) / `tools/check.sh` (POSIX) exekutatzen du ate osoa; argumenturik gabe = ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test, `-Quick` / `--quick`-ekin soilik ruff + flutter analyze; `-Backend`/`--backend`, `-Frontend`/`--frontend` eta `-TestFilter EXPR`/`--test-filter=EXPR`-k irismena mugatzen dute (`start.ps1` / `start.sh` abiarazleetan filtro berak `-k` pasatzen dio pytest-i eta `--plain-name` Flutter-i, eta tokikoan `-m "not interop"` ere gehitzen dute).
 - Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
 - Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
 - Endpoint edo ibilbideak aldatu ondoren, birsortu erreferentzia `python tools/gen_api.py --all` bidez (`main.py`-ko eta `APIRouter` bakoitzeko aurrizkiak konbinatzen ditu).

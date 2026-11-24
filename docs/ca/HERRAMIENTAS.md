@@ -8,10 +8,14 @@
 |---|---|---|
 | Dev backend+frontend | `.\start.ps1` / `./start.sh` | Arrel (Docker si està disponible, local si no) |
 | Només backend / frontend | `-NoFrontend` / `-NoBackend` | `start.ps1` / `--no-frontend` a `start.sh` |
-| Web en navegador | `-Web` | Només mode local |
+| Web en navegador de desenvolupament | default / `-Dev` | Docker dev o local; `-Web` força el mode local |
 | Prod local (build web + serve) | `-Final` | `start.ps1` / `start.sh` |
 | Tests backend | `-TestBackend` | pytest a `.venv` o Docker |
 | Tests frontend | `-TestFrontend` | `flutter test` o Docker |
+| Porta de qualitat (tot) | `tools/check.ps1` / `tools/check.sh` | Arrel; sense args: ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test |
+| Porta ràpida | `-Quick` / `--quick` | Només ruff + flutter analyze |
+| Només backend / frontend | `-Backend` / `--backend`, `-Frontend` / `--frontend` | `tools/check.ps1` / `tools/check.sh` |
+| Filtrar tests | `-TestFilter EXPR` / `--test-filter=EXPR` | `-k` a pytest i `--plain-name` a Flutter; igual en `start.ps1` / `start.sh`, que afegeixen `-m "not interop"` en local |
 | Migracions | `-Migrate` / `-TestMigration` (MariaDB) | alembic |
 | Revisar entorn sense arrancar | `-Check` | Doctor: Docker, Python, Flutter, .venv, ports |
 | Instal·lar dependències que falten | `-InstallMissing` | winget / gestor del SO + git clone |
@@ -23,6 +27,7 @@
 | Docker multi-target | `tools/build-all.ps1` | Requereix Docker |
 | Verificar conformitat d'un node | `python tools/federation_conformance.py <url> [--json]` | Arrel (`tools/`) |
 | Regenerar referència d'API | `python tools/gen_api.py --all` | Arrel (`tools/`); combina prefixos de `main.py` i de cada `APIRouter` i detecta dependències d'auth |
+| Verificar referència d'API generada | `python tools/gen_api.py --all --check` | Arrel (`tools/`); comprova que les `API.md` estan al dia sense escriure-les (exit 1 si alguna difereix); ho executa el job `docs-api` de CI |
 
 El CLI de conformitat comprova manifest, JWKS, token, directori, usuaris, WebFinger, reportes, portabilitat, bridge de xat i stream d'esdeveniments; retorna 1 si hi ha fallades `critical`/`high` i 0 en cas contrari, i `--json` imprimeix l'informe complet.
 
@@ -31,10 +36,10 @@ El CLI de conformitat comprova manifest, JWKS, token, directori, usuaris, WebFin
 1. **`.dockerignore` en els contextos de build** (`backend/`, `frontend/`). Abans només existien a `backend/docker/` i `frontend/docker/`, que NO són el context de `docker-compose.yml` (`./backend`, `./frontend`). Cada `docker compose build` enviava `.venv/` (centenars de MB), `.dart_tool/`, `build/`, `*.db` i `*.hive` al dimoni. Ara el context és mínim. Excepció: `!pubspec.lock` es conserva per a builds reproducibles.
 2. **Config pytest unificada**: eliminat `backend/pytest.ini` (duplicava i eclipsava `pyproject.toml`); tota la config viu a `[tool.pytest.ini_options]` (testpaths, patrons, markers).
 3. **CI coherent**:
-   - GitHub: Flutter fixat a `3.47.3` (igual que el Dockerfile); `flutter pub run` (obsolet) → `dart run build_runner`.
+   - GitHub: Flutter fixat a `3.50.1` (igual que el Dockerfile); `flutter pub run` (obsolet) → `dart run build_runner`.
    - GitHub i GitLab `backend-test`: `TESTING=true` i `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 bytes, evita `InsecureKeyLengthWarning`; abans el rate limiter seguia actiu en tests → 429 esporàdics).
    - GitLab `frontend-test`: afegida generació d'adaptadors Hive abans de `flutter test` (paritat amb GitHub).
-   - `pip install ruff` → `pip install "ruff==0.15.22"` a GitHub Actions; GitLab fa servir `pip install "ruff>=0.5.0"` i `requirements-dev.txt` fixa `ruff==0.17.5` per al desenvolupament local.
+   - `pip install ruff` → `pip install "ruff==0.17.6"` a GitHub Actions i GitLab; `requirements-dev.txt` fixa `ruff==0.17.6` també per al desenvolupament local.
 4. **Lints multiplataforma** (`analysis_options.yaml`): `avoid_print` i `avoid_web_libraries_in_flutter`. Verificat: `flutter analyze` net (l'import condicional web/io és el patró acceptat).
 5. **Fix `onReorder` obsolet** → `onReorderItem` (sense ajust manual d'índex); `flutter analyze` passa d'1 info a 0 issues.
 

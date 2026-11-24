@@ -1,6 +1,6 @@
 ---
 name: flutter-accessibility-wcag
-description: Expert guidance for Clakettes WCAG 2.1 / ARIA accessibility. Covers Semantics widget patterns (94+ instances), ExcludeSemantics for decorative icons, SemanticHeader for screen reader headings, tooltips (26+), SnackBarBehavior.floating, form validation with autovalidateMode, keyboard navigation with TextInputAction, and color contrast via Material 3 dark mode. Use when ensuring accessibility compliance or adding new accessible widgets.
+description: Expert guidance for Clakettes WCAG 2.1 / ARIA accessibility. Covers Semantics widget patterns on the accessible widgets, ExcludeSemantics for decorative icons, SemanticHeader for screen reader headings, tooltips on interactive elements, SnackBarBehavior.floating, form validation with autovalidateMode, keyboard navigation with TextInputAction, and color contrast via Material 3 dark mode. Use when ensuring accessibility compliance or adding new accessible widgets.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Tue, 23 Jun 2026 01:45:00 GMT
@@ -9,7 +9,7 @@ metadata:
 
 ## Core Widgets
 
-Six reusable accessible widgets in `lib/widgets/reusable_widgets.dart`:
+The reusable accessible widgets in `lib/widgets/reusable_widgets.dart`:
 
 ### ProfileAvatar
 - `Semantics(label: semanticLabel)` wrapper on CircleAvatar
@@ -41,17 +41,17 @@ Six reusable accessible widgets in `lib/widgets/reusable_widgets.dart`:
 
 ## Patterns
 
-- **94+ Semantics widgets** across all screens
-- **26+ Tooltips** on IconButtons and interactive elements
-- **~10 ExcludeSemantics** on decorative icons to avoid redundant announcements
-- **SnackBarBehavior.floating** for better visibility (29+ occurrences)
+- **Semantics widgets** on the accessible widgets and screens
+- **Tooltips** on IconButtons and interactive elements
+- **ExcludeSemantics** on decorative icons to avoid redundant announcements
+- **SnackBarBehavior.floating** for better visibility
 - **Keyboard navigation**: `TextInputAction.next`/`done` on forms, `onFieldSubmitted` callbacks
 - **Form validation**: `autovalidateMode: AutovalidateMode.onUserInteraction`
 
 ## Location Distribution
 
-- `lib/widgets/reusable_widgets.dart` — 6 widgets, 11 Semantics blocks
+- `lib/widgets/reusable_widgets.dart` — the accessible widgets (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField)
 - `lib/widgets/empty_state_widget.dart` — Semantics + ExcludeSemantics on decorative icon
 - `lib/widgets/error_state_widget.dart` — Semantics on error messages
-- All screens in `lib/screens/` — 100+ Semantics/ExcludeSemantics across 24 screens
+- All screens in `lib/screens/` — Semantics/ExcludeSemantics on the screens
 - `lib/main_scaffold.dart` — NavigationRail/NavigationBar with Semantics labels, liveRegion on content area

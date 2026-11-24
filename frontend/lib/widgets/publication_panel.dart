@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
 import '../models/post_model.dart';
 import '../services/api_service.dart';
@@ -42,6 +42,8 @@ class _PublicationPanelState extends State<PublicationPanel> {
   bool _showUrlField = false;
   bool _allowReplies = true;
   String _richContent = '';
+  final _titleCtl = TextEditingController();
+  final _bodyFocus = FocusNode();
   final _urlCtl = TextEditingController();
   final Set<int> _expanded = {};
   final Map<int, List<Post>> _replies = {};
@@ -57,6 +59,8 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   @override
   void dispose() {
+    _titleCtl.dispose();
+    _bodyFocus.dispose();
     _urlCtl.dispose();
     for (final c in _replyCtls.values) {
       c.dispose();
@@ -103,14 +107,15 @@ class _PublicationPanelState extends State<PublicationPanel> {
   }
 
   Future<void> _publish() async {
-    final content = plainTextFrom(_richContent).trim();
+    final title = _titleCtl.text.trim();
+    final body = plainTextFrom(_richContent).trim();
     final url = _urlCtl.text.trim();
-    if (content.isEmpty || _publishing) return;
+    if ((title.isEmpty && body.isEmpty) || _publishing) return;
     setState(() => _publishing = true);
     try {
       final draft = Post(
         authorId: widget.currentUserId ?? 0,
-        content: _richContent.trim(),
+        content: composeContent(title, _richContent),
         embedUrl: url.isNotEmpty ? (url.contains('://') ? url : 'https://$url') : null,
         embedType: url.isNotEmpty ? _embedTypeFor(url) : null,
         allowReplies: _allowReplies,
@@ -125,6 +130,7 @@ class _PublicationPanelState extends State<PublicationPanel> {
       setState(() {
         _posts = [created, ..._posts];
         _richContent = '';
+        _titleCtl.clear();
         _urlCtl.clear();
         _showUrlField = false;
         _allowReplies = true;
@@ -150,16 +156,31 @@ class _PublicationPanelState extends State<PublicationPanel> {
 
   Future<void> _editPost(Post post) async {
     if (post.id == null) return;
-    String newContent = post.content;
+    final (oldTitle, oldBody) = splitTitleAndBody(post.content);
+    final titleCtl = TextEditingController(text: oldTitle);
+    String newBody = oldBody;
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.postEditTitle),
         content: SizedBox(
           width: double.maxFinite,
-          child: RichTextEditor(
-            initialContent: post.content,
-            onContentChanged: (v) => newContent = v,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SemanticTextField(
+                controller: titleCtl,
+                label: l10n.postTitleHint,
+                semanticLabel: l10n.postTitleHint,
+              ),
+              const SizedBox(height: 8),
+              RichTextEditor(
+                initialContent: oldBody,
+                onContentChanged: (v) => newBody = v,
+                minEditorHeight: 180,
+              ),
+            ],
           ),
         ),
         actions: [
@@ -168,8 +189,10 @@ class _PublicationPanelState extends State<PublicationPanel> {
         ],
       ),
     );
-    final content = newContent.trim();
-    if (saved == true && plainTextFrom(content).isNotEmpty) {
+    final newTitle = titleCtl.text.trim();
+    titleCtl.dispose();
+    final content = composeContent(newTitle, newBody);
+    if (saved == true && plainTextFrom(content).trim().isNotEmpty) {
       try {
         final updated = await _api.updatePost(post.id!, {'content': content});
         if (mounted) {
@@ -273,10 +296,19 @@ class _PublicationPanelState extends State<PublicationPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            SemanticTextField(
+              controller: _titleCtl,
+              label: l10n.postTitleHint,
+              semanticLabel: l10n.postTitleHint,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) => _bodyFocus.requestFocus(),
+            ),
+            const SizedBox(height: 8),
             RichTextEditor(
               initialContent: _richContent,
               onContentChanged: (v) => setState(() => _richContent = v),
-              autoFocus: true,
+              focusNode: _bodyFocus,
+              minEditorHeight: 180,
             ),
             if (_showUrlField) ...[
               const SizedBox(height: 8),

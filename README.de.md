@@ -10,7 +10,7 @@ Die Plattform, auf der Filmfestivals das ganze Jahr leben: Ausschreibungen, Kurz
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Läuft auf Web, Android, iOS und Desktop (Windows, macOS, Linux), in 9 Sprachen und auch offline.
+Läuft auf Web, Android, iOS und Desktop (Windows, macOS, Linux), in allen Sprachen der Plattform und auch offline.
 
 ---
 
@@ -30,7 +30,7 @@ Läuft auf Web, Android, iOS und Desktop (Windows, macOS, Linux), in 9 Sprachen 
 - **Karten**: Spielstätten und Drehorte auf interaktiven Karten, mit Öffnen in deiner Lieblings-Kartenapp.
 - **Offline**: die App läuft weiter offline, speichert die Herkunft jedes Knotens im Cache und synchronisiert deine Änderungen bei Wiederverbindung.
 - **Föderation**: vertrauenswürdige Knoten mit mTLS, Portabilität von Identitäten, Chat und Ereignisse zwischen Knoten, Moderation, Metriken und Resilienz.
-- **In deiner Sprache**: Spanisch, Englisch, Französisch, Deutsch, Italienisch, Katalanisch, Baskisch, Galicisch und Okzitanisch (823 Schlüssel pro Sprache), mit automatischer Erkennung des System-Locale.
+- **In deiner Sprache**: Spanisch, Englisch, Französisch, Deutsch, Italienisch, Katalanisch, Baskisch, Galicisch und Okzitanisch, mit automatischer Erkennung des System-Locale.
 
 ## Anforderungen und Start
 

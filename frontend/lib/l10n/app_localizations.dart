@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../services/api_service.dart' show ApiException, UnauthorizedException;
 
@@ -855,6 +855,7 @@ class AppLocalizations {
   String get postDeleteConfirm => translate('postDeleteConfirm');
   String get postDeleteFailed => translate('postDeleteFailed');
   String get postEditTitle => translate('postEditTitle');
+  String get postTitleHint => translate('postTitleHint');
   String get postSaveFailed => translate('postSaveFailed');
   String get postActionForbidden => translate('postActionForbidden');
   String get postReplyFailed => translate('postReplyFailed');

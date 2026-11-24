@@ -9,7 +9,7 @@ Frontend Flutter multiplataforma para a plataforma de xestión de festivais de c
 - **Framework**: Flutter (Material 3, cor dinámica, modo escuro)
 - **Estado**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Almacenamento local**: Hive, SharedPreferences
-- **i18n**: 9 idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sen gen-l10n)
+- **i18n**: todos os idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sen gen-l10n)
 - **Accesibilidade**: Semantics, soporte TalkBack/VoiceOver, WCAG 2.1 AA
 - **Arquitectura**: Services / Managers / Views (Arquitectura Flutter Pragmática)
 
@@ -144,7 +144,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internacionalización (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 claves por ARB, paridade verificada con `test/l10n/arb_parity_test.dart`)
+- **todos os locales**: en, es, fr, de, it, ca, eu, gl, oc (paridade verificada con `test/l10n/arb_parity_test.dart`)
 - **Implementación manual**: `lib/l10n/app_localizations.dart` (sen gen-l10n)
 - **Arquivos ARB**: `assets/l10n/app_<locale>.arb`
 - **Auto-detección**: `LocaleService` le o idioma do sistema, con fallback a `en`, e persiste o locale resuelto
@@ -153,7 +153,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Engadir traducións
 
 1. Engade a clave a `assets/l10n/app_en.arb`
-2. Replícaa nos outros 8 `.arb`
+2. Replícaa nos demais `.arb`
 3. Úsaa en Dart: `AppLocalizations.of(context)!.yourKey`
 
 ### Claves aniñadas (roles, validación)
@@ -202,6 +202,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 - **Modo escuro**: soporte completo vía `_baseTheme(ColorScheme)`
 - **Temas de compoñentes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Transicións de páxina Cupertino** en iOS/macOS
+- **Imports de UI**: desde Flutter 3.50+ as imports de UI viven en `package:material_ui/material_ui.dart` e `package:cupertino_ui/cupertino_ui.dart`; os delegates de localización tómanse de `GlobalMaterialLocalizations.delegates` (sen `flutter_localizations`). Non se usa `package:flutter/material.dart` agás a ponte puntual de `table_calendar` en `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Chat (E2EE)
 
@@ -336,7 +337,7 @@ Dockerfile multi-etapa:
 
 1. Segue os patróns existentes (singletons, `setState`, streams)
 2. Engade `Semantics` aos novos widgets interactivos
-3. Engade traducións aos 9 arquivos ARB
+3. Engade traducións a todos os arquivos ARB
 4. Executa `flutter analyze` e `flutter test` antes do PR
 5. Commits convencionais: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

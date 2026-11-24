@@ -677,5 +677,3 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 | DELETE | `/api/validation-rules/{rule_id}` | ja (Admin) |
 | GET | `/api/validation-rule-groups` | nein |
 | POST | `/api/validation-rule-groups` | ja (Admin) |
-
-Gesamt: 451 Endpunkte in 44 Routern (40 mit Präfix in `main.py`).

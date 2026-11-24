@@ -10,7 +10,7 @@ La piattaforma dove i festival cinematografici vivono tutto l'anno: bandi, corti
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Funziona su web, Android, iOS e desktop (Windows, macOS, Linux), in 9 lingue e anche senza connessione.
+Funziona su web, Android, iOS e desktop (Windows, macOS, Linux), in tutte le lingue della piattaforma e anche senza connessione.
 
 ---
 
@@ -30,7 +30,7 @@ Funziona su web, Android, iOS e desktop (Windows, macOS, Linux), in 9 lingue e a
 - **Mappe**: sedi e location di ripresa su mappe interattive, con apertura nella tua app di mappe preferita.
 - **Senza connessione**: l'app continua a funzionare offline, conserva la provenienza di ogni nodo nella cache e sincronizza le tue modifiche al recupero della connessione.
 - **Federazione**: nodi di fiducia con mTLS, portabilità dell'identità, chat ed eventi tra nodi, moderazione, metriche e resilienza.
-- **Nella tua lingua**: spagnolo, inglese, francese, tedesco, italiano, catalano, basco, galiziano e occitano (823 chiavi per lingua), con rilevamento automatico del locale del sistema.
+- **Nella tua lingua**: spagnolo, inglese, francese, tedesco, italiano, catalano, basco, galiziano e occitano, con rilevamento automatico del locale del sistema.
 
 ## Requisiti e avvio
 

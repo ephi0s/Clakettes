@@ -270,8 +270,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--lang", default="es", choices=sorted(LANGS))
     parser.add_argument("--all", action="store_true", help="generate every locale")
+    parser.add_argument("--check", action="store_true", help="verify generated docs are up to date")
     args = parser.parse_args()
     langs = sorted(LANGS) if args.all else [args.lang]
+    stale = []
 
     prefix_of = {}
     for node in ast.walk(ast.parse(MAIN)):
@@ -387,15 +389,22 @@ def main() -> None:
                 )
                 total += 1
             out.append("")
-        out.append(
-            t["total"].format(
-                n=total, r=sections, m=sum(1 for p in prefix_of.values() if p)
-            )
-        )
         target = DOCS / lang / "API.md"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text("\n".join(out), encoding="utf-8")
-        print(lang, "endpoints:", total, "| routers:", sections)
+        content = "\n".join(out)
+        if args.check:
+            current = target.read_text(encoding="utf-8") if target.exists() else ""
+            if current != content:
+                stale.append(lang)
+                print(lang, "DESACTUALIZADO")
+            else:
+                print(lang, "OK")
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+            print(lang, "OK")
+
+    if args.check and stale:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

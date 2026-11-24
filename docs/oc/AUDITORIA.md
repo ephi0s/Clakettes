@@ -19,7 +19,7 @@ Revista de las dependéncias, de las optimizacions aplicadas e de la dèta tecni
 | python-multipart, email-validator, bcrypt | Manténer | Mandadís, validacion de l'email, hash dels senhals |
 | reportlab 5.1.0 | Manténer, mas amb import peresós (fait) | Sonque `export_service._build_pdf`; abans importat al nivèl del modul (~200 ms + memòria per cada worker). Ara importat dedins la foncion. En mai `pyproject.toml` foguèt sincronizat (manquava) e fixat `==5.1.0` |
 
-**Versiones fixadas dins `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major dempuèi 6.21.x); desvolopament: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
+**Versiones fixadas dins `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major dempuèi 6.21.x); desvolopament: `pytest>=9.2.0`, `ruff==0.17.6`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 

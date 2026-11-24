@@ -9,7 +9,7 @@ Frontend Flutter multiplataforma per a la plataforma de gestió de festivals de 
 - **Framework**: Flutter (Material 3, color dinàmic, mode fosc)
 - **Estat**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Emmagatzematge local**: Hive, SharedPreferences
-- **i18n**: 9 idiomes (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sense gen-l10n)
+- **i18n**: tots els idiomes (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sense gen-l10n)
 - **Accessibilitat**: widgets Semantics, suport TalkBack/VoiceOver, WCAG 2.1 AA
 - **Arquitectura**: Services / Managers / Views (Arquitectura Flutter Pragmàtica)
 
@@ -126,7 +126,7 @@ await LocaleService.load();             // Carrega el locale desat
 - Adjunta el JWT automàticament (des d'AuthService)
 - Refresh automàtic de token en 401
 - Integració amb la cua offline (SyncQueueService)
-- Nucli més `services/api/` (13 dominis); `resolveMediaUrl()` anteposa el node actiu a les rutes `/uploads/...`; `uploadFile()` fa servir MIME per extensió, Bearer, reintent 401/refresh i fallback entre nodes; el WS del xat deriva la seva URL del mateix `rootUrl`
+- Nucli més `services/api/`; `resolveMediaUrl()` anteposa el node actiu a les rutes `/uploads/...`; `uploadFile()` fa servir MIME per extensió, Bearer, reintent 401/refresh i fallback entre nodes; el WS del xat deriva la seva URL del mateix `rootUrl`
 - Mètodes: `get`, `post`, `put`, `patch`, `delete`, `upload`
 
 ```dart
@@ -145,7 +145,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internacionalització (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 claus per ARB, paritat verificada amb `test/l10n/arb_parity_test.dart`)
+- **tots els locals**: en, es, fr, de, it, ca, eu, gl, oc (paritat verificada amb `test/l10n/arb_parity_test.dart`)
 - **Implementació manual**: `lib/l10n/app_localizations.dart` (sense gen-l10n)
 - **Fitxers ARB**: `assets/l10n/app_<locale>.arb`
 - **Auto-detecció**: `LocaleService.load()` llegeix el locale del sistema, amb fallback a `en` i desa el resolt
@@ -154,7 +154,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Afegir traduccions
 
 1. Afegeix la clau a `assets/l10n/app_en.arb`
-2. Replica-la als altres 8 `.arb`
+2. Replica-la a tots els altres `.arb`
 3. Utilitza-la en Dart: `AppLocalizations.of(context)!.yourKey`
 
 ### Claus niades (rols, validació)
@@ -203,6 +203,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 - **Mode fosc**: suport complet via `_baseTheme(ColorScheme)`
 - **Temes de componentes**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Transicions de pàgina Cupertino** en iOS/macOS
+- **Imports d'UI**: des de Flutter 3.50+ els imports d'UI viuen a `package:material_ui/material_ui.dart` i `package:cupertino_ui/cupertino_ui.dart`; els delegats de localització provenen de `GlobalMaterialLocalizations.delegates` (sense `flutter_localizations`). No s'usa `package:flutter/material.dart` excepte el pont puntual de `table_calendar` a `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Xat (E2EE)
 

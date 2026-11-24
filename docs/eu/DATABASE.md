@@ -151,7 +151,7 @@ Eremuak:
 - **Taula:** `shortfilms`
 - **Klasea:** `ShortFilm`
 - **Gako-eremuak:** title, description, duration, video_url, thumbnail_url, festival_id (FK, derrigorrezkoa), contest_type (official_section|contest), user_id (FK), is_public, tags
-- **Errelazioak:** Festival-i dagokio, User-i dagokio, Awards ditu, ShortFilmLocations ditu. Express (guerrilla) lehiaketa `contest` da; atal ofiziala `official_section` da; `festival_id` nahitaezkoa da, `RESTRICT` FKarekin eta indizearekin, eta `contest_type` ere indizatuta dago (`b9c0d1e2f3a4` migrazioa).
+- **Errelazioak:** Festival-i dagokio, User-i dagokio, Awards ditu, ShortFilmLocations ditu. Express (guerrilla) lehiaketa `contest` da; atal ofiziala `official_section` da; `festival_id` nahitaezkoa da, `RESTRICT` FKarekin eta indizearekin, eta `contest_type` ere indizatuta dago.
 
 ### Message
 - **Taula:** `messages`
@@ -311,7 +311,7 @@ Eremuak:
 - **Taula:** `trusted_nodes`
 - **Klasea:** `TrustedNode`
 - **Gako-eremuak:** node_domain (bakarrik, indizea), cert_fingerprint_sha256 (bakarrik, indizea), allowed, revoked_at (DateTime, nullable), revocation_reason (Text, nullable), revoked_by (String(255), nullable)
-- **Errelazioak:** Federazio-entitatea; `revoked_at`, `revocation_reason` eta `revoked_by` erregistratzen dute nodoaren errebokazioa (`c0d1e2f3a4b5` migrazioa)
+- **Errelazioak:** Federazio-entitatea; `revoked_at`, `revocation_reason` eta `revoked_by` erregistratzen dute nodoaren errebokazioa
 
 ### Location
 - **Taula:** `locations`
@@ -389,7 +389,7 @@ Eremuak:
 - **Klasea:** `EventSeat`
 - **Gako-eremuak:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
 - **Errelazioak:** Event-i, EventTicketType-i dagokio
-- **Murrizketa:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (`a8b9c0d1e2f3` migrazioa; SQLAlchemy-ko `Meta.unique_together` inoperatiboa ordezkatzen du)
+- **Murrizketa:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (SQLAlchemy-ko `Meta.unique_together` inoperatiboa ordezkatzen du)
 
 ### EventReservation
 - **Taula:** `event_reservations`
@@ -420,8 +420,8 @@ Hau FastAPI mendekotasun gisa erabiltzen da endpoint-etatik datu-basea atzitzeko
 
 ## SQLite-tik MariaDB-ra migrazio-oharrak
 
-Eskema-aldaketak Alembic bidez kudeatzen dira (`backend/alembic/versions/`; `alembic upgrade head`). 45 berrikuspen daude eta head-a `d1e2f3a4b5c6` da; azken zazpiek (`a8b9c0d1e2f3`, `a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`, `b9c0d1e2f3a4`, `c0d1e2f3a4b5`, `d1e2f3a4b5c6`) eserlekuen bakartasuna, portabilitate-taulak, txat-ilara iraunkorra, moderazioa, `contest_type` `shortfilms`-en indizearekin eta `festival_id` nahitaezkoa `RESTRICT` FKarekin, eta errebokazio-metadatuak `trusted_nodes`-en (`revoked_at`, `revocation_reason`, `revoked_by`) gehitzen dituzte. Ekoizpenean soilik Alembic, inoiz ez `create_all`.
-`d1e2f3a4b5c6` berrikuspenak `user_follows` taula gehitzen du (`follower_id`, `followed_id` bikote bakarra).
+Eskema-aldaketak Alembic bidez kudeatzen dira (`backend/alembic/versions/`; `alembic upgrade head`). Azken migrazioek eserlekuen bakartasuna, portabilitate-taulak, txat-ilara iraunkorra, moderazioa, `contest_type` `shortfilms`-en indizearekin eta `festival_id` nahitaezkoa `RESTRICT` FKarekin, eta errebokazio-metadatuak `trusted_nodes`-en (`revoked_at`, `revocation_reason`, `revoked_by`) gehitzen dituzte. Ekoizpenean soilik Alembic, inoiz ez `create_all`.
+`user_follows` taula (`follower_id`, `followed_id` bikote bakarra) Alembic bidez kudeatzen da.
 
 SQLite-tik MariaDB-ra migratzean:
 - SQLite `INTEGER PRIMARY KEY` MariaDB `INT AUTO_INCREMENT`-ekin bat dator

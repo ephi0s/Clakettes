@@ -30,13 +30,13 @@ Geruzak: Routers → Services → Models, motak `app.enums` bidez.
 | Gertaera-busa | `routers/federation_events.py`, `services/event_bus_service.py` | SSE `since`, bihotz-taupada eta replay-arekin (200); sinatutako argitalpena eta 3 birsaio (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (`/dav` aurrizkia, depositua 600/60s) | Bearer token URLan; TLS nahitaezkoa prod-en |
 | Export | `services/export_service.py` | CSV/ICS stdlib-en; PDF reportlab-ekin inportazio aldegarri batean |
-| Migrazioak | `alembic/` (45 bertsio, head `d1e2f3a4b5c6`) | Prod-en soilik Alembic; dev-en baita `create_all` |
+| Migrazioak | `alembic/` | Prod-en soilik Alembic; dev-en baita `create_all` |
 | Federazioa | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | RSA-SHA256 sinatutako manifestua, direktorioa, nodoak, txostenak, webfinger, erabiltzaile-erref., JWKS, `whoami`, federazio-tokena, peers/verify, peers/revoke, mTLS CN/PEM bidez |
 | Portabilitatea | `routers/federation_portability.py`, `services/portability_service.py`, `identity_redirect`/`migration_audit` modeloak | Sinatutako bundle-ak, inportazioak, jaialdi/erabiltzaile migrazioa eta birbideratzeak |
 | Erresilientzia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Osasuna, taupada, p50/p95 metrikak, gakoen errebokazioa eta intzidente-plana |
 | Betetzea | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLIak manifestua, JWKS, tokena, direktorioa, portabilitatea, bridge-a eta SSE egiaztatzen ditu |
 
-Sortutako APIa: `python tools/gen_api.py --all`-ek 446 endpoint sortzen ditu 43 router-etan (39 aurrizkirekin `main.py`-n; generatzaileak `APIRouter` bakoitzaren aurrizkia ere konbinatzen du eta auth-mendekotasunak detektatzen ditu, ikusi [API.md](API.md)).
+Sortutako APIa: `python tools/gen_api.py --all`-ek `main.py`-n eta `APIRouter` bakoitzaren aurrizkia konbinatuz endpoint-en erreferentzia sortzen du (ikusi [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
@@ -45,12 +45,12 @@ Singleton zerbitzuak + `setState()` + Streams (Provider gabe). Abiaraztea `main(
 
 | Zatia | Non | Araua |
 |---|---|---|
-| API | `services/api_service.dart` (nukleoa) + `services/api/` (13 domeinu, split-a ezarria, ikusi bere README-n) | Oinarria `BACKEND_URL` (gordeta > dart-define > plataformaren araberako lehenetsia; Android emulatzailea `10.0.2.2`); `resolveMediaUrl()`-ek nodo aktiboa jartzen du `/uploads/...`-ren aurrean; `uploadFile()`-ek luzapenaren bidezko MIME-a, Bearer-a, 401/refresh birsaioa eta nodoen arteko fallback-a erabiltzen ditu; txataren WS-ak bere URLa `rootUrl` beretik eratorritzen du |
+| API | `services/api_service.dart` (nukleoa) + `services/api/` (domeinuen split-a ezarria, ikusi bere README-n) | Oinarria `BACKEND_URL` (gordeta > dart-define > plataformaren araberako lehenetsia; Android emulatzailea `10.0.2.2`); `resolveMediaUrl()`-ek nodo aktiboa jartzen du `/uploads/...`-ren aurrean; `uploadFile()`-ek luzapenaren bidezko MIME-a, Bearer-a, 401/refresh birsaioa eta nodoen arteko fallback-a erabiltzen ditu; txataren WS-ak bere URLa `rootUrl` beretik eratorritzen du |
 | Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, 3 birsaio + atzerapena, birbidaltzearen aurkakoa) | Nodo-etiketadun cache-a (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor`-ek `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` eta `ApiService.testNode()` zundaketak erakusten ditu; berriro konektatzean, sinkronizazioa berrespenarekin |
 | Txata | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS zuzenean, REST historia eta federazio-historiarako; E2EE ECDH P-256 + AES-GCM isolate-etan; `ChatPresenceBackend`-ek idazketa, latentzia eta irakurketa-berrespenak eskaintzen ditu; bilaketa lokala, dedup-a eta `(created_at,id)` bidezko ordena; offline mezuak modu iraunkorrean ilaratzen dira `message_id` berarekin |
 | Jakinarazpenak | `notification_service.dart` | Mahaigaina: SO plugina; web-a: Notification API; mugikorra: no-op (ikusi [PUSH.md](PUSH.md)) |
-| Nabigazioa | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer beti; 11 pantaila cache-etan; `DegradedNodesBanner`-ek erantzun gabeko nodoen berri ematen du kopurua eta birsaioarekin (`checkNow()`) |
-| i18n | `l10n/` + `assets/l10n/` (9 locale, 823 gako ARB bakoitzeko) | `app_en.arb` da fallback-a; gakoen eta placeholder-en paritatea `test/l10n/arb_parity_test.dart`-en (erreferentzia `es`); `LocaleService.load()`-ek SOaren locale-a detektatzen du eta ebatzitakoa gordetzen du |
+| Nabigazioa | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer beti; pantailak cache-etan; `DegradedNodesBanner`-ek erantzun gabeko nodoen berri ematen du kopurua eta birsaioarekin (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (`assets/l10n/`-eko locale guztiak) | `app_en.arb` da fallback-a; gakoen eta placeholder-en paritatea `test/l10n/arb_parity_test.dart`-en (erreferentzia `es`); `LocaleService.load()`-ek SOaren locale-a detektatzen du eta ebatzitakoa gordetzen du |
 | SO baimenak | `AndroidManifest.xml` / `Info.plist` | Sarea, kokapena, kamera, argazki-liburutegia, alarma zehatzak |
 
 ## Fluxu giltzarriak

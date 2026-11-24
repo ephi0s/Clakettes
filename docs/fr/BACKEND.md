@@ -202,7 +202,7 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profil, upload avatar |
 | `auth` | `/api/users` | auth | Connexion, rafraîchissement, inscription |
 | `auth_sessions` | `/api/auth` | auth | Liste/révocation des sessions |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD imbriqué dans `/api/festivals/{festival_id}/shortfilms` (GET/POST de liste et GET/PUT/DELETE de détail, filtre `?contest_type=`) ; les 5 endpoints plats restent disponibles mais marqués `deprecated=True` |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD imbriqué dans `/api/festivals/{festival_id}/shortfilms` (GET/POST de liste et GET/PUT/DELETE de détail, filtre `?contest_type=`) ; les endpoints plats restent disponibles mais marqués `deprecated=True` |
 | `chat` | `/api/chat` | chat | Messages, endpoint WS |
 | `user_festival` | `/api/festivals` | user-festival | Rejoindre/quitter, membres |
 | `uploads` | `/api/uploads` | uploads | Upload multipart d'avatar, thumbnail, vidéo, document et image de chat ; renvoie des chemins relatifs `/uploads/...` |
@@ -480,7 +480,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
+# {"status": "healthy", "db_revision": "<révision actuelle>"}
 ```
 
 ---

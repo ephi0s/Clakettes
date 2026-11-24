@@ -40,7 +40,7 @@ Lo detalh del modèl de fisança e del transpòrt es dins [FEDERATION_SECURITY.m
 ## Còpias de seguretat e migracions
 
 - SQLite: copiar `*.db` a cald arrestat (`-Kill` abans). MariaDB: `mariadb-dump` (volum `db-data`).
-- Migracions: `alembic upgrade head` dempuèi `backend/` (prod **solament** Alembic, jamai `create_all`). Lo head actual es `d1e2f3a4b5c6` (45 revisions); las darrièras apondon `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicitat de sètge (`uq_event_seat_location`) e `contest_type` dins los corts amb `festival_id` obligatòri.
+- Migracions: `alembic upgrade head` dempuèi `backend/` (prod **solament** Alembic, jamai `create_all`). Las darrièras migracions apondon `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicitat de sètge (`uq_event_seat_location`) e `contest_type` dins los corts amb `festival_id` obligatòri.
 - Cambi de motor: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); detalh dins [DATABASE.md](DATABASE.md).
 
 ## Resolucion de problèmas

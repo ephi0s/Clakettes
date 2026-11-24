@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+// ignore: deprecated_member_use
+import 'package:flutter/material.dart' as legacy show Material;
+import 'package:material_ui/material_ui.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../l10n/app_localizations.dart';
@@ -88,7 +90,8 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
   @override
   void initState() {
     super.initState();
-    _selectedFestivalId = widget.festivalIds?.length == 1 ? widget.festivalIds!.first : null;
+    _selectedFestivalId =
+        widget.festivalIds?.length == 1 ? widget.festivalIds!.first : null;
     _loadAgenda();
   }
 
@@ -122,7 +125,9 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
       final agenda = await _api.getAgenda(
         from: _rangeStart,
         to: _rangeEnd.add(const Duration(days: 1)),
-        festivalIds: _selectedFestivalId != null ? [_selectedFestivalId!] : widget.festivalIds,
+        festivalIds: _selectedFestivalId != null
+            ? [_selectedFestivalId!]
+            : widget.festivalIds,
         eventType: widget.eventTypeFilter,
         limit: widget.eventLimit,
       );
@@ -175,7 +180,9 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
   }
 
   List<AgendaEvent> get _selectedDayEvents =>
-      _eventMap[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)] ?? const [];
+      _eventMap[
+          DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)] ??
+      const [];
 
   /// Exporta los eventos visibles del rango actual a un archivo ICS.
   Future<void> _exportAgenda() async {
@@ -210,7 +217,8 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EventDetailScreen(eventId: id, festivalName: event.festivalName),
+        builder: (_) =>
+            EventDetailScreen(eventId: id, festivalName: event.festivalName),
       ),
     );
     if (mounted) _loadAgenda();
@@ -246,49 +254,52 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
                     padding: EdgeInsets.symmetric(vertical: 48),
                     child: Center(child: CircularProgressIndicator()),
                   )
-                : TableCalendar<AgendaEvent>(
-                    locale: _calendarLocale(context),
-                    firstDay: DateTime(_focusedDay.year - 2, 1, 1),
-                    lastDay: DateTime(_focusedDay.year + 3, 12, 31),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                    eventLoader: (day) => _eventMap[day] ?? const [],
-                    startingDayOfWeek: StartingDayOfWeek.monday,
-                    onDaySelected: (selected, focused) {
-                      setState(() {
-                        _selectedDay = selected;
-                        _focusedDay = focused;
-                      });
-                    },
-                    onPageChanged: (focused) {
-                      setState(() => _focusedDay = focused);
-                      _loadAgenda();
-                    },
-                    headerStyle: const HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      leftChevronIcon: Icon(Icons.chevron_left_rounded),
-                      rightChevronIcon: Icon(Icons.chevron_right_rounded),
-                    ),
-                    availableGestures: widget.gestures,
-                    calendarBuilders: CalendarBuilders<AgendaEvent>(
-                      markerBuilder: (context, day, events) {
-                        if (events.isEmpty) return null;
-                        return Positioned(
-                          right: 1,
-                          bottom: 1,
-                          child: _buildMarkers(events),
-                        );
+                : legacy.Material(
+                    child: TableCalendar<AgendaEvent>(
+                      locale: _calendarLocale(context),
+                      firstDay: DateTime(_focusedDay.year - 2, 1, 1),
+                      lastDay: DateTime(_focusedDay.year + 3, 12, 31),
+                      focusedDay: _focusedDay,
+                      selectedDayPredicate: (day) =>
+                          isSameDay(day, _selectedDay),
+                      eventLoader: (day) => _eventMap[day] ?? const [],
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      onDaySelected: (selected, focused) {
+                        setState(() {
+                          _selectedDay = selected;
+                          _focusedDay = focused;
+                        });
                       },
-                    ),
-                    calendarStyle: CalendarStyle(
-                      todayDecoration: BoxDecoration(
-                        color: colorScheme.secondary,
-                        shape: BoxShape.circle,
+                      onPageChanged: (focused) {
+                        setState(() => _focusedDay = focused);
+                        _loadAgenda();
+                      },
+                      headerStyle: const HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        leftChevronIcon: Icon(Icons.chevron_left_rounded),
+                        rightChevronIcon: Icon(Icons.chevron_right_rounded),
                       ),
-                      selectedDecoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        shape: BoxShape.circle,
+                      availableGestures: widget.gestures,
+                      calendarBuilders: CalendarBuilders<AgendaEvent>(
+                        markerBuilder: (context, day, events) {
+                          if (events.isEmpty) return null;
+                          return Positioned(
+                            right: 1,
+                            bottom: 1,
+                            child: _buildMarkers(events),
+                          );
+                        },
+                      ),
+                      calendarStyle: CalendarStyle(
+                        todayDecoration: BoxDecoration(
+                          color: colorScheme.secondary,
+                          shape: BoxShape.circle,
+                        ),
+                        selectedDecoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ),
@@ -322,7 +333,10 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
               child: IconButton(
                 onPressed: _isExporting ? null : _exportAgenda,
                 icon: _isExporting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.ios_share_rounded),
                 tooltip: l10n.exportCalendar,
               ),
@@ -342,7 +356,8 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(l10n.allFestivals, style: const TextStyle(fontSize: 13)),
+              label:
+                  Text(l10n.allFestivals, style: const TextStyle(fontSize: 13)),
               selected: _selectedFestivalId == null,
               onSelected: (_) => _selectFestival(null),
             ),
@@ -355,9 +370,11 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
                   backgroundColor: _festivalColor(festival.id),
                   radius: 6,
                 ),
-                label: Text(festival.name, style: const TextStyle(fontSize: 13)),
+                label:
+                    Text(festival.name, style: const TextStyle(fontSize: 13)),
                 selected: _selectedFestivalId == festival.id,
-                onSelected: (selected) => _selectFestival(selected ? festival.id : null),
+                onSelected: (selected) =>
+                    _selectFestival(selected ? festival.id : null),
               ),
             ),
         ],
@@ -471,7 +488,8 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
       trailing: event.isPrivate
           ? Tooltip(
               message: l10n.restrictedVisibility,
-              child: Icon(Icons.lock_outline_rounded, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              child: Icon(Icons.lock_outline_rounded,
+                  size: 18, color: theme.colorScheme.onSurfaceVariant),
             )
           : null,
       onTap: () => _openEvent(event),
@@ -479,10 +497,7 @@ class _AgendaCalendarSectionState extends State<AgendaCalendarSection> {
   }
 
   Widget _buildMarkers(List<AgendaEvent> events) {
-    final colors = events
-        .map((e) => _eventColor(e))
-        .take(3)
-        .toList();
+    final colors = events.map((e) => _eventColor(e)).take(3).toList();
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -1,6 +1,7 @@
 services:
   # ── Dev (default: docker compose up) ──────────────────────────────
   backend:
+    image: cine-backend:latest
     build:
       context: ./backend
       target: dev
@@ -18,6 +19,7 @@ services:
       - backend-data:/app/data
 
   frontend:
+    image: cine-frontend:latest
     build:
       context: ./frontend
       target: dev
@@ -55,6 +57,7 @@ services:
   # ── Prod (docker compose --profile prod up -d) ──────────────────
   backend-prod:
     profiles: [prod]
+    image: cine-backend-prod:latest
     build:
       context: ./backend
       target: prod
@@ -75,6 +78,7 @@ services:
 
   frontend-prod:
     profiles: [prod]
+    image: cine-frontend-prod:latest
     build:
       context: ./frontend
       target: prod

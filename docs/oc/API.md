@@ -677,5 +677,3 @@ Totes las pujadas retornan un camin relatiu `/uploads/<dossièr>/<fichièr>`, ja
 | DELETE | `/api/validation-rules/{rule_id}` | òc (admin) |
 | GET | `/api/validation-rule-groups` | non |
 | POST | `/api/validation-rule-groups` | òc (admin) |
-
-Total : 451 endpoints dins 44 routers (40 amb un prefixe dins `main.py`).

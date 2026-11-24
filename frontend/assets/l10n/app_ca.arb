@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Eliminar aquesta publicació?",
   "postDeleteFailed": "No s’ha pogut eliminar",
   "postEditTitle": "Edita la publicació",
+  "postTitleHint": "Títol de la publicació",
   "postSaveFailed": "No s’ha pogut desar",
   "postActionForbidden": "Acció no permesa",
   "postReplyFailed": "No s’ha pogut respondre",

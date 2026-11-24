@@ -10,7 +10,7 @@ A plataforma onde os festivais de cine viven todo o ano: convocatorias, curtas, 
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Funciona en web, Android, iOS e escritorio (Windows, macOS, Linux), en 9 idiomas e tamén sen conexión.
+Funciona en web, Android, iOS e escritorio (Windows, macOS, Linux), en todos os idiomas e tamén sen conexión.
 
 ---
 
@@ -30,7 +30,7 @@ Funciona en web, Android, iOS e escritorio (Windows, macOS, Linux), en 9 idiomas
 - **Mapas**: sedes e localizacións de rodaxe en mapas interactivos, con apertura na túa app de mapas favorita.
 - **Sen conexión**: a app segue funcionando offline, garda a procedencia de cada nodo en caché e sincroniza os teus cambios ao recuperar a conexión.
 - **Federación**: nodos de confianza con mTLS, portabilidade de identidade, chat e eventos entre nodos, moderación, métricas e resiliencia.
-- **No teu idioma**: español, inglés, francés, alemán, italiano, catalán, éuscaro, galego e occitano (823 claves por idioma), con detección automática do locale do sistema.
+- **No teu idioma**: español, inglés, francés, alemán, italiano, catalán, éuscaro, galego e occitano, con detección automática do locale do sistema.
 
 ## Requisitos e arranque
 

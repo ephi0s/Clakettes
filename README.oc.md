@@ -10,7 +10,7 @@ La plataforma ont los festivals de cinèma vivon tota l'annada: convocatòrias, 
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Fonciona en web, Android, iOS e escritòri (Windows, macOS, Linux), en 9 lengas e tanben sens connexion.
+Fonciona en web, Android, iOS e escritòri (Windows, macOS, Linux), en totas las lengas e tanben sens connexion.
 
 ---
 
@@ -30,7 +30,7 @@ Fonciona en web, Android, iOS e escritòri (Windows, macOS, Linux), en 9 lengas 
 - **Mapas**: sèts e localizacions de rodatge en mapas interactius, amb dubertura dins ta app de mapas favorita.
 - **Sens connexion**: l'app contunha de foncionar offline, garda la provenança de cada nose dins la cach e sincroniza tos cambiaments en tornar trobar la connexion.
 - **Federacion**: noses de fisança amb mTLS, portabilitat d'identitat, chat e eveniments entre noses, moderacion, metricas e resiliéncia.
-- **Dins ta lenga**: espanhòu, anglés, francés, alemand, italian, catalan, euskara, galician e occitan (823 claus per lenga), amb deteccion automatica del locale del sistèma.
+- **Dins ta lenga**: espanhòu, anglés, francés, alemand, italian, catalan, euskara, galician e occitan, amb deteccion automatica del locale del sistèma.
 
 ## Requesits e aviada
 

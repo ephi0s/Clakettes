@@ -30,13 +30,13 @@ Capes: Routers → Services → Models, tipus via `app.enums`.
 | Bus d'esdeveniments | `routers/federation_events.py`, `services/event_bus_service.py` | SSE amb `since`, batec i replay (200); publicació signada i reintents 3 (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefix `/dav`, cubet propi 600/60s) | Token bearer a l'URL; TLS obligatori en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF amb reportlab en import perezós |
-| Migracions | `alembic/` (45 versions, head `d1e2f3a4b5c6`) | Prod només Alembic; dev a més `create_all` |
+| Migracions | `alembic/` (migracions Alembic) | Prod només Alembic; dev a més `create_all` |
 | Federació | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifest signat RSA-SHA256, directori, nodes, reportes, webfinger, ref usuaris, JWKS, `whoami`, token federat, peers/verify, peers/revoke, mTLS per CN/PEM |
 | Portabilitat | `routers/federation_portability.py`, `services/portability_service.py`, models `identity_redirect`/`migration_audit` | Bundles signats, imports, migració de festivals/usuaris i redirects |
 | Resiliència | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, heartbeat, mètriques p50/p95, revocació de claus i pla d'incident |
 | Conformitat | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI que verifica manifest, JWKS, token, directori, portabilitat, bridge i SSE |
 
-API generada: `python tools/gen_api.py --all` produeix 446 endpoints en 43 routers (39 amb prefix a `main.py`; el generador combina a més el prefix de cada `APIRouter` i detecta dependències d'auth, vegeu [API.md](API.md)).
+API generada: `python tools/gen_api.py --all` produeix la referència d'endpoints combinant el prefix de `main.py` i el de cada `APIRouter` i detectant dependències d'auth (vegeu [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
@@ -45,12 +45,12 @@ Serveis singleton + `setState()` + Streams (sense Provider). Arrancada a `main()
 
 | Peça | On | Regla |
 |---|---|---|
-| API | `services/api_service.dart` (nucli) + `services/api/` (13 dominis, split implementat, vegeu el seu README) | Base `BACKEND_URL` (desada > dart-define > default per plataforma; emulador Android `10.0.2.2`); `resolveMediaUrl()` anteposa el node actiu a `/uploads/...`; `uploadFile()` fa servir MIME per extensió, Bearer, reintent 401/refresh i fallback entre nodes; el WS del xat deriva la seva URL del mateix `rootUrl` |
+| API | `services/api_service.dart` (nucli) + `services/api/` (dominis, split implementat, vegeu el seu README) | Base `BACKEND_URL` (desada > dart-define > default per plataforma; emulador Android `10.0.2.2`); `resolveMediaUrl()` anteposa el node actiu a `/uploads/...`; `uploadFile()` fa servir MIME per extensió, Bearer, reintent 401/refresh i fallback entre nodes; el WS del xat deriva la seva URL del mateix `rootUrl` |
 | Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-reenviament) | Caché amb etiqueta de node (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor` exposa `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` i sondes `ApiService.testNode()`; en reconnectar, sync amb confirmació |
 | Xat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en viu, REST per historial i historial federat; E2EE ECDH P-256 + AES-GCM en isolates; `ChatPresenceBackend` aporta escriptura, latència i confirmacions de lectura; cerca local, dedup i ordre per `(created_at,id)`; missatges offline encuats de forma duradera amb el mateix `message_id` |
 | Avisos | `notification_service.dart` | Escriptori: plugin SO; web: Notification API; mòbil: no-op (vegeu [PUSH.md](PUSH.md)) |
-| Navegació | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer sempre; 11 pantalles emmagatzemades; `DegradedNodesBanner` avisa de nodes sense resposta amb recompte i reintent (`checkNow()`) |
-| i18n | `l10n/` + `assets/l10n/` (9 locals, 823 claus per ARB) | `app_en.arb` és el fallback; paritat de claus i placeholders a `test/l10n/arb_parity_test.dart` (referència `es`); `LocaleService.load()` detecta el locale del SO i desa el resolt |
+| Navegació | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer sempre; pantalles en cache; `DegradedNodesBanner` avisa de nodes sense resposta amb recompte i reintent (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (els locals a `assets/l10n/`) | `app_en.arb` és el fallback; paritat de claus i placeholders a `test/l10n/arb_parity_test.dart` (referència `es`); `LocaleService.load()` detecta el locale del SO i desa el resolt |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Xarxa, ubicació, càmera, fototeca, alarmes exactes |
 
 ## Fluxos clau

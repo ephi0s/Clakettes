@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide FormField;
+import 'package:material_ui/material_ui.dart' hide FormField;
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../models/form_definition_model.dart';

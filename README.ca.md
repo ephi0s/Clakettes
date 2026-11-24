@@ -10,7 +10,7 @@ La plataforma on els festivals de cinema viuen tot l'any: convocatòries, curts,
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Funciona en web, Android, iOS i escriptori (Windows, macOS, Linux), en 9 idiomes i també sense connexió.
+Funciona en web, Android, iOS i escriptori (Windows, macOS, Linux), en totes les llengües de la plataforma i també sense connexió.
 
 ---
 
@@ -30,7 +30,7 @@ Funciona en web, Android, iOS i escriptori (Windows, macOS, Linux), en 9 idiomes
 - **Mapes**: seus i localitzacions de rodatge en mapes interactius, amb obertura a la teva app de mapes preferida.
 - **Sense connexió**: l'app continua funcionant offline, guarda la procedència de cada node a la caché i sincronitza els teus canvis en recuperar la connexió.
 - **Federació**: nodes de confiança amb mTLS, portabilitat d'identitat, xat i esdeveniments entre nodes, moderació, mètriques i resiliència.
-- **En el teu idioma**: espanyol, anglès, francès, alemany, italià, català, euskera, gallec i occità (823 claus per idioma), amb detecció automàtica del locale del sistema.
+- **En el teu idioma**: espanyol, anglès, francès, alemany, italià, català, euskera, gallec i occità, amb detecció automàtica del locale del sistema.
 
 ## Requisits i arrencada
 

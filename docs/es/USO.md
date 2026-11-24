@@ -8,7 +8,7 @@
 |---|---|
 | Todo en local | `.\start.ps1` o `./start.sh` (Docker si hay, local si no) |
 | Solo backend / frontend | `-NoFrontend` / `-NoBackend` |
-| Probar en navegador | `-Web` (modo local) |
+| Probar en navegador de desarrollo | default / `-Dev` (o `-Web` para forzar modo local) |
 | Producción local | `-Final` (build web + serve) |
 | Tests | `-TestBackend` / `-TestFrontend` |
 | Migraciones / con MariaDB | `-Migrate` / `-MariaDB` / `-TestMigration` |

@@ -4,7 +4,7 @@ Dieser Index ist der Haupteinstieg in die Projektdokumentation. Er ist so aufgeb
 
 ## Sprachen
 
-Die 18 gemeinsamen Dokumente existieren in den 9 Sprachen der Plattform; in `docs/es/` gibt es zusätzlich zwei spezifische Analysen (`AMENAZAS_NODOS_FEDERACION.md` und `MODELO_CONFIANZA_NODOS.md`). Spanisch (kanarisch) ist kanonisch:
+Die gemeinsamen Dokumente existieren in allen Sprachen der Plattform; in `docs/es/` gibt es zusätzlich spezifische Analysen (`AMENAZAS_NODOS_FEDERACION.md` und `MODELO_CONFIANZA_NODOS.md`). Spanisch (kanarisch) ist kanonisch:
 [ES](../es/README.md) · [EN](../en/README.md) · [FR](../fr/README.md) · [DE](README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## Navigation in der Dokumentation
@@ -78,7 +78,7 @@ Die 18 gemeinsamen Dokumente existieren in den 9 Sprachen der Plattform; in `doc
 - Wenn du einen Startablauf änderst, synchronisiere [README.md](../../README.md), [USO.md](USO.md) und [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - Wenn du eine öffentliche API änderst, aktualisiere [API.md](API.md) und gegebenenfalls [DESARROLLO.md](DESARROLLO.md).
 - Wenn du das Schema oder die Persistenz änderst, prüfe [DATABASE.md](DATABASE.md) und die Migrationen.
-- Immer wenn du ein Dokument in `docs/es/` bearbeitest, übertrage die Änderung auf die 8 Schwestern (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Immer wenn du ein Dokument in `docs/es/` bearbeitest, übertrage die Änderung auf alle Schwesterdokumente (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Schnell-FAQ
 

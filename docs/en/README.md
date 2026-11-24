@@ -4,7 +4,7 @@ This index is the main entry point to the project documentation. It is designed 
 
 ## Languages
 
-The 18 common documents exist in the 9 languages of the platform; `docs/es/` also has two specific analyses (`AMENAZAS_NODOS_FEDERACION.md` and `MODELO_CONFIANZA_NODOS.md`). Spanish (Canarian) is canonical:
+The common documents exist in all the languages of the platform; `docs/es/` also has specific analyses (`AMENAZAS_NODOS_FEDERACION.md` and `MODELO_CONFIANZA_NODOS.md`). Spanish (Canarian) is canonical:
 [ES](../es/README.md) · [EN](README.md) · [FR](../fr/README.md) · [DE](../de/README.md) · [IT](../it/README.md) · [CA](../ca/README.md) · [EU](../eu/README.md) · [GL](../gl/README.md) · [OC](../oc/README.md)
 
 ## How to navigate the documentation
@@ -78,7 +78,7 @@ The 18 common documents exist in the 9 languages of the platform; `docs/es/` als
 - If you change a startup flow, sync [README.md](../../README.md), [USO.md](USO.md) and [HERRAMIENTAS.md](HERRAMIENTAS.md).
 - If you change a public API, update [API.md](API.md) and, where applicable, [DESARROLLO.md](DESARROLLO.md).
 - If you change the schema or persistence, review [DATABASE.md](DATABASE.md) and migrations.
-- Whenever you edit a document in `docs/es/`, replicate the change to the 8 sisters (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
+- Whenever you edit a document in `docs/es/`, replicate the change to all the sisters (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
 
 ## Quick FAQ
 

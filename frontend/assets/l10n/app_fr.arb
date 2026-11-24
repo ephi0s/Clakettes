@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Supprimer cette publication ?",
   "postDeleteFailed": "Impossible de supprimer",
   "postEditTitle": "Modifier la publication",
+  "postTitleHint": "Titre de la publication",
   "postSaveFailed": "Impossible d’enregistrer",
   "postActionForbidden": "Action non autorisée",
   "postReplyFailed": "Impossible de répondre",

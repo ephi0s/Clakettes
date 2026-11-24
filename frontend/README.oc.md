@@ -9,7 +9,7 @@ Frontend Flutter multiplataforma per la plataforma de gestion de festivals de ci
 - **Framework**: Flutter (Material 3, color dinámico, modo oscuro)
 - **Estado**: Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Almacenamiento local**: Hive, SharedPreferences
-- **i18n**: 9 idiomas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sin gen-l10n)
+- **i18n**: totas las lengas (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manual (sin gen-l10n)
 - **Accesibilidad**: widgets Semantics, soporte TalkBack/VoiceOver, WCAG 2.1 AA
 - **Arquitectura**: Services / Managers / Views (Arquitectura Flutter Pragmática)
 
@@ -144,7 +144,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internacionalizacion (i18n)
 
-- **9 locales**: en, es, fr, de, it, ca, eu, gl, oc (823 claus per ARB, paritat verificada amb `test/l10n/arb_parity_test.dart`)
+- **totes las lengas**: en, es, fr, de, it, ca, eu, gl, oc (paritat verificada amb `test/l10n/arb_parity_test.dart`)
 - **Implementacion manuala**: `lib/l10n/app_localizations.dart` (sens gen-l10n)
 - **Fichièrs ARB**: `assets/l10n/app_<locale>.arb`
 - **Auto-deteccion**: `LocaleService.load()` legís la lenga del sistèma, amb fallback a `en`, e persista lo locale resolt
@@ -153,7 +153,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Apondre traduccions
 
 1. Apond la clau a `assets/l10n/app_en.arb`
-2. Replica-la dins los autres 8 `.arb`
+2. Replica-la dins los autres `.arb`
 3. Utiliza-la en Dart: `AppLocalizations.of(context)!.yourKey`
 
 ### Claus imbricadas (ròtles, validacion)
@@ -202,6 +202,7 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 - **Mòde escur**: sosten complet via `_baseTheme(ColorScheme)`
 - **tèmas de compausants**: Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Transicions de pagina Cupertino** en iOS/macOS
+- **Imports d'UI**: dempuèi Flutter 3.50+, los imports d'UI se tròban dins `package:material_ui/material_ui.dart` e `package:cupertino_ui/cupertino_ui.dart` ; los delegats de localizacion venon de `GlobalMaterialLocalizations.delegates` (sens `flutter_localizations`). `package:flutter/material.dart` es pas utilizat, levat lo pont ponctual de `table_calendar` dins `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Chat (E2EE)
 
@@ -337,7 +338,7 @@ Dockerfile multi-etapa:
 
 1. Seguís los patrons existents (singletons, `setState`, streams)
 2. Apond `Semantics` als nòus widgets interactius
-3. Apond traduccions als 9 fichièrs ARB
+3. Apond traduccions a totes los fichièrs ARB
 4. Executa `flutter analyze` e `flutter test` abans del PR
 5. Commits convencionaus: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

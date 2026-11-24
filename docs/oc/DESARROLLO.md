@@ -20,9 +20,9 @@
    reutilizabla (borbolhas, cartas, barras, seccions).
 3. Avises amb `showAppSnack`; escafaments amb `showConfirmDialog`; errors amb
    `ErrorStateWidget` e tornada d'ensajar.
-4. Tèxtes en `assets/l10n/app_en.arb` d'en primièr (fallback) + rèsta de locales
-   (823 claus); executatz `flutter test test/l10n/arb_parity_test.dart`: exigeís
-   las meteissas claus e placeholders dins los 9 ARB (referéncia `es`).
+4. Tèxtes en `assets/l10n/app_en.arb` d'en primièr (fallback) + rèsta de locales;
+   executatz `flutter test test/l10n/arb_parity_test.dart`: exigeís
+   las meteissas claus e placeholders dins totes los ARB (referéncia `es`).
 5. Tèst en `test/screens/` o `test/widgets/` (los widgets amb `l10n`
    an besonh d'un `pump()` extra aprèp `pumpWidget`).
 
@@ -34,6 +34,7 @@
 
 ## Pòrtas de qualitat
 
+- Comanda unica: `tools/check.ps1` (Windows) / `tools/check.sh` (POSIX) executa tota la pòrta; sens arguments = ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test, amb `-Quick` / `--quick` sonque ruff + flutter analyze; `-Backend`/`--backend`, `-Frontend`/`--frontend` e `-TestFilter EXPR`/`--test-filter=EXPR` limitan lo camp (dins los launchers `start.ps1` / `start.sh` lo meteis filtre passa `-k` a pytest e `--plain-name` a Flutter, que ajustan tanben `-m "not interop"` en local).
 - Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
 - Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
 - Après cambiar endpoints o rotas, regeneratz la referéncia amb `python tools/gen_api.py --all` (combina los prefixes de `main.py` e de cada `APIRouter`).

@@ -15,7 +15,7 @@
 1. Dienst: Methode in der Datei von `lib/services/api/` der eigenen Domäne.
 2. Bildschirm in `lib/screens/` <600 Zeilen: wiederverwendbare UI nach `lib/widgets/` extrahieren (Blasen, Karten, Leisten, Abschnitte).
 3. Hinweise mit `showAppSnack`; Löschungen mit `showConfirmDialog`; Fehler mit `ErrorStateWidget` und Wiederholung.
-4. Texte zuerst in `assets/l10n/app_en.arb` (Fallback) + restliche Locales (823 Schlüssel); führe `flutter test test/l10n/arb_parity_test.dart` aus: es erfordert identische Schlüssel und Placeholders in den 9 ARBs (Referenz `es`).
+4. Texte zuerst in `assets/l10n/app_en.arb` (Fallback) + restliche Locales; führe `flutter test test/l10n/arb_parity_test.dart` aus: es erfordert identische Schlüssel und Placeholders in allen ARBs (Referenz `es`).
 5. Test in `test/screens/` oder `test/widgets/` (Widgets mit `l10n` benötigen ein zusätzliches `pump()` nach `pumpWidget`).
 
 ## Abhängigkeiten (Dependabot)
@@ -26,6 +26,7 @@
 
 ## Qualitätstore
 
+- Einzelner Befehl: `tools/check.ps1` (Windows) / `tools/check.sh` (POSIX) führt die gesamte Store aus; ohne Argumente = ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test, mit `-Quick` / `--quick` nur ruff + flutter analyze; `-Backend`/`--backend`, `-Frontend`/`--frontend` und `-TestFilter EXPR`/`--test-filter=EXPR` schränken den Umfang ein (in den Launchern `start.ps1` / `start.sh` übergibt derselbe Filter `-k` an pytest und `--plain-name` an Flutter, und sie ergänzen lokal zusätzlich `-m "not interop"`).
 - Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
 - Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
 - Nach Änderungen an Endpoints oder Routen die Referenz neu erzeugen mit `python tools/gen_api.py --all` (kombiniert Präfixe aus `main.py` und jedem `APIRouter`).

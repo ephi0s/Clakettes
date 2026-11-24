@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH=$FLUTTER_HOME/bin:$FLUTTER_HOME/bin/cache/dart-sdk/bin:$PATH
 
-RUN git clone --depth 1 --branch 3.47.3 https://github.com/flutter/flutter.git $FLUTTER_HOME \
+RUN git clone --depth 1 --branch 3.50.1 https://github.com/flutter/flutter.git $FLUTTER_HOME \
     && flutter config --enable-web \
     && dart --version
 

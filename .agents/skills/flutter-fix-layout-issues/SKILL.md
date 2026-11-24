@@ -3,128 +3,47 @@ name: flutter-fix-layout-issues
 description: Fixes Flutter layout errors (overflows, unbounded constraints) using Dart and Flutter MCP tools. Use when addressing "RenderFlex overflowed", "Vertical viewport was given unbounded height", or similar layout issues.
 metadata:
   model: models/gemini-3.1-pro-preview
-  last_modified: Tue, 21 Apr 2026 19:45:59 GMT
+  last_modified: Tue, 24 Nov 2026 00:00:00 GMT
 ---
-# Resolving Flutter Layout Errors
+# Errores de layout en Clakettes
 
-## Contents
-- [Constraint Violation Diagnostics](#constraint-violation-diagnostics)
-- [Layout Error Resolution Workflow](#layout-error-resolution-workflow)
-- [Examples](#examples)
+Flutter 3.50.1 / Dart 3.14. UI desde `package:material_ui/material_ui.dart` y `package:cupertino_ui/cupertino_ui.dart`.
 
-## Constraint Violation Diagnostics
+Regla base: «las restricciones bajan, los tamaños suben, el padre coloca». El error aparece cuando un hijo pide más espacio del que el padre puede dar.
 
-Flutter layout operates on a strict rule: **Constraints go down. Sizes go up. Parent sets position.** Layout errors occur when this negotiation fails, typically due to unbounded constraints or unconstrained children. 
+## Diagnóstico y decisión de arreglo
 
-Diagnose layout failures using the following error signatures:
+- [ ] «RenderFlex overflowed» → `Expanded`/`Flexible` alrededor del hijo que desborda en `Row`/`Column`/`Flex`.
+- [ ] «Vertical viewport was given unbounded height» → envolver `ListView`/`GridView` en `Expanded` o darle altura con `SizedBox`.
+- [ ] «InputDecorator cannot have unbounded width» → `Expanded`/`Flexible` alrededor de `TextField`/`TextFormField`.
+- [ ] «Incorrect use of ParentData widget» → `Expanded` hijo directo de `Row`/`Column`/`Flex`; `Positioned` hijo directo de `Stack`.
+- [ ] «RenderBox was not laid out» → error en cascada; ignóralo y busca la violación de restricciones real más arriba en el stack.
 
-*   **"Vertical viewport was given unbounded height"**: Triggered when a scrollable widget (`ListView`, `GridView`) is placed inside an unconstrained vertical parent (`Column`). The parent provides infinite height, and the child attempts to expand infinitely.
-*   **"An InputDecorator...cannot have an unbounded width"**: Triggered when a `TextField` or `TextFormField` is placed inside an unconstrained horizontal parent (`Row`). The text field attempts to determine its width based on infinite available space.
-*   **"RenderFlex overflowed"**: Triggered when a child of a `Row` or `Column` requests a size larger than the parent's allocated constraints. Visually indicated by yellow and black warning stripes.
-*   **"Incorrect use of ParentData widget"**: Triggered when a `ParentDataWidget` is not a direct descendant of its required ancestor. (e.g., `Expanded` outside a `Flex`, `Positioned` outside a `Stack`).
-*   **"RenderBox was not laid out"**: A cascading side-effect error. Ignore this and look further up the stack trace for the primary constraint violation (usually an unbounded height/width error).
+Ejemplos mínimos:
 
-## Layout Error Resolution Workflow
-
-Copy and use this checklist to systematically resolve layout constraint violations.
-
-### Task Progress
-- [ ] Run the application in debug mode to capture the exact layout exception in the console.
-- [ ] Identify the primary error message (ignore cascading "RenderBox was not laid out" errors).
-- [ ] Apply the conditional fix based on the specific error type:
-  - **If "Vertical viewport was given unbounded height"**: Wrap the scrollable child (`ListView`, `GridView`) in an `Expanded` widget to consume remaining space, or wrap it in a `SizedBox` to provide an absolute height constraint.
-  - **If "An InputDecorator...cannot have an unbounded width"**: Wrap the `TextField` or `TextFormField` in an `Expanded` or `Flexible` widget.
-  - **If "RenderFlex overflowed"**: Constrain the overflowing child by wrapping it in an `Expanded` widget (to force it to fit) or a `Flexible` widget (to allow it to be smaller than the allocated space).
-  - **If "Incorrect use of ParentData widget"**: Move the `ParentDataWidget` to be a direct child of its required parent. Ensure `Expanded`/`Flexible` are direct children of `Row`/`Column`/`Flex`. Ensure `Positioned` is a direct child of `Stack`.
-- [ ] Execute Flutter hot reload.
-- [ ] Run validator -> review errors -> fix: Inspect the UI to verify the red/grey error screen or yellow/black overflow stripes are resolved. If new layout errors appear, repeat the workflow.
-
-## Examples
-
-### Fixing Unbounded Height (ListView in Column)
-
-**Input (Error State):**
 ```dart
-// Throws "Vertical viewport was given unbounded height"
-Column(
-  children: <Widget>[
-    const Text('Header'),
-    ListView(
-      children: const <Widget>[
-        ListTile(title: Text('Item 1')),
-        ListTile(title: Text('Item 2')),
-      ],
-    ),
-  ],
-)
+// Altura no acotada: ListView dentro de Column
+Column(children: [const Text('Header'), Expanded(child: ListView.builder(...))])
+
+// Ancho no acotado: TextField dentro de Row
+Row(children: [const Icon(Icons.search), Expanded(child: TextFormField())])
 ```
 
-**Output (Resolved State):**
-```dart
-// Wrap ListView in Expanded to constrain its height to the remaining Column space
-Column(
-  children: <Widget>[
-    const Text('Header'),
-    Expanded(
-      child: ListView(
-        children: const <Widget>[
-          ListTile(title: Text('Item 1')),
-          ListTile(title: Text('Item 2')),
-        ],
-      ),
-    ),
-  ],
-)
-```
+## Flujo de resolución
 
-### Fixing Unbounded Width (TextField in Row)
+- [ ] Ejecuta en debug y captura el mensaje exacto en la consola.
+- [ ] Identifica el error primario (ignora los «RenderBox was not laid out» en cascada).
+- [ ] Aplica el arreglo condicional de la tabla anterior según el mensaje.
+- [ ] Hot reload y comprueba que desaparecen la pantalla roja/gris y las franjas amarillas.
+- [ ] Si aparece un error nuevo, repite el flujo desde el mensaje primario.
 
-**Input (Error State):**
-```dart
-// Throws "An InputDecorator...cannot have an unbounded width"
-Row(
-  children: [
-    const Icon(Icons.search),
-    TextField(), 
-  ],
-)
-```
+## Al reestructurar
 
-**Output (Resolved State):**
-```dart
-// Wrap TextField in Expanded to constrain its width to the remaining Row space
-Row(
-  children: [
-    const Icon(Icons.search),
-    Expanded(
-      child: TextField(),
-    ),
-  ],
-)
-```
+- [ ] Conserva `Semantics`, `ExcludeSemantics`, `SemanticHeader` y tooltips; no los pierdas al envolver widgets.
+- [ ] Extrae UI reutilizable a `frontend/lib/widgets/` (burbujas, tarjetas, barras, secciones) y mantén `frontend/lib/screens/` por debajo de 600 líneas.
+- [ ] Formularios: `LayoutBuilder` con tope `maxWidth: 600`, `SingleChildScrollView` + `Column` con `SizedBox(height: ...)`.
 
-### Fixing RenderFlex Overflow
+## Verificación
 
-**Input (Error State):**
-```dart
-// Throws "A RenderFlex overflowed by X pixels on the right"
-Row(
-  children: [
-    const Icon(Icons.info),
-    const Text('This is a very long text string that will definitely overflow the available screen width and cause a RenderFlex error.'),
-  ],
-)
-```
-
-**Output (Resolved State):**
-```dart
-// Wrap the Text widget in Expanded to force it to wrap within the available constraints
-Row(
-  children: [
-    const Icon(Icons.info),
-    Expanded(
-      child: const Text('This is a very long text string that will definitely overflow the available screen width and cause a RenderFlex error.'),
-    ),
-  ],
-)
-```
+- [ ] `flutter analyze` y `flutter test`.
+- [ ] Puerta completa: `tools/check.ps1` / `tools/check.sh`.

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart' hide FormField;
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart' hide FormField;
+import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:clakettes/l10n/app_localizations.dart';
 import 'package:clakettes/services/auth_service.dart';
@@ -38,8 +38,8 @@ Widget wrapWithLocalization(Widget child) {
   return MaterialApp(
     localizationsDelegates: [
       TestLocalizationsDelegate(strings),
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
+      FlutterQuillLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
     ],
     supportedLocales: const [Locale('en')],
     locale: const Locale('en'),

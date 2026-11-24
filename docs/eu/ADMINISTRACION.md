@@ -40,7 +40,7 @@ Konfiantza-ereduaren eta garraioaren xehetasuna [FEDERATION_SECURITY.md](FEDERAT
 ## Babeskopiak eta migrazioak
 
 - SQLite: kopiatu `*.db` beroa geldituta (`-Kill` lehenago). MariaDB: `mariadb-dump` (`db-data` bolumena).
-- Migrazioak: `alembic upgrade head` `backend/`-tik (prod-en **soilik** Alembic, inoiz ez `create_all`). Uneko head-a `d1e2f3a4b5c6` da (45 berrikuspen); azkenek `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, eserlekuaren bakartasuna (`uq_event_seat_location`) eta `festival_id` nahitaezkoarekin `contest_type` laburretan gehitzen dituzte.
+- Migrazioak: `alembic upgrade head` `backend/`-tik (prod-en **soilik** Alembic, inoiz ez `create_all`). Azken migrazioek `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, eserlekuaren bakartasuna (`uq_event_seat_location`) eta `festival_id` nahitaezkoarekin `contest_type` laburretan gehitzen dituzte.
 - Motor-aldaketa: `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev); xehetasuna [DATABASE.md](DATABASE.md) fitxategian.
 
 ## Arazoak konpontzen

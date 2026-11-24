@@ -24,7 +24,7 @@ metadata:
 
 ## Workflow: New Endpoint
 
-- [ ] Add the method to the matching `part` file in `lib/services/api/` (`festival_api.dart`, `user_api.dart`, `channel_api.dart`, `form_api.dart`, `calendar_api.dart`, `catalog_api.dart`, `org_api.dart`, `event_api.dart`, `location_api.dart`).
+- [ ] Add the method to the matching `part` file in `lib/services/api/`.
 - [ ] Parse with the model `fromJson`; wrap lists in `PaginatedResult`.
 - [ ] In the screen: try API → catch → `contains`/`enqueue` → snackbar (`loadError` or `syncPending`).
 - [ ] Run `flutter analyze`.

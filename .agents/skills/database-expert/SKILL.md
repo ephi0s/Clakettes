@@ -1,6 +1,6 @@
 ---
 name: database-expert
-description: Expert guidance for Clakettes database layer. Covers dual SQLite (dev) / MariaDB (prod) setup, Alembic migrations, export/import scripts between environments, 30+ SQLAlchemy models with inheritance from BaseModel, model patterns (id, created_at, updated_at, relationships), enum types shared via app.enums, and migration gotchas between SQLite and MariaDB. Use when working with models, migrations, or data transfer.
+description: Expert guidance for Clakettes database layer. Covers dual SQLite (dev) / MariaDB (prod) setup, Alembic migrations, export/import scripts between environments, SQLAlchemy models inheriting from BaseModel, model patterns (id, created_at, updated_at, relationships), enum types shared via app.enums, and migration gotchas between SQLite and MariaDB. Use when working with models, migrations, or data transfer.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Tue, 23 Jun 2026 01:43:00 GMT
@@ -24,7 +24,7 @@ Dependency: `get_db()` — yields session, rolls back on exception, always close
 
 ## Models
 
-30+ SQLAlchemy models in `backend/app/models/` (23 model files). Key model files:
+Los modelos SQLAlchemy viven en `backend/app/models/`. Archivos clave:
 
 | File | Notable Models |
 |------|---------------|

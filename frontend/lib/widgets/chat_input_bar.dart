@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
 
 /// Barra de entrada del chat: emoji, adjuntos, campo de texto y envío.

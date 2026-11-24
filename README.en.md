@@ -10,7 +10,7 @@ The platform where film festivals live all year: calls, shorts, teams, venues an
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Works on web, Android, iOS and desktop (Windows, macOS, Linux), in 9 languages and offline too.
+Works on web, Android, iOS and desktop (Windows, macOS, Linux), in all the platform's languages and offline too.
 
 ---
 
@@ -30,7 +30,7 @@ Works on web, Android, iOS and desktop (Windows, macOS, Linux), in 9 languages a
 - **Maps**: venues and shooting locations on interactive maps, open in your favorite maps app.
 - **Offline**: the app keeps working offline, stores each node's origin in the cache and syncs your changes when back online.
 - **Federation**: trusted nodes with mTLS, identity portability, chat and events between nodes, moderation, metrics and resilience.
-- **In your language**: Spanish, English, French, German, Italian, Catalan, Basque, Galician and Occitan (823 keys per language), with automatic OS locale detection.
+- **In your language**: Spanish, English, French, German, Italian, Catalan, Basque, Galician and Occitan, with automatic OS locale detection.
 
 ## Requirements and startup
 

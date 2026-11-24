@@ -760,6 +760,7 @@
   "postDeleteConfirm": "¿Eliminar esta publicación?",
   "postDeleteFailed": "No se pudo eliminar",
   "postEditTitle": "Editar publicación",
+  "postTitleHint": "Título de la publicación",
   "postSaveFailed": "No se pudo guardar",
   "postActionForbidden": "Acción no permitida",
   "postReplyFailed": "No se pudo responder",

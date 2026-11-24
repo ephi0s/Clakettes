@@ -19,7 +19,7 @@ Revisione delle dipendenze, delle ottimizzazioni applicate e del debito tecnico 
 | python-multipart, email-validator, bcrypt | Mantenere | Upload, validazione email, hashing delle password |
 | reportlab 5.1.0 | Mantenere, ma con import pigro (fatto) | Solo `export_service._build_pdf`; prima importato a livello di modulo (~200 ms + memoria per ogni worker). Ora importato dentro la funzione. Inoltre è stato sincronizzato `pyproject.toml` (mancava) e fissato `==5.1.0` |
 
-**Versioni fissate in `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major da 6.21.x); sviluppo: `pytest>=9.2.0`, `ruff==0.17.5`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
+**Versioni fissate in `backend/pyproject.toml` / `requirements*.txt`:** `fastapi==0.163.1`, `uvicorn[standard]==0.54.0`, `sqlalchemy==2.1.9`, `pydantic==2.14.3`, `pydantic-settings==2.16.3`, `email-validator==2.4.0`, `pymysql==1.2.4`, `python-multipart==0.0.34`, `PyJWT==2.15.1`, `cryptography==50.0.2`, `bcrypt>=4.3.0`, `alembic==1.20.1`, `reportlab==5.1.0`, `Pillow==13.0.0`, `mutagen==1.48.1`, `pypdf==7.1.0` (major da 6.21.x); sviluppo: `pytest>=9.2.0`, `ruff==0.17.6`, `httpx==0.28.1`, `caldav==3.7.0`, `icalendar==7.3.0`.
 
 ### Frontend (`frontend/pubspec.yaml`)
 

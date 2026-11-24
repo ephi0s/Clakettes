@@ -677,5 +677,3 @@ Karga guztiek `/uploads/<karpeta>/<fitxategia>` bide erlatiboa itzultzen dute, i
 | DELETE | `/api/validation-rules/{rule_id}` | bai (admin) |
 | GET | `/api/validation-rule-groups` | ez |
 | POST | `/api/validation-rule-groups` | bai (admin) |
-
-Guztira: 451 endpoint 44 routerretan (40 `main.py`-n aurrizkiarekin).

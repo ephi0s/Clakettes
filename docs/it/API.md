@@ -677,5 +677,3 @@ Tutti i caricamenti restituiscono un percorso relativo `/uploads/<cartella>/<fil
 | DELETE | `/api/validation-rules/{rule_id}` | sì (admin) |
 | GET | `/api/validation-rule-groups` | no |
 | POST | `/api/validation-rule-groups` | sì (admin) |
-
-Totale: 451 endpoint in 44 router (40 con prefisso in `main.py`).

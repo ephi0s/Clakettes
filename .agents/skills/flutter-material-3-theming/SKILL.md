@@ -1,6 +1,6 @@
 ---
 name: flutter-material-3-theming
-description: Expert guidance for Clakettes Material 3 theming. Covers custom ThemeData from seed color (#B8956E), light/dark theme via _baseTheme(ColorScheme), 18+ component themes (Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB), Cupertino page transitions, and theme consistency. Use when modifying theme or adding themed widgets.
+description: Expert guidance for Clakettes Material 3 theming. Covers custom ThemeData from seed color (#B8956E), light/dark theme via _baseTheme(ColorScheme), component themes (Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB), Cupertino page transitions, and theme consistency. Use when modifying theme or adding themed widgets.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Tue, 23 Jun 2026 01:45:00 GMT
@@ -9,7 +9,7 @@ metadata:
 
 ## Color Scheme
 
-Defined in `lib/main.dart:48`:
+Defined in `lib/main.dart` (`_seedColor`):
 ```dart
 static const Color _seedColor = Color(0xFFB8956E);
 ```
@@ -20,7 +20,7 @@ static const Color _seedColor = Color(0xFFB8956E);
 
 ## Component Themes
 
-All in `_baseTheme(ColorScheme)` (`main.dart:87-284`):
+All in `_baseTheme(ColorScheme)` in `lib/main.dart`:
 
 | Component | Key details |
 |-----------|-------------|

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Grupo de emojis con nombre e icono de pestaña representativo.
 class EmojiCategory {

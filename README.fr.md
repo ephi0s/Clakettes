@@ -10,7 +10,7 @@ La plateforme où les festivals de cinéma vivent toute l'année : appels, court
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Fonctionne en web, Android, iOS et bureau (Windows, macOS, Linux), en 9 langues et aussi sans connexion.
+Fonctionne en web, Android, iOS et bureau (Windows, macOS, Linux), dans toutes les langues de la plateforme et aussi sans connexion.
 
 ---
 
@@ -30,7 +30,7 @@ Fonctionne en web, Android, iOS et bureau (Windows, macOS, Linux), en 9 langues 
 - **Cartes** : sièges et localisations de tournage sur cartes interactives, avec ouverture dans ton app de cartes favorite.
 - **Sans connexion** : l'app continue de fonctionner offline, conserve la provenance de chaque nœud en cache et synchronise tes changements en récupérant la connexion.
 - **Fédération** : nœuds de confiance avec mTLS, portabilité d'identité, chat et événements entre nœuds, modération, métriques et résilience.
-- **Dans ta langue** : espagnol, anglais, français, allemand, italien, catalan, basque, galicien et occitan (823 clés par langue), avec détection automatique du locale du système.
+- **Dans ta langue** : espagnol, anglais, français, allemand, italien, catalan, basque, galicien et occitan, avec détection automatique du locale du système.
 
 ## Requêtes et démarrage
 

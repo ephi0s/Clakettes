@@ -151,7 +151,7 @@ Felder:
 - **Tabelle:** `shortfilms`
 - **Klasse:** `ShortFilm`
 - **Schlüsselfelder:** title, description, duration, video_url, thumbnail_url, festival_id (FK, verpflichtend), contest_type (official_section|contest), user_id (FK), is_public, tags
-- **Beziehungen:** Gehört zu Festival, gehört zu User, hat viele Awards, hat viele ShortFilmLocations. Der Express-Wettbewerb (Guerrilla) ist `contest`; die offizielle Sektion ist `official_section`; `festival_id` ist obligatorisch mit FK `RESTRICT` und indiziert, und `contest_type` ist ebenfalls indiziert (Migration `b9c0d1e2f3a4`).
+- **Beziehungen:** Gehört zu Festival, gehört zu User, hat viele Awards, hat viele ShortFilmLocations. Der Express-Wettbewerb (Guerrilla) ist `contest`; die offizielle Sektion ist `official_section`; `festival_id` ist obligatorisch mit FK `RESTRICT` und indiziert, und `contest_type` ist ebenfalls indiziert.
 
 ### Message
 - **Tabelle:** `messages`
@@ -311,7 +311,7 @@ Felder:
 - **Tabelle:** `trusted_nodes`
 - **Klasse:** `TrustedNode`
 - **Schlüsselfelder:** node_domain (eindeutig, Index), cert_fingerprint_sha256 (eindeutig, Index), allowed, revoked_at (DateTime, nullable), revocation_reason (Text, nullable), revoked_by (String(255), nullable)
-- **Beziehungen:** Föderationsentität; `revoked_at`, `revocation_reason` und `revoked_by` erfassen die Widerrufung des Knotens (Migration `c0d1e2f3a4b5`)
+- **Beziehungen:** Föderationsentität; `revoked_at`, `revocation_reason` und `revoked_by` erfassen die Widerrufung des Knotens.
 
 ### Location
 - **Tabelle:** `locations`
@@ -389,7 +389,7 @@ Felder:
 - **Klasse:** `EventSeat`
 - **Schlüsselfelder:** event_id (FK), ticket_type_id (FK), section, row_label, number, label, status, x_position, y_position, is_accessible, notes
 - **Beziehungen:** Gehört zu Event, gehört zu EventTicketType
-- **Bedingung:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (Migration `a8b9c0d1e2f3`; ersetzt das unwirksame `Meta.unique_together` von SQLAlchemy)
+- **Bedingung:** `UNIQUE (event_id, section, row_label, number)` → `uq_event_seat_location` (ersetzt das unwirksame `Meta.unique_together` von SQLAlchemy)
 
 ### EventReservation
 - **Tabelle:** `event_reservations`
@@ -420,8 +420,8 @@ Dies wird als FastAPI-Abhängigkeit für den Datenbankzugriff aus Endpoints verw
 
 ## Hinweise zur Migration von SQLite nach MariaDB
 
-Schemaänderungen werden mit Alembic verwaltet (`backend/alembic/versions/`; `alembic upgrade head`). Es gibt 45 Revisionen und der Head ist `d1e2f3a4b5c6`; die sieben letzten (`a8b9c0d1e2f3`, `a9b0c1d2e3f4`, `b0c1d2e3f4a5`, `c1d2e3f4a5b6`, `b9c0d1e2f3a4`, `c0d1e2f3a4b5`, `d1e2f3a4b5c6`) fügen die Sitzplatz-Eindeutigkeit, die Portabilitätstabellen, die durable Chat-Queue, die Moderation, `contest_type` in `shortfilms` mit Index sowie das obligatorische `festival_id` mit FK `RESTRICT` und Metadaten zur Widerrufung in `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`) hinzu. In Produktion nur Alembic, nie `create_all`.
-Die Revision `d1e2f3a4b5c6` fügt die Tabelle `user_follows` hinzu (eindeutiges Paar `follower_id`, `followed_id`).
+Schemaänderungen werden mit Alembic verwaltet (`backend/alembic/versions/`; `alembic upgrade head`). Die jüngsten Migrationen fügen die Sitzplatz-Eindeutigkeit, die Portabilitätstabellen, die durable Chat-Queue, die Moderation, `contest_type` in `shortfilms` mit Index sowie das obligatorische `festival_id` mit FK `RESTRICT` und Metadaten zur Widerrufung in `trusted_nodes` (`revoked_at`, `revocation_reason`, `revoked_by`) hinzu. In Produktion nur Alembic, nie `create_all`.
+Die Tabelle `user_follows` (eindeutiges Paar `follower_id`, `followed_id`) wird mit Alembic verwaltet.
 
 Bei der Migration von SQLite nach MariaDB:
 - SQLite `INTEGER PRIMARY KEY` entspricht MariaDB `INT AUTO_INCREMENT`

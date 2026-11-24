@@ -9,7 +9,7 @@ Frontend Flutter multiplateforme pour la plateforme de gestion de festivals de c
 - **Framework** : Flutter (Material 3, couleur dynamique, mode sombre)
 - **État** : Singletons + `setState()` + Streams (NO Provider, NO flutter_it, NO riverpod)
 - **Stockage local** : Hive, SharedPreferences
-- **i18n** : 9 langues (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manuel (sans gen-l10n)
+- **i18n** : les langues de `assets/l10n/` (en, es, fr, de, it, ca, eu, gl, oc) — `AppLocalizations` manuel (sans gen-l10n)
 - **Accessibilité** : widgets Semantics, support TalkBack/VoiceOver, WCAG 2.1 AA
 - **Architecture** : Services / Managers / Views (Architecture Flutter Pragmatique)
 
@@ -92,7 +92,7 @@ lib/
 │   ├── open_in_maps_action.dart
 │   ├── seat_map_widget.dart      # Plan de sièges interactif
 │   └── user_profile_cards.dart   # SessionsCard, AliasesCard
-├── l10n/              # AppLocalizations + 9 ARB
+├── l10n/              # AppLocalizations + tous les ARB
 ├── main.dart          # Point d'entrée, thème Material 3, ordre d'init des services
 ├── main_scaffold.dart # NavigationRail (>800px) / NavigationBar (<800px) + Drawer
 └── auth_wrapper.dart  # Porte d'authentification (splash → login / home)
@@ -143,7 +143,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 
 ## Internationalisation (i18n)
 
-- **9 locales** : en, es, fr, de, it, ca, eu, gl, oc (823 clés par locale, parité vérifiée avec `test/l10n/arb_parity_test.dart`)
+- **Locales** : en, es, fr, de, it, ca, eu, gl, oc (parité des clés vérifiée avec `test/l10n/arb_parity_test.dart`)
 - **Implémentation manuelle** : `lib/l10n/app_localizations.dart` (sans gen-l10n)
 - **Fichiers ARB** : `assets/l10n/app_<locale>.arb`
 - **Auto-détection** : `LocaleService` lit la langue du système, avec fallback à `en`
@@ -152,7 +152,7 @@ final festivals = await api.get('/festivals/', query: {'page': '1', 'size': '20'
 ### Ajouter traductions
 
 1. Ajoute la clé à `assets/l10n/app_en.arb`
-2. Réplique-la dans les autres 8 `.arb`
+2. Réplique-la dans le reste des `.arb`
 3. Utilise-la en Dart : `AppLocalizations.of(context)!.yourKey`
 
 ### Clés imbriquées (rôles, validation)
@@ -199,8 +199,9 @@ SemanticTextField(label: 'Email', validator: emailValidator)
 
 - **Couleur graine** : `#B8956E` (sable doré)
 - **Mode sombre** : support complet via `_baseTheme(ColorScheme)`
-- **18+ thèmes de composants** : Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
+- **Thèmes de composants** : Card, AppBar, NavigationBar/Rail, InputDecoration, FilledButton, ElevatedButton, TextButton, SnackBar, Dialog, BottomSheet, Chip, ListTile, Drawer, PopupMenu, Scrollbar, Slider, Divider, FAB
 - **Transitions de page Cupertino** sur iOS/macOS
+- **Imports d'UI** : depuis Flutter 3.50+, les imports d'UI se trouvent dans `package:material_ui/material_ui.dart` et `package:cupertino_ui/cupertino_ui.dart` ; les délégués de localisation proviennent de `GlobalMaterialLocalizations.delegates` (sans `flutter_localizations`). `package:flutter/material.dart` n'est pas utilisé sauf le pont ponctuel de `table_calendar` dans `lib/widgets/agenda_calendar_widget.dart`.
 
 ## Chat (E2EE)
 
@@ -335,7 +336,7 @@ Dockerfile multi-étape :
 
 1. Suis les motifs existants (singletons, `setState`, streams)
 2. Ajoute `Semantics` aux nouveaux widgets interactifs
-3. Ajoute traductions aux 9 fichiers ARB
+3. Ajoute des traductions à tous les ARB
 4. Exécute `flutter analyze` et `flutter test` avant la PR
 5. Commits conventionnels : `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 

@@ -202,7 +202,7 @@ POST /api/auth/refresh
 | `users` | `/api/users` | users | CRUD, profila, avatar eskaintzea |
 | `auth` | `/api/users` | auth | Hasi saioa, berritzea, erregistroa |
 | `auth_sessions` | `/api/auth` | auth | sesio-zerrenda / ukatu |
-| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD habiaratua `/api/festivals/{festival_id}/shortfilms`-en (zerrendaren GET/POST eta xehetasunaren GET/PUT/DELETE, `?contest_type=` iragazkia); 5 endpoint lauak erabilgarri daude baina `deprecated=True` markatuta |
+| `shortfilms` | `/api/shortfilms` | shortfilms | CRUD habiaratua `/api/festivals/{festival_id}/shortfilms`-en (zerrendaren GET/POST eta xehetasunaren GET/PUT/DELETE, `?contest_type=` iragazkia); endpoint lauak erabilgarri daude baina `deprecated=True` markatuta |
 | `chat` | `/api/chat` | chat | mezuak, WS endpoint |
 | `user_festival` | `/api/festivals` | user-festival | sarbidea / irten, kideak |
 | `uploads` | `/api/uploads` | uploads | Avatar, thumbnail, bideo, dokumentu eta txat-irudien multipart igoera; `/uploads/...` bide erlatiboak itzultzen ditu |
@@ -481,7 +481,7 @@ CORS_ORIGINS=https://app.example.com
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy", "db_revision": "d1e2f3a4b5c6"}
+# {"status": "healthy", "db_revision": "<uneroko berrikuspena>"}
 ```
 
 ---

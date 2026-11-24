@@ -40,7 +40,7 @@ Le détail du modèle de confiance et du transport est dans [FEDERATION_SECURITY
 ## Sauvegardes et migrations
 
 - SQLite : copier `*.db` à l'arrêt (`-Kill` d'abord). MariaDB : `mariadb-dump` (volume `db-data`).
-- Migrations : `alembic upgrade head` depuis `backend/` (prod **uniquement** Alembic, jamais `create_all`). Le head actuel est `d1e2f3a4b5c6` (45 révisions) ; les dernières ajoutent `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicité de siège (`uq_event_seat_location`) et `contest_type` sur les courts avec `festival_id` obligatoire.
+- Migrations : `alembic upgrade head` depuis `backend/` (prod **uniquement** Alembic, jamais `create_all`). Les migrations Alembic ajoutent `identity_redirects`, `migration_audits`, `chat_outbox`, `message_reports`, `chat_mutes`, l'unicité de siège (`uq_event_seat_location`) et `contest_type` sur les courts avec `festival_id` obligatoire.
 - Changement de moteur : `python export_sqlite_to_mariadb.py` (dev→prod), `python import_mariadb_to_sqlite.py` (prod→dev) ; détail dans [DATABASE.md](DATABASE.md).
 
 ## Dépannage

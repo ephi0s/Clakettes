@@ -1,138 +1,133 @@
 # AGENTS.md
 
 ## Proyecto
-Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión festivales cine). MIT.
 
-## Backend (`backend/`)
+Clakettes — Flutter (Material 3, dark mode) + FastAPI (gestión de festivales de cine). MIT.
+
+## Arquitectura
+
+### Backend (`backend/`)
+
 - Python 3.12+, FastAPI, SQLAlchemy, SQLite (dev) / MariaDB (prod)
-- Entry: `python -m uvicorn app.main:app --reload` (8000). Usa `.venv/` si existe.
-- Migraciones: auto al arrancar (`alembic upgrade head` en lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manual desde `backend/` (45 versiones, head `d1e2f3a4b5c6`). Ojo: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
-- Capas: Routers (45 archivos, 43 con APIRouter) → Services (53) → Models (44, incluye `base.py`; 37 schemas). Models/Schemas via `app.enums`
-- Auth: JWT (POST /api/users/login, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s global, 600/60s en `/dav`, 5/300s login, 20/60s refresh, 3/300s reset; `TESTING` ∈ {1,true,yes,on} (helper `app.config.is_testing()`) desactiva todos los límites y la auto-migración
+- Capas: Routers (`app/routers/`) → Services (`app/services/`) → Models (`app/models/`, con `base.py`) y Schemas (`app/schemas/`). Models y schemas usan `app.enums`
+- Entry: `python -m uvicorn app.main:app --reload` (8000); usa `.venv/` si existe
+- Auth: JWT (`POST /api/users/login`, 30 min, Bearer) + refresh token (30 d). Rate limit: 100/60s global, 600/60s en `/dav`, 5/300s login, 20/60s refresh, 3/300s reset. `TESTING` ∈ {1,true,yes,on} (helper `app.config.is_testing()`) desactiva límites y auto-migración
 - Paginación: `?page=1&size=20`
-- Tests: `pytest tests/ -x -q --tb=short` (54 archivos, 1544 tests; 1541 con `-m "not interop"` en CI)
-- Lint: `ruff check .` luego `ruff format --check .` (line-length 120)
+- Migraciones: automáticas al arrancar (lifespan + sello de DB nuevas; `SKIP_AUTO_MIGRATE=1` para omitir) o manuales con `alembic upgrade head`. `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete): usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`
 
-## Frontend (`frontend/`)
+### Frontend (`frontend/`)
+
 - Flutter web/desktop/Android/iOS/macOS/Linux. SDK >=3.0.0 <4.0.0
-- Entry: `main()` → `DatabaseService.init()` (boxes: festivals, users, shortfilms, messages). Luego OfflineCache, SyncQueue, NodeService, ConnectivityMonitor, LocaleService, NotificationService.
-- API: `api_service.dart` base `http://localhost:8000/api`. Config: `--dart-define=BACKEND_URL=...`
-- Estado: singletons + setState() + streams. Hive + SharedPreferences offline.
-- i18n: 9 locales (en,es,fr,de,it,ca,eu,gl,oc) ARB (823 claves por locale), `app_localizations.dart` manual (~1028 líneas); paridad con `test/l10n/arb_parity_test.dart`; `LocaleService` detecta el locale del SO y persiste el resuelto
+- UI desde `material_ui`/`cupertino_ui` (Flutter 3.50+), no desde `package:flutter/material.dart`; los delegates viven en `GlobalMaterialLocalizations.delegates`
+- Init: `main()` → `DatabaseService.init()` (boxes: festivals, users, shortfilms, messages) → OfflineCache, SyncQueue, NodeService, ConnectivityMonitor, LocaleService, NotificationService
+- Estado: singletons + `setState()` + streams. Hive + SharedPreferences offline
+- API: `api_service.dart`, base `http://localhost:8000/api`; override con `--dart-define=BACKEND_URL=...`
 - Navegación: NavigationRail (>800px) / NavigationBar (<800px) + Drawer en `main_scaffold.dart`
-- Widgets: `reusable_widgets.dart` (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField) + 32 más (33 en `lib/widgets/`)
+- Widgets: `reusable_widgets.dart` (ProfileAvatar, InfoRow, StatusIndicator, ListItemCard, SemanticHeader, SemanticTextField) y el resto en `lib/widgets/`
+- i18n: ARB en `frontend/assets/l10n/` con `app_en.arb` como fallback, `app_localizations.dart` manual, paridad con `test/l10n/arb_parity_test.dart`; `LocaleService` detecta el locale del SO y persiste el resuelto
 - Code gen Hive: `flutter pub run build_runner build --delete-conflicting-outputs`
-- Tests: `flutter test` (77 archivos) | Lint: `flutter analyze`
 
-## Inicio (`.ps1` / `.sh`)
-- `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
-- `--no-backend` / `--no-frontend` | `--kill`: mata procesos + docker compose down
-- `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
-- `--test-backend` / `--test-frontend` | `--test-migration`: MariaDB + migrate + validate
-- `--build`: `docker compose build dev` | `--build-all`: via `tools\build-all.ps1`
-- Detecta Brave/Chrome para `CHROME_EXECUTABLE`. Crea `.venv` + `flutter pub get`.
-- `--install-missing`: instala deps bare-metal (winget/apt/dnf/brew + git clone); si no, guía por SO + pregunta.
+## Comandos rápidos
 
-## CI
-- `.github/workflows/ci.yml`: GitHub Actions (lint → test → docker build on push/PR)
-- `.gitlab-ci.yml`: GitLab CI (ruff, flutter analyze, pytest, flutter test, docker build on main)
+### Backend (`cd backend`)
 
-## Grafos (`graphify-out/`)
-- `graphify query "<pregunta>"` responde sobre arquitectura sin leer archivos
-- `graphify .` para regenerar (o skill graphify) — usar `--no-viz` para evitar generar `graph.html` (HTML pesado de 5+ MB)
-- `graphify-out/` está en `.gitignore`; no se sube al repositorio
-
-## Docs ([docs/es/README.md](docs/es/README.md))
-- Índice por audiencia (usuario/admin/dev/IA); canónicos: [docs/es/SEGURIDAD.md](docs/es/SEGURIDAD.md), [docs/es/USO.md](docs/es/USO.md), [docs/es/DATABASE.md](docs/es/DATABASE.md), [docs/es/API.md](docs/es/API.md), [docs/es/BACKEND.md](docs/es/BACKEND.md), [docs/es/ARQUITECTURA.md](docs/es/ARQUITECTURA.md), [docs/es/FUNCIONAL.md](docs/es/FUNCIONAL.md), [docs/es/FEDERATION_PROTOCOL.md](docs/es/FEDERATION_PROTOCOL.md), [docs/es/FEDERATION_SCHEMA.md](docs/es/FEDERATION_SCHEMA.md), [docs/es/FEDERATION_SECURITY.md](docs/es/FEDERATION_SECURITY.md), [docs/es/PUSH.md](docs/es/PUSH.md), [docs/es/AUDITORIA.md](docs/es/AUDITORIA.md), [docs/es/ADMINISTRACION.md](docs/es/ADMINISTRACION.md), [docs/es/INFRAESTRUCTURA.md](docs/es/INFRAESTRUCTURA.md), [docs/es/HERRAMIENTAS.md](docs/es/HERRAMIENTAS.md), [docs/es/DESARROLLO.md](docs/es/DESARROLLO.md), [docs/es/FEDERATION_CHAT_BROKER.md](docs/es/FEDERATION_CHAT_BROKER.md).
-- La documentación es oro y va en español (estilo canario, ustedes): al cambiar
-  código que la afecte, actualiza TODA la info pertinente en el mismo cambio —
-  cifras (routers/servicios/modelos/migraciones/tests), endpoints nuevos o
-  movidos (`python tools/gen_api.py --all` para `docs/<idioma>/API.md`), flags de arranque,
-  roadmap del README y variables de `.env.example`. Nunca dejes docs desfasadas.
-- La documentación vive en las carpetas `docs/es/`, `docs/en/`, `docs/fr/`,
-  `docs/de/`, `docs/it/`, `docs/ca/`, `docs/eu/`, `docs/gl/` y `docs/oc/`.
-  El español es canónico: todo cambio en una doc en español se replica a sus
-  8 hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`).
-  Los 18 documentos comunes existen en las 9 lenguas (20 en `docs/es/`, que añade `AMENAZAS_NODOS_FEDERACION.md` y `MODELO_CONFIANZA_NODOS.md`).
-
-## Operación y referencia rápida para agentes
-
-### Comandos de backend
 ```bash
-cd backend
 python -m uvicorn app.main:app --reload          # entry (8000), usa .venv/ si existe
-python -m pytest tests/ -x -q --tb=short          # tests (54 archivos, 1544)
-ruff check . && ruff format --check .             # lint (line-length 120)
-alembic upgrade head                               # migraciones (45 versiones, head d1e2f3a4b5c6)
+python -m pytest tests/ -x -q --tb=short          # en CI se añade -m "not interop"
+ruff check . && ruff format --check .             # line-length 120
+.venv/Scripts/alembic.exe upgrade head            # migraciones
 ```
-Nota: `python -m alembic` falla con cwd=backend (la carpeta `alembic/` oculta al paquete); usa `.venv/Scripts/alembic.exe` o la API interna `_alembic_api()`. Auto-migra al arrancar (`SKIP_AUTO_MIGRATE=1` para omitir).
 
-### Comandos de frontend
+### Frontend (`cd frontend`)
+
 ```bash
-cd frontend
-flutter test                                       # 77 archivos
-flutter analyze                                    # lint
-flutter pub run build_runner build --delete-conflicting-outputs  # code gen Hive
+flutter test
+flutter analyze
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-### Arranque (`.ps1` / `.sh`)
-- `--dev` (default): backend + frontend | `--final`: build + serve | `--web`: abre navegador
-- `--no-backend` / `--no-frontend` | `--kill`: mata procesos + docker compose down
-- `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
-- `--test-backend` / `--test-frontend` | `--test-migration`: MariaDB + migrate + validate
-- `--build`: `docker compose build dev` | `--build-all`: via `tools\build-all.ps1`
-- Detecta Brave/Chrome para `CHROME_EXECUTABLE`. Crea `.venv` + `flutter pub get`.
-- `--install-missing`: instala deps bare-metal (winget/apt/dnf/brew + git clone); si no, guía por SO + pregunta.
+### Puertas de calidad (`tools/`)
 
-### Despliegue
 ```bash
-docker compose --profile prod up -d
+tools/check.ps1 -Quick                              # o tools/check.sh --quick: ruff + analyze
+tools/check.ps1                                     # completa: + pytest (sin interop) + flutter test
+tools/check.ps1 -Backend -TestFilter patron         # filtro de tests: -k / --plain-name
+python tools/gen_api.py --all --check               # verifica que las API.md estén regeneradas
 ```
-Backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, Android) con `.ps1 --build-all` y scripts de `docs/es/HERRAMIENTAS.md`.
 
 ### Solución de problemas
-- Backend no arranca: verifica Python 3.12+, `backend/.env`, ejecuta uvicorn directamente para ver el error.
-- App no conecta con la API: backend en `http://localhost:8000`, `BACKEND_URL` con `--dart-define`, API responde en `/docs`.
-- Bases de datos o migraciones: `alembic upgrade head`; SQLite ↔ MariaDB revisa `docs/es/USO.md` y `docs/es/DATABASE.md`.
-- Flutter: `flutter pub get`; generación de código Hive/build_runner en `docs/es/ARQUITECTURA.md`.
 
-## Sincronización al iniciar sesión
+- Backend no arranca: verifica Python 3.12+ y `backend/.env`; ejecuta uvicorn directamente para ver el error
+- App no conecta con la API: backend en `http://localhost:8000`, `BACKEND_URL` con `--dart-define`, API en `/docs`
+- BBDD/migraciones: `alembic upgrade head`; SQLite ↔ MariaDB en `docs/es/USO.md` y `docs/es/DATABASE.md`
+- Flutter: `flutter pub get`; code gen Hive/build_runner en `docs/es/ARQUITECTURA.md`
 
-Antes de comenzar cualquier trabajo, comprueba si el repositorio remoto tiene cambios que no están en la copia local:
+## Arranque (`.ps1` / `.sh`)
+
+- `--dev` (default): backend + frontend + navegador de desarrollo | `--final`: build + serve | `--web`: modo local con navegador de desarrollo
+- `--no-backend` / `--no-frontend` | `--kill`: mata procesos + `docker compose down`
+- `--migrate`: alembic upgrade head | `--mariadb`: usa MariaDB
+- `--test-backend` / `--test-frontend` | `--test-migration`: MariaDB + migrate + validate
+- `--test-filter=EXPR` (o `-TestFilter EXPR`): pasa `-k` a pytest y `--plain-name` a Flutter
+- `--build`: `docker compose build` | `--build-all`: vía `tools\build-all.ps1`
+- `--install-missing`: instala deps bare-metal (winget/apt/dnf/brew + git clone); si no, guía por SO y pregunta
+- Detecta Brave/Chrome para `CHROME_EXECUTABLE`; crea `.venv` y ejecuta `flutter pub get`
+- Los launchers usan 65081/65080 por defecto; `docker compose` usa 8000/3000 salvo `PORT_BACKEND`/`PORT_FRONTEND`
+
+## Despliegue
+
+`docker compose --profile prod up -d` → backend + frontend (nginx) + MariaDB. Builds distribuidos (web, Windows, Linux, Android) con `.ps1 --build-all` y los scripts de `docs/es/HERRAMIENTAS.md`.
+
+## CI
+
+- `.github/workflows/ci.yml`: GitHub Actions (lint → test → docker build en push/PR)
+- `.gitlab-ci.yml`: GitLab CI (ruff, flutter analyze, pytest, flutter test, docker build en main)
+- Ambos CI ejecutan `python tools/gen_api.py --all --check` (job `docs-api`): las `API.md` deben estar regeneradas
+
+## Grafos (`graphify-out/`)
+
+- `graphify query "<pregunta>"`: responde sobre arquitectura sin leer archivos
+- `graphify . --no-viz --code-only`: regenera sin `graph.html` y sin API key (omite docs/imágenes)
+- `graphify-out/` está en `.gitignore`; no se sube al repositorio
+
+## Documentación
+
+- Índice por audiencia y docos canónicos en [docs/es/README.md](docs/es/README.md): [SEGURIDAD](docs/es/SEGURIDAD.md), [USO](docs/es/USO.md), [DATABASE](docs/es/DATABASE.md), [API](docs/es/API.md), [BACKEND](docs/es/BACKEND.md), [ARQUITECTURA](docs/es/ARQUITECTURA.md), [FUNCIONAL](docs/es/FUNCIONAL.md), [FEDERATION_PROTOCOL](docs/es/FEDERATION_PROTOCOL.md), [FEDERATION_SCHEMA](docs/es/FEDERATION_SCHEMA.md), [FEDERATION_SECURITY](docs/es/FEDERATION_SECURITY.md), [PUSH](docs/es/PUSH.md), [AUDITORIA](docs/es/AUDITORIA.md), [ADMINISTRACION](docs/es/ADMINISTRACION.md), [INFRAESTRUCTURA](docs/es/INFRAESTRUCTURA.md), [HERRAMIENTAS](docs/es/HERRAMIENTAS.md), [DESARROLLO](docs/es/DESARROLLO.md), [FEDERATION_CHAT_BROKER](docs/es/FEDERATION_CHAT_BROKER.md)
+- Documentación en `docs/es/`, `docs/en/`, `docs/fr/`, `docs/de/`, `docs/it/`, `docs/ca/`, `docs/eu/`, `docs/gl/` y `docs/oc/`. `docs/es/` añade `AMENAZAS_NODOS_FEDERACION.md` y `MODELO_CONFIANZA_NODOS.md`
+- Español canónico (estilo canario, ustedes): todo cambio en una doc en español se replica a todas las hermanas (`docs/<idioma>/X.md`, `README.<lang>.md`, `frontend/README.<lang>.md`)
+- Al cambiar código que afecte a la documentación, actualiza en el mismo cambio endpoints (`python tools/gen_api.py --all`), estructura, flags de arranque, roadmap del README y variables de `.env.example`. Nunca dejes docs desfasadas; no mantengas recuentos de archivos ni de tests en las docs, se desactualizan solos
+
+## Flujo de trabajo para agentes
+
+### Al iniciar
 
 ```bash
 git fetch origin
 git status -sb
-git log --oneline @{u}..HEAD
+git log --oneline '@{u}..HEAD'
 ```
 
-Si hay commits en `origin/main` que no están en `main` local:
+Si hay commits de `origin/main` que falten en local: `git pull --ff-only`. Si existe `TASKS.md`, léelo; elimina ítems completados y el archivo cuando quede vacío.
 
-```bash
-git pull --ff-only
-```
+### Durante el trabajo
 
-Esto evita trabajar sobre código obsoleto y reduce conflictos al publicar los cambios al final de la sesión.
+- Usa subagentes Explore en paralelo para búsquedas/lecturas previas; úsalos siempre que sea posible para ahorrar tokens
+- Búsquedas y reemplazos con `grep`/`edit` de OpenCode, nunca scripts auxiliares salvo que sea imprescindible
+- Carga skills solo si la tarea lo pide:
+  - Backend: `backend-python-fastapi-expert`
+  - Ops: `docker-devops-expert`, `database-expert`, `quality-gate-ci`
+  - Frontend: `flutter-apply-architecture-best-practices`, `flutter-material-3-theming`, `flutter-accessibility-wcag`, `flutter-localization-arb`, `flutter-offline-sync-hive`, `flutter-maps-geo-osm`
+  - Resto de skills en `.agents/skills/`, incluido `docs-i18n-sync`
 
-## Tareas pendientes
-Si existe `TASKS.md`, léelo. Al completar ítems, elimínalos. Cuando vacío, elimínalo.
+### Verificación
 
-## Subagentes
-Usa Explore para búsquedas/lecturas previas. Llama en paralelo.
+- Puerta única: `tools/check.ps1` / `tools/check.sh` (añade `-Quick`/`--quick` para solo ruff + analyze)
+- Durante desarrollo: `ruff check .` / `flutter analyze` y, como mucho, tests puntuales. Corrige si falla
+- Tests completos solo al terminar todos los cambios del área: `pytest tests/ -x -q --tb=short` (~30 min) y `flutter test` (lento)
 
-## Verificación post-task
-- Frontend: `flutter analyze` | Backend: `ruff check .` o `pytest tests/ -x -q --tb=short`
-Corrige si falla. Solo se ejecuta si se considera necesario.
-- Los tests completos (backend y frontend) se ejecutan **solo al terminar** todos los cambios de esa área: `pytest` tarda ~30 min y `flutter test` también es lento. Durante el desarrollo usa únicamente `ruff check .` / `flutter analyze` y, como mucho, tests puntuales.
+### Estilo de respuesta
 
-## A tener en cuenta
-- Responde en 1-3 líneas. Sin introducciones/resúmenes/explicaciones. Sin emojis.
-- Código solo en herramientas (write/edit), no en texto.
-- Tras editar, no expliques — sigue con la tarea. No preguntes "X o Y?" — asume.
-- **PowerShell**: `; if ($?) { }` en vez de `&&` (PS 5.1)
-- **Sin comentarios** en código salvo que el usuario lo pida
-- **backend**: backend-python-fastapi-expert
-- **ops**: docker-devops-expert, database-expert, quality-gate-ci
-- **frontend**: flutter-material-3-theming, flutter-accessibility-wcag, flutter-state-management-pattern, flutter-localization-arb, flutter-offline-sync-hive, flutter-maps-geo-osm
-- skills en `.agents/skills/` (18 + `docs-i18n-sync`). Cargar con `<skill name="...">` solo si la tarea lo pide.
-- Usa subagentes siempre que sea posible para ahorrar tokens
+- 1-3 líneas; sin introducciones, resúmenes ni explicaciones; sin emojis
+- Código solo en herramientas (write/edit), no en texto; sin comentarios en código salvo petición
+- Tras editar, no expliques ni preguntes "X o Y?": asume
+- PowerShell 5.1: `; if ($?) { }` en vez de `&&`

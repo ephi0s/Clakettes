@@ -8,7 +8,7 @@
 |---|---|
 | Dena lokalean | `.\start.ps1` edo `./start.sh` (Docker badago, lokala bestela) |
 | Soilik backend / frontend | `-NoFrontend` / `-NoBackend` |
-| Nabigatzailean probatu | `-Web` (modu lokala) |
+| Garapeneko nabigatzailean probatu | lehenetsia / `-Dev` (edo `-Web` modu lokala behartzeko) |
 | Tokiko ekoizpena | `-Final` (web build + serve) |
 | Testak | `-TestBackend` / `-TestFrontend` |
 | Migrazioak / MariaDBrekin | `-Migrate` / `-MariaDB` / `-TestMigration` |

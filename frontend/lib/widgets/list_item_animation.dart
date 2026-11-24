@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Anima un elemento de lista con un desvanecimiento y un deslizamiento ascendente.
 ///

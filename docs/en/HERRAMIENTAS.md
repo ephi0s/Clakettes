@@ -8,10 +8,14 @@
 |---|---|---|
 | Dev backend+frontend | `.\start.ps1` / `./start.sh` | Root (Docker if available, local if not) |
 | Only backend / frontend | `-NoFrontend` / `-NoBackend` | `start.ps1` / `--no-frontend` in `start.sh` |
-| Web in browser | `-Web` | Local mode only |
+| Web in development browser | default / `-Dev` | Docker dev or local; `-Web` forces local mode |
 | Local production (web build + serve) | `-Final` | `start.ps1` / `start.sh` |
 | Backend tests | `-TestBackend` | pytest in `.venv` or Docker |
 | Frontend tests | `-TestFrontend` | `flutter test` or Docker |
+| Quality gate (all) | `tools/check.ps1` / `tools/check.sh` | Root; no args: ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test |
+| Quick gate | `-Quick` / `--quick` | Only ruff + flutter analyze |
+| Backend / frontend only | `-Backend` / `--backend`, `-Frontend` / `--frontend` | `tools/check.ps1` / `tools/check.sh` |
+| Filter tests | `-TestFilter EXPR` / `--test-filter=EXPR` | `-k` to pytest and `--plain-name` to Flutter; same in `start.ps1` / `start.sh`, which also add `-m "not interop"` locally |
 | Migrations | `-Migrate` / `-TestMigration` (MariaDB) | alembic |
 | Check environment without starting | `-Check` | Doctor: Docker, Python, Flutter, .venv, ports |
 | Install missing dependencies | `-InstallMissing` | winget / OS package manager + git clone |
@@ -23,6 +27,7 @@
 | Docker multi-target | `tools/build-all.ps1` | Requires Docker |
 | Verify node conformance | `python tools/federation_conformance.py <url> [--json]` | Root (`tools/`) |
 | Regenerate API reference | `python tools/gen_api.py --all` | Root (`tools/`); combines prefixes from `main.py` and each `APIRouter` and detects auth dependencies |
+| Check generated API reference | `python tools/gen_api.py --all --check` | Root (`tools/`); checks that the `API.md` files are up to date without writing them (exit 1 if any differs); run by the `docs-api` CI job |
 
 The conformance CLI verifies manifest, JWKS, token, directory, users, WebFinger, reports, portability, chat bridge and event stream; it returns 1 if there are `critical`/`high` failures and 0 otherwise, and `--json` prints the full report.
 
@@ -31,10 +36,10 @@ The conformance CLI verifies manifest, JWKS, token, directory, users, WebFinger,
 1. **`.dockerignore` in build contexts** (`backend/`, `frontend/`). Previously they only existed in `backend/docker/` and `frontend/docker/`, which are NOT the context of `docker-compose.yml` (`./backend`, `./frontend`). Each `docker compose build` sent `.venv/` (hundreds of MB), `.dart_tool/`, `build/`, `*.db` and `*.hive` to the daemon. Now the context is minimal. Exception: `!pubspec.lock` is kept for reproducible builds.
 2. **Unified pytest config**: removed `backend/pytest.ini` (duplicated and eclipsed `pyproject.toml`); all config lives in `[tool.pytest.ini_options]` (testpaths, patterns, markers).
 3. **Coherent CI**:
-   - GitHub: Flutter pinned to `3.47.3` (same as Dockerfile); `flutter pub run` (obsolete) → `dart run build_runner`.
+   - GitHub: Flutter pinned to `3.50.1` (same as Dockerfile); `flutter pub run` (obsolete) → `dart run build_runner`.
    - GitHub and GitLab `backend-test`: `TESTING=true` and `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 bytes, avoids `InsecureKeyLengthWarning`; previously the rate limiter remained active in tests → sporadic 429s).
    - GitLab `frontend-test`: added Hive adapter generation before `flutter test` (parity with GitHub).
-   - `pip install ruff` → `pip install "ruff==0.15.22"` in GitHub Actions; GitLab uses `pip install "ruff>=0.5.0"` and `requirements-dev.txt` pins `ruff==0.17.5` for local development.
+   - `pip install ruff` → `pip install "ruff==0.17.6"` in GitHub Actions and GitLab; `requirements-dev.txt` pins `ruff==0.17.6` for local development as well.
 4. **Multi-platform lints** (`analysis_options.yaml`): `avoid_print` and `avoid_web_libraries_in_flutter`. Verified: `flutter analyze` clean (conditional web/io import is the accepted pattern).
 5. **Fix obsolete `onReorder`** → `onReorderItem` (no manual index adjustment); `flutter analyze` goes from 1 info to 0 issues.
 

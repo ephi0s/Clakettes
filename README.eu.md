@@ -10,7 +10,7 @@ Zine-jaialdiak urte osoan bizi diren plataforma: deialdiak, laburrak, ekipoak, e
 
 [ES](README.md) · [EN](README.en.md) · [FR](README.fr.md) · [DE](README.de.md) · [IT](README.it.md) · [CA](README.ca.md) · [EU](README.eu.md) · [GL](README.gl.md) · [OC](README.oc.md)
 
-Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, Linux), 9 hizkuntzatan eta konexiorik gabe ere.
+Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, Linux), hizkuntza guztietan eta konexiorik gabe ere.
 
 ---
 
@@ -30,7 +30,7 @@ Web-ean, Android-en, iOS-en eta escritorioan funtzionatzen du (Windows, macOS, L
 - **Mapak**: egoitzak eta errodaje-kokapenak mapa interaktiboetan, zure mapa-app gogokoenean irekitzeko aukerarekin.
 - **Konexiorik gabe**: app-ak offline funtzionatzen jarraitzen du, nodo bakoitzaren jatorria cachean gordetzen du eta zure aldaketak sinkronizatzen ditu konexioa berreskuratzean.
 - **Federazioa**: konfiantzazko nodoak mTLSrekin, identitate-portabilitatea, nodoen arteko txata eta gertaerak, moderazioa, metrikak eta erresilientzia.
-- **Zure hizkuntzan**: gaztelania, ingelesa, frantsesa, alemana, italiera, katalana, euskara, galegoa eta okzitaniera (823 gako hizkuntzako), sistemaren locale-aren detekzio automatikoarekin.
+- **Zure hizkuntzan**: gaztelania, ingelesa, frantsesa, alemana, italiera, katalana, euskara, galegoa eta okzitaniera, sistemaren locale-aren detekzio automatikoarekin.
 
 ## Baldintzak eta abiaraztea
 

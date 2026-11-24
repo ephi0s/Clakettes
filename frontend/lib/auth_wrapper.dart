@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'main_scaffold.dart';
 
 /// Widget raíz que muestra directamente el scaffold principal.

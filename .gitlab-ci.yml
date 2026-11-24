@@ -22,14 +22,19 @@ cache:
 backend-lint:
   stage: lint
   script:
-    - pip install "ruff>=0.5.0"
+    - pip install "ruff==0.17.6"
     - cd backend && ruff check . && ruff format --check .
 
 frontend-lint:
-  image: ghcr.io/cirruslabs/flutter:stable
+  image: ghcr.io/cirruslabs/flutter:3.50.1
   stage: lint
   script:
     - cd frontend && flutter pub get && flutter analyze
+
+docs-api:
+  stage: lint
+  script:
+    - python tools/gen_api.py --all --check
 
 # ── Test ────────────────────────────────────────────────────────────
 
@@ -43,8 +48,38 @@ backend-test:
     - pip install -r requirements.txt -r requirements-dev.txt
     - python -m pytest tests/ -m "not interop" -x -q --tb=short
 
+backend-migration:
+  stage: test
+  services:
+    - name: mariadb:11
+      alias: mariadb
+      variables:
+        MARIADB_ROOT_PASSWORD: rootpassword
+        MARIADB_DATABASE: clakettes_test
+        MARIADB_USER: clakettes_user
+        MARIADB_PASSWORD: clakettes_password
+  variables:
+    SECRET_KEY: "test-secret-key-for-ci-only-32bytes!"
+  script:
+    - cd backend
+    - pip install -r requirements.txt -r requirements-dev.txt
+    - |
+      python - <<'PY'
+      import time
+      import pymysql
+      for _ in range(30):
+          try:
+              pymysql.connect(host="mariadb", port=3306, user="root", password="rootpassword").close()
+              break
+          except Exception:
+              time.sleep(2)
+      else:
+          raise SystemExit("MariaDB not ready")
+      PY
+    - DATABASE_URL=mariadb+pymysql://clakettes_user:clakettes_password@mariadb:3306/clakettes_test alembic upgrade head
+
 frontend-test:
-  image: ghcr.io/cirruslabs/flutter:stable
+  image: ghcr.io/cirruslabs/flutter:3.50.1
   stage: test
   script:
     - cd frontend && flutter pub get && dart run build_runner build --delete-conflicting-outputs && flutter test

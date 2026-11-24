@@ -18,7 +18,7 @@ Couches : Routers → Services → Models, types via `app.enums`.
 
 | Élément | Où | Règle |
 |---|---|---|
-| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Les routers ne requêtent pas ; les services ne lèvent pas de 404 (sauf 3 hérités) |
+| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Les routers ne requêtent pas ; les services ne lèvent pas de 404 (sauf cas hérités) |
 | 404 uniforme | `routers/dependencies.py:get_or_404` | fetch → 404 en une ligne |
 | Auth | `app/auth.py:validate_access_token` | Signature + `type=access` + session active/non révoquée/non expirée ; helpers `hash_token()`, `is_expired()` (naive = UTC), `get_user_with_roles()` et `touch_session()` (`last_used_at` paresseux, 5 min) |
 | Auth optionnelle | `routers/dependencies.py:get_current_user_optional` | Endpoints publics sans 401 |
@@ -30,13 +30,13 @@ Couches : Routers → Services → Models, types via `app.enums`.
 | Bus d'événements | `routers/federation_events.py`, `services/event_bus_service.py` | SSE avec `since`, battement et replay (200) ; publication signée et 3 relances (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (préfixe `/dav`, bucket propre 600/60s) | Token bearer dans l'URL ; TLS obligatoire en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib ; PDF avec reportlab en import paresseux |
-| Migrations | `alembic/` (45 versions, head `d1e2f3a4b5c6`) | Prod seulement Alembic ; dev aussi `create_all` |
+| Migrations | `alembic/` (migrations Alembic) | Prod seulement Alembic ; dev aussi `create_all` |
 | Fédération | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifeste signé RSA-SHA256, répertoire, nœuds, signalements, webfinger, users ref, JWKS, `whoami`, token fédéré, peers/verify, peers/revoke, mTLS par CN/PEM |
 | Portabilité | `routers/federation_portability.py`, `services/portability_service.py`, modèles `identity_redirect`/`migration_audit` | Bundles signés, imports, migration de festivals/utilisateurs et redirects |
 | Résilience | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, heartbeat, métriques p50/p95, révocation de clés et plan d'incident |
 | Conformité | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI qui vérifie manifeste, JWKS, token, répertoire, portabilité, bridge et SSE |
 
-API générée : `python tools/gen_api.py --all` produit 446 endpoints dans 43 routers (39 avec préfixe dans `main.py` ; le générateur combine en outre le préfixe de chaque `APIRouter` et détecte les dépendances d'auth, voir [API.md](API.md)).
+API générée : `python tools/gen_api.py --all` génère la référence des endpoints en combinant le préfixe de `main.py` et de chaque `APIRouter` et en détectant les dépendances d'auth (voir [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
@@ -45,12 +45,12 @@ Services singleton + `setState()` + Streams (pas de Provider). Démarrage dans `
 
 | Élément | Où | Règle |
 |---|---|---|
-| API | `services/api_service.dart` (noyau) + `services/api/` (13 domaines, scission implémentée, voir leur README) | Base `BACKEND_URL` (enregistrée > dart-define > défaut par plateforme ; émulateur Android `10.0.2.2`) ; `resolveMediaUrl()` préfixe le nœud actif sur `/uploads/...` ; `uploadFile()` utilise le MIME par extension, Bearer, retry 401/refresh et bascule entre nœuds ; le WS du chat dérive son URL du même `rootUrl` |
+| API | `services/api_service.dart` (noyau) + `services/api/` (domaines séparés, voir leur README) | Base `BACKEND_URL` (enregistrée > dart-define > défaut par plateforme ; émulateur Android `10.0.2.2`) ; `resolveMediaUrl()` préfixe le nœud actif sur `/uploads/...` ; `uploadFile()` utilise le MIME par extension, Bearer, retry 401/refresh et bascule entre nœuds ; le WS du chat dérive son URL du même `rootUrl` |
 | Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-renvoi) | Cache étiqueté par nœud (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`) ; `ConnectivityMonitor` expose `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` et les sondes `ApiService.testNode()` ; à la reconnexion, sync avec confirmation |
 | Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en direct, REST pour l'historique et l'historique fédéré ; E2EE ECDH P-256 + AES-GCM dans des isolates ; `ChatPresenceBackend` fournit l'indicateur de frappe, la latence et les accusés de lecture ; recherche locale, dédup et tri par `(created_at,id)` ; messages hors ligne mis en file de façon durable avec le même `message_id` |
 | Avis | `notification_service.dart` | Bureau : plugin OS ; web : Notification API ; mobile : no-op (voir [PUSH.md](PUSH.md)) |
-| Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer toujours ; 11 écrans mis en cache ; `DegradedNodesBanner` avertit des nœuds sans réponse avec le décompte et une relance (`checkNow()`) |
-| i18n | `l10n/` + `assets/l10n/` (9 locales, 823 clés par ARB) | `app_en.arb` est le fallback ; parité des clés et des placeholders dans `test/l10n/arb_parity_test.dart` (référence `es`) ; `LocaleService.load()` détecte le locale du système et persiste le résolu |
+| Navigation | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer toujours ; écrans mis en cache ; `DegradedNodesBanner` avertit des nœuds sans réponse avec le décompte et une relance (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (les locales de `assets/l10n/`) | `app_en.arb` est le fallback ; parité des clés et des placeholders dans `test/l10n/arb_parity_test.dart` (référence `es`) ; `LocaleService.load()` détecte le locale du système et persiste le résolu |
 | Permissions OS | `AndroidManifest.xml` / `Info.plist` | Réseau, localisation, caméra, photothèque, alarmes exactes |
 
 ## Flux clés

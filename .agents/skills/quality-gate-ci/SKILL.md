@@ -30,8 +30,9 @@ Fix failures before continuing. `ruff check` before `format --check` (same order
 
 ## GitHub Actions (`.github/workflows/ci.yml`)
 
-Push/PR to `main,develop` on `ubuntu-26.04` (Python 3.12, Flutter 3.47.3, ruff 0.15.22). Parallel jobs `backend-lint`, `frontend-lint`, `backend-test`, `frontend-test` gate `docker-build` via `needs`.
+Push/PR to `main,develop` on `ubuntu-26.04` (Python 3.12, Flutter y ruff en las versiones fijadas en CI). Parallel jobs `backend-lint`, `frontend-lint`, `docs-api`, `backend-test`, `backend-migration`, `frontend-test` gate `docker-build` via `needs`.
 
+- `docs-api` ejecuta `python tools/gen_api.py --all --check`: falla si alguna `docs/<idioma>/API.md` no está regenerada.
 - `backend-test` runs against MariaDB 11 service (`DATABASE_URL=mariadb+pymysql://...`, `TESTING=true`, `SECRET_KEY=test-secret-key-for-ci-only-32bytes!`), with `alembic upgrade head` before pytest.
 - `frontend-test` runs build_runner before `flutter test`.
 - `docker-build` builds `backend`, `frontend`, `backend-prod`, `frontend-prod` images.
@@ -42,16 +43,16 @@ Stages `lint → test → build`, same commands (pytest via `python -m pytest`).
 
 ## Scale
 
-54 backend test files (1544 tests, 1541 con `-m "not interop"`), 77 frontend test files, 45 Alembic migrations (head `d1e2f3a4b5c6`). Never skip the gate on changes touching `backend/app/` or `frontend/lib/`.
+Tests bajo `backend/tests/` y `frontend/test/`; migraciones bajo `backend/alembic/versions/`. Never skip the gate on changes touching `backend/app/` or `frontend/lib/`.
 
 ## Docs de oro (anti-desfase)
 
 La documentación va en español (estilo canario, ustedes) y nunca queda desfasada:
 todo cambio que la afecte actualiza TODA la info pertinente en el mismo cambio.
 
-- Cifras: routers (45 ficheros, 43 con `APIRouter`), servicios (53), modelos (44
-  incluye `base.py`), schemas (37), migraciones (45, head `d1e2f3a4b5c6`), tests
-  backend (54 ficheros, 1544) y frontend (77 ficheros). Están en `AGENTS.md`,
+- Estructura: usa rutas de directorio y nombres de símbolos/comandos en lugar de
+  recuentos de routers, servicios, modelos, schemas, migraciones o tests, que se
+  desactualizan en cada desarrollo. Las referencias viven en `AGENTS.md`,
   `README.md`, `docs/es/BACKEND.md`, `docs/es/ARQUITECTURA.md`,
   `docs/es/ADMINISTRACION.md` y `docs/es/AUDITORIA.md` (addendum, sin reescribir).
 - Endpoints nuevos/movidos: regenera `docs/es/API.md` con `python tools/gen_api.py`

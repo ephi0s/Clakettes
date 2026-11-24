@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$ROOT/backend"
 FRONTEND_DIR="$ROOT/frontend"
 BROWSER=""
+DEFAULT_BACKEND_PORT=65081
+DEFAULT_FRONTEND_PORT=65080
 chmod +x "$0" "$ROOT"/tools/*.sh 2>/dev/null || true
 
 NO_BACKEND=0
@@ -22,6 +24,7 @@ IS_BUILD=0
 IS_BUILD_ALL=0
 IS_BUILD_FRONTEND=0
 IS_BUILD_BACKEND=0
+TEST_FILTER=""
 IS_INSTALL_MISSING=0
 IS_CHECK=0
 
@@ -255,10 +258,10 @@ show_help() {
 Clakettes Launcher (portable mode)
 
 USO:
-    ./start.sh                        Backend + frontend (Docker dev, o local si no hay Docker)
+    ./start.sh                        Backend + frontend (Docker dev, o local con navegador de desarrollo)
     ./start.sh --dev                  Igual que default
     ./start.sh --final                Backend + frontend (Docker produccion, o build local)
-    ./start.sh --web                  Frontend con navegador (solo modo local)
+    ./start.sh --web                  Fuerza modo local con navegador de desarrollo
     ./start.sh --no-frontend          Solo backend
     ./start.sh --no-backend           Solo frontend
     ./start.sh --mariadb              Incluye MariaDB (Docker: perfil db / local: variable)
@@ -266,6 +269,7 @@ USO:
     ./start.sh --test-migration       Prueba migracion completa con MariaDB
     ./start.sh --test-backend         Ejecuta tests del backend
     ./start.sh --test-frontend        Ejecuta tests del frontend
+    ./start.sh --test-filter=EXPR     Filtra tests (-k en pytest, --plain-name en Flutter)
     ./start.sh --build                Construye imagenes Docker (desarrollo)
     ./start.sh --build-all            Construye paquetes distribubles (final)
     ./start.sh --build-frontend       Construye solo frontend (Docker)
@@ -308,6 +312,7 @@ for arg in "$@"; do
     --build-frontend) IS_BUILD_FRONTEND=1 ;;
     --build-backend)  IS_BUILD_BACKEND=1 ;;
     --install-missing) IS_INSTALL_MISSING=1 ;;
+    --test-filter=*) TEST_FILTER="${arg#--test-filter=}" ;;
     --check) IS_CHECK=1 ;;
     --help|-h|/?)
       show_help
@@ -329,6 +334,22 @@ NEED_FL=1; [ "$NO_FRONTEND" -eq 1 ] && NEED_FL=0
 [ "$IS_TEST_FRONTEND" -eq 1 ] && NEED_FL=1
 [ "$IS_FINAL" -eq 1 ] && NEED_FL=1
 export NEED_PY NEED_FL
+
+run_pytest() {
+  if [ -n "$TEST_FILTER" ]; then
+    "$@" -m "not interop" -x -q --tb=short -k "$TEST_FILTER"
+  else
+    "$@" -m "not interop" -x -q --tb=short
+  fi
+}
+
+run_flutter_test() {
+  if [ -n "$TEST_FILTER" ]; then
+    "$@" --plain-name "$TEST_FILTER"
+  else
+    "$@"
+  fi
+}
 
 # ---- Port auto-assignment ----
 port_in_use() {
@@ -464,7 +485,7 @@ if [ "$IS_CHECK" -eq 1 ]; then
     if [ -n "$PYTHON_CMD" ] && pub_cache_ok; then echo "[CHECK] Flutter pub cache: OK."
     else echo "[CHECK] Flutter pub cache: se regenerara al arrancar."; fi
   fi
-  for p in 8000 3000; do
+  for p in "$DEFAULT_BACKEND_PORT" "$DEFAULT_FRONTEND_PORT"; do
     if port_in_use "$p"; then echo "[CHECK] Puerto $p ocupado — se reasignara solo."
     else echo "[CHECK] Puerto $p libre."; fi
   done
@@ -487,9 +508,9 @@ if [ "$DOCKER_DAEMON" -eq 1 ]; then
 
   # Docker port check (only when launching services)
   if [ "$IS_BUILD_ALL" -eq 0 ] && [ "$IS_BUILD" -eq 0 ] && [ "$IS_BUILD_FRONTEND" -eq 0 ] && [ "$IS_BUILD_BACKEND" -eq 0 ] && [ "$IS_MIGRATE" -eq 0 ] && [ "$IS_TEST_BACKEND" -eq 0 ] && [ "$IS_TEST_FRONTEND" -eq 0 ]; then
-    DOCKER_BACKEND_PORT=8000; DOCKER_FRONTEND_PORT=3000
-    find_free_port 8000 DOCKER_BACKEND_PORT
-    find_free_port 3000 DOCKER_FRONTEND_PORT
+    DOCKER_BACKEND_PORT=$DEFAULT_BACKEND_PORT; DOCKER_FRONTEND_PORT=$DEFAULT_FRONTEND_PORT
+    find_free_port "$DEFAULT_BACKEND_PORT" DOCKER_BACKEND_PORT
+    find_free_port "$DEFAULT_FRONTEND_PORT" DOCKER_FRONTEND_PORT
     if [ "$IS_MARIADB" -eq 1 ] || [ "$IS_TEST_MIGRATION" -eq 1 ]; then
       find_free_port 3306 DOCKER_MARIADB_PORT
       export PORT_DB="$DOCKER_MARIADB_PORT"
@@ -506,7 +527,7 @@ if [ "$DOCKER_DAEMON" -eq 1 ]; then
       export PORT_FRONTEND_PROD="$DOCKER_FRONTEND_PROD"
       echo "[DOCKER]   Frontend prod: $DOCKER_FRONTEND_PROD"
     fi
-    if [ "$DOCKER_BACKEND_PORT" -ne 8000 ] || [ "$DOCKER_FRONTEND_PORT" -ne 3000 ]; then
+    if [ "$DOCKER_BACKEND_PORT" -ne "$DEFAULT_BACKEND_PORT" ] || [ "$DOCKER_FRONTEND_PORT" -ne "$DEFAULT_FRONTEND_PORT" ]; then
       echo "[DOCKER] Nota: exporta PORT_BACKEND / PORT_FRONTEND si docker-compose.yml los soporta."
     fi
   fi
@@ -596,20 +617,20 @@ if [ "$DOCKER_DAEMON" -eq 1 ]; then
 
   if [ "$IS_TEST_BACKEND" -eq 1 ]; then
     echo "[TEST:BACKEND] Ejecutando pytest en Docker..."
-    docker compose run --rm backend python -m pytest tests/ -x -q --tb=short
+    run_pytest docker compose run --rm backend python -m pytest tests/
     exit $?
   fi
 
   if [ "$IS_TEST_FRONTEND" -eq 1 ]; then
     echo "[TEST:FRONTEND] Ejecutando flutter test en Docker..."
-    docker compose run --rm frontend flutter test
+    run_flutter_test docker compose run --rm frontend flutter test
     exit $?
   fi
 
   if [ "$IS_FINAL" -eq 1 ]; then
     echo "[DOCKER] Iniciando en modo produccion..."
     docker compose --profile prod up -d
-    : ${PORT_BACKEND:=8000}
+    : ${PORT_BACKEND:=$DEFAULT_BACKEND_PORT}
     : ${PORT_FRONTEND_PROD:=80}
     echo "[DOCKER] Backend: http://localhost:$PORT_BACKEND  |  Frontend: http://localhost:$PORT_FRONTEND_PROD"
     exit 0
@@ -618,6 +639,10 @@ if [ "$DOCKER_DAEMON" -eq 1 ]; then
   if [ "$IS_KILL" -eq 1 ]; then
     echo "[KILL] Deteniendo contenedores Docker..."
     docker compose down
+    echo "[KILL] Buscando procesos locales de backend y frontend..."
+    for proc in python python3 dart flutter; do
+      pkill -f "$proc" 2>/dev/null && echo "  Matados procesos de $proc" || true
+    done
     exit 0
   fi
 
@@ -625,7 +650,7 @@ if [ "$DOCKER_DAEMON" -eq 1 ]; then
     echo "[ENV] Caché de Flutter de otro entorno, regenerando en contenedor..."
     rm -rf "$FRONTEND_DIR/.dart_tool" "$FRONTEND_DIR/.flutter-plugins" "$FRONTEND_DIR/.flutter-plugins-dependencies"
   fi
-  : ${PORT_BACKEND:=8000}; : ${PORT_FRONTEND:=3000}
+  : ${PORT_BACKEND:=$DEFAULT_BACKEND_PORT}; : ${PORT_FRONTEND:=$DEFAULT_FRONTEND_PORT}
   echo "[DOCKER] Iniciando servicios de desarrollo en http://localhost:$PORT_BACKEND y http://localhost:$PORT_FRONTEND ..."
   if [ "$NO_BACKEND" -eq 1 ]; then
     docker compose up --no-deps frontend
@@ -689,9 +714,6 @@ show_setup_help() {
       echo "  sudo pacman -S docker docker-compose"
       echo "  sudo systemctl start docker"
       ;;
-    freebsd)
-      echo "  Solucion: sudo pkg install python3 py3-pip py3-venv"
-      ;;
     *)
       echo "  Descarga Python 3.12+ desde https://www.python.org/downloads/"
       ;;
@@ -733,6 +755,7 @@ show_setup_help() {
   exit 1
 }
 if [ "$IS_BUILD_FRONTEND" -eq 1 ] || [ "$IS_BUILD_BACKEND" -eq 1 ] || \
+   [ "$IS_BUILD" -eq 1 ] || [ "$IS_BUILD_ALL" -eq 1 ] || \
    [ "$IS_TEST_MIGRATION" -eq 1 ]; then
   show_setup_help
 fi
@@ -868,9 +891,9 @@ if [ "$IS_TEST_BACKEND" -eq 1 ] || [ "$IS_TEST_FRONTEND" -eq 1 ]; then
   [ "$IS_TEST_FRONTEND" -eq 1 ] && NO_FRONTEND=1
 fi
 
-BACKEND_PORT=8000; FRONTEND_PORT=3000; MARIADB_PORT=3306; FRONTEND_PROD_PORT=80
-[ "$NO_BACKEND" -eq 0 ] && find_free_port 8000 BACKEND_PORT
-[ "$NO_FRONTEND" -eq 0 ] && find_free_port 3000 FRONTEND_PORT
+BACKEND_PORT=$DEFAULT_BACKEND_PORT; FRONTEND_PORT=$DEFAULT_FRONTEND_PORT; MARIADB_PORT=3306; FRONTEND_PROD_PORT=80
+[ "$NO_BACKEND" -eq 0 ] && find_free_port "$DEFAULT_BACKEND_PORT" BACKEND_PORT
+[ "$NO_FRONTEND" -eq 0 ] && find_free_port "$DEFAULT_FRONTEND_PORT" FRONTEND_PORT
 [ "$IS_MARIADB" -eq 1 ] && find_free_port 3306 MARIADB_PORT
 [ "$IS_FINAL" -eq 1 ] && [ "$NO_FRONTEND" -eq 0 ] && find_free_port 80 FRONTEND_PROD_PORT
 echo ""
@@ -903,14 +926,14 @@ fi
 # ---- Tests ----
 if [ "$IS_TEST_BACKEND" -eq 1 ]; then
   echo "[TEST:BACKEND] Ejecutando pytest..."
-  (cd "$BACKEND_DIR" && "$BACKEND_PYTHON" -m pytest tests/ -x -q --tb=short)
+  (cd "$BACKEND_DIR" && run_pytest "$BACKEND_PYTHON" -m pytest tests/)
   if [ $? -eq 0 ]; then echo "[TEST:BACKEND] Todos los tests pasaron"
   else echo "[TEST:BACKEND] Fallaron algunos tests"; fi
 fi
 
 if [ "$IS_TEST_FRONTEND" -eq 1 ]; then
   echo "[TEST:FRONTEND] Ejecutando flutter test..."
-  (cd "$FRONTEND_DIR" && flutter test)
+  (cd "$FRONTEND_DIR" && run_flutter_test flutter test)
   if [ $? -eq 0 ]; then echo "[TEST:FRONTEND] Todos los tests pasaron"
   else echo "[TEST:FRONTEND] Fallaron algunos tests"; fi
 fi
@@ -966,18 +989,14 @@ if [ "$NO_FRONTEND" -eq 0 ]; then
     if [ -n "$BROWSER" ]; then
       eval "$BROWSER" "http://localhost:$FRONTEND_PROD_PORT" &
     fi
-  elif [ "$IS_WEB" -eq 1 ]; then
-    echo "[FRONTEND] Iniciando Flutter web en http://localhost:$FRONTEND_PORT con navegador..."
+  elif [ -n "$BROWSER" ] || [ "$IS_WEB" -eq 1 ]; then
+    echo "[FRONTEND] Iniciando Flutter web en http://localhost:$FRONTEND_PORT con navegador de desarrollo..."
     (cd "$FRONTEND_DIR" && flutter run -d chrome --web-port "$FRONTEND_PORT" "$DART_DEFINE") &
     echo $! >> "$PID_FILE"
   else
     echo "[FRONTEND] Iniciando Flutter web-server en http://localhost:$FRONTEND_PORT ..."
     (cd "$FRONTEND_DIR" && flutter run -d web-server --web-port "$FRONTEND_PORT" "$DART_DEFINE") &
     echo $! >> "$PID_FILE"
-    sleep 15
-    if [ -n "$BROWSER" ]; then
-      eval "$BROWSER" "http://localhost:$FRONTEND_PORT" &
-    fi
   fi
 fi
 

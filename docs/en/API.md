@@ -677,5 +677,3 @@ All uploads return a relative `/uploads/<folder>/<file>` path, never an absolute
 | DELETE | `/api/validation-rules/{rule_id}` | yes (admin) |
 | GET | `/api/validation-rule-groups` | no |
 | POST | `/api/validation-rule-groups` | yes (admin) |
-
-Total: 451 endpoints in 44 routers (40 with a prefix in `main.py`).

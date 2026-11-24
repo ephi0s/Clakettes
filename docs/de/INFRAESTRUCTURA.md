@@ -28,7 +28,7 @@ Volumes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-dat
 ## Images
 
 - Backend `python:3.12-alpine`, EXPOSE 8000; dev mit `uvicorn --reload`, prod als Non-Root-Benutzer `appuser`.
-- Frontend-Build `ubuntu:24.04 + Flutter 3.47.3` (ARG `BACKEND_URL`); dev `flutter run -d web-server` auf 3000; prod `nginx:alpine` auf 80 mit `try_files $uri $uri/ /index.html` (SPA).
+- Frontend-Build `ubuntu:24.04 + Flutter 3.50.1` (ARG `BACKEND_URL`); dev `flutter run -d web-server` auf 3000; prod `nginx:alpine` auf 80 mit `try_files $uri $uri/ /index.html` (SPA).
 
 ## Umgebung (`backend/.env`, siehe `.env.example`)
 
@@ -50,15 +50,15 @@ Volumes: `./backend:/app` + `backend-data:/app/data`, `./frontend:/app`, `db-dat
 
 ## Gesundheit und Observables
 
-- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → Version (`0.3.0`, Konstante `APP_VERSION`). Der `ConnectivityMonitor` in der App nutzt sie als echte Sonde: `NodeHealth` pro Knoten (`testNode()`, Latenz, `offlineNodeCount`, `isDegraded`) degradiert den Hive-Cache elegant und zeigt `DegradedNodesBanner` mit Zähler und Wiederholungsschaltfläche.
+- `GET /health` → `{"status":"healthy","db_revision":…}`; `GET /` → die von `APP_VERSION` zurückgegebene Version. Der `ConnectivityMonitor` in der App nutzt sie als echte Sonde: `NodeHealth` pro Knoten (`testNode()`, Latenz, `offlineNodeCount`, `isDegraded`) degradiert den Hive-Cache elegant und zeigt `DegradedNodesBanner` mit Zähler und Wiederholungsschaltfläche.
 - Föderation: `GET /api/federation/resilience/health` und `/metrics` (p50/p95, Latenz, Fehler und Wiederholungen); `GET /api/federation/events/stream` hält das SSE mit einem Herzschlag alle 15 s aufrecht; `python tools/federation_conformance.py <url> [--json]` prüft Drittknoten.
 - Logs: uvicorn-stdout (DAV-Tokens redigiert); API-Fehler in SnackBar + `debugPrint`.
 - Limits: Body ≤10 MB (413), Avatar/Bild ≤5 MB (`jpeg/png/webp/gif` mit Magic-Bytes), Video ≤100 MB (`mp4/webm/quicktime`), Docs ≤10 MB (pdf); Rate-Limit 100 req/60s pro IP (429; `/dav*` 600/60s; Umgehung mit `TESTING` ∈ {1,true,yes,on}).
 
 ## CI
 
-- **GitHub** (Push/PR auf `main,develop`): `backend-lint` + `frontend-lint` + `backend-test` (SQLite, `TESTING=true`, pytest mit `-m "not interop"`) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` (4 Images).
-- **GitLab**: Stages `lint → test → build`; `docker-build` nur auf `main` mit Push in die Registry.
+- **GitHub** (Push/PR auf `main,develop`): `backend-lint` + `frontend-lint` + `docs-api` (prüft, dass `API.md` neu erzeugt ist) + `backend-test` (SQLite, `TESTING=true`, pytest mit `-m "not interop"`) + `backend-migration` (MariaDB 11 + `alembic upgrade head`) + `frontend-test` (build_runner + `flutter test`) → `docker-build` mit den Images von Backend und Frontend (dev und prod).
+- **GitLab**: Stages `lint → test → build`; die Lint-Jobs umfassen `docs-api` (prüft, dass `API.md` neu erzeugt ist); `docker-build` nur auf `main` mit Push in die Registry.
 
 ### Aktualisierung von Abhängigkeiten
 

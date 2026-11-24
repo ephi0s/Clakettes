@@ -16,11 +16,14 @@ param(
     [switch]$BuildFrontend,
     [switch]$BuildBackend,
     [switch]$InstallMissing,
+    [string]$TestFilter = '',
     [switch]$Check
 )
 
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$script:DEFAULT_BACKEND_PORT = 65081
+$script:DEFAULT_FRONTEND_PORT = 65080
 
 # Parse -- prefixed args (compat with bat syntax / -Command invocation)
 foreach ($a in $args) {
@@ -40,12 +43,18 @@ foreach ($a in $args) {
         '--build-frontend'   { $BuildFrontend = $true }
         '--build-backend'    { $BuildBackend = $true }
         '--install-missing'  { $InstallMissing = $true }
+        '--test-filter=*'    { $TestFilter = $a.Substring(14) }
         '--check'            { $Check = $true }
         '--kill'             { $Kill = $true }
         '--help'             { $Help = $true }
         '/?'                 { $Help = $true }
     }
 }
+
+$pytestArgs = @('-m', 'not interop', '-x', '-q', '--tb=short')
+if ($TestFilter) { $pytestArgs += @('-k', $TestFilter) }
+$flutterTestArgs = @()
+if ($TestFilter) { $flutterTestArgs = @('--plain-name', $TestFilter) }
 
 function Test-PortInUse {
     param([int]$Port)
@@ -83,8 +92,8 @@ function Find-FreePort {
 }
 
 function New-PortMapping {
-    $script:BACKEND_PORT = if (-not $NoBackend) { Find-FreePort 8000 "Backend" } else { 8000 }
-    $script:FRONTEND_PORT = if (-not $NoFrontend) { Find-FreePort 3000 "Frontend" } else { 3000 }
+    $script:BACKEND_PORT = if (-not $NoBackend) { Find-FreePort $script:DEFAULT_BACKEND_PORT "Backend" } else { $script:DEFAULT_BACKEND_PORT }
+    $script:FRONTEND_PORT = if (-not $NoFrontend) { Find-FreePort $script:DEFAULT_FRONTEND_PORT "Frontend" } else { $script:DEFAULT_FRONTEND_PORT }
     $script:MARIADB_PORT = if ($MariaDB) { Find-FreePort 3306 "MariaDB" } else { 3306 }
     $script:FRONTEND_PROD_PORT = if ($Final -and -not $NoFrontend) { Find-FreePort 80 "Frontend (prod)" } else { 80 }
     Write-Host ""
@@ -100,10 +109,10 @@ if ($Help) {
 Clakettes Launcher (portable mode)
 
 USO:
-    .\start.ps1                        Backend + frontend (Docker dev, o local si no hay Docker)
+    .\start.ps1                        Backend + frontend (Docker dev, o local con navegador de desarrollo)
     .\start.ps1 -Dev                   Igual que default
     .\start.ps1 -Final                 Backend + frontend (Docker produccion, o build local)
-    .\start.ps1 -Web                   Frontend con navegador (solo modo local)
+    .\start.ps1 -Web                   Fuerza modo local con navegador de desarrollo
     .\start.ps1 -NoFrontend            Solo backend
     .\start.ps1 -NoBackend             Solo frontend
     .\start.ps1 -MariaDB               Incluye MariaDB (Docker: perfil db / local: variable)
@@ -111,6 +120,7 @@ USO:
     .\start.ps1 -TestMigration          Prueba migracion completa con MariaDB
     .\start.ps1 -TestBackend           Ejecuta tests del backend
     .\start.ps1 -TestFrontend          Ejecuta tests del frontend
+    .\start.ps1 -TestFilter EXPR       Filtra tests (-k en pytest, --plain-name en Flutter)
     .\start.ps1 -Build                 Construye imagenes Docker (desarrollo)
     .\start.ps1 -BuildAll              Construye paquetes distribubles (final)
     .\start.ps1 -BuildFrontend         Construye solo frontend (Docker)
@@ -399,7 +409,7 @@ if ($Check) {
         if (Test-FlutterPubCache $frontendDir) { Write-Host "[CHECK] Flutter pub cache: OK." -ForegroundColor Green }
         else { Write-Host "[CHECK] Flutter pub cache: se regenerara al arrancar." -ForegroundColor Yellow }
     }
-    foreach ($p in @(8000, 3000)) {
+    foreach ($p in @($script:DEFAULT_BACKEND_PORT, $script:DEFAULT_FRONTEND_PORT)) {
         if (Test-PortInUse $p) { Write-Host "[CHECK] Puerto $p ocupado — se reasignara solo." -ForegroundColor Yellow }
         else { Write-Host "[CHECK] Puerto $p libre." -ForegroundColor Green }
     }
@@ -416,8 +426,8 @@ if ($Web) {
 
     # Check host ports that Docker will bind
     if (-not ($BuildAll -or $Build -or $BuildFrontend -or $BuildBackend -or $Migrate -or $TestBackend -or $TestFrontend)) {
-        $dcBackend = Find-FreePort 8000 "Backend (Docker)"
-        $dcFrontend = Find-FreePort 3000 "Frontend (Docker)"
+        $dcBackend = Find-FreePort $script:DEFAULT_BACKEND_PORT "Backend (Docker)"
+        $dcFrontend = Find-FreePort $script:DEFAULT_FRONTEND_PORT "Frontend (Docker)"
         if ($MariaDB -or $TestMigration) { $dcMaria = Find-FreePort 3306 "MariaDB (Docker)"; $env:PORT_DB = "$dcMaria" }
         if ($Final) { $dcFeProd = Find-FreePort 80 "Frontend prod (Docker)" }
         $env:PORT_BACKEND = "$dcBackend"
@@ -490,14 +500,14 @@ if ($Web) {
     }
     if ($TestBackend) {
         Write-Host "[TEST:BACKEND] Ejecutando pytest en Docker..." -ForegroundColor Cyan
-        docker compose run --rm backend python -m pytest tests/ -x -q --tb=short
+        docker compose run --rm backend python -m pytest tests/ @pytestArgs
         if ($LASTEXITCODE -eq 0) { Write-Host "[TEST:BACKEND] Todos los tests pasaron" -ForegroundColor Green }
         else { Write-Host "[TEST:BACKEND] Fallaron algunos tests" -ForegroundColor Red }
         return
     }
     if ($TestFrontend) {
         Write-Host "[TEST:FRONTEND] Ejecutando flutter test en Docker..." -ForegroundColor Cyan
-        docker compose run --rm frontend flutter test
+        docker compose run --rm frontend flutter test @flutterTestArgs
         if ($LASTEXITCODE -eq 0) { Write-Host "[TEST:FRONTEND] Todos los tests pasaron" -ForegroundColor Green }
         else { Write-Host "[TEST:FRONTEND] Fallaron algunos tests" -ForegroundColor Red }
         return
@@ -505,7 +515,7 @@ if ($Web) {
     if ($Final) {
         $fpBe = $env:PORT_BACKEND
         $fpFe = $env:PORT_FRONTEND_PROD
-        if (-not $fpBe) { $fpBe = "8000" }
+        if (-not $fpBe) { $fpBe = "$script:DEFAULT_BACKEND_PORT" }
         if (-not $fpFe) { $fpFe = "80" }
         Write-Host "[DOCKER] Iniciando en modo produccion..." -ForegroundColor Cyan
         docker compose --profile prod up -d
@@ -517,8 +527,8 @@ if ($Web) {
     if (-not (Test-ContainerPubCache (Join-Path $root "frontend"))) {
         Clear-FlutterGenerated (Join-Path $root "frontend")
     }
-    if (-not $env:PORT_BACKEND) { $env:PORT_BACKEND = "8000" }
-    if (-not $env:PORT_FRONTEND) { $env:PORT_FRONTEND = "3000" }
+    if (-not $env:PORT_BACKEND) { $env:PORT_BACKEND = "$script:DEFAULT_BACKEND_PORT" }
+    if (-not $env:PORT_FRONTEND) { $env:PORT_FRONTEND = "$script:DEFAULT_FRONTEND_PORT" }
     Write-Host "[DOCKER] Iniciando servicios de desarrollo en http://localhost:$($env:PORT_BACKEND) y http://localhost:$($env:PORT_FRONTEND) ..." -ForegroundColor Cyan
     if ($NoBackend) {
         docker compose up --no-deps frontend
@@ -690,7 +700,7 @@ if ($TestBackend) {
     if (-not $PSBoundParameters.ContainsKey('NoBackend')) { $NoBackend = $true }
     Write-Host "[TEST:BACKEND] Ejecutando pytest..." -ForegroundColor Cyan
     Push-Location $backendDir
-    & $script:BackendPython -m pytest tests/ -x -q --tb=short 2>&1
+    & $script:BackendPython -m pytest tests/ @pytestArgs 2>&1
     $exitCode = $LASTEXITCODE
     Pop-Location
     if ($exitCode -ne 0) { Write-Host "[TEST:BACKEND] Fallaron algunos tests (exit code: $exitCode)" -ForegroundColor Red }
@@ -702,7 +712,7 @@ if ($TestFrontend) {
     if (-not $PSBoundParameters.ContainsKey('NoFrontend')) { $NoFrontend = $true }
     Write-Host "[TEST:FRONTEND] Ejecutando flutter test..." -ForegroundColor Cyan
     Push-Location $frontendDir
-    flutter test 2>&1
+    flutter test @flutterTestArgs 2>&1
     $exitCode = $LASTEXITCODE
     Pop-Location
     if ($exitCode -ne 0) { Write-Host "[TEST:FRONTEND] Fallaron algunos tests (exit code: $exitCode)" -ForegroundColor Red }
@@ -741,8 +751,8 @@ if (-not $NoFrontend) {
             Start-Sleep -Seconds 2
             if ($browser) { Start-Process -FilePath $browser -ArgumentList "http://localhost:$FRONTEND_PROD_PORT" }
         }
-    } elseif ($Web) {
-        Write-Host "[FRONTEND] Iniciando Flutter web en http://localhost:$FRONTEND_PORT con CHROME_EXECUTABLE ..." -ForegroundColor Cyan
+    } elseif ($browser -or $Web) {
+        Write-Host "[FRONTEND] Iniciando Flutter web en http://localhost:$FRONTEND_PORT con navegador de desarrollo (CHROME_EXECUTABLE) ..." -ForegroundColor Cyan
         $jobs += Start-Job -Name "frontend" -ScriptBlock {
             param($dir, $dde, $port)
             Set-Location $dir
@@ -755,8 +765,6 @@ if (-not $NoFrontend) {
             Set-Location $dir
             flutter run -d web-server --web-port $port $dde
         } -ArgumentList $frontendDir, $dartDefine, $FRONTEND_PORT
-        Start-Sleep -Seconds 15
-        if ($browser) { Start-Process -FilePath $browser -ArgumentList "http://localhost:$FRONTEND_PORT" }
     }
 }
 

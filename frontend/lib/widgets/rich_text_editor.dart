@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 /// Extrae el texto plano de un contenido que puede ser JSON de Delta de Quill
@@ -27,6 +27,34 @@ Document documentFrom(String content) {
   return Document()..insert(0, content);
 }
 
+/// Compone el título como primera línea del Delta de Quill, manteniendo el
+/// formato del cuerpo.
+String composeContent(String title, String body) {
+  final doc = documentFrom(body);
+  if (title.isNotEmpty) doc.insert(0, '$title\n');
+  return jsonEncode(doc.toDelta().toJson());
+}
+
+/// Separa el título (primera línea) del cuerpo de un contenido existente.
+(String title, String body) splitTitleAndBody(String content) {
+  try {
+    final decoded = jsonDecode(content);
+    if (decoded is List) {
+      final doc = Document.fromJson(decoded);
+      final plain = doc.toPlainText();
+      final idx = plain.indexOf('\n');
+      if (idx < 0) return (plain.trim(), '');
+      final title = plain.substring(0, idx).trim();
+      doc.delete(0, idx + 1);
+      return (title, jsonEncode(doc.toDelta().toJson()));
+    }
+  } catch (_) {}
+  final plain = plainTextFrom(content);
+  final idx = plain.indexOf('\n');
+  if (idx < 0) return (plain.trim(), '');
+  return (plain.substring(0, idx).trim(), plain.substring(idx + 1).trimLeft());
+}
+
 /// Editor de texto enriquecido (WYSIWYG) basado en flutter_quill.
 ///
 /// - `readOnly: false`: muestra barra de herramientas y permite editar.
@@ -38,6 +66,7 @@ class RichTextEditor extends StatefulWidget {
   final ValueChanged<String>? onContentChanged;
   final FocusNode? focusNode;
   final bool autoFocus;
+  final double minEditorHeight;
 
   const RichTextEditor({
     super.key,
@@ -46,6 +75,7 @@ class RichTextEditor extends StatefulWidget {
     this.onContentChanged,
     this.focusNode,
     this.autoFocus = false,
+    this.minEditorHeight = 0,
   });
 
   @override
@@ -138,7 +168,9 @@ class _RichTextEditorState extends State<RichTextEditor> {
             border: Border.all(color: colorScheme.outlineVariant),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: editor,
+          child: widget.minEditorHeight > 0
+              ? SizedBox(height: widget.minEditorHeight, child: editor)
+              : editor,
         ),
       ],
     );

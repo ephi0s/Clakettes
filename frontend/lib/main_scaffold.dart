@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../services/notification_polling_service.dart';
 import 'l10n/app_localizations.dart';
 import 'services/offline_cache_service.dart';

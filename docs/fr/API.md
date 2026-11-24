@@ -677,5 +677,3 @@ Tous les téléversements renvoient un chemin relatif `/uploads/<dossier>/<fichi
 | DELETE | `/api/validation-rules/{rule_id}` | oui (admin) |
 | GET | `/api/validation-rule-groups` | non |
 | POST | `/api/validation-rule-groups` | oui (admin) |
-
-Total : 451 endpoints dans 44 routers (40 avec un préfixe dans `main.py`).

@@ -18,7 +18,7 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 
 | Pieza | Dónde | Regla |
 |---|---|---|
-| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Los routers no consultan; los servicios no lanzan 404 (salvo 3 heredados) |
+| CRUD + `paginate` (size≤100) + `paginate_filtered` | `services/base_service.py` | Los routers no consultan; los servicios no lanzan 404 (salvo casos heredados) |
 | 404 uniforme | `routers/dependencies.py:get_or_404` | fetch → 404 en una línea |
 | Auth | `app/auth.py:validate_access_token` | Firma + `type=access` + sesión activa/no revocada/no expirada; helpers `hash_token()`, `is_expired()` (naive = UTC), `get_user_with_roles()` y `touch_session()` (`last_used_at` lazy, 5 min) |
 | Auth opcional | `routers/dependencies.py:get_current_user_optional` | Endpoints públicos sin 401 |
@@ -30,13 +30,13 @@ Capas: Routers → Services → Models, tipos vía `app.enums`.
 | Bus de eventos | `routers/federation_events.py`, `services/event_bus_service.py` | SSE con `since`, latido y replay (200); publicación firmada y reintentos 3 (300 ms → 1,5 s → 5 s) |
 | CalDAV | `app/dav/` + `routers/dav.py` (prefijo `/dav`, bucket propio 600/60s) | Token bearer en URL; TLS obligatorio en prod |
 | Export | `services/export_service.py` | CSV/ICS en stdlib; PDF con reportlab en import perezoso |
-| Migraciones | `alembic/` (45 versiones, head `d1e2f3a4b5c6`) | Prod solo Alembic; dev además `create_all` |
+| Migraciones | `alembic/` (migraciones Alembic) | Prod solo Alembic; dev además `create_all` |
 | Federación | `routers/federation.py`, `services/jwks_service.py`, `services/node_policy_service.py`, `services/node_peering_service.py`, `services/federation_token_service.py`, `app/mtls.py` | manifest firmado RSA-SHA256, directorio, nodos, reportes, webfinger, users ref, JWKS, `whoami`, token federado, peers/verify, peers/revoke, mTLS por CN/PEM |
 | Portabilidad | `routers/federation_portability.py`, `services/portability_service.py`, modelos `identity_redirect`/`migration_audit` | Bundles firmados, imports, migración de festivales/usuarios y redirects |
 | Resiliencia | `routers/federation_resilience.py`, `services/federation_metrics_service.py` | Health, heartbeat, métricas p50/p95, revocación de claves y plan de incidente |
 | Conformidad | `tools/federation_conformance.py`, `services/federation_conformance_service.py` | CLI que verifica manifiesto, JWKS, token, directorio, portabilidad, bridge y SSE |
 
-API generada: `python tools/gen_api.py --all` produce 446 endpoints en 43 routers (39 con prefijo en `main.py`; el generador combina además el prefijo de cada `APIRouter` y detecta dependencias de auth, ver [API.md](API.md)).
+API generada: `python tools/gen_api.py --all` genera la referencia de endpoints combinando el prefijo de `main.py` y de cada `APIRouter` y detectando dependencias de auth (ver [API.md](API.md)).
 
 ## Frontend (`frontend/`)
 
@@ -45,12 +45,12 @@ Servicios singleton + `setState()` + Streams (sin Provider). Arranque en `main()
 
 | Pieza | Dónde | Regla |
 |---|---|---|
-| API | `services/api_service.dart` (núcleo) + `services/api/` (13 dominios, split implementado en su README) | Base `BACKEND_URL` (guardada > dart-define > default por plataforma; Android emulador `10.0.2.2`); `resolveMediaUrl()` antepone el nodo activo a `/uploads/...`; `uploadFile()` usa MIME por extensión, Bearer, reintento 401/refresh y fallback entre nodos; el WS de chat deriva su URL del mismo `rootUrl` |
+| API | `services/api_service.dart` (núcleo) + `services/api/` (dominios separados, ver su README) | Base `BACKEND_URL` (guardada > dart-define > default por plataforma; Android emulador `10.0.2.2`); `resolveMediaUrl()` antepone el nodo activo a `/uploads/...`; `uploadFile()` usa MIME por extensión, Bearer, reintento 401/refresh y fallback entre nodos; el WS de chat deriva su URL del mismo `rootUrl` |
 | Offline | `offline_cache_service.dart` (Hive) + `sync_queue_service.dart` (FIFO, retry 3 + backoff, anti-reenvío) | Caché con etiqueta de nodo (`putWithOrigin`, `getOrigin`, `getEnvelope`, `listOrigins`, `clearOrigin`, `reconcile`); `ConnectivityMonitor` expone `NodeHealth`, `nodeHealth`, `offlineNodeCount`, `isDegraded` y sondas `ApiService.testNode()`; al reconectar, sync con confirmación |
 | Chat | `screens/chat_screen.dart` + `widgets/chat_bubble.dart` + `widgets/chat_input_bar.dart` | WS en vivo, REST para historial e historial federado; E2EE ECDH P-256 + AES-GCM en isolates; `ChatPresenceBackend` aporta escritura, latencia y confirmaciones de lectura; búsqueda local, dedup y orden por `(created_at,id)`; mensajes offline encolados de forma duradera con el mismo `message_id` |
 | Avisos | `notification_service.dart` | Escritorio: plugin SO; web: Notification API; móvil: no-op (ver [PUSH.md](PUSH.md)) |
-| Navegación | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer siempre; 11 pantallas cacheadas; `DegradedNodesBanner` avisa de nodos sin respuesta con recuento y reintento (`checkNow()`) |
-| i18n | `l10n/` + `assets/l10n/` (9 locales, 823 claves por ARB) | `app_en.arb` es fallback; paridad de claves y placeholders en `test/l10n/arb_parity_test.dart` (referencia `es`); `LocaleService.load()` detecta el locale del SO y persiste el resuelto |
+| Navegación | `main_scaffold.dart` | Rail >800px, Bar <800px, Drawer siempre; pantallas cacheadas; `DegradedNodesBanner` avisa de nodos sin respuesta con recuento y reintento (`checkNow()`) |
+| i18n | `l10n/` + `assets/l10n/` (los locales de `assets/l10n/`) | `app_en.arb` es fallback; paridad de claves y placeholders en `test/l10n/arb_parity_test.dart` (referencia `es`); `LocaleService.load()` detecta el locale del SO y persiste el resuelto |
 | Permisos SO | `AndroidManifest.xml` / `Info.plist` | Red, ubicación, cámara, fototeca, alarmas exactas |
 
 ## Flujos clave

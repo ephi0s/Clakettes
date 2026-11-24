@@ -20,7 +20,7 @@
    riutilizzabile (fumetti, schede, barre, sezioni).
 3. Avvisi con `showAppSnack`; cancellazioni con `showConfirmDialog`; errori con
    `ErrorStateWidget` e nuovo tentativo.
-4. Testi in `assets/l10n/app_en.arb` prima (fallback) + resto dei locale (823 chiavi); esegui `flutter test test/l10n/arb_parity_test.dart`: richiede le stesse chiavi e placeholder nei 9 ARB (referenza `es`).
+4. Testi in `assets/l10n/app_en.arb` prima (fallback) + resto dei locali; esegui `flutter test test/l10n/arb_parity_test.dart`: richiede le stesse chiavi e placeholder in tutti gli ARB (referenza `es`).
 5. Test in `test/screens/` o `test/widgets/` (i widget con `l10n`
    necessitano di un `pump()` extra dopo `pumpWidget`).
 
@@ -32,6 +32,7 @@
 
 ## Gate di qualità
 
+- Comando unico: `tools/check.ps1` (Windows) / `tools/check.sh` (POSIX) esegue tutto il gate; senza argomenti = ruff check + ruff format --check + pytest (`-m "not interop"`) + flutter test, con `-Quick` / `--quick` solo ruff + flutter analyze; `-Backend`/`--backend`, `-Frontend`/`--frontend` e `-TestFilter EXPR`/`--test-filter=EXPR` restringono l'ambito (nei launcher `start.ps1` / `start.sh` lo stesso filtro passa `-k` a pytest e `--plain-name` a Flutter, che aggiungono anche `-m "not interop"` in locale).
 - Backend: `ruff check .` → `ruff format --check .` → `pytest tests/ -m "not interop" -x -q --tb=short`.
 - Frontend: `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze` → `flutter test`.
 - Dopo aver cambiato endpoint o rotte, rigenera il riferimento con `python tools/gen_api.py --all` (combina i prefissi di `main.py` e di ogni `APIRouter`).

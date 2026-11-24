@@ -1,6 +1,6 @@
 ---
 name: backend-python-fastapi-expert
-description: Expert guidance for Clakettes FastAPI backend. Covers project structure (Routers → Services → Models), JWT auth with session tracking (access + refresh tokens), SQLite-backed rate limiter (100/60s), pytest with httpx (asyncio_mode=auto), SQLAlchemy patterns (SQLite/MariaDB dual), pydantic-settings, Alembic migrations, and enums.py shared across layers. Use when working on backend API endpoints, services, models, or tests.
+description: Expert guidance for Clakettes FastAPI backend. Covers project structure (Routers → Services → Models), JWT auth with session tracking (access + refresh tokens), SQLite-backed rate limiter (100/60s), pytest with httpx (config in pyproject.toml), SQLAlchemy patterns (SQLite/MariaDB dual), pydantic-settings, Alembic migrations, and enums.py shared across layers. Use when working on backend API endpoints, services, models, or tests.
 metadata:
   model: models/gemini-3.1-pro-preview
   last_modified: Tue, 23 Jun 2026 01:43:00 GMT
@@ -9,7 +9,7 @@ metadata:
 
 ## Architecture Layers
 
-`backend/app/`: **Routers** (24) → **Services** (business logic) → **Models** (SQLAlchemy, 25+)
+`backend/app/`: **Routers** → **Services** (business logic) → **Models** (SQLAlchemy)
 
 - **Routers** (`routers/`): Define endpoints, validate with Pydantic schemas (`schemas/`), call services.
 - **Services** (`services/`): Business logic, CRUD, orchestration. `base_service.py` provides generic CRUD.
@@ -24,7 +24,7 @@ metadata:
 `app/main.py` creates the FastAPI app with:
 - `lifespan` handler: `Base.metadata.create_all()`, seeds admin user (`admin`/`setup`), purges expired sessions, starts WebSocket chat backend
 - Middleware (last added = first executed): CORS → TrustedHost (non-dev only) → RateLimit (100/60s global, 600/60s `/dav`; skips when `TESTING` ∈ {1,true,yes,on} via `app.config.is_testing()`) → SecurityHeaders
-- 33 routers registered under `/api/...`, plus `/health` and `/api/health`
+- Routers in `app/routers/` registered under `/api/...`, plus `/health` and `/api/health`
 - Static files mounted at `/uploads`
 
 ## Auth
@@ -53,7 +53,7 @@ metadata:
 ## Tests & Lint
 
 - `pytest tests/ -x -q --tb=short` — stop on first failure, quiet, short traceback
-- `asyncio_mode = auto` in `pytest.ini` — no async markers needed
+- Config de pytest en `backend/pyproject.toml` (`[tool.pytest.ini_options]`)
 - Uses `httpx` for async HTTP testing
 - Test env: set `TESTING=1|true|yes|on` to bypass all rate limits and auto-migration
 - Lint: `ruff check .` from `backend/` — line-length 120 (`pyproject.toml: [tool.ruff] line-length = 120`), rules E, F, W

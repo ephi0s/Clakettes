@@ -760,6 +760,7 @@
   "postDeleteConfirm": "Eliminare questo post?",
   "postDeleteFailed": "Impossibile eliminare",
   "postEditTitle": "Modifica post",
+  "postTitleHint": "Titolo del post",
   "postSaveFailed": "Impossibile salvare",
   "postActionForbidden": "Azione non consentita",
   "postReplyFailed": "Impossibile rispondere",
