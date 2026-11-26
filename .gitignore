@@ -40,6 +40,7 @@ backend/.ruff_cache/
 *.db-shm
 *.hive*
 *.lock
+!frontend/pubspec.lock
 uploads/
 
 # Environment

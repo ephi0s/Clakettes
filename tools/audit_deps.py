@@ -123,8 +123,15 @@ def main() -> int:
 
     queries: list[dict] = []
     for path in args.requirements:
+        if not path.exists():
+            print(f"Aviso: {path} no existe; se omite")
+            continue
         queries.extend(read_requirements(path))
     for path in args.lock:
+        if not path.exists():
+            # pubspec.lock puede no estar versionado ni generado todavía.
+            print(f"Aviso: {path} no existe; se omite (ejecuta flutter pub get para generarlo)")
+            continue
         queries.extend(read_pubspec_lock(path))
     if args.venv:
         queries.extend(read_venv(args.venv))
