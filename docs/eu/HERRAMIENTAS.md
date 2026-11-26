@@ -43,6 +43,7 @@ Auditoria-script-ek 1 itzultzen du konpon daitezkeen ohartarazpenak badaude (`--
    - GitHub eta GitLab `backend-test`: `TESTING=true` eta `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 byte, `InsecureKeyLengthWarning` saihesten du; lehen rate limiter-a testetan aktibo zegoen → noizbehinkako 429).
    - GitLab `frontend-test`: Hive egokitzaileen sorrera gehitu zen `flutter test` baino lehen (GitHub-ekiko paritatea).
    - `pip install ruff` → `pip install "ruff==0.17.6"` GitHub Actions-en eta GitLab-en; `requirements-dev.txt`-ek `ruff==0.17.6` finkatzen du tokiko garapenerako ere.
+    - CodeQL-ek (`.github/workflows/codeql.yml`, konfigurazio aurreratua) Python backend-a baino ez du aztertzen `security-extended` multzoarekin; Dart ez dago CodeQL-ek estalita.
 4. **Plataforma anitzeko lint-ak** (`analysis_options.yaml`): `avoid_print` eta `avoid_web_libraries_in_flutter`. Egiaztatuta: `flutter analyze` garbi (web/io inportazio baldintzatua onartutako eredua da).
 5. **`onReorder` zaharkituaren konponketa** → `onReorderItem` (indize-egokitze manualik gabe); `flutter analyze`-k 1 info-tik 0 arazoetara pasatzen da.
 
