@@ -28,8 +28,11 @@
 | Verify node conformance | `python tools/federation_conformance.py <url> [--json]` | Root (`tools/`) |
 | Regenerate API reference | `python tools/gen_api.py --all` | Root (`tools/`); combines prefixes from `main.py` and each `APIRouter` and detects auth dependencies |
 | Check generated API reference | `python tools/gen_api.py --all --check` | Root (`tools/`); checks that the `API.md` files are up to date without writing them (exit 1 if any differs); run by the `docs-api` CI job |
+| Dependency audit (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Root (`tools/`); CVE/GHSA in requirements, `pubspec.lock` and venv |
 
 The conformance CLI verifies manifest, JWKS, token, directory, users, WebFinger, reports, portability, chat bridge and event stream; it returns 1 if there are `critical`/`high` failures and 0 otherwise, and `--json` prints the full report.
+
+The audit script returns 1 if there are fixable advisories (`--fail-on fixable`); an unfixable advisory found only in the local `.venv` and not in the requirements graph is not part of the project. With `--venv --show-orphans` it lists installed packages that are not in requirements and that no package requires (orphans in the local venv), so they can be uninstalled.
 
 ## Improvements applied (09/10/2026)
 

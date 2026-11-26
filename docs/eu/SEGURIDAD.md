@@ -70,6 +70,15 @@
 3. TLS proxy-arekin + `FORWARDED_ALLOW_IPS`; `setup` admin gabe (prod-ez kanpo soilik sortzen da).
 4. Aldatu Windows jakinarazpenen `appUserModelId`/GUID-a app-a berrizendatzen bada.
 
+## Gogortzea eta hornidura-katea (11/2026)
+
+- **Mendekotasunen auditoria**: `tools/audit_deps.py`-ek OSV (CVE/GHSA) kontsultatzen du `requirements`, `pubspec.lock` eta venv baterako. Adib.: `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable`. Auditorian python-ecdsa (CVE-2024-23342) ohartarazpen konponezin bat baino ez zen agertu tokiko `.venv`-en; `pip show`-k baieztatzen duenez, ez du paketerik eskatzen eta requirements-en ebazpen garbiak ez du instalatzen, beraz ez da proiektuaren parte.
+- **Bertsio finkatuak/adabatuak**: `httpx2>=2.12.0`, `httpcore2>=2.10.0`, `pyasn1>=0.6.5`, `bcrypt==5.0.0`, `pytest==9.2.0`, `icalendar==7.3.2`. Bertsio zuzenak jada libre zeuden OSV ohartarazpenetatik auditatzean.
+- **Ekoizpena**: `docker compose --profile prod`-ek `APP_ENV=production`, `SECRET_KEY`, `CORS_ORIGINS` esplizitua, `PUBLIC_BASE_URL` eta `DATABASE_URL` TLS parametroekin eskatzen ditu; abiarazteko balidazioak gako ahulak/komodinak blokeatzen ditu. `start.ps1`-ek ausazko gakoa sortzen du `SECRET_KEY` ez badago (lehen ezagun bat ezartzen zuen).
+- **Backend**: middleware-ak eta segurtasun-balidazioa `app/main.py`-tik `app/security.py`-ra eraman ziren; CORS-ek goiburuak mugatzen ditu; docs/redoc/openapi desgaituta ekoizpenean; portabilitate-esportazioak erabiltzaile/admin/nodo federatua egiaztatua eskatzen du; nodo-erregistroak autentifikazioa eskatzen du ekoizpenean; JWKS federatua erregistratutako nodotik baino ez da deskargatzen (anti-SSRF, birzuzenketarik gabe); SSE-k Bearer-a goiburuan onartzen du (query-ko `token` zaharkituta); webhook mock-ek `compare_digest` erabiltzen dute; >72 byte-ko pasahitzak 422-rekin baztertzen dira; bundle-inportazioak profil-eremuak baino ez ditu aplikatzen (inoiz ez `role`/`is_active`/pribatutasuna); SVG-ak CSP sandbox-ekin zerbitzatzen dira.
+- **Frontend**: token-ak eta E2EE gakoak `flutter_secure_storage`-en migrazio bakarrarekin (web-ek SharedPreferences erabiltzen du); `UrlLauncherService` helper bakarra `http`/`https`/`mailto`/`tel`/`geo` allowlist-arekin; backend-aren HTTPS balidazioa tokiko garapen-ostalariak izan ezik; logout-ak Hive kutxak eta socket-a garbitzen ditu; CSP `web/index.html`-en eta HSTS/nosniff `nginx.conf`-en.
+- **Erreferentziak**: OWASP Top 10 2025 (A02 Konfigurazioa, A03 Hornidura-katea, A05 Injekzioa, A07 Autentifikazioa) eta OWASP MASVS Flutter-erako.
+
 ## Federazioa (2-10 faseak)
 
 Xehetasun osoa [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) fitxategian. Indarrean dauden kontrolak:
@@ -79,5 +88,5 @@ Xehetasun osoa [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md) fitxategian. Ind
 - Nodo bakoitzeko `allowlist`/`blocklist` (`node_policies`), `import_only`, `disable_chat` eta `disable_search`-ekin. Rate limiting eta anti-flood ertzean; moderazio-txostenen hedapena.
 - Portabilitatea: HMAC eta checksum-ekin sinatutako bundle-ak; inportazioak `MediaUrl` balioztatu/saneatzen du eta `contest_type` normalizatzen du; jaialdi eta identitate migrazioa `identity_redirects`-ekin eta `migration_audits`-en auditoriarekin; migrazio-endpoint-ek admin eskatzen dute.
 - Txat federatua: RS256 sinatutako bridge-a, `message_id` bidez dedup-a `chat_outbox`-en, `timestamp` bidez ordena; txostenak eta isiltzeak, hitz-iragazkia eta 10 mezu/60 s-ko muga nodo eta erabiltzaile bakoitzeko.
-- Gertaerak: HMAC bidez sinatutako argitalpena (`X-Clakettes-Signature`), SSE query-n `token` nahitaezkoarekin, `since` eta `limit` aukerakoekin, 200-ko replay-a eta 3 birsaio atzerapenarekin.
+- Gertaerak: HMAC bidez sinatutako argitalpena (`X-Clakettes-Signature`), SSE Bearer-arekin goiburuan (query-ko `token` zaharkituta), `since` eta `limit` aukerakoekin, 200-ko replay-a eta 3 birsaio atzerapenarekin.
 - Erresilientzia: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), gakoen errebokazioa (`keys/revoke`) eta 8 urratseko intzidente-plana. Birzirkulazioa/errebokazioa ziurtagiria berrituz; nodo arriskutu bat direktoriotik baliogabetzen da.

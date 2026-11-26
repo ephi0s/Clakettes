@@ -1,13 +1,30 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:clakettes/services/auth_service.dart';
+import 'package:clakettes/services/secure_storage_service.dart';
 import 'package:clakettes/models/user_model.dart';
+
+class _MemorySecureStore implements SecureKeyValueStore {
+  final Map<String, String> values = {};
+
+  @override
+  Future<String?> read(String key) async => values[key];
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+
+  @override
+  Future<void> delete(String key) async => values.remove(key);
+}
 
 void main() {
   late User testUser;
+  late _MemorySecureStore store;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    store = _MemorySecureStore();
+    AuthService().setSecureStorage(SecureStorageService.forTesting(store));
     await AuthService().clear();
     testUser = User(
       id: 1,
@@ -34,6 +51,17 @@ void main() {
       expect(token, 'my-jwt-token');
     });
 
+    test('tokens are not written to SharedPreferences', () async {
+      final auth = AuthService();
+      await auth.saveToken('my-jwt-token');
+      await auth.saveRefreshToken('my-refresh-token');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('jwt_token'), isNull);
+      expect(prefs.getString('refresh_token'), isNull);
+      expect(store.values['jwt_token'], 'my-jwt-token');
+      expect(store.values['refresh_token'], 'my-refresh-token');
+    });
+
     test('getToken returns null when no token saved', () async {
       final auth = AuthService();
       final token = await auth.getToken();
@@ -53,6 +81,16 @@ void main() {
       await auth.saveRefreshToken('my-refresh-token');
       final token = await auth.getRefreshToken();
       expect(token, 'my-refresh-token');
+    });
+
+    test('E2EE keys are stored in secure storage', () async {
+      final pub = await AuthService().ensureKeyPair();
+      expect(pub, isNotEmpty);
+      expect(await AuthService().getPrivateKey(), isNotEmpty);
+      expect(await AuthService().getPublicKey(), pub);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('e2ee_private_key'), isNull);
+      expect(prefs.getString('e2ee_public_key'), isNull);
     });
 
     test('isLoggedIn returns false when no token', () async {
@@ -89,12 +127,15 @@ void main() {
       await auth.saveToken('token');
       await auth.saveRefreshToken('refresh');
       await auth.saveUser(testUser);
+      await auth.ensureKeyPair();
 
       await auth.clear();
 
       expect(await auth.getToken(), isNull);
       expect(await auth.getRefreshToken(), isNull);
       expect(await auth.getCurrentUser(), isNull);
+      expect(await auth.getPrivateKey(), isNull);
+      expect(store.values, isEmpty);
       expect(await auth.isLoggedIn(), isFalse);
     });
 
@@ -109,8 +150,7 @@ void main() {
     test('token is cached in memory after first load', () async {
       final auth = AuthService();
       await auth.saveToken('disk-token');
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('jwt_token');
+      await store.delete('jwt_token');
       final token = await auth.getToken();
       expect(token, 'disk-token');
     });

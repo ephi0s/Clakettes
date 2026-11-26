@@ -74,7 +74,7 @@ def _peer_disabled(node, envelope, db):
 
 
 def _peer_url(domain):
-    scheme = "https" if getattr(settings, "MTLS_REQUIRED", False) else "http"
+    scheme = "https" if settings.is_production or settings.MTLS_REQUIRED else "http"
     return f"{scheme}://{domain}/api/federation/events/publish"
 
 
@@ -179,13 +179,19 @@ def _sse_frame(envelope):
 
 @router.get("/stream")
 async def stream_events(
+    request: Request,
     topic: str = Query(CACHE_INVALIDATION_TOPIC),
     since: int = Query(0, ge=0),
-    token: str = Query(...),
+    token: str | None = Query(None, deprecated=True),
     limit: int | None = Query(None, ge=1),
     db: Session = Depends(get_db),
 ):
-    result = validate_access_token(db, token)
+    authorization = request.headers.get("authorization", "")
+    bearer = authorization[7:].strip() if authorization.startswith("Bearer ") else ""
+    token_to_validate = bearer or token
+    if not token_to_validate:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
+    result = validate_access_token(db, token_to_validate)
     if result is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 

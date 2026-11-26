@@ -229,7 +229,7 @@ All uploads return a relative `/uploads/<folder>/<file>` path, never an absolute
 | GET | `/api/federation/directory` | no |
 | POST | `/api/federation/reports` | no |
 | GET | `/api/federation/reports` | no |
-| DELETE | `/api/federation/users/{user_ref}` | federation JWT |
+| DELETE | `/api/federation/users/{user_ref}` | no |
 | GET | `/api/federation/export/{user_ref}` | no |
 | GET | `/api/federation/health` (deprecated) | no |
 | POST | `/api/federation/verify` | no |
@@ -251,7 +251,7 @@ All uploads return a relative `/uploads/<folder>/<file>` path, never an absolute
 | POST | `/api/federation/subscribe` (deprecated) | no |
 | POST | `/api/federation/unsubscribe` (deprecated) | no |
 | GET | `/api/federation/discover` (deprecated) | no |
-| POST | `/api/federation/register` | no |
+| POST | `/api/federation/register` | federation JWT |
 | POST | `/api/federation/unregister` | no |
 | POST | `/api/federation/sync` | no |
 | POST | `/api/federation/reconcile` | no |
@@ -302,7 +302,7 @@ All uploads return a relative `/uploads/<folder>/<file>` path, never an absolute
 
 | Method | Path | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | token (query, required) |
+| GET | `/api/federation/events/stream` | Bearer (header) or token (query, deprecated) |
 | POST | `/api/federation/events/publish` | yes (admin) |
 | GET | `/api/federation/events/retry-queue` | yes (admin) |
 

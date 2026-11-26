@@ -9,6 +9,19 @@ import 'websocket_chat_backend.dart';
 /// Fachada que gestiona el [AbstractChatBackend] activo y expone un
 /// único [Stream] de mensajes entrantes.
 class ChatService {
+  static final List<ChatService> _liveInstances = <ChatService>[];
+
+  /// Desconecta todas las instancias activas, sin cerrar sus streams.
+  static Future<void> disconnectAll() async {
+    for (final instance in List<ChatService>.from(_liveInstances)) {
+      try {
+        await instance._backend.disconnect();
+      } catch (e) {
+        debugPrint('[ChatService] disconnect error: $e');
+      }
+    }
+  }
+
   final AuthService _auth;
   final ApiService _api;
 
@@ -26,7 +39,9 @@ class ChatService {
   ChatService({AbstractChatBackend? backend, ApiService? api, AuthService? auth})
       : _api = api ?? ApiService(),
         _auth = auth ?? AuthService(),
-        _backend = backend ?? WebSocketChatBackend(api: api);
+        _backend = backend ?? WebSocketChatBackend(api: api) {
+    _liveInstances.add(this);
+  }
 
   /// Expone el servicio de API crudo para subidas.
   ApiService get api => _api;
@@ -192,6 +207,7 @@ class ChatService {
 
   /// Desconecta el backend, cancela las suscripciones y cierra los streams.
   Future<void> dispose() async {
+    _liveInstances.remove(this);
     await _subscription?.cancel();
     await _typingSubscription?.cancel();
     await _latencySubscription?.cancel();

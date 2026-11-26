@@ -28,8 +28,11 @@
 | Nodo baten betetzea egiaztatu | `python tools/federation_conformance.py <url> [--json]` | Erroa (`tools/`) |
 | API erreferentzia birsortu | `python tools/gen_api.py --all` | Erroa (`tools/`); `main.py`-ko eta `APIRouter` bakoitzeko aurrizkiak konbinatzen ditu eta auth-mendekotasunak detektatzen ditu |
 | Sortutako API erreferentzia egiaztatu | `python tools/gen_api.py --all --check` | Erroa (`tools/`); `API.md` fitxategiak eguneratuta daudela egiaztatzen du idatzi gabe (exit 1 desberdina bada); CI-ko `docs-api` job-ek exekutatzen du |
+| Mendekotasunen auditoria (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Erroa (`tools/`); CVE/GHSA requirements, `pubspec.lock` eta venv-en |
 
 Betetze-CLIak manifestua, JWKS, tokena, direktorioa, erabiltzaileak, WebFinger, txostenak, portabilitatea, txat-bridge-a eta gertaera-stream-a egiaztatzen ditu; 1 itzultzen du `critical`/`high` hutsegiteak badaude eta 0 bestela, eta `--json`-ek txosten osoa inprimatzen du.
+
+Auditoria-script-ek 1 itzultzen du konpon daitezkeen ohartarazpenak badaude (`--fail-on fixable`); tokiko `.venv`-en baino ez dagoen eta requirements-en grafolean ez dagoen ohartarazpen konponezina ez da proiektuaren parte. `--venv --show-orphans`-ek requirements-en ez dauden eta inork eskatzen ez dituen instalatutako paketeak zerrendatzen ditu (tokiko venv-eko umezurtzak), desinstalatu ahal izateko.
 
 ## Aplikatutako hobekuntzak (09/10/2026)
 

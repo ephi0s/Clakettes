@@ -66,6 +66,23 @@ jobs:
       - name: Check generated API docs
         run: python tools/gen_api.py --all --check
 
+  deps-audit:
+    name: Dependency CVE audit (OSV)
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Audit pinned dependencies
+        run: >-
+          python tools/audit_deps.py
+          --requirements backend/requirements.txt
+          --requirements backend/requirements-dev.txt
+          --lock frontend/pubspec.lock
+          --fail-on fixable
+
   # ─── TEST ─────────────────────────────────────────────────────────
   backend-test:
     name: Backend Tests (pytest, SQLite)

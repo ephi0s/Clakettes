@@ -10,17 +10,25 @@ import subprocess
 import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
-from app.rate_limiter import RateLimiter
 from app.config import is_testing
-from app.http_utils import client_ip
-from app.dav import auth as dav_auth
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
+from app.security import (  # noqa: F401  (re-exportados para tests existentes)
+    DAV_PREFIX,
+    INSECURE_SECRET_KEYS,
+    MAX_BODY_SIZE,
+    RateLimitMiddleware,
+    RedactDavTokenMiddleware,
+    RequestSizeLimitMiddleware,
+    SecurityHeadersMiddleware,
+    _redact_dav_path,
+    _validate_secret_key,
+    configure_cors,
+    configure_trusted_hosts,
+    validate_secret_key,
+)
 from app.routers import (
     federation,
     federation_chat_bridge,
@@ -79,192 +87,9 @@ from app.mtls import MTLSPeerVerificationMiddleware
 
 APP_VERSION = "0.3.0"
 
-# Maximum request body size: 10 MB
-MAX_BODY_SIZE = 10 * 1024 * 1024
-DAV_PREFIX = "/dav"
-# Known insecure default keys shipped by templates/scripts - must be overridden in production
-INSECURE_SECRET_KEYS = {
-    "your-secret-key-change-in-production",
-    "cambien-esto-por-una-clave-aleatoria-de-64-caracteres",
-    "dev-secret-change-in-production",
-    "change-me",
-    "secret",
-}
-
 logger = logging.getLogger(__name__)
 
-
-def _validate_secret_key():
-    """Block startup in production when SECRET_KEY is not set via env.
-
-    In production (APP_ENV=production), raises RuntimeError if the default
-    insecure key is detected. In development, logs a warning only.
-    """
-    if settings.SECRET_KEY in INSECURE_SECRET_KEYS or len(settings.SECRET_KEY) < 32:
-        if settings.is_production:
-            raise RuntimeError(
-                "SECRET_KEY must be set via environment variables in production "
-                "(APP_ENV=production). Generate one with: "
-                'python -c "import secrets; print(secrets.token_urlsafe(64))"'
-            )
-        logger.warning(
-            "SECRET_KEY is using the insecure default. Set SECRET_KEY in .env or the environment before deploying."
-        )
-    if settings.is_production and settings.cors_origins_list == ["*"]:
-        raise RuntimeError(
-            "CORS_ORIGINS must be set to explicit origins in production (APP_ENV=production). "
-            "Wildcard '*' is not allowed with credentials."
-        )
-    if settings.is_production and settings.DATABASE_URL.startswith("mariadb"):
-        from urllib.parse import parse_qsl, urlsplit
-
-        query = dict(parse_qsl(urlsplit(settings.DATABASE_URL).query))
-        tls_keys = {"ssl_ca", "ssl_cert", "ssl_key", "ssl_verify_cert", "ssl_verify_identity"}
-        if "ssl" in query:
-            raise RuntimeError(
-                "DATABASE_URL uses '?ssl=...', which PyMySQL cannot parse. "
-                "Use '?ssl_ca=/path/to/ca.pem' (or ssl_verify_identity=true) instead."
-            )
-        if not any(key in query for key in tls_keys):
-            raise RuntimeError(
-                "DATABASE_URL must enable TLS in production (APP_ENV=production), "
-                "e.g. mariadb+pymysql://user:pass@host:3306/db?ssl_ca=/run/secrets/db-ca.pem"
-            )
-
-
-_validate_secret_key()
-
-
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Adds security headers to every response for defense-in-depth.
-
-    Headers added:
-    - X-Content-Type-Options: nosniff — Prevents MIME type sniffing
-    - X-Frame-Options: DENY — Prevents clickjacking via iframes
-    - X-XSS-Protection: 1; mode=block — Legacy XSS filter (older browsers)
-    - Referrer-Policy: strict-origin-when-cross-origin — Controls referrer info
-    - Permissions-Policy: camera=(), microphone=(), geolocation=() — Disables powerful features
-    - Strict-Transport-Security (production only) — Force HTTPS
-    - Content-Security-Policy — API responses carry no active content; the
-      interactive docs (/docs, /redoc) keep a minimal frame-ancestors-only policy
-    - X-Dev-Mode: true (only in dev) — Indicates insecure default key in use
-    """
-
-    async def dispatch(self, request: Request, call_next):
-        response: Response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        if request.url.path in ("/docs", "/redoc", "/openapi.json"):
-            response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
-        else:
-            response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
-        if settings.is_production:
-            response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
-        return response
-
-
-class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
-    """Reject requests with bodies larger than MAX_BODY_SIZE (10 MB).
-
-    Checks Content-Length header before processing request body.
-    Returns 413 Payload Too Large if exceeded.
-    """
-
-    async def dispatch(self, request: Request, call_next):
-        content_length = request.headers.get("content-length")
-        if content_length:
-            try:
-                if int(content_length) > MAX_BODY_SIZE:
-                    return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-            except ValueError:
-                pass
-            return await call_next(request)
-        # No Content-Length (chunked): buffer and enforce limit.
-        body = await request.body()
-        if len(body) > MAX_BODY_SIZE:
-            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-        return await call_next(request)
-
-
-def _redact_dav_path(path: str) -> str:
-    """Replace a DAV credential in the path with ``***`` so access logs stay safe.
-
-    A DAV token placed in the URL is a bearer credential: anything that can read
-    the log can impersonate the user. ``u<id>`` principals carry no secret, so
-    they are left readable to keep the logs useful.
-    """
-    if not path.startswith(DAV_PREFIX):
-        return path
-    rest = path[len(DAV_PREFIX) :].lstrip("/")
-    principal, separator, tail = rest.partition("/")
-    if not principal or dav_auth.PRINCIPAL_ID_RE.match(principal):
-        return path
-    return f"{DAV_PREFIX}/***{separator}{tail}"
-
-
-class RedactDavTokenMiddleware:
-    """Scrub DAV tokens out of the ASGI scope once the response is produced.
-
-    Uvicorn builds its access-log line from ``scope["path"]`` after the app call
-    returns, so rewriting the scope here removes the credential from the log
-    without touching routing or authentication, which have already happened.
-    """
-
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        await self.app(scope, receive, send)
-        if scope.get("type") != "http":
-            return
-        path = scope.get("path", "")
-        redacted = _redact_dav_path(path)
-        if redacted != path:
-            scope["path"] = redacted
-            scope["raw_path"] = redacted.encode()
-
-
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """SQLite-backed rate limiter that works across multiple workers.
-
-    Single RateLimiter instance with two key-prefixed buckets: everything
-    outside ``/dav`` shares the default budget (100/60s), while ``/dav``
-    gets its own larger budget (600/60s) because CalDAV clients poll
-    aggressively and a 429 breaks a subscription.
-    Disabled when TESTING=true environment variable is set.
-    """
-
-    def __init__(
-        self,
-        app,
-        max_requests: int = 100,
-        window_seconds: int = 60,
-        dav_max_requests: int = 600,
-        dav_window_seconds: int = 60,
-    ):
-        super().__init__(app)
-        self.max_requests = max_requests
-        self.window_seconds = window_seconds
-        self.dav_max_requests = dav_max_requests
-        self.dav_window_seconds = dav_window_seconds
-        self._limiter = RateLimiter()
-
-    async def dispatch(self, request: Request, call_next):
-        if is_testing():
-            return await call_next(request)
-        ip = client_ip(request)
-        if request.url.path.startswith(DAV_PREFIX):
-            key = f"dav:{ip}"
-            max_requests, window = self.dav_max_requests, self.dav_window_seconds
-        else:
-            key = f"middleware:{ip}"
-            max_requests, window = self.max_requests, self.window_seconds
-        if not self._limiter.check(key, max_requests, window):
-            return JSONResponse(status_code=429, content={"detail": "Too many requests"})
-        return await call_next(request)
+validate_secret_key()
 
 
 def _warn_about_dav_transport():
@@ -470,6 +295,9 @@ app = FastAPI(
     description="Backend API for Clakettes film festival management platform",
     version=APP_VERSION,
     lifespan=lifespan,
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
 )
 
 # --- Exception handlers ---
@@ -494,6 +322,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # 4. RateLimitMiddleware - limit requests per IP (100/60s, /dav gets 600/60s)
 # 5. TrustedHostMiddleware - validate Host header (if explicit CORS origins)
 # 6. CORSMiddleware - handle CORS preflight and headers
+# Las defensas transversales viven en app/security.py; aquí solo se registran.
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
@@ -505,26 +334,9 @@ uploads_dir = Path("uploads")
 uploads_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
-# TrustedHostMiddleware only added when explicit CORS origins configured
-# (not wildcard) to prevent Host header injection
-if settings.CORS_ORIGINS and settings.CORS_ORIGINS.strip():
-    allowed_hosts = [
-        h.strip().replace("https://", "").replace("http://", "").split(":")[0] for h in settings.cors_origins_list
-    ]
-    if allowed_hosts and "*" not in allowed_hosts:
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
-
-# mTLS peer verification for federation endpoints (Fase 2).
-# Desactivado por defecto (MTLS_REQUIRED=False); activar en producción.
+configure_trusted_hosts(app)
 app.add_middleware(MTLSPeerVerificationMiddleware, require_mtls=settings.MTLS_REQUIRED)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=settings.cors_allow_credentials,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
+configure_cors(app)
 
 # Outermost on purpose: it rewrites the ASGI scope after every inner layer has
 # answered, so uvicorn logs a redacted path while routing and auth stay intact.

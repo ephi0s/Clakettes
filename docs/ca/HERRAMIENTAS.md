@@ -28,8 +28,11 @@
 | Verificar conformitat d'un node | `python tools/federation_conformance.py <url> [--json]` | Arrel (`tools/`) |
 | Regenerar referència d'API | `python tools/gen_api.py --all` | Arrel (`tools/`); combina prefixos de `main.py` i de cada `APIRouter` i detecta dependències d'auth |
 | Verificar referència d'API generada | `python tools/gen_api.py --all --check` | Arrel (`tools/`); comprova que les `API.md` estan al dia sense escriure-les (exit 1 si alguna difereix); ho executa el job `docs-api` de CI |
+| Auditoria de dependències (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Arrel (`tools/`); CVE/GHSA en requirements, `pubspec.lock` i venv |
 
 El CLI de conformitat comprova manifest, JWKS, token, directori, usuaris, WebFinger, reportes, portabilitat, bridge de xat i stream d'esdeveniments; retorna 1 si hi ha fallades `critical`/`high` i 0 en cas contrari, i `--json` imprimeix l'informe complet.
+
+L'script d'auditoria retorna 1 si hi ha avisos corregibles (`--fail-on fixable`); un avís irreparable que aparegui només al `.venv` local i no al graf de requirements no forma part del projecte. Amb `--venv --show-orphans` es llesten els paquets instal·lats que no figuren als requirements i que ningú no requereix (orfes del venv local), per poder desinstal·lar-los.
 
 ## Millores aplicades (09/10/2026)
 

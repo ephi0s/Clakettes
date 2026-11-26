@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../services/url_launcher_service.dart';
 
 class EmbedInfo {
   final String platform;
@@ -84,13 +84,7 @@ EmbedInfo? detectEmbed(String rawUrl) {
   return EmbedInfo(platform: 'generic', label: host, icon: Icons.link, url: normalized);
 }
 
-Future<void> openEmbedUrl(BuildContext context, String url) async {
-  var uri = Uri.tryParse(url.trim());
-  if (uri != null && !uri.hasScheme) uri = Uri.parse('https://${url.trim()}');
-  if (uri != null && await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
+Future<void> openEmbedUrl(BuildContext context, String url) => openUrl(url);
 
 class EmbedPreview extends StatelessWidget {
   final EmbedInfo embed;

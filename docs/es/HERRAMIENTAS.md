@@ -28,8 +28,11 @@
 | Verificar conformidad de un nodo | `python tools/federation_conformance.py <url> [--json]` | Raíz (`tools/`) |
 | Regenerar referencia de API | `python tools/gen_api.py --all` | Raíz (`tools/`); combina prefijos de `main.py` y de cada `APIRouter` y detecta dependencias de auth |
 | Verificar referencia de API generada | `python tools/gen_api.py --all --check` | Raíz (`tools/`); comprueba que las `API.md` estén al día sin escribirlas (exit 1 si alguna difiere); lo ejecuta el job `docs-api` de CI |
+| Auditoría de dependencias (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Raíz (`tools/`); CVE/GHSA en requirements, `pubspec.lock` y venv |
 
 El CLI de conformidad comprueba manifiesto, JWKS, token, directorio, usuarios, WebFinger, reportes, portabilidad, bridge de chat y stream de eventos; devuelve 1 si hay fallos `critical`/`high` y 0 en caso contrario, y `--json` imprime el informe completo.
+
+El script de auditoría devuelve 1 si hay avisos corregibles (`--fail-on fixable`); un aviso irreparable que aparezca solo en el `.venv` local y no en el grafo de requirements no forma parte del proyecto. Con `--venv --show-orphans` se listan los paquetes instalados que no figuran en requirements y a los que nadie requiere (huérfanos del venv local), para poder desinstalarlos.
 
 ## Mejoras aplicadas (09/10/2026)
 

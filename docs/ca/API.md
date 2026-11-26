@@ -229,7 +229,7 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 | GET | `/api/federation/directory` | no |
 | POST | `/api/federation/reports` | no |
 | GET | `/api/federation/reports` | no |
-| DELETE | `/api/federation/users/{user_ref}` | JWT de federació |
+| DELETE | `/api/federation/users/{user_ref}` | no |
 | GET | `/api/federation/export/{user_ref}` | no |
 | GET | `/api/federation/health` (obsolet) | no |
 | POST | `/api/federation/verify` | no |
@@ -251,7 +251,7 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 | POST | `/api/federation/subscribe` (obsolet) | no |
 | POST | `/api/federation/unsubscribe` (obsolet) | no |
 | GET | `/api/federation/discover` (obsolet) | no |
-| POST | `/api/federation/register` | no |
+| POST | `/api/federation/register` | JWT de federació |
 | POST | `/api/federation/unregister` | no |
 | POST | `/api/federation/sync` | no |
 | POST | `/api/federation/reconcile` | no |
@@ -302,7 +302,7 @@ Totes les pujades retornen una ruta relativa `/uploads/<carpeta>/<fitxer>`, mai 
 
 | Mètode | Ruta | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | token (query, obligatori) |
+| GET | `/api/federation/events/stream` | Bearer (capçalera) o token (query, obsolet) |
 | POST | `/api/federation/events/publish` | sí (admin) |
 | GET | `/api/federation/events/retry-queue` | sí (admin) |
 

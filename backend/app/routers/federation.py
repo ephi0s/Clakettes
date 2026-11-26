@@ -66,15 +66,40 @@ def _utc_naive(value: datetime) -> datetime:
 
 
 async def _fetch_peer_jwks(issuer: str) -> dict:
-    jwks_url = f"https://{issuer}/api/federation/.well-known/jwks.json"
-    async with httpx.AsyncClient() as client:
+    """Descarga el JWKS de un nodo registrado y de confianza.
+
+    El ``iss`` del token no es de confianza: se valida como nombre DNS y se
+    comprueba contra ``trusted_nodes`` antes de abrir cualquier conexión.
+    Así un token arbitrario no puede convertir el servidor en un proxy SSRF.
+    """
+    from app.database import SessionLocal
+    from app.security import is_safe_peer_domain
+
+    domain = issuer.strip().lower() if isinstance(issuer, str) else ""
+    if not is_safe_peer_domain(domain):
+        raise ValueError("invalid federation issuer")
+
+    db = SessionLocal()
+    try:
+        node = NodePeeringService().get_by_domain(db, domain)
+    finally:
+        db.close()
+    if node is None or not node.allowed or getattr(node, "revoked_at", None) is not None:
+        raise ValueError("federation issuer is not a trusted node")
+
+    jwks_url = f"https://{domain}/api/federation/.well-known/jwks.json"
+    async with httpx.AsyncClient(follow_redirects=False, trust_env=False) as client:
         response = await client.get(jwks_url, timeout=10)
         response.raise_for_status()
+        if len(response.content) > 1024 * 1024:
+            raise ValueError("JWKS response too large")
         return response.json()
 
 
 def _check_federation_rate_limit(request: Request):
-    if os.environ.get("TESTING", "").lower() in ("true", "1"):
+    from app.config import is_testing
+
+    if is_testing():
         return
     ip = request.client.host if request.client else "unknown"
     if not _federation_limiter.check(f"federation:{ip}", 60, 60):
@@ -139,6 +164,11 @@ async def _resolve_peer_node(request: Request, claimed: str | None = None) -> st
         token_peer = await get_current_federation_peer(request)
         if token_peer is not None:
             domain = token_peer.get("issuer_node") or token_peer.get("iss")
+        elif settings.is_production:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="verified peer identity required",
+            )
     claimed = claimed.strip() if isinstance(claimed, str) else ""
     if domain and claimed and domain != claimed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No puede actuar en nombre de otro nodo")
@@ -155,6 +185,46 @@ def _ref_domain(ref: str) -> str | None:
     if len(parts) >= 4 and parts[0] == "did" and parts[1] == "clakettes":
         return parts[2].strip().lower() or None
     return None
+
+
+async def _authorize_user_ref_access(request: Request, db: Session, user: User, user_ref: str, action: str) -> None:
+    """Autoriza operaciones sobre un usuario por token local o por nodo federado.
+
+    El usuario solo puede actuar sobre sí mismo; un administrador puede hacerlo
+    sobre cualquiera; un nodo par solo sobre usuarios de su propio dominio.
+    """
+    auth = request.headers.get("authorization", "")
+    token = auth[7:].strip() if auth.startswith("Bearer ") else None
+    if token:
+        result = validate_access_token(db, token)
+        if result is not None:
+            app_user = db.query(User).filter(User.id == result[0]).first()
+            if app_user is not None and (app_user.id == user.id or app_user.role == "admin"):
+                return
+
+    peer_domain = None
+    peer = getattr(request.state, "peer_node", None)
+    if peer is not None:
+        peer_domain = getattr(peer, "node_domain", None)
+    if not peer_domain:
+        token_peer = await get_current_federation_peer(request)
+        if token_peer is not None:
+            peer_domain = token_peer.get("issuer_node") or token_peer.get("iss")
+
+    ref_domain = _ref_domain(user_ref)
+    if (
+        isinstance(peer_domain, str)
+        and peer_domain.strip()
+        and ref_domain is not None
+        and peer_domain.strip().lower() == ref_domain
+        and service.is_allowed(db, peer_domain)
+    ):
+        return
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"Not allowed to {action} this user",
+    )
 
 
 @router.get("/nodes")
@@ -295,37 +365,7 @@ async def propagate_erase(request: Request, user_ref: str, db: Session = Depends
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    authorized = False
-    auth = request.headers.get("authorization", "")
-    token = auth[7:].strip() if auth.startswith("Bearer ") else None
-    if token:
-        result = validate_access_token(db, token)
-        if result is not None:
-            app_user = db.query(User).filter(User.id == result[0]).first()
-            if app_user is not None and (app_user.id == user.id or app_user.role == "admin"):
-                authorized = True
-
-    if not authorized:
-        peer_domain = None
-        peer = getattr(request.state, "peer_node", None)
-        if peer is not None:
-            peer_domain = getattr(peer, "node_domain", None)
-        if not peer_domain:
-            token_peer = await get_current_federation_peer(request)
-            if token_peer is not None:
-                peer_domain = token_peer.get("issuer_node") or token_peer.get("iss")
-        ref_domain = _ref_domain(user_ref)
-        if (
-            isinstance(peer_domain, str)
-            and peer_domain.strip()
-            and ref_domain is not None
-            and peer_domain.strip().lower() == ref_domain
-            and service.is_allowed(db, peer_domain)
-        ):
-            authorized = True
-
-    if not authorized:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed to erase this user")
+    await _authorize_user_ref_access(request, db, user, user_ref, "erase")
 
     user_id = user.id
     user_uuid = user.uuid
@@ -381,7 +421,12 @@ async def propagate_erase(request: Request, user_ref: str, db: Session = Depends
 
 
 @router.get("/export/{user_ref}")
-async def export_bundle(user_ref: str, db: Session = Depends(get_db)):
+async def export_bundle(user_ref: str, request: Request, db: Session = Depends(get_db)):
+    """Exporta el bundle de portabilidad de un usuario (datos personales).
+
+    Requiere ser el propio usuario, administrador o un nodo federado de confianza
+    que represente al dominio del usuario.
+    """
     user = (
         db.query(User)
         .filter(
@@ -391,6 +436,7 @@ async def export_bundle(user_ref: str, db: Session = Depends(get_db)):
     )
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    await _authorize_user_ref_access(request, db, user, user_ref, "export")
     try:
         return portability_service.create_bundle(db, user)
     except ValueError as exc:
@@ -678,12 +724,39 @@ async def federation_discover():
 
 
 @router.post("/register")
-async def federation_register(body: NodeRegisterIn, db: Session = Depends(get_db)):
+async def federation_register(body: NodeRegisterIn, request: Request, db: Session = Depends(get_db)):
     """Registra o actualiza un nodo federado (dominio + huella de cert + capacidades).
 
-    Es el punto de entrada del directorio de nodos: tras el handshake mTLS, cada
-    nodo se anuncia aquí para aparecer en GET /federation/directory.
+    En producción exige un par ya verificado (mTLS, token de federación válido o
+    administrador local); en desarrollo permanece abierto para el bootstrap.
     """
+    from app.security import is_safe_peer_domain
+
+    if not is_safe_peer_domain(body.node_domain):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid node domain")
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", body.fingerprint_sha256 or ""):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="fingerprint must be SHA-256 hex")
+
+    if settings.is_production:
+        authorized = False
+        peer = getattr(request.state, "peer_node", None)
+        if peer is not None:
+            authorized = True
+        if not authorized:
+            auth = request.headers.get("authorization", "")
+            token = auth[7:].strip() if auth.startswith("Bearer ") else None
+            if token:
+                result = validate_access_token(db, token)
+                if result is not None:
+                    app_user = db.query(User).filter(User.id == result[0]).first()
+                    authorized = app_user is not None and app_user.role == "admin"
+        if not authorized and await get_current_federation_peer(request) is not None:
+            authorized = True
+        if not authorized:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="peer or admin authentication required"
+            )
+
     node = NodePeeringService().register_or_update(
         db,
         body.node_domain,

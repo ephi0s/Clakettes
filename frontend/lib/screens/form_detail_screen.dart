@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../services/url_launcher_service.dart';
 import '../models/form_definition_model.dart';
 import '../widgets/reusable_widgets.dart';
 import '../widgets/empty_state_widget.dart';
@@ -498,7 +498,7 @@ class _FormResponsesTabState extends State<_FormResponsesTab> {
     setState(() { _isExporting = true; });
     try {
       final url = await api.getFormResponsesCsvUrl(widget.formId);
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      await openUrl(url);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

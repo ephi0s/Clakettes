@@ -1,14 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../services/url_launcher_service.dart';
 
-Future<void> _openLink(String url) async {
-  var uri = Uri.tryParse(url.trim());
-  if (uri != null && !uri.hasScheme) uri = Uri.parse('https://${url.trim()}');
-  if (uri != null && await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
+Future<void> _openLink(String url) => openUrl(url);
 
 List<InlineSpan> _parseInline(String text, TextStyle? base, Color linkColor) {
   final spans = <InlineSpan>[];

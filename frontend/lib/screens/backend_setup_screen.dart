@@ -48,17 +48,31 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
     super.dispose();
   }
 
+  /// Valida la URL introducida y muestra el motivo del rechazo.
+  String? _validatedUrl() {
+    try {
+      return BackendConfig.validateUrl(_urlController.text);
+    } on InvalidBackendUrlException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.invalidValue}: ${e.message}'), behavior: SnackBarBehavior.floating),
+        );
+      }
+      return null;
+    }
+  }
+
   /// Establece la URL base y realiza una comprobación de salud contra el backend.
   Future<void> _testConnection() async {
+    final url = _validatedUrl();
+    if (url == null) return;
+
     setState(() {
       _isTesting = true;
       _isConnected = null;
     });
 
-    final url = _urlController.text.trim();
-    if (url.isNotEmpty) {
-      ApiService().setBaseUrl(url);
-    }
+    ApiService().setBaseUrl(url);
     final ok = await ApiService().healthCheck();
 
     if (mounted) {
@@ -71,9 +85,10 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
 
   /// Persiste la URL configurada e invoca el callback o cierra la pantalla.
   Future<void> _save() async {
-    final url = _urlController.text.trim();
-    if (url.isEmpty) return;
+    final url = _validatedUrl();
+    if (url == null) return;
 
+    await BackendConfig.setUrl(url);
     await ApiService().setActiveNode(url, displayName: url);
     ApiService().setBaseUrl(url);
     if (mounted) {
@@ -136,7 +151,7 @@ class _BackendSetupScreenState extends State<BackendSetupScreen> {
                       controller: _urlController,
                       decoration: InputDecoration(
                         labelText: l10n.backendUrl,
-                        hintText: 'http://192.168.1.100:8000',
+                        hintText: 'https://api.example.com',
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.link),
                         suffixIcon: _isSaved

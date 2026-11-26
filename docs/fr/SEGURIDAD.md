@@ -56,6 +56,15 @@
 3. TLS avec proxy + `FORWARDED_ALLOW_IPS` ; pas d'admin `setup` (seulement créé hors prod).
 4. Changer `appUserModelId`/GUID des notifications Windows si l'app est renommée.
 
+## Durcissement et chaîne d'approvisionnement (11/2026)
+
+- **Audit des dépendances** : `tools/audit_deps.py` interroge OSV (CVE/GHSA) pour `requirements`, `pubspec.lock` et un venv. Ex. : `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable`. Lors de l'audit, un avis non corrigeable concernant python-ecdsa (CVE-2024-23342) est apparu uniquement dans le `.venv` local ; `pip show` confirme qu'aucun paquet ne le requiert et qu'une résolution propre des requirements ne l'installe pas : il ne fait donc pas partie du projet.
+- **Versions épinglées/corrigées** : `httpx2>=2.12.0`, `httpcore2>=2.10.0`, `pyasn1>=0.6.5`, `bcrypt==5.0.0`, `pytest==9.2.0`, `icalendar==7.3.2`. Les versions directes étaient déjà sans avis OSV lors de l'audit.
+- **Production** : `docker compose --profile prod` exige `APP_ENV=production`, `SECRET_KEY`, `CORS_ORIGINS` explicite, `PUBLIC_BASE_URL` et `DATABASE_URL` avec paramètres TLS ; la validation au démarrage bloque les clés faibles/jokers. `start.ps1` génère une clé aléatoire si `SECRET_KEY` est absente (auparavant il en fixait une connue).
+- **Backend** : middlewares et validation de sécurité déplacés de `app/main.py` vers `app/security.py` ; CORS restreint les en-têtes ; docs/redoc/openapi désactivés en production ; l'export de portabilité exige un utilisateur/admin/nœud fédéré vérifié ; l'enregistrement de nœuds exige l'authentification en production ; le JWKS fédéré n'est téléchargé que depuis des nœuds enregistrés (anti-SSRF, sans redirections) ; SSE accepte Bearer en en-tête (`token` en query déprécié) ; webhooks mock avec `compare_digest` ; mots de passe >72 octets rejetés avec 422 ; l'import de bundles n'applique que les champs de profil (jamais `role`/`is_active`/vie privée) ; SVG servis avec CSP sandbox.
+- **Frontend** : tokens et clés E2EE dans `flutter_secure_storage` avec migration unique (le web utilise SharedPreferences) ; helper unique `UrlLauncherService` avec allowlist `http`/`https`/`mailto`/`tel`/`geo` ; validation HTTPS du backend sauf hôtes locaux de dev ; le logout purge les boîtes Hive et le socket ; CSP dans `web/index.html` et HSTS/nosniff dans `nginx.conf`.
+- **Références** : OWASP Top 10 2025 (A02 Configuration, A03 Chaîne d'approvisionnement, A05 Injection, A07 Authentification) et OWASP MASVS pour Flutter.
+
 ## Fédération (phases 2-10)
 
 Détail complet dans [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Contrôles en vigueur :
@@ -65,5 +74,5 @@ Détail complet dans [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Contrôle
 - `allowlist`/`blocklist` par nœud (`node_policies`), avec `import_only`, `disable_chat` et `disable_search`. Rate limiting et anti-inondation au bord ; propagation des signalements de modération.
 - Portabilité : bundles signés avec HMAC et checksum ; l'import valide/sanitise `MediaUrl` et normalise `contest_type` ; migration des festivals et identités avec `identity_redirects` et audit dans `migration_audits` ; les endpoints de migration exigent admin.
 - Chat fédéré : bridge signé RS256, dédup par `message_id` dans `chat_outbox`, tri par `timestamp` ; signalements et mutes, filtre de mots et limite de 10 messages/60 s par nœud et utilisateur.
-- Événements : publication signée avec HMAC (`X-Clakettes-Signature`), SSE avec `token` obligatoire en query, `since` et `limit` optionnels, replay de 200 et 3 relances avec backoff.
+- Événements : publication signée avec HMAC (`X-Clakettes-Signature`), SSE avec Bearer en en-tête (`token` en query déprécié), `since` et `limit` optionnels, replay de 200 et 3 relances avec backoff.
 - Résilience : `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), révocation de clés (`keys/revoke`) et plan d'incident en 8 étapes. Rotation/révocation par renouvellement du certificat ; un nœud compromis est invalidé dans le répertoire.

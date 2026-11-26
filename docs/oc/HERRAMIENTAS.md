@@ -28,8 +28,11 @@
 | Verificar la conformitat d'un nose | `python tools/federation_conformance.py <url> [--json]` | Raíç (`tools/`) |
 | Regenerar la referéncia d'API | `python tools/gen_api.py --all` | Raíç (`tools/`); combina los prefixes de `main.py` e de cada `APIRouter` e detecta las dependéncias d'auth |
 | Verificar la referéncia d'API generada | `python tools/gen_api.py --all --check` | Raíç (`tools/`); verifica que las `API.md` sigan al dia senza las escriure (exit 1 se una difier); executat per lo job `docs-api` de CI |
+| Auditoria de las dependéncias (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Raíç (`tools/`); CVE/GHSA dins requirements, `pubspec.lock` e venv |
 
 Lo CLI de conformitat verifica manifest, JWKS, token, directòri, usagis, WebFinger, rapòrts, portabilitat, bridge de chat e flux d'eveniments; torna 1 se i a de fracasses `critical`/`high` e 0 autrament, e `--json` imprime lo rapòrt complet.
+
+L'Script d'auditoria torna 1 se i a d'avis corregibles (`--fail-on fixable`); un avís irreparable que apareis solament dins lo `.venv` local e pas dins lo graf dels requirements es fa pas partida del projècte. Amb `--venv --show-orphans` lista los paquets installats que son pas dins los requirements e que degun demanda (orfanals del venv local), per poder los desinstallar.
 
 ## Amelioracions aplicadas (09/10/2026)
 

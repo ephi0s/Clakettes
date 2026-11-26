@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import '../services/notification_polling_service.dart';
 import 'l10n/app_localizations.dart';
-import 'services/offline_cache_service.dart';
+import 'services/session_cleanup_service.dart';
 import 'services/sync_queue_service.dart';
 import 'services/connectivity_monitor.dart';
 import 'screens/dashboard_screen.dart';
@@ -675,9 +675,7 @@ class _MainScaffoldState extends State<MainScaffold> with WidgetsBindingObserver
                   child: IconButton(
                     icon: const Icon(Icons.logout_rounded),
                     onPressed: () async {
-                      await AuthService().clear();
-                      await OfflineCacheService.instance.clear();
-                      await SyncQueueService.instance.clear();
+                      await SessionCleanupService.logout();
                       if (mounted) setState(() => _currentUser = null);
                       _screens.fillRange(0, _screens.length, null);
                       if (mounted) setState(() => _selectedIndex = 0);

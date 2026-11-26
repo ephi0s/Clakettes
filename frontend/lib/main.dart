@@ -3,6 +3,7 @@ import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransitionsBui
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 import 'l10n/app_localizations.dart';
+import 'services/auth_service.dart';
 import 'services/database_service.dart';
 import 'services/offline_cache_service.dart';
 import 'services/sync_queue_service.dart';
@@ -15,6 +16,7 @@ import 'auth_wrapper.dart';
 /// Punto de entrada de la aplicación.
 ///
 /// El orden de inicialización importa:
+/// 0. AuthService.migrateLegacySecrets() - migra secretos al almacén seguro
 /// 1. DatabaseService.init() - abre las cajas de Hive (festivals, users, shortfilms, messages)
 /// 2. OfflineCacheService.init() - prepara la caché local
 /// 3. SyncQueueService.init() - restaura las operaciones de sincronización pendientes
@@ -24,6 +26,7 @@ import 'auth_wrapper.dart';
 /// 7. runApp() - inicia el árbol de widgets de Flutter
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AuthService().migrateLegacySecrets();
   await DatabaseService.init();
   await OfflineCacheService.instance.init();
   await SyncQueueService.instance.init();

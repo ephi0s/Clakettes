@@ -229,7 +229,7 @@ Karga guztiek `/uploads/<karpeta>/<fitxategia>` bide erlatiboa itzultzen dute, i
 | GET | `/api/federation/directory` | ez |
 | POST | `/api/federation/reports` | ez |
 | GET | `/api/federation/reports` | ez |
-| DELETE | `/api/federation/users/{user_ref}` | federazio JWT |
+| DELETE | `/api/federation/users/{user_ref}` | ez |
 | GET | `/api/federation/export/{user_ref}` | ez |
 | GET | `/api/federation/health` (zaharkituta) | ez |
 | POST | `/api/federation/verify` | ez |
@@ -251,7 +251,7 @@ Karga guztiek `/uploads/<karpeta>/<fitxategia>` bide erlatiboa itzultzen dute, i
 | POST | `/api/federation/subscribe` (zaharkituta) | ez |
 | POST | `/api/federation/unsubscribe` (zaharkituta) | ez |
 | GET | `/api/federation/discover` (zaharkituta) | ez |
-| POST | `/api/federation/register` | ez |
+| POST | `/api/federation/register` | federazio JWT |
 | POST | `/api/federation/unregister` | ez |
 | POST | `/api/federation/sync` | ez |
 | POST | `/api/federation/reconcile` | ez |
@@ -302,7 +302,7 @@ Karga guztiek `/uploads/<karpeta>/<fitxategia>` bide erlatiboa itzultzen dute, i
 
 | Metodoa | Ibilbidea | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | tokena (query, derrigorrezkoa) |
+| GET | `/api/federation/events/stream` | Bearer (burua) edo tokena (kontsulta, zaharkitua) |
 | POST | `/api/federation/events/publish` | bai (admin) |
 | GET | `/api/federation/events/retry-queue` | bai (admin) |
 

@@ -2,6 +2,15 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from datetime import datetime
 from .common import PageBase
 
+BCRYPT_MAX_BYTES = 72
+
+
+def _check_bcrypt_length(value: str | None) -> str | None:
+    """bcrypt rechaza entradas de más de 72 bytes; validar antes evita un 500."""
+    if value is not None and len(value.encode("utf-8")) > BCRYPT_MAX_BYTES:
+        raise ValueError("Password must be at most 72 bytes")
+    return value
+
 
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -31,13 +40,18 @@ class UserCreate(UserBase):
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
-        return v
+        return _check_bcrypt_length(v)
 
 
 class UserLogin(BaseModel):
     username: str = Field(..., max_length=50)
     password: str = Field(..., max_length=128)
     device_name: str | None = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v):
+        return _check_bcrypt_length(v)
 
 
 class UserUpdate(BaseModel):
@@ -63,7 +77,7 @@ class UserUpdate(BaseModel):
     def validate_password(cls, v):
         if v is not None and len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
-        return v
+        return _check_bcrypt_length(v)
 
 
 class UserResponse(UserBase):

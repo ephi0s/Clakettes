@@ -229,7 +229,7 @@ Totes las pujadas retornan un camin relatiu `/uploads/<dossièr>/<fichièr>`, ja
 | GET | `/api/federation/directory` | non |
 | POST | `/api/federation/reports` | non |
 | GET | `/api/federation/reports` | non |
-| DELETE | `/api/federation/users/{user_ref}` | JWT de federacion |
+| DELETE | `/api/federation/users/{user_ref}` | non |
 | GET | `/api/federation/export/{user_ref}` | non |
 | GET | `/api/federation/health` (depreciat) | non |
 | POST | `/api/federation/verify` | non |
@@ -251,7 +251,7 @@ Totes las pujadas retornan un camin relatiu `/uploads/<dossièr>/<fichièr>`, ja
 | POST | `/api/federation/subscribe` (depreciat) | non |
 | POST | `/api/federation/unsubscribe` (depreciat) | non |
 | GET | `/api/federation/discover` (depreciat) | non |
-| POST | `/api/federation/register` | non |
+| POST | `/api/federation/register` | JWT de federacion |
 | POST | `/api/federation/unregister` | non |
 | POST | `/api/federation/sync` | non |
 | POST | `/api/federation/reconcile` | non |
@@ -302,7 +302,7 @@ Totes las pujadas retornan un camin relatiu `/uploads/<dossièr>/<fichièr>`, ja
 
 | Metòde | Camin | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | jeton (query, obligatòri) |
+| GET | `/api/federation/events/stream` | Bearer (en-tèsta) o jeton (requèsta, obsolèt) |
 | POST | `/api/federation/events/publish` | òc (admin) |
 | GET | `/api/federation/events/retry-queue` | òc (admin) |
 

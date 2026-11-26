@@ -1,3 +1,5 @@
+import hmac
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -124,7 +126,7 @@ async def mock_webhook(body: dict, request: Request, db: Session = Depends(get_d
 
     expected = settings.MOCK_WEBHOOK_SECRET
     provided = request.headers.get("x-webhook-secret", "")
-    if not expected or provided != expected:
+    if not expected or not hmac.compare_digest(provided, expected):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid webhook secret")
     ref = body.get("provider_ref")
     pay_status = body.get("status", "paid")

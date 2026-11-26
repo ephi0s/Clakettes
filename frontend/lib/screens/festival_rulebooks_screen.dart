@@ -1,12 +1,12 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/festival_rulebook_model.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/file_downloader.dart';
+import '../services/url_launcher_service.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/error_state_widget.dart';
@@ -82,11 +82,8 @@ class _FestivalRulebooksScreenState extends State<FestivalRulebooksScreen> {
 
   Future<void> _openDocument(FestivalRulebook r) async {
     if (!r.hasDocument) return;
-    final uri = Uri.tryParse(_resolveUrl(r));
-    if (uri == null) return;
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else if (mounted) {
+    if (await openUrl(_resolveUrl(r))) return;
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.loadError), behavior: SnackBarBehavior.floating),
       );

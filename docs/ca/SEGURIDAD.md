@@ -56,6 +56,15 @@
 3. TLS amb proxy + `FORWARDED_ALLOW_IPS`; sense admin `setup` (nomes es crea fora de prod).
 4. Canvia el `appUserModelId`/GUID de notificacions Windows si es renombra l'aplicacio.
 
+## Enduriment i cadena de subministrament (11/2026)
+
+- **Auditoria de dependències**: `tools/audit_deps.py` consulta OSV (CVE/GHSA) per a `requirements`, `pubspec.lock` i un venv. Ex.: `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable`. Durant l'auditoria va aparèixer un avís irreparable de python-ecdsa (CVE-2024-23342) únicament al `.venv` local; `pip show` confirma que cap paquet no el requereix i una resolució neta dels requirements no l'instal·la, per la qual cosa no forma part del projecte.
+- **Versions fixades/parchejades**: `httpx2>=2.12.0`, `httpcore2>=2.10.0`, `pyasn1>=0.6.5`, `bcrypt==5.0.0`, `pytest==9.2.0`, `icalendar==7.3.2`. Les versions directes ja estaven lliures d'avisos OSV en fer l'auditoria.
+- **Producció**: `docker compose --profile prod` exigeix `APP_ENV=production`, `SECRET_KEY`, `CORS_ORIGINS` explícit, `PUBLIC_BASE_URL` i `DATABASE_URL` amb paràmetres TLS; la validació a l'arrancada bloqueja claus febles/comodí. `start.ps1` genera una clau aleatòria si no hi ha `SECRET_KEY` (abans en fixava una coneguda).
+- **Backend**: middleware i validació de seguretat moguts de `app/main.py` a `app/security.py`; CORS restringeix capçaleres; docs/redoc/openapi desactivats en producció; l'exportació de portabilitat exigeix usuari/admin/node federat verificat; el registre de nodes exigeix autenticació en producció; el JWKS federat només es descarrega de nodes registrats (anti-SSRF, sense redireccions); SSE accepta Bearer a la capçalera (`token` a query obsolet); webhooks mock amb `compare_digest`; contrasenyes >72 bytes rebutjades amb 422; la importació de bundles només aplica camps de perfil (mai `role`/`is_active`/privacitat); SVG servits amb CSP sandbox.
+- **Frontend**: tokens i claus E2EE a `flutter_secure_storage` amb migració única (el web fa servir SharedPreferences); helper únic `UrlLauncherService` amb allowlist `http`/`https`/`mailto`/`tel`/`geo`; validació HTTPS del backend llevat d'hosts locals de desenvolupament; el logout buida les caixes Hive i el socket; CSP a `web/index.html` i HSTS/nosniff a `nginx.conf`.
+- **Referències**: OWASP Top 10 2025 (A02 Configuració, A03 Cadena de subministrament, A05 Injecció, A07 Autenticació) i OWASP MASVS per a Flutter.
+
 ## Federacio (fases 2-10)
 
 Detall complet a [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controls vigents:
@@ -65,5 +74,5 @@ Detall complet a [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Controls vige
 - `allowlist`/`blocklist` per node (`node_policies`), amb `import_only`, `disable_chat` i `disable_search`. Rate limiting i anti-inundada al marge; propagacio d'informes de moderacio.
 - Portabilitat: bundles signats amb HMAC i checksum; import valida/sanea `MediaUrl` i normalitza `contest_type`; migracio de festivals i identitats amb `identity_redirects` i auditoria a `migration_audits`; els endpoints de migracio exigeixen admin.
 - Xat federat: bridge signat RS256, dedup per `message_id` a `chat_outbox`, ordre per `timestamp`; reportes i silenciaments, filtre de paraules i limit de 10 missatges/60 s per node i usuari.
-- Esdeveniments: publicacio signada amb HMAC (`X-Clakettes-Signature`), SSE amb `token` obligatori a query, `since` i `limit` opcionals, replay de 200 i 3 reintents amb backoff.
+- Esdeveniments: publicacio signada amb HMAC (`X-Clakettes-Signature`), SSE amb Bearer a la capçalera (`token` a query obsolet), `since` i `limit` opcionals, replay de 200 i 3 reintents amb backoff.
 - Resiliencia: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), revocacio de claus (`keys/revoke`) i pla d'incident en 8 passos. Rotacio/revocacio per renovacio del certificat; un node compromes s'invalida al directori.

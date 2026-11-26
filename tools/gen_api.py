@@ -31,6 +31,7 @@ LANGS = {
         "yes_admin": "sí (admin)",
         "federation": "JWT de federación",
         "token_query": "token (query, obligatorio)",
+        "token_sse": "Bearer (cabecera) o token (query, obsoleto)",
         "deprecated": "obsoleto",
         "total": "Total: {n} endpoints en {r} routers ({m} con prefijo en `main.py`).",
     },
@@ -54,6 +55,7 @@ LANGS = {
         "yes_admin": "yes (admin)",
         "federation": "federation JWT",
         "token_query": "token (query, required)",
+        "token_sse": "Bearer (header) or token (query, deprecated)",
         "deprecated": "deprecated",
         "total": "Total: {n} endpoints in {r} routers ({m} with a prefix in `main.py`).",
     },
@@ -78,6 +80,7 @@ LANGS = {
         "yes_admin": "oui (admin)",
         "federation": "JWT de fédération",
         "token_query": "jeton (query, obligatoire)",
+        "token_sse": "Bearer (en-tête) ou jeton (query, obsolète)",
         "deprecated": "obsolète",
         "total": "Total : {n} endpoints dans {r} routers ({m} avec un préfixe dans `main.py`).",
     },
@@ -102,6 +105,7 @@ LANGS = {
         "yes_admin": "ja (Admin)",
         "federation": "Föderations-JWT",
         "token_query": "Token (Query, Pflicht)",
+        "token_sse": "Bearer (Header) oder Token (Query, veraltet)",
         "deprecated": "veraltet",
         "total": "Gesamt: {n} Endpunkte in {r} Routern ({m} mit Präfix in `main.py`).",
     },
@@ -126,6 +130,7 @@ LANGS = {
         "yes_admin": "sì (admin)",
         "federation": "JWT di federazione",
         "token_query": "token (query, obbligatorio)",
+        "token_sse": "Bearer (header) o token (query, obsoleto)",
         "deprecated": "deprecato",
         "total": "Totale: {n} endpoint in {r} router ({m} con prefisso in `main.py`).",
     },
@@ -150,6 +155,7 @@ LANGS = {
         "yes_admin": "sí (admin)",
         "federation": "JWT de federació",
         "token_query": "token (query, obligatori)",
+        "token_sse": "Bearer (capçalera) o token (query, obsolet)",
         "deprecated": "obsolet",
         "total": "Total: {n} endpoints en {r} routers ({m} amb prefix en `main.py`).",
     },
@@ -174,6 +180,7 @@ LANGS = {
         "yes_admin": "bai (admin)",
         "federation": "federazio JWT",
         "token_query": "tokena (query, derrigorrezkoa)",
+        "token_sse": "Bearer (burua) edo tokena (kontsulta, zaharkitua)",
         "deprecated": "zaharkituta",
         "total": "Guztira: {n} endpoint {r} routerretan ({m} `main.py`-n aurrizkiarekin).",
     },
@@ -198,6 +205,7 @@ LANGS = {
         "yes_admin": "si (admin)",
         "federation": "JWT de federación",
         "token_query": "token (query, obrigatorio)",
+        "token_sse": "Bearer (cabeceira) ou token (consulta, obsoleto)",
         "deprecated": "obsoleto",
         "total": "Total: {n} endpoints en {r} routers ({m} con prefixo en `main.py`).",
     },
@@ -222,6 +230,7 @@ LANGS = {
         "yes_admin": "òc (admin)",
         "federation": "JWT de federacion",
         "token_query": "jeton (query, obligatòri)",
+        "token_sse": "Bearer (en-tèsta) o jeton (requèsta, obsolèt)",
         "deprecated": "depreciat",
         "total": "Total : {n} endpoints dins {r} routers ({m} amb un prefixe dins `main.py`).",
     },
@@ -255,6 +264,8 @@ def auth_label(body: str, method: str, t: dict) -> str:
         return t["token_query"]
     if "get_current_federation_peer" in body:
         return t["federation"]
+    if "token_to_validate" in body:
+        return t["token_sse"]
     if "validate_access_token" in body:
         return t["token_query"]
     if "_admin_user" in body or "require_admin" in body:

@@ -229,7 +229,7 @@ Todas as subidas devolven unha ruta relativa `/uploads/<carpeta>/<ficheiro>`, nu
 | GET | `/api/federation/directory` | non |
 | POST | `/api/federation/reports` | non |
 | GET | `/api/federation/reports` | non |
-| DELETE | `/api/federation/users/{user_ref}` | JWT de federación |
+| DELETE | `/api/federation/users/{user_ref}` | non |
 | GET | `/api/federation/export/{user_ref}` | non |
 | GET | `/api/federation/health` (obsoleto) | non |
 | POST | `/api/federation/verify` | non |
@@ -251,7 +251,7 @@ Todas as subidas devolven unha ruta relativa `/uploads/<carpeta>/<ficheiro>`, nu
 | POST | `/api/federation/subscribe` (obsoleto) | non |
 | POST | `/api/federation/unsubscribe` (obsoleto) | non |
 | GET | `/api/federation/discover` (obsoleto) | non |
-| POST | `/api/federation/register` | non |
+| POST | `/api/federation/register` | JWT de federación |
 | POST | `/api/federation/unregister` | non |
 | POST | `/api/federation/sync` | non |
 | POST | `/api/federation/reconcile` | non |
@@ -302,7 +302,7 @@ Todas as subidas devolven unha ruta relativa `/uploads/<carpeta>/<ficheiro>`, nu
 
 | Método | Ruta | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | token (query, obrigatorio) |
+| GET | `/api/federation/events/stream` | Bearer (cabeceira) ou token (consulta, obsoleto) |
 | POST | `/api/federation/events/publish` | si (admin) |
 | GET | `/api/federation/events/retry-queue` | si (admin) |
 

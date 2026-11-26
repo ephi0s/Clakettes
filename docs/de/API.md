@@ -229,7 +229,7 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 | GET | `/api/federation/directory` | nein |
 | POST | `/api/federation/reports` | nein |
 | GET | `/api/federation/reports` | nein |
-| DELETE | `/api/federation/users/{user_ref}` | Föderations-JWT |
+| DELETE | `/api/federation/users/{user_ref}` | nein |
 | GET | `/api/federation/export/{user_ref}` | nein |
 | GET | `/api/federation/health` (veraltet) | nein |
 | POST | `/api/federation/verify` | nein |
@@ -251,7 +251,7 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 | POST | `/api/federation/subscribe` (veraltet) | nein |
 | POST | `/api/federation/unsubscribe` (veraltet) | nein |
 | GET | `/api/federation/discover` (veraltet) | nein |
-| POST | `/api/federation/register` | nein |
+| POST | `/api/federation/register` | Föderations-JWT |
 | POST | `/api/federation/unregister` | nein |
 | POST | `/api/federation/sync` | nein |
 | POST | `/api/federation/reconcile` | nein |
@@ -302,7 +302,7 @@ Alle Uploads geben einen relativen Pfad `/uploads/<ordner>/<datei>` zurück, nie
 
 | Methode | Pfad | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | Token (Query, Pflicht) |
+| GET | `/api/federation/events/stream` | Bearer (Header) oder Token (Query, veraltet) |
 | POST | `/api/federation/events/publish` | ja (Admin) |
 | GET | `/api/federation/events/retry-queue` | ja (Admin) |
 

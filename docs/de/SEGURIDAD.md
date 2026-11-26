@@ -56,6 +56,15 @@
 3. TLS mit Proxy + `FORWARDED_ALLOW_IPS`; kein Admin `setup` (nur außerhalb von Prod erstellt).
 4. `appUserModelId`/GUID der Windows-Benachrichtigungen ändern, wenn App umbenannt wird.
 
+## Härtung und Lieferkette (11/2026)
+
+- **Abhängigkeits-Audit**: `tools/audit_deps.py` fragt OSV (CVE/GHSA) für `requirements`, `pubspec.lock` und ein venv ab. Bsp.: `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable`. Bei der Prüfung trat eine nicht behebbare Warnung zu python-ecdsa (CVE-2024-23342) nur in der lokalen `.venv` auf; `pip show` bestätigt, dass kein Paket es erfordert und eine saubere Auflösung der requirements es nicht installiert – es gehört daher nicht zum Projekt.
+- **Fixierte/gepatchte Versionen**: `httpx2>=2.12.0`, `httpcore2>=2.10.0`, `pyasn1>=0.6.5`, `bcrypt==5.0.0`, `pytest==9.2.0`, `icalendar==7.3.2`. Die direkten Versionen waren bei der Prüfung bereits frei von OSV-Hinweisen.
+- **Produktion**: `docker compose --profile prod` erfordert `APP_ENV=production`, `SECRET_KEY`, explizites `CORS_ORIGINS`, `PUBLIC_BASE_URL` und `DATABASE_URL` mit TLS-Parametern; die Startvalidierung blockiert schwache/Platzhalter-Schlüssel. `start.ps1` erzeugt einen zufälligen Schlüssel, wenn `SECRET_KEY` fehlt (vorher wurde ein bekannter gesetzt).
+- **Backend**: Middleware und Sicherheitsvalidierung von `app/main.py` nach `app/security.py` verschoben; CORS beschränkt Header; docs/redoc/openapi in Produktion deaktiviert; Portabilitätsexport erfordert verifizierten Benutzer/Admin/föderierten Knoten; Knotenregistrierung erfordert Authentifizierung in Produktion; föderiertes JWKS wird nur von registrierten Knoten geladen (Anti-SSRF, keine Redirects); SSE akzeptiert Bearer im Header (Query-`token` veraltet); Mock-Webhooks mit `compare_digest`; Passwörter >72 Bytes werden mit 422 abgelehnt; Bundle-Import übernimmt nur Profilfelder (nie `role`/`is_active`/Privatsphäre); SVG mit CSP-Sandbox ausgeliefert.
+- **Frontend**: Tokens und E2EE-Schlüssel in `flutter_secure_storage` mit einmaliger Migration (Web nutzt SharedPreferences); einzelner Helper `UrlLauncherService` mit Allowlist `http`/`https`/`mailto`/`tel`/`geo`; HTTPS-Validierung des Backends außer für lokale Dev-Hosts; Logout leert Hive-Boxen und den Socket; CSP in `web/index.html` und HSTS/nosniff in `nginx.conf`.
+- **Referenzen**: OWASP Top 10 2025 (A02 Konfiguration, A03 Lieferkette, A05 Injektion, A07 Authentifizierung) und OWASP MASVS für Flutter.
+
 ## Föderation (Phasen 2-10)
 
 Vollständige Details in [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Geltende Kontrollen:
@@ -65,5 +74,5 @@ Vollständige Details in [FEDERATION_SECURITY.md](FEDERATION_SECURITY.md). Gelte
 - `allowlist`/`blocklist` pro Knoten (`node_policies`), mit `import_only`, `disable_chat` und `disable_search`. Rate-Limiting und Anti-Flood am Rand; Verbreitung von Moderationsberichten.
 - Portabilität: HMAC-signierte Bundles mit Checksum; der Import validiert/saniert `MediaUrl` und normalisiert `contest_type`; Migration von Festivals und Identitäten mit `identity_redirects` und Audit in `migration_audits`; die Migrations-Endpoints erfordern Admin.
 - Föderierter Chat: RS256-signierte Bridge, Deduplizierung nach `message_id` in `chat_outbox`, Sortierung nach `timestamp`; Meldungen und Mutes, Wortfilter und Limit von 10 Nachrichten/60 s pro Knoten und Nutzer.
-- Ereignisse: HMAC-signiertes Publishing (`X-Clakettes-Signature`), SSE mit obligatorischem `token` in der Query, `since` und `limit` optional, Replay von 200 und 3 Wiederholungen mit Backoff.
+- Ereignisse: HMAC-signiertes Publishing (`X-Clakettes-Signature`), SSE mit Bearer im Header (`token` in der Query veraltet), `since` und `limit` optional, Replay von 200 und 3 Wiederholungen mit Backoff.
 - Resilienz: `/api/federation/resilience/health`, `/heartbeat`, `/metrics` (p50/p95), Schlüssel-Widerruf (`keys/revoke`) und Incident-Plan in 8 Schritten. Rotation/Widerruf durch Zertifikatserneuerung; ein kompromittierter Knoten wird im Verzeichnis invalidiert.

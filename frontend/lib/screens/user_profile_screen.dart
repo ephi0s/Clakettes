@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../models/session_model.dart';
@@ -19,8 +18,8 @@ import '../widgets/dav_subscription_section.dart';
 import '../widgets/language_picker.dart';
 import '../services/auth_service.dart';
 import '../services/chat_backend/chat_service.dart';
-import '../services/offline_cache_service.dart';
-import '../services/sync_queue_service.dart';
+import '../services/session_cleanup_service.dart';
+import '../services/url_launcher_service.dart';
 import '../widgets/open_in_maps_action.dart';
 import '../widgets/publication_panel.dart';
 import '../widgets/badges_row.dart';
@@ -457,9 +456,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (!confirmed) return;
     try {
       await ApiService().revokeAllSessions();
-      await AuthService().clear();
-      await OfflineCacheService.instance.clear();
-      await SyncQueueService.instance.clear();
+      await SessionCleanupService.logout();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.allSessionsRevoked), behavior: SnackBarBehavior.floating),
@@ -516,9 +513,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (!confirmed) return;
     try {
       await ApiService().deleteMyAccount();
-      await AuthService().clear();
-      await OfflineCacheService.instance.clear();
-      await SyncQueueService.instance.clear();
+      await SessionCleanupService.logout();
       if (mounted) {
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainScaffold()), (_) => false);
       }
@@ -1506,11 +1501,7 @@ class _StatItem extends StatelessWidget {
 class _SocialLinksRow extends StatelessWidget {
   final Map<String, String> links;
   const _SocialLinksRow({required this.links});
-  Future<void> _open(String url) async {
-    var uri = Uri.tryParse(url);
-    if (uri != null && !uri.hasScheme) uri = Uri.parse('https://$url');
-    if (uri != null && await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
+  Future<void> _open(String url) => openUrl(url);
   @override
   Widget build(BuildContext context) {
     final entries = links.entries.where((e) => e.value.trim().isNotEmpty).toList();

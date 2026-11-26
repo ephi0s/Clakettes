@@ -422,7 +422,11 @@ if ($Web) {
 } elseif ($dockerDaemon) {    Write-Host "[DOCKER] Usando Docker..." -ForegroundColor Cyan
     Set-Location $root
 
-    if (-not $env:SECRET_KEY) { $env:SECRET_KEY = "dev-secret-change-in-production" }
+    if (-not $env:SECRET_KEY) {
+        $secretBytes = New-Object byte[] 48
+        [System.Security.Cryptography.RNGCryptoServiceProvider]::new().GetBytes($secretBytes)
+        $env:SECRET_KEY = [Convert]::ToBase64String($secretBytes)
+    }
 
     # Check host ports that Docker will bind
     if (-not ($BuildAll -or $Build -or $BuildFrontend -or $BuildBackend -or $Migrate -or $TestBackend -or $TestFrontend)) {

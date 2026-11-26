@@ -229,7 +229,7 @@ Tutti i caricamenti restituiscono un percorso relativo `/uploads/<cartella>/<fil
 | GET | `/api/federation/directory` | no |
 | POST | `/api/federation/reports` | no |
 | GET | `/api/federation/reports` | no |
-| DELETE | `/api/federation/users/{user_ref}` | JWT di federazione |
+| DELETE | `/api/federation/users/{user_ref}` | no |
 | GET | `/api/federation/export/{user_ref}` | no |
 | GET | `/api/federation/health` (deprecato) | no |
 | POST | `/api/federation/verify` | no |
@@ -251,7 +251,7 @@ Tutti i caricamenti restituiscono un percorso relativo `/uploads/<cartella>/<fil
 | POST | `/api/federation/subscribe` (deprecato) | no |
 | POST | `/api/federation/unsubscribe` (deprecato) | no |
 | GET | `/api/federation/discover` (deprecato) | no |
-| POST | `/api/federation/register` | no |
+| POST | `/api/federation/register` | JWT di federazione |
 | POST | `/api/federation/unregister` | no |
 | POST | `/api/federation/sync` | no |
 | POST | `/api/federation/reconcile` | no |
@@ -302,7 +302,7 @@ Tutti i caricamenti restituiscono un percorso relativo `/uploads/<cartella>/<fil
 
 | Metodo | Percorso | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | token (query, obbligatorio) |
+| GET | `/api/federation/events/stream` | Bearer (header) o token (query, obsoleto) |
 | POST | `/api/federation/events/publish` | sì (admin) |
 | GET | `/api/federation/events/retry-queue` | sì (admin) |
 

@@ -198,13 +198,15 @@ class PortabilityService:
             value = data.get(field)
             if value and not db.query(User).filter(column == value, User.id != user.id).first():
                 setattr(user, field, value)
-        skipped = {"id", "password_hash", "email", "uuid", "handle", "did"}
-        if minimize:
-            skipped.update({"full_name", "bio", "latitude", "longitude", "social_links"})
-        for key, value in data.items():
-            if key in skipped or value is None or not hasattr(user, key):
-                continue
-            setattr(user, key, value)
+        # Solo campos de perfil: un bundle, aunque esté firmado, nunca puede
+        # otorgar roles, activar cuentas ni cambiar la configuración de privacidad.
+        profile_fields = {"full_name", "bio", "avatar_url", "banner_url", "tagline"}
+        if not minimize:
+            profile_fields.update({"social_links", "latitude", "longitude"})
+        for key in profile_fields:
+            value = data.get(key)
+            if value is not None and hasattr(user, key):
+                setattr(user, key, value)
         return user
 
     def _import_shortfilms(self, db: Session, items: list[dict], user: User | None) -> int:

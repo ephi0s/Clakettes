@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../models/festival_model.dart';
@@ -9,6 +8,7 @@ import '../models/festival_rulebook_model.dart';
 import '../models/location_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/url_launcher_service.dart';
 import '../widgets/reusable_widgets.dart';
 import '../widgets/location_selector.dart';
 import '../widgets/festival_sections.dart';
@@ -261,15 +261,7 @@ class _FestivalProfileScreenState extends State<FestivalProfileScreen> {
   Future<void> _openInMaps(double lat, double lng, String label) =>
       openInMaps(lat, lng, label: label);
 
-  Future<void> _openWebsite(String url) async {
-    var uri = Uri.tryParse(url);
-    if (uri != null && !uri.hasScheme) {
-      uri = Uri.parse('https://$url');
-    }
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
+  Future<void> _openWebsite(String url) => openUrl(url);
 
   /// Carga las localizaciones asociadas al festival desde la API.
   Future<void> _loadFestivalLocations() async {

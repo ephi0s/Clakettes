@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import '../l10n/app_localizations.dart';
 
+import '../services/backend_config.dart';
 import '../services/connectivity_monitor.dart';
 import '../services/node_info_model.dart';
 import '../services/node_service.dart';
@@ -89,18 +90,26 @@ class _NodeManagementScreenState extends State<NodeManagementScreen> {
     );
     if (ok != true) return;
     final domain = domainCtrl.text.trim();
-    final url = urlCtrl.text.trim();
-    if (domain.isEmpty || url.isEmpty) return;
-    await _nodes.upsert(
-      NodeInfo(
-        id: domain,
-        domain: domain,
-        baseUrl: url,
-        displayName: nameCtrl.text.trim().isEmpty ? domain : nameCtrl.text.trim(),
-        trusted: false,
-        enabled: true,
-      ),
-    );
+    if (domain.isEmpty || urlCtrl.text.trim().isEmpty) return;
+    try {
+      final url = BackendConfig.validateUrl(urlCtrl.text);
+      await _nodes.upsert(
+        NodeInfo(
+          id: domain,
+          domain: domain,
+          baseUrl: url,
+          displayName: nameCtrl.text.trim().isEmpty ? domain : nameCtrl.text.trim(),
+          trusted: false,
+          enabled: true,
+        ),
+      );
+    } on InvalidBackendUrlException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.invalidValue}: ${e.message}'), behavior: SnackBarBehavior.floating),
+      );
+      return;
+    }
     await _refresh();
   }
 

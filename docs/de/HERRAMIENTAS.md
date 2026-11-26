@@ -28,8 +28,11 @@
 | Knoten-Konformität prüfen | `python tools/federation_conformance.py <url> [--json]` | Root (`tools/`) |
 | API-Referenz neu erzeugen | `python tools/gen_api.py --all` | Root (`tools/`); kombiniert Präfixe aus `main.py` und jedem `APIRouter` und erkennt Auth-Abhängigkeiten |
 | Generierte API-Referenz prüfen | `python tools/gen_api.py --all --check` | Root (`tools/`); prüft, dass die `API.md` aktuell sind, ohne sie zu schreiben (Exit 1, falls eine abweicht); vom `docs-api` CI-Job ausgeführt |
+| Abhängigkeits-Audit (OSV) | `python tools/audit_deps.py --requirements backend/requirements.txt --requirements backend/requirements-dev.txt --lock frontend/pubspec.lock --venv backend/.venv --fail-on fixable` | Root (`tools/`); CVE/GHSA in requirements, `pubspec.lock` und venv |
 
 Das Konformitäts-CLI prüft Manifest, JWKS, Token, Verzeichnis, Nutzer, WebFinger, Meldungen, Portabilität, Chat-Bridge und Ereignis-Stream; es gibt 1 bei `critical`/`high`-Fehlern und sonst 0 zurück, und `--json` gibt den vollständigen Bericht aus.
+
+Das Audit-Script gibt 1 zurück, wenn behebbare Hinweise vorliegen (`--fail-on fixable`); ein nicht behebbarer Hinweis, der nur in der lokalen `.venv` und nicht im Abhängigkeitsgraph der requirements steht, gehört nicht zum Projekt. Mit `--venv --show-orphans` werden installierte Pakete aufgelistet, die nicht in den requirements stehen und die kein Paket erfordert (verwaiste Pakete im lokalen venv), damit sie deinstalliert werden können.
 
 ## Angewendete Verbesserungen (09/10/2026)
 

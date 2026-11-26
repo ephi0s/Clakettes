@@ -229,7 +229,7 @@ Tous les téléversements renvoient un chemin relatif `/uploads/<dossier>/<fichi
 | GET | `/api/federation/directory` | non |
 | POST | `/api/federation/reports` | non |
 | GET | `/api/federation/reports` | non |
-| DELETE | `/api/federation/users/{user_ref}` | JWT de fédération |
+| DELETE | `/api/federation/users/{user_ref}` | non |
 | GET | `/api/federation/export/{user_ref}` | non |
 | GET | `/api/federation/health` (obsolète) | non |
 | POST | `/api/federation/verify` | non |
@@ -251,7 +251,7 @@ Tous les téléversements renvoient un chemin relatif `/uploads/<dossier>/<fichi
 | POST | `/api/federation/subscribe` (obsolète) | non |
 | POST | `/api/federation/unsubscribe` (obsolète) | non |
 | GET | `/api/federation/discover` (obsolète) | non |
-| POST | `/api/federation/register` | non |
+| POST | `/api/federation/register` | JWT de fédération |
 | POST | `/api/federation/unregister` | non |
 | POST | `/api/federation/sync` | non |
 | POST | `/api/federation/reconcile` | non |
@@ -302,7 +302,7 @@ Tous les téléversements renvoient un chemin relatif `/uploads/<dossier>/<fichi
 
 | Méthode | Chemin | Auth |
 |---|---|---|
-| GET | `/api/federation/events/stream` | jeton (query, obligatoire) |
+| GET | `/api/federation/events/stream` | Bearer (en-tête) ou jeton (query, obsolète) |
 | POST | `/api/federation/events/publish` | oui (admin) |
 | GET | `/api/federation/events/retry-queue` | oui (admin) |
 

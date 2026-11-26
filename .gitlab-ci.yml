@@ -36,6 +36,16 @@ docs-api:
   script:
     - python tools/gen_api.py --all --check
 
+deps-audit:
+  stage: lint
+  script:
+    - >-
+      python tools/audit_deps.py
+      --requirements backend/requirements.txt
+      --requirements backend/requirements-dev.txt
+      --lock frontend/pubspec.lock
+      --fail-on fixable
+
 # ── Test ────────────────────────────────────────────────────────────
 
 backend-test:
