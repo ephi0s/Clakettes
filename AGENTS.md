@@ -112,6 +112,8 @@ Si hay commits de `origin/main` que falten en local: `git pull --ff-only`. Si ex
 ### Durante el trabajo
 
 - Usa subagentes Explore en paralelo para búsquedas/lecturas previas; úsalos siempre que sea posible para ahorrar tokens
+- Usa la CLI de `gh` para administrar el repositorio: inspeccionar workflows, runs y jobs, PRs, issues y ajustes de GitHub; prefiere `gh api` sobre peticiones web o `curl`
+- Nunca escribas tokens, correos ni identificadores de cuenta en archivos del repositorio
 - Búsquedas y reemplazos con `grep`/`edit` de OpenCode, nunca scripts auxiliares salvo que sea imprescindible
 - Carga skills solo si la tarea lo pide:
   - Backend: `backend-python-fastapi-expert`
