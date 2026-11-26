@@ -43,7 +43,7 @@ The audit script returns 1 if there are fixable advisories (`--fail-on fixable`)
    - GitHub and GitLab `backend-test`: `TESTING=true` and `SECRET_KEY=test-secret-key-for-ci-only-32bytes!` (36 bytes, avoids `InsecureKeyLengthWarning`; previously the rate limiter remained active in tests → sporadic 429s).
    - GitLab `frontend-test`: added Hive adapter generation before `flutter test` (parity with GitHub).
    - `pip install ruff` → `pip install "ruff==0.17.6"` in GitHub Actions and GitLab; `requirements-dev.txt` pins `ruff==0.17.6` for local development as well.
-    - CodeQL (`.github/workflows/codeql.yml`, Advanced Setup) analyzes only the Python backend with `security-extended`; Dart is not covered by CodeQL.
+    - CodeQL (GitHub default setup) analyzes the Python backend; Dart is not covered by CodeQL.
 4. **Multi-platform lints** (`analysis_options.yaml`): `avoid_print` and `avoid_web_libraries_in_flutter`. Verified: `flutter analyze` clean (conditional web/io import is the accepted pattern).
 5. **Fix obsolete `onReorder`** → `onReorderItem` (no manual index adjustment); `flutter analyze` goes from 1 info to 0 issues.
 
