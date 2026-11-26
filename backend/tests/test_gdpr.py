@@ -206,6 +206,7 @@ class TestTransportSecurity:
         monkeypatch.setattr(settings, "APP_ENV", "production")
         monkeypatch.setattr(settings, "SECRET_KEY", "x" * 64)
         monkeypatch.setattr(settings, "CORS_ORIGINS", "https://app.example.com")
+        monkeypatch.setattr(settings, "PUBLIC_BASE_URL", "https://app.example.com")
         monkeypatch.setattr(settings, "DATABASE_URL", "mariadb+pymysql://u:p@db:3306/clakettes_db")
         try:
             _validate_secret_key()

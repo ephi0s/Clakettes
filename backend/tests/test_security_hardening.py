@@ -102,6 +102,26 @@ def test_production_validation_rejects_placeholder_secret(monkeypatch):
         validate_secret_key()
 
 
+def test_production_validation_requires_db_url_public_origin_and_tls(monkeypatch):
+    monkeypatch.setattr(settings, "APP_ENV", "production")
+    monkeypatch.setattr(settings, "SECRET_KEY", "x" * 64)
+    monkeypatch.setattr(settings, "CORS_ORIGINS", "https://app.example.com")
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
+        validate_secret_key()
+
+    monkeypatch.setattr(settings, "DATABASE_URL", "sqlite:///./clakettes.db")
+    with pytest.raises(RuntimeError, match="MariaDB"):
+        validate_secret_key()
+
+    monkeypatch.setattr(settings, "DATABASE_URL", "mariadb+pymysql://u:p@db:3306/db?ssl_ca=/run/secrets/db-ca.pem")
+    with pytest.raises(RuntimeError, match="PUBLIC_BASE_URL"):
+        validate_secret_key()
+
+    monkeypatch.setattr(settings, "PUBLIC_BASE_URL", "https://app.example.com")
+    validate_secret_key()
+
+
 def test_imported_bundle_cannot_grant_admin_role(client, auth_headers, db_session):
     from app.models.user import User
     from app.services.portability_service import PortabilityService

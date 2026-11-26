@@ -70,7 +70,12 @@ def validate_secret_key() -> None:
             "CORS_ORIGINS must be set to explicit origins in production (APP_ENV=production). "
             "Wildcard '*' is not allowed with credentials."
         )
-    if settings.is_production and settings.DATABASE_URL.startswith("mariadb"):
+    if settings.is_production:
+        if not settings.DATABASE_URL.startswith("mariadb"):
+            raise RuntimeError(
+                "DATABASE_URL must use MariaDB in production (APP_ENV=production), "
+                "e.g. mariadb+pymysql://user:pass@host:3306/db?ssl_ca=/run/secrets/db-ca.pem"
+            )
         from urllib.parse import parse_qsl, urlsplit
 
         query = dict(parse_qsl(urlsplit(settings.DATABASE_URL).query))
@@ -85,6 +90,8 @@ def validate_secret_key() -> None:
                 "DATABASE_URL must enable TLS in production (APP_ENV=production), "
                 "e.g. mariadb+pymysql://user:pass@host:3306/db?ssl_ca=/run/secrets/db-ca.pem"
             )
+        if not (settings.PUBLIC_BASE_URL or "").strip():
+            raise RuntimeError("PUBLIC_BASE_URL must be set to the public origin in production (APP_ENV=production).")
 
 
 # Alias conservado para tests y herramientas que importaban el nombre antiguo.
